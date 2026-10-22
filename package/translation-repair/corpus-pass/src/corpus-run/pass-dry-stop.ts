@@ -1,8 +1,13 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   EveryProviderDryError,
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
+import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Pass dry stop
 // THE RUN-LEVEL STOP FOR EVERY PROVIDER DRY. The owner ruled that the router's `EveryProviderDryError` "ENDS THE RUN"
@@ -18,6 +23,16 @@ import {
 // reason, so every call in flight under it ends at once and each layer's "abort wins" rule carries the refusal out
 // as it does a user's stop, none of them mistaking it for a timeout or a lost voice. The queue's seam then reads
 // the gate and prints the one stop line.
+//
+// TWO WAYS IN, ONE TRIP. A guarded call that meets the dry router trips it before the refusal propagates. An entry
+// the refusal reached some other way (the seat reading finds every provider dry before any chat call is made, or a
+// layer re-raises it past the signal) hands it over at the entry's own catch (`trip`), so the pass stops however the
+// refusal arrived. Either way the gate logs one line when it trips and hands out its stop note once.
+
+/**
+ Logger root for the gate, naming the entry whose call tripped it.
+ */
+const passDryStopLog = contextRoot({ tag: 'pass-dry-stop', },);
 
 /**
  Gate that turns the first every-provider-dry refusal into a stop of the whole pass.
@@ -39,14 +54,36 @@ export type PassDryStop = {
   readonly guard: <ClientT extends ModelClient,>(args: { readonly client: ClientT; },) => ClientT;
 
   /**
-   Whether a guarded call has met the dry router, so the pass starts no further entry.
+   Hands the gate a failure that ended an entry, which trips it when the failure is the dry refusal and does nothing
+   for any other; for a refusal that reached the entry without passing a guarded call.
+   */
+  readonly trip: (args: { readonly error: unknown; },) => void;
+
+  /**
+   Whether the dry router has been met, so the pass starts no further entry.
    */
   readonly tripped: () => boolean;
 
   /**
-   The one line saying why the pass starts no further entry; only asked once `tripped` reads true.
+   The one line saying why the pass starts no further entry, the first time it is asked after the trip; nothing before
+   the trip and nothing once it has been handed out, so the stop is announced exactly once.
    */
-  readonly stopNote: () => string;
+  readonly takeStopNote: () => string | undefined;
+};
+
+/**
+ What the gate remembers of its trip.
+ */
+type DryStopState = {
+  /**
+   The first refusal that tripped the gate, whose cause stays the reason.
+   */
+  cause?: EveryProviderDryError;
+
+  /**
+   Whether the stop note has been handed out.
+   */
+  noted: boolean;
 };
 
 /**
@@ -84,42 +121,53 @@ async function tripping<ResultT,>(
 }
 
 /**
- Trips the gate on a dry refusal, once.
+ Trips the gate on a dry refusal, once, and logs the trip.
 
- @param error - what a guarded call raised
+ @param error - what a guarded call raised, or what ended an entry
 
- @param causes - the refusals that tripped the gate so far
+ @param state - what the gate remembers of its trip
 
  @param controller - owner of the abort every entry's calls forward
 
- @mutates causes - holds the refusal, the first time only
+ @param l - logger the trip is written on
+
+ @mutates state - holds the refusal, the first time only
 
  @mutates controller - aborts with the refusal as the reason, the first time only
 
  @example
  ```ts
- tripOn({ error, causes, controller, },);
+ tripOn({ error, state, controller, l, },);
  ```
  */
 function tripOn(
   {
     error,
-    causes,
+    state,
     controller,
+    l,
   }: {
     readonly error: unknown;
-    readonly causes: EveryProviderDryError[];
+    readonly state: DryStopState;
     readonly controller: AbortController;
+    readonly l: Logger;
   },
 ): void {
-  if ((error instanceof EveryProviderDryError) && (causes.length === 0)) {
-    causes.push(error,);
+  if ((error instanceof EveryProviderDryError) && (state.cause === undefined)) {
+    state.cause = error;
+    tagged({
+      tag: tripOn.name,
+      l,
+    },)
+      .error(`every provider is out of budget, so the pass stops starting entries (cause: ${error.message})`,);
     controller.abort(error,);
   }
 }
 
 /**
  Builds the gate one pass shares across its entries.
+
+ @param l - logger the trip is written on; the gate's own, naming the entry in flight, when absent
 
  @returns Gate whose signal aborts on the first every-provider-dry refusal a guarded client meets
 
@@ -129,16 +177,18 @@ function tripOn(
  const client = dryStop.guard({ client: input.newClient({ promptPayloadDir, }), },);
  ```
  */
-export function createPassDryStop(): PassDryStop {
+export function createPassDryStop(
+  { l = passDryStopLog, }: { readonly l?: Logger; } = {},
+): PassDryStop {
   /**
    Owns the abort every entry's calls forward.
    */
   const controller = new AbortController();
 
   /**
-   The refusals that tripped the gate: at most one, the first, whose cause stays the reason.
+   What the gate remembers of its trip.
    */
-  const causes: EveryProviderDryError[] = [];
+  const state: DryStopState = { noted: false, };
 
   /**
    Hands a failure of a guarded call to the gate.
@@ -148,13 +198,16 @@ export function createPassDryStop(): PassDryStop {
   function trip({ error, }: { readonly error: unknown; },): void {
     tripOn({
       error,
-      causes,
+      state,
       controller,
+      l,
     },);
   }
 
   return {
     signal: controller.signal,
+
+    trip,
 
     guard: function guard<ClientT extends ModelClient,>(
       { client, }: { readonly client: ClientT; },
@@ -204,13 +257,15 @@ export function createPassDryStop(): PassDryStop {
     },
 
     tripped: function tripped(): boolean {
-      return causes.length > 0;
+      return state.cause !== undefined;
     },
 
-    stopNote: function stopNote(): string {
+    takeStopNote: function takeStopNote(): string | undefined {
+      if ((state.cause === undefined) || state.noted)
+        return undefined;
+      state.noted = true;
       return 'STOP every provider is out of budget, so no further entry starts; the entries already settled keep '
-        + `their pages and the entry in flight is left resumable. Cause: ${nonNullishOrThrow(causes[0],)
-          .message}`;
+        + `their pages and the entry in flight is left resumable. Cause: ${state.cause.message}`;
     },
   };
 }

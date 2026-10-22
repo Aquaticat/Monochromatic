@@ -139,7 +139,7 @@ export async function waitOutHold(
  const over = everyProviderDry({ view, },);
  ```
  */
-function everyProviderDry(
+export function everyProviderDry(
   { view, }: { readonly view: BudgetView; },
 ): boolean {
   return PROVIDER_ORDER.every(function isDry(provider,): boolean {

@@ -2,8 +2,11 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type BudgetView,
+  everyProviderDry,
+  EveryProviderDryError,
   HOLD_POLL_MS,
   type MeterState,
+  type NeuralWattReturn,
   shortestHold,
   waitOutHold,
 } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -64,7 +67,10 @@ import {
  const client: SeatReadingClient = createRunClient();
  ```
  */
-export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHolds' | 'providerMeterStates'>;
+export type SeatReadingClient = Pick<
+  RunClient,
+  'neuralwattReturn' | 'providerDryness' | 'providerHolds' | 'providerMeterStates'
+>;
 
 /**
  The state of a meter whose states could not be read: nothing was learned.
@@ -170,6 +176,13 @@ async function readMeterStates(
  Refusal for a writing bench that stops the entry, marked as already written,
  since the reading writes its own `JUDGE SEATS` line before throwing it.
 
+ WHEN EVERY PROVIDER READS DRY THE CAUSE IS THAT, NOT THE BENCH: the reading is the first to meet the dry state when
+ an entry reaches its lanes with its preparation cached and so makes no chat call, and a bench error there ended the
+ entry as a resumable failure that the pass visited and charged an attempt for, entry after entry, with no stop line.
+ The owner ruled that the router's every-provider-dry refusal ends the run, so the reading raises that refusal, which
+ the entry scheduler files as stopped work and hands to the pass (`endsTheRun`). A bench below its floor with a
+ provider still wet stays the bench error.
+
  MARKED SO NO OUTER LAYER WRITES IT AGAIN (ledger B413). The reading runs in
  the per-slice hook of every slice-by-slice phase, so two slices side by side
  can each stop the entry; the overlapped map throws the lower one and wrote
@@ -180,31 +193,91 @@ async function readMeterStates(
 
  @param clauses - one clause per writing bench below its floor
 
+ @param dry - the dryness view the reading stopped on
+
+ @param client - run client, whose holds and NeuralWatt day the dry refusal states
+
  @returns The refusal to throw
 
  @example
  ```ts
- throw writtenRefusal({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },);
+ throw writtenRefusal({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], dry, client, },);
  ```
  */
 function writtenRefusal(
   {
     phase,
     clauses,
+    dry,
+    client,
   }: {
     readonly phase: JudgeSeatPhase;
     readonly clauses: readonly string[];
+    readonly dry: BudgetView;
+    readonly client: SeatReadingClient;
   },
-): WritingBenchUnreachableError {
+): EveryProviderDryError | WritingBenchUnreachableError {
   /**
    The refusal the entry stops with.
    */
-  const refusal = new WritingBenchUnreachableError({
-    phase,
-    clauses,
-  },);
+  const refusal = everyProviderDry({ view: dry, },)
+    ? everyProviderDryRefusal({
+      phase,
+      holds: client.providerHolds(),
+      neuralwatt: client.neuralwattReturn?.(),
+    },)
+    : new WritingBenchUnreachableError({
+      phase,
+      clauses,
+    },);
   markFailureWritten({ error: refusal, },);
   return refusal;
+}
+
+/**
+ The router's refusal for a seat reading that found every provider dry with nothing left to wait out.
+
+ @param phase - phase the reading was taken for
+
+ @param holds - how long each provider's refusal still holds it out
+
+ @param neuralwatt - what the run knows of NeuralWatt's day, absent where the client reports none
+
+ @returns The refusal, stating the reading it was made on
+
+ @example
+ ```ts
+ throw everyProviderDryRefusal({ phase: 'lanes', holds: client.providerHolds(), neuralwatt: undefined, },);
+ ```
+ */
+function everyProviderDryRefusal(
+  {
+    phase,
+    holds,
+    neuralwatt,
+  }: {
+    readonly phase: JudgeSeatPhase;
+    readonly holds: ProviderRecord<number>;
+    readonly neuralwatt: NeuralWattReturn | undefined;
+  },
+): EveryProviderDryError {
+  /**
+   Each provider's reading and hold, in the words the router's own refusal uses.
+   */
+  const measured = `the seat reading for ${phase} read ${
+    PROVIDER_ORDER.map(function dryClause(provider,): string {
+      return `${provider} dry`;
+    },).join(', ',)
+  }; holds ${
+    PROVIDER_ORDER.map(function holdClause(provider,): string {
+      return `${provider} ${String(holds[provider],)}ms`;
+    },).join(', ',)
+  }`;
+  return new EveryProviderDryError({
+    measured,
+    // Conditional spread keeps the day absent on a client that reports none.
+    ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
+  },);
 }
 
 /**
@@ -220,6 +293,9 @@ function writtenRefusal(
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
  leans on cannot write a slate and no hold promises it back, in a phase that
  stops for it
+
+ @throws {@link EveryProviderDryError} instead when every provider reads dry, which ends the run
+ (`endsTheRun`)
 
  @param client - run client whose dryness view and holds are the router's own
 
@@ -327,6 +403,8 @@ async function readDrynessPastShortBench(
       throw writtenRefusal({
         phase,
         clauses: unreachable,
+        dry: first,
+        client,
       },);
     }
     if (unreachable.length > 0) {
@@ -416,6 +494,8 @@ async function readDrynessPastShortBench(
     throw writtenRefusal({
       phase,
       clauses: stillUnreachable,
+      dry: again,
+      client,
     },);
   }
   if (stillUnreachable.length > 0) {
@@ -452,6 +532,9 @@ async function readDrynessPastShortBench(
 
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
  leans on cannot write a slate, no hold promises it back, and the phase stops for it
+
+ @throws {@link EveryProviderDryError} instead when every provider reads dry, which ends the run
+ (`endsTheRun`)
 
  @example
  ```ts
@@ -585,6 +668,9 @@ export async function readPhaseSeats(
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
  leans on cannot write a slate and no hold promises it back, in a phase that
  stops for it
+
+ @throws {@link EveryProviderDryError} instead when every provider reads dry, which ends the run
+ (`endsTheRun`)
 
  @example
  ```ts
