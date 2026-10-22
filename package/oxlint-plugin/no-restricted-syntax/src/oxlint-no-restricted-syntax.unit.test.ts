@@ -427,6 +427,123 @@ await describe({
       ],
     },),
     describe({
+      name: 'no-arrow-function fix forms',
+      children: [
+        it({
+          name: 'converts bare-parameter arrow with expression body to a parseable function declaration',
+          fn: async () => {
+            const source = [
+              "const hoverText = label => repliesOf(label).map(reply => reply.outcome.text ?? '').join('\\n');",
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              "function hoverText(label) { return repliesOf(label).map(reply => reply.outcome.text ?? '').join('\\n') }",
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'converts bare-parameter arrow with block body to a parseable function declaration',
+          fn: async () => {
+            const source = [
+              'const note = entry => { record(entry); };',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              'function note(entry) { record(entry); }',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'converts bare-parameter arrow with nested arrow body, keeping the nested arrow intact',
+          fn: async () => {
+            const source = [
+              'const flipInside = sourceFile => copy => copy;',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              'function flipInside(sourceFile) { return copy => copy }',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'converts exported bare-parameter arrow to an exported function declaration',
+          fn: async () => {
+            const source = [
+              'export const targets = label => repliesOf(label);',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              'export function targets(label) { return repliesOf(label) }',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'converts async bare-parameter arrow to an async function declaration',
+          fn: async () => {
+            const source = [
+              'const load = async path => read(path);',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              'async function load(path) { return read(path) }',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'keeps parenthesized parameters verbatim, including trailing comma',
+          fn: async () => {
+            const source = [
+              'const lastOf = (label, key,) => { return label; };',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              'function lastOf(label, key,) { return label; }',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'keeps a closing paren that appears inside a comment of the parameter list',
+          fn: async () => {
+            const source = [
+              'const wrap = (value /* ) */) => value;',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              'function wrap(value /* ) */) { return value }',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
+          name: 'keeps a paren inside a string literal of a bare-parameter body out of the parameter list',
+          fn: async () => {
+            const source = [
+              "const shout = message => concat(message, ')');",
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              "function shout(message) { return concat(message, ')') }",
+              '',
+            ].join('\n',),);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: 'no-array-callback-reference forms',
       children: [
         it({

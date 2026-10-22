@@ -132,14 +132,19 @@ export const noArrowFunction: CreateOnceRule = {
             : '';
 
         /**
-         Source text of the parameter list including parentheses.
-         Extracted from the range between params start and body/returnType start,
-         stripping the `=>` arrow token.
+         Source text of the parameter list including parentheses: verbatim
+         from the source for parenthesized lists, rebuilt from parameter texts
+         for bare parameters.
          */
         const paramsText = extractParamsText({
           fullText: context.sourceCode
             .getText(node,),
           node,
+          paramTexts: node.params
+            .map(function paramText(param,): string {
+              return context.sourceCode
+                .getText(param,);
+            },),
         },);
 
         /**
