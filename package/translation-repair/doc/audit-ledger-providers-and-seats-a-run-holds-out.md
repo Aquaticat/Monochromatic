@@ -389,13 +389,49 @@ which are not among its ancestors,
 and the source was read at the branch tip `b18a4f7a40`,
 which holds them.
 
-What is left:
-the fix,
-its red case (a writing bench below the floor with NeuralWatt dry and its return known waits for the return),
-and the prevention rule,
-which are owed when the fix lands.
+The red cases:
+`67513d8de3` (`run-seats-neuralwatt-return.unit.test.ts`:
+a NeuralWatt return 301 away with 600 left waits,
+one 700 away with 600 left refuses at once),
+`a17a70dc00` (the bench error names the return,
+so a return past the entry's cap but inside the pass parks the pass instead of stopping the entry),
+`0309ef74b1` (the park waits for an instant on the gate's clock,
+and a refusal for a day start already waited out trips the gate),
+and `02cb04bfb4` (two held providers that each cure the bench alone are waited for).
+
+Prevention rules
+(recorded in `mistake-prevention-sheets-quorums-and-outcome-rules.md` where they concern test fleets):
+a bound names the deadline that forces it and applies only where that deadline applies,
+so a wait longer than a call deadline belongs between calls;
+when a brief names a bound,
+the code implements that bound,
+since "bounded by the abort" is not "bounded by what the pass has left";
+a refusal field that a later stage reads is set from the final reading,
+never from the path that reached it;
+a wait that may start later than the reading it came from stores an instant,
+not a duration;
+and a test fleet models every provider shape of the live roster:
+a provider dry,
+held,
+wet,
+absent,
+or the only one serving a seat,
+and two holds that each cure a bench alone.
+
 Cache versions:
-not known until the fix lands.
+none moved.
+`git log --extended-regexp -G '_CACHE_VERSION = [0-9]+'` over `495341919a^..263312b539`
+(the D4 and E2 commits)
+and over `263312b539..581597e62d`
+(the fix rounds and the main they merged)
+lists no commit,
+and the same search over `c265e8df95~1..c265e8df95` lists that commit
+(it set `SLICE_CACHE_VERSION = 44`),
+so the search can find a bump.
+The work decides when the seat reader waits,
+when the pass parks and what the `TALLY` line prints;
+no commit of it touches a cache key,
+store or version file.
 
 Recurrence:
 the thirteenth and fifteenth classes of the defect-class history (the hold wait and the writing-bench floor),
