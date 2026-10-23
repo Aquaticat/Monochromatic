@@ -497,6 +497,79 @@ const IMAGINARY_SOURCES: readonly SourceFile[] = [
   },
 ];
 
+/**
+ Files that build or reach an answer schema in a form the search read as no call before: a builder written as an arrow
+ function with a caller, a call that names a type argument, a builder handed over by reference, and a wrapper of a
+ builder with a caller. Three files beside them mention the contest builder without building anything: an import, a
+ re-export and a `typeof`.
+ */
+const FORM_SOURCES: readonly SourceFile[] = [
+  {
+    file: 'imaginary/src/arrow-wire.ts',
+    text: [
+      'export const arrowResponseFormat = ({ moods, }: { readonly moods: readonly string[]; },) => ({',
+      '  type: \'json_schema\',',
+      '  json_schema: {',
+      '    name: \'arrow_mood\',',
+      '    schema: { type: \'object\', properties: { mood: { enum: moods, }, }, },',
+      '  },',
+      '});',
+    ].join('\n',),
+  },
+  {
+    file: 'imaginary/src/arrow-gate-stage.ts',
+    text: 'export const ARROW_GATE_RESPONSE_FORMAT = arrowResponseFormat({ moods: [\'wags\',], },);\n',
+  },
+  {
+    file: 'imaginary/src/generic-gate-stage.ts',
+    text: [
+      'export const GENERIC_GATE_RESPONSE_FORMAT = contestResponseFormat<string>({',
+      '  schemaName: \'generic_gate\',',
+      '  verdicts: [],',
+      '  asksArchive: false,',
+      '},);',
+    ].join('\n',),
+  },
+  {
+    file: 'imaginary/src/reference-gate-stage.ts',
+    text: [
+      'export const FORMATS = [',
+      '  { schemaName: \'a\', verdicts: [], asksArchive: false, },',
+      '].map(contestResponseFormat);',
+    ].join('\n',),
+  },
+  {
+    file: 'imaginary/src/wrapped-wire.ts',
+    text: [
+      'export function wrappedResponseFormat(schemaName: string,) {',
+      '  return contestResponseFormat({ schemaName, verdicts: [], asksArchive: false, },);',
+      '}',
+    ].join('\n',),
+  },
+  {
+    file: 'imaginary/src/wrapped-gate-stage.ts',
+    text: 'export const WRAPPED_GATE_RESPONSE_FORMAT = wrappedResponseFormat(\'wrapped_gate\',);\n',
+  },
+  {
+    file: 'imaginary/src/import-only.ts',
+    text: [
+      'import {',
+      '  contestResponseFormat,',
+      '} from \'../../lane-contest/src/contest-ballot-wire.ts\';',
+      '',
+      'export const NOTHING = 2;',
+    ].join('\n',),
+  },
+  {
+    file: 'imaginary/src/re-export.ts',
+    text: 'export {\n  contestResponseFormat,\n} from \'../../lane-contest/src/contest-ballot-wire.ts\';\n',
+  },
+  {
+    file: 'imaginary/src/type-only.ts',
+    text: 'export type Maker = typeof contestResponseFormat;\n',
+  },
+];
+
 await describe({
   name: 'the answer schemas the Claude route sends',
   concurrency: 1,
@@ -544,6 +617,45 @@ await describe({
           'imaginary/src/dog-gate-stage.ts',
           'imaginary/src/dog-wire.ts',
         ],);
+      },
+    },),
+
+    it({
+      name: 'FOLLOWS A BUILDER WHATEVER FORM IT TAKES AND WHATEVER WAY IT IS REACHED: a builder written as an arrow '
+        + 'function and the file that calls it, a call that names a type argument, a builder handed over by '
+        + 'reference, and a wrapper of a builder and the file that calls the wrapper, and not a file that only '
+        + 'imports, re-exports or names the type of the contest builder',
+      fn: async () => {
+        /**
+         The sources searched: the family's own, which hold the contest builder, with the imaginary files beside them.
+         */
+        const sources = [...await familySources(), ...FORM_SOURCES,];
+        /**
+         Imaginary files found, whatever way they reach a schema.
+         */
+        const declaring = declaringFilesOf({ sources, notStageSchemas: NOT_STAGE_SCHEMAS, },)
+          .filter(function isImaginary(file,): boolean {
+            return file.startsWith('imaginary/',);
+          },);
+        expect(declaring.toSorted(),).toEqual([
+          'imaginary/src/arrow-gate-stage.ts',
+          'imaginary/src/arrow-wire.ts',
+          'imaginary/src/generic-gate-stage.ts',
+          'imaginary/src/reference-gate-stage.ts',
+          'imaginary/src/wrapped-gate-stage.ts',
+          'imaginary/src/wrapped-wire.ts',
+        ],);
+        /**
+         Builders found among the imaginary files, by name.
+         */
+        const builders = buildersOf({ sources, notStageSchemas: NOT_STAGE_SCHEMAS, },)
+          .filter(function isImaginary({ file, },): boolean {
+            return file.startsWith('imaginary/',);
+          },)
+          .map(function nameOf({ name, },): string {
+            return name;
+          },);
+        expect(builders.toSorted(),).toEqual(['arrowResponseFormat', 'wrappedResponseFormat',],);
       },
     },),
 
