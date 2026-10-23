@@ -174,6 +174,24 @@ async function readsUnderHold(
   },);
 }
 
+/**
+ The warning a reading wrote when it seated a short bench without waiting.
+
+ @param lines - what the reading logged
+
+ @returns The line, none where the reading wrote no such warning
+
+ @example
+ ```ts
+ const warning = noWaitWarningOf({ lines, },);
+ ```
+ */
+function noWaitWarningOf({ lines, }: { readonly lines: readonly string[]; },): string | undefined {
+  return lines.find(function isNoWaitWarning(line,): boolean {
+    return line.startsWith('warn JUDGE SEATS phase=lane contest',) && line.includes('short of quorum',);
+  },);
+}
+
 await describe({
   name: 'the seat reader and a hold whose provider cannot cure the short bench',
   concurrency: 1,
@@ -269,12 +287,7 @@ await describe({
       fn: async () => {
         const lines: string[] = [];
         await readsUnderHold({ held: 'deepseek', lines, },);
-        /**
-         The warning the reading wrote.
-         */
-        const warning = lines.find(function isShort(line,): boolean {
-          return line.startsWith('warn JUDGE SEATS phase=lane contest',) && line.includes('short of quorum',);
-        },);
+        const warning = noWaitWarningOf({ lines, },);
         expect(warning,).toContain('synthetic, hyper, openrouter',);
       },
     },),
@@ -285,12 +298,7 @@ await describe({
       fn: async () => {
         const lines: string[] = [];
         await readsUnderHolds({ held: ['deepseek',], lines, },);
-        /**
-         The warning the reading wrote when it did not wait.
-         */
-        const warning = lines.find(function isShort(line,): boolean {
-          return line.startsWith('warn JUDGE SEATS phase=lane contest',) && line.includes('short of quorum',);
-        },);
+        const warning = noWaitWarningOf({ lines, },);
         expect(warning,).toContain('held: deepseek (1 s); it would not help cure a short bench',);
         expect(warning,).not.toContain('no provider has named a return',);
       },
@@ -302,12 +310,7 @@ await describe({
       fn: async () => {
         const lines: string[] = [];
         await readsUnderHolds({ held: ['deepseek', 'xiaomi',], lines, },);
-        /**
-         The warning the reading wrote when it did not wait.
-         */
-        const warning = lines.find(function isShort(line,): boolean {
-          return line.includes('short of quorum',) && line.startsWith('warn',);
-        },);
+        const warning = noWaitWarningOf({ lines, },);
         expect(warning,).toContain('held: deepseek (1 s), xiaomi (1 s); neither would help cure a short bench',);
       },
     },),
@@ -327,9 +330,7 @@ await describe({
             lines,
             view,
           },);
-          return lines.find(function isShort(line,): boolean {
-            return line.startsWith('warn',) && line.includes('short of quorum',);
-          },);
+          return noWaitWarningOf({ lines, },);
         }
         expect(await warningOver({ view: WIDE_ONE_SHORT, },),).not.toContain('no NeuralWatt return',);
         expect(await warningOver({ view: { ...WIDE_ONE_SHORT, neuralwatt: true, }, },),).toContain(
@@ -344,12 +345,7 @@ await describe({
       fn: async () => {
         const lines: string[] = [];
         await readsUnderHolds({ held: [], lines, },);
-        /**
-         The warning the reading wrote.
-         */
-        const warning = lines.find(function isShort(line,): boolean {
-          return line.startsWith('warn',) && line.includes('short of quorum',);
-        },);
+        const warning = noWaitWarningOf({ lines, },);
         expect(warning,).toContain('no provider has named a return the pass can wait for',);
         expect(warning,).not.toContain('held:',);
       },

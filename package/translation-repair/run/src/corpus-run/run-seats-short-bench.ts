@@ -16,6 +16,7 @@ import { judgeSeatsFor, } from './run-seats.ts';
 import {
   holdsThatCureShortBenches,
   shortBenchesWithCure,
+  skippedHoldsWords,
 } from './run-seats-hold-need.ts';
 import {
   holdsWithinPass,
@@ -168,11 +169,15 @@ export async function readDrynessPastShortBench(
    */
   const benches = benchesOf({ seats: judgeSeatsFor({ dry: first, },), },);
   /**
-   How long each provider's refusal still holds it out, for the providers whose return would cure a bench that stands
-   short; a hold on any other provider cannot bring such a bench back and is not waited for.
+   How long each provider's refusal still holds it out, as the pass allows it to be waited for.
+   */
+  const running = holdsWithinPass({ client, },);
+  /**
+   How long each provider's refusal still holds it out, for the providers whose return would help cure a bench that
+   stands short; a hold on any other provider cannot bring such a bench back and is not waited for.
    */
   const holds = holdsThatCureShortBenches({
-    holds: holdsWithinPass({ client, },),
+    holds: running,
     dry: first,
     names,
   },);
@@ -209,6 +214,14 @@ export async function readDrynessPastShortBench(
   }
   if (shortest === 0) {
     /**
+     What the reading says in place of a wait: the running holds it skipped and why, or that no return was named.
+     */
+    const noWait = skippedHoldsWords({
+      running,
+      counted: holds,
+      dry: first,
+    },) ?? NO_WAITABLE_RETURN;
+    /**
      The unreachable benches with why NeuralWatt reads dry, so a refusal states the true cause.
      */
     const stated = withNeuralWattReturn({
@@ -224,7 +237,7 @@ export async function readDrynessPastShortBench(
       l.error(
         `JUDGE SEATS phase=${phase} writing bench unreachable: ${stated.join('; ',)}; ${
           goesOn
-            ? `${NO_WAITABLE_RETURN}, so the phase goes on without its writers`
+            ? `${noWait}, so the phase goes on without its writers`
             : 'stopping the entry'
         }`,
       );
@@ -282,7 +295,7 @@ export async function readDrynessPastShortBench(
             refusalFollows: false,
           },)
             .join('; ',)
-        }; ${NO_WAITABLE_RETURN}, so the phase runs on what is reachable`,
+        }; ${noWait}, so the phase runs on what is reachable`,
       );
     }
     return {

@@ -1,4 +1,7 @@
-import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider/ts';
+import {
+  type BudgetView,
+  durationWordsOf,
+} from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   PROVIDER_ORDER,
   type ProviderName,
@@ -223,6 +226,63 @@ export function holdsThatCureShortBenches(
         : 0;
     },
   },);
+}
+
+/**
+ The words naming the running holds the seat reader did not wait for and why, with NeuralWatt's return when it is dry
+ and none lies inside what the pass has left.
+
+ @param running - how long each provider's refusal still holds it out, as the reader read it
+
+ @param counted - the holds the reader waits for, a subset of the running ones
+
+ @param dry - dryness per provider, holds folded in
+
+ @returns The words, or none where every running hold is waited for or none runs
+
+ @example
+ ```ts
+ // => 'held: xiaomi (2 h), deepseek (40 min); neither would help cure a short bench'
+ const said = skippedHoldsWords({ running, counted, dry, },);
+ ```
+ */
+export function skippedHoldsWords(
+  {
+    running,
+    counted,
+    dry,
+  }: {
+    readonly running: ProviderRecord<number>;
+    readonly counted: ProviderRecord<number>;
+    readonly dry: BudgetView;
+  },
+): string | undefined {
+  /**
+   Providers with a hold running that the reader does not wait for.
+   */
+  const skipped = PROVIDER_ORDER.filter(function isSkipped(provider,): boolean {
+    return (running[provider] > 0) && (counted[provider] === 0);
+  },);
+  if (skipped.length === 0)
+    return undefined;
+  /**
+   Why none of them is waited for, in the count of the list.
+   */
+  const why = (skipped.length === 1)
+    ? 'it would not help cure a short bench'
+    : `${(skipped.length === 2) ? 'neither' : 'none'} would help cure a short bench`;
+  /**
+   NeuralWatt's part, said only where it is dry with no hold of its own inside what the pass has left.
+   */
+  const neuralwatt = (dry.neuralwatt && (running.neuralwatt === 0))
+    ? '; no NeuralWatt return inside what the pass has left'
+    : '';
+  return `held: ${
+    skipped.map(function holdWords(provider,): string {
+      return `${provider} (${durationWordsOf({ ms: running[provider], },)})`;
+    },)
+      .join(', ',)
+  }; ${why}${neuralwatt}`;
 }
 
 /**
