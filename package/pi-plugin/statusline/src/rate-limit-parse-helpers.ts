@@ -385,12 +385,145 @@ function shapeOfText(text: string,): string {
 }
 
 /**
+ Days in a month of thirty-one days.
+ */
+const LONG_MONTH_DAYS = 31;
+
+/**
+ Days in a month of thirty days.
+ */
+const SHORT_MONTH_DAYS = 30;
+
+/**
+ Days in February of a year that is no leap year.
+ */
+const COMMON_FEBRUARY_DAYS = 28;
+
+/**
+ Length in days of each month of a year that is no leap year, January first.
+ */
+const COMMON_YEAR_MONTH_DAYS = [
+  LONG_MONTH_DAYS,
+  COMMON_FEBRUARY_DAYS,
+  LONG_MONTH_DAYS,
+  SHORT_MONTH_DAYS,
+  LONG_MONTH_DAYS,
+  SHORT_MONTH_DAYS,
+  LONG_MONTH_DAYS,
+  LONG_MONTH_DAYS,
+  SHORT_MONTH_DAYS,
+  LONG_MONTH_DAYS,
+  SHORT_MONTH_DAYS,
+  LONG_MONTH_DAYS,
+] as const;
+
+/**
+ Position of the February entry in {@link COMMON_YEAR_MONTH_DAYS}, whose length a leap year raises by one day.
+ */
+const FEBRUARY_INDEX = 1;
+
+/**
+ Years divisible by this are leap years, unless divisible by {@link CENTURY_YEARS} and not by {@link LEAP_CENTURY_YEARS}.
+ */
+const LEAP_CYCLE_YEARS = 4;
+
+/**
+ Years divisible by this are no leap years, unless divisible by {@link LEAP_CENTURY_YEARS}.
+ */
+const CENTURY_YEARS = 100;
+
+/**
+ Years divisible by this are leap years even when divisible by {@link CENTURY_YEARS}.
+ */
+const LEAP_CENTURY_YEARS = 400;
+
+/**
+ First hour value that is no hour of a day: 24 is the end-of-day spelling of midnight, which is not an instant here.
+ */
+const FIRST_NON_HOUR = 24;
+
+/**
+ Tells whether a year of the Gregorian calendar has a 29th of February.
+ 
+ @param year - calendar year
+ 
+ @returns true when divisible by 4, and not by 100 unless by 400
+ 
+ @example
+ ```ts
+ isLeapYear(2024);
+ ```
+ */
+function isLeapYear(year: number,): boolean {
+  return ((year % LEAP_CYCLE_YEARS) === 0)
+    && (((year % CENTURY_YEARS) !== 0) || ((year % LEAP_CENTURY_YEARS) === 0));
+}
+
+/**
+ Tells whether the day and hour of text already known to have the shape of an ISO-8601 date and time are real.
+ 
+ @param text - text whose first nineteen characters have the shape `YYYY-MM-DDTHH:MM:SS`
+ 
+ @returns true when the day lies within the named month of the named year and the hour is below 24
+ 
+ @example
+ ```ts
+ hasRealDayAndHour('2026-04-31T05:03:47Z'); // false
+ ```
+ */
+function hasRealDayAndHour(text: string,): boolean {
+  /**
+   Leading `YYYY-MM-DDTHH:MM:SS` of the text.
+   */
+  const dateTime = text.slice(
+    0,
+    ISO_DATE_TIME_SHAPE.length,
+  );
+  /**
+   Date and time halves of the leading date and time.
+   */
+  const [datePart = '', timePart = '',] = dateTime.split('T',);
+  /**
+   Year, month and day fields of the date half, as text.
+   */
+  const dateFields = datePart.split('-',);
+  /**
+   Calendar year, month and day of the date half.
+   */
+  const [year = 0, month = 0, day = 0,] = dateFields.map(Number,);
+  /**
+   Hour of the time half.
+   */
+  const hour = Number(timePart.split(':',)[0],);
+  /**
+   Days in the named month of a year that is no leap year, absent for a month outside one to twelve.
+   */
+  const commonYearDays = COMMON_YEAR_MONTH_DAYS[month - 1];
+  if (commonYearDays === undefined)
+    return false;
+
+  /**
+   Days in the named month of the named year.
+   */
+  const monthDays = ((month - 1) === FEBRUARY_INDEX) && isLeapYear(year,)
+    ? commonYearDays + 1
+    : commonYearDays;
+
+  return (day >= 1)
+    && (day <= monthDays)
+    && (hour < FIRST_NON_HOUR);
+}
+
+/**
  Tells whether text is an ISO-8601 instant with a zone: date, `T`, time with an optional fraction, then `Z` or a
  colon-separated offset.
  
  Checked on the untrimmed text, so a trailing newline, a year alone, a month-name form, a local time without a zone and
  an offset without its colon are all outside it. `Date.parse` reads those leniently, and reads the zone-less ones in the
- process's time zone. The calendar values are not range-checked here; the caller's `Date.parse` rejects an impossible one.
+ process's time zone. The day is checked here against the month's length by the Gregorian leap rule, because
+ `Date.parse` rolls a day past the month into the next one (2026-04-31 becomes 2026-05-01), and hour 24 is refused as an
+ end-of-day spelling where an instant is wanted. `Date.parse` in the caller still rejects an impossible month, minute,
+ second and offset.
  
  @param text - candidate reset text
  
@@ -440,20 +573,23 @@ function isIsoInstantWithZone(text: string,): boolean {
   if ((!hasFraction) && (fractionLength > 0))
     return false;
 
-  return (ISO_ZONE_SHAPES as readonly string[]).includes(fractionAndZone.slice(fractionLength,),);
+  if (!(ISO_ZONE_SHAPES as readonly string[]).includes(fractionAndZone.slice(fractionLength,),))
+    return false;
+
+  return hasRealDayAndHour(text,);
 }
 
 /**
  Parses reset property from an unknown record.
-
+ 
  Accepts only an ISO-8601 instant with a zone (`Z` or an offset) that also names a real time.
-
+ 
  @param record - source record
-
+ 
  @param key - property key to read
-
+ 
  @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
-
+ 
  @example
  ```ts
  readResetProperty({ record: { reset: '2026-06-01T12:00:00Z' }, key: 'reset' });

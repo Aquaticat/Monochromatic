@@ -567,40 +567,37 @@ await describe({
           name: 'logs an unreadable weekly field through the tagged debug logger and holds no value of the header',
           fn: async function testSyntheticUnreadableFieldLog() {
             const logDirectory = await mkdtemp(join(tmpdir(), 'statusline-log-',),);
-            try {
-              const child = spawnSync(
-                process.execPath,
-                [
-                  '--input-type=module-typescript',
-                  '--eval',
-                  unreadableFieldChildSource(),
-                ],
-                {
-                  cwd: join(import.meta.dirname, '..',),
-                  encoding: 'utf8',
-                  env: {
-                    PATH: process.env.PATH ?? '',
-                    HOME: process.env.HOME ?? '',
-                    MONOCHROMATIC_VERBOSE: 'true',
-                    MONOCHROMATIC_LOG_DIRECTORY: logDirectory,
-                  },
+            const child = spawnSync(
+              process.execPath,
+              [
+                '--input-type=module-typescript',
+                '--eval',
+                unreadableFieldChildSource(),
+              ],
+              {
+                cwd: join(import.meta.dirname, '..',),
+                encoding: 'utf8',
+                env: {
+                  PATH: process.env.PATH ?? '',
+                  HOME: process.env.HOME ?? '',
+                  MONOCHROMATIC_VERBOSE: 'true',
+                  MONOCHROMATIC_LOG_DIRECTORY: logDirectory,
                 },
-              );
-              const lines = child.stderr.split('\n',).filter(function refusalLine(line,): boolean {
-                return line.includes('refusing quotas',);
-              },);
+              },
+            );
+            await rm(logDirectory, { force: true, recursive: true, },);
+            const lines = child.stderr.split('\n',).filter(function refusalLine(line,): boolean {
+              return line.includes('refusing quotas',);
+            },);
 
-              expect(child.status,).toBe(0,);
-              expect(lines.length,).toBe(1,);
-              expect(lines[0]?.startsWith('[debug] [',),).toBe(true,);
-              expect(lines[0]?.endsWith(
-                '[pi-statusline:synthetic-quota-headers] [readSyntheticWeeklyReading] '
-                  + 'refusing quotas whose planWeeklyLimit has an unreadable percentRemaining or nextRegenAt',
-              ),).toBe(true,);
-              expect((child.stdout + child.stderr).includes(HEADER_VALUE_MARKER,),).toBe(false,);
-            } finally {
-              await rm(logDirectory, { force: true, recursive: true, },);
-            }
+            expect(child.status,).toBe(0,);
+            expect(lines.length,).toBe(1,);
+            expect(lines[0]?.startsWith('[debug] [',),).toBe(true,);
+            expect(lines[0]?.endsWith(
+              '[pi-statusline:synthetic-quota-headers] [readSyntheticWeeklyReading] '
+                + 'refusing quotas whose planWeeklyLimit has an unreadable percentRemaining or nextRegenAt',
+            ),).toBe(true,);
+            expect((child.stdout + child.stderr).includes(HEADER_VALUE_MARKER,),).toBe(false,);
           },
         },),
         it({

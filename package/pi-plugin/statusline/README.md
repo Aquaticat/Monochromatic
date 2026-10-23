@@ -66,7 +66,8 @@ and the weekly window is skipped when they differ,
 when either name holds a value that is not a readable block,
 or when neither name is present.
 Every reset timestamp (`nextRegenAt` and the search and free-tool `renewsAt`) must be an ISO-8601 instant with a zone,
-`Z` or an offset such as `-04:00`; other text is refused.
+`Z` or an offset such as `-04:00`; other text is refused,
+as is a day past its month's length (Gregorian leap rule) and hour 24.
 
 ## Colors
 
