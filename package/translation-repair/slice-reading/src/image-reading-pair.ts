@@ -5,11 +5,14 @@ import {
 
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   askDeterministicReader,
   type OcrReading,
 } from './image-ocr.ts';
+import {
+  containFailedReaders,
+  type LabelledReading,
+} from './image-reading-contain.ts';
 import { readPastRefusal, } from './image-reading-past-refusal.ts';
 import { solidCharacters, } from './image-reading-sense.ts';
 import {
@@ -421,75 +424,15 @@ export async function readImagePair(
   },),);
 
   /**
-   What every reader made of the picture, with a reader that failed outright
-   carrying its failure rather than taking the others down with it.
-
-   A READING IS EVIDENCE, NEVER A GATE, so a reader that throws costs its own
-   reading and nothing else. Measured on `wangzihao980` before this changed:
-   one reader looped on `picture1.webp`, the client's runaway guard ended the
-   call, `Promise.all` rejected, and the rejection travelled through
-   `readDocumentPictures` into `settleEntry`. The entry finished
-   `status=ERROR` with `processed=0`, so BOTH LANES were lost to a
-   transcription nobody needed. Nothing downstream reads a picture as
-   required, which is what makes containing it here correct rather than
-   merely convenient.
+   What every reader made of the picture, a reader that failed outright carrying its failure rather than taking the
+   others down with it (`containFailedReaders`).
    */
-  const outcomes: readonly {
-    readonly modelId: RosterModelId;
-    readonly reading: ImageReading;
-  }[] = settled.map(function contained(
-    result,
-    index,
-  ): {
-    readonly modelId: RosterModelId;
-    readonly reading: ImageReading;
-  } {
-    if (result.status === 'fulfilled') {
-      return result.value;
-    }
-
-    /**
-     Reader whose exchange threw, taken by position because a rejected
-     settlement carries no label of its own. Present at every position:
-     `settled` is the roster mapped one ask per slot, so the settlement at
-     `index` is the ask the slot at `index` made.
-     */
-    const modelId = readerModelIds[index];
-    if (modelId === undefined)
-      throw new Error(
-        `unreachable: readImagePair settled ${String(settled.length,)} ${
-          wordForCount({
-            count: settled.length,
-            one: 'reader',
-            many: 'readers',
-          },)
-        } for ${assetName} and then could not name the one at index ${
-          String(index,)
-        }, though each settlement is the ask the roster slot at its own index made`,
-      );
-    /**
-     The reader's own failure as a log line carries it: a refusal with its
-     status and the provider's words.
-     */
-    const failure = exchangeFailureLogText({ error: result.reason, },);
-    // UNDER THE CALLER'S STOP the reader's own failure is still written, here,
-    // since the stop is raised once every settlement is read and no catch past
-    // it sees this one; the caller's own reason is the stop itself and is not
-    // written. Written from the settlements rather than inside each reader as
-    // it ends, so the lines follow roster order whichever reader ended first
-    // (`mistake-prevention.md`, "Output decided by arrival order"), and a
-    // failure that ended before the stop arrived is written as well.
-    if (signal.aborted && (result.reason !== signal.reason))
-      rl.warn(`${assetName}: ${modelId} failed outright (${failure}), and the caller stopped the reading`,);
-    if (!signal.aborted)
-      rl.warn(`${assetName}: ${modelId} failed outright, so it contributes no reading (${failure})`,);
-    return {
-      modelId,
-      reading: {
-        kind: 'unavailable',
-        reason: 'reader-failed',
-      },
-    };
+  const outcomes: readonly LabelledReading[] = containFailedReaders({
+    settled,
+    readerModelIds,
+    assetName,
+    signal,
+    l: rl,
   },);
 
   // The entry's own abort has to stay a FAILURE rather than become two

@@ -29,6 +29,20 @@ export type QueueableEntry = {
 };
 
 /**
+ Run that never ends during an attempt, for a caller with no stop of its own to report.
+
+ @returns False
+
+ @example
+ ```ts
+ const stopped = neverStopped();
+ ```
+ */
+function neverStopped(): boolean {
+  return false;
+}
+
+/**
  Runs every pending entry once, then re-runs the ones that earned it.
 
  RE-ATTEMPTS GO TO THE BACK. Coverage of the corpus is what a first attempt
@@ -47,6 +61,12 @@ export type QueueableEntry = {
  by the caller so the reason and its wording stay with the budget that knows
  them, and it may log
 
+ @param runHasStopped - asked after each attempt; true means the run ended
+ during it, so the attempt earns no REATTEMPT or STALLED line and no second
+ attempt, whatever the cache gained: the caller says why the run stopped, once.
+ Never stops the loop on its own; `stopBeforeNext` does that. Absent, the run
+ never stops during an attempt
+
  @example
  ```ts
  await runAttemptQueue({ pending, cachedCountFor, attempt, stopBeforeNext, },);
@@ -58,11 +78,13 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
     cachedCountFor,
     attempt,
     stopBeforeNext,
+    runHasStopped = neverStopped,
   }: {
     readonly pending: readonly EntryT[];
     readonly cachedCountFor: (args: { readonly entry: EntryT; },) => Promise<number>;
     readonly attempt: (args: { readonly entry: EntryT; },) => Promise<EntryOutcome>;
     readonly stopBeforeNext: () => boolean;
+    readonly runHasStopped?: () => boolean;
   },
 ): Promise<void> {
   /**
@@ -109,7 +131,14 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
       cachedAfter,
     },);
 
-    if (verdict.kind === 'earned') {
+    // A RUN THAT ENDED DURING THE ATTEMPT queues nothing and says nothing about the entry's cache: the caller's stop
+    // line names the cause, and a REATTEMPT line before it would read as a contradiction.
+    /**
+     Whether the run ended during this attempt.
+     */
+    const runEnded = runHasStopped();
+
+    if ((verdict.kind === 'earned') && (!runEnded)) {
       console.log(
         `REATTEMPT ${entry.id} queued: ${String(verdict.gained,)} more cache ${
           wordForCount({
@@ -121,7 +150,7 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
       );
       queue.push(entry,);
     }
-    if (verdict.kind === 'stalled') {
+    if ((verdict.kind === 'stalled') && (!runEnded)) {
       console.log(
         `STALLED ${entry.id}: its ${String(verdict.cached,)} cache ${
           wordForCount({

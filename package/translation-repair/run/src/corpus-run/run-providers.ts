@@ -1,13 +1,18 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   type BedrockClient,
   bedrockLedgerFromEnv,
   createBedrockClient,
+  createDeepSeekClient,
   createHyperClient,
   createNeuralWattClient,
   createOpenRouterClient,
   createProviderBudgets,
   createSyntheticClient,
+  createXiaomiClient,
   createCredentialHolds,
+  type DeepSeekClient,
   type CredentialHolds,
   type Decider,
   describePlanSpend,
@@ -19,10 +24,15 @@ import {
   type OpenRouterClient,
   type ProviderBudgetsWithStates,
   type ModelClient,
+  type XiaomiClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { createDecisionsClient, } from '../decisions-client.ts';
+import {
+  DEEPSEEK_KEY_VARIABLE,
+  XIAOMI_KEY_VARIABLE,
+} from './direct-key-variables.ts';
 import {
   isProviderOff,
   type ProviderOff,
@@ -74,6 +84,16 @@ export type ConfiguredProviders = {
    Fourth provider client, when its key is set.
    */
   readonly bedrock?: BedrockClient;
+
+  /**
+   DeepSeek's own API client, when its key is set; it serves one model.
+   */
+  readonly deepseek?: DeepSeekClient;
+
+  /**
+   Xiaomi's own API client, when its key is set; it serves one model.
+   */
+  readonly xiaomi?: XiaomiClient;
 
   /**
    Third provider client, when its key is set.
@@ -203,20 +223,53 @@ export function configureProviders(
     key: env.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY ?? '',
   },);
   /**
+   DeepSeek key, the owner's own name for it. Optional: a run without it routes the one model it serves
+   elsewhere, and never to another provider's key in its place.
+   */
+  const deepSeekKey = keyUnlessOff({
+    provider: 'deepseek',
+    key: env[DEEPSEEK_KEY_VARIABLE] ?? '',
+  },);
+  /**
+   Xiaomi key, optional likewise.
+   */
+  const xiaomiKey = keyUnlessOff({
+    provider: 'xiaomi',
+    key: env[XIAOMI_KEY_VARIABLE] ?? '',
+  },);
+  /**
    Whether no provider at all is configured, which nothing can run on.
    */
   const noKeyAtAll = (neuralWattKey === '')
     && (apiKey === '')
     && (hyperKey === '')
     && (bedrockKey === '')
+    && (deepSeekKey === '')
+    && (xiaomiKey === '')
     && (openRouterKey === '');
   if (noKeyAtAll) {
     throw new RunConfigError({
       variable: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY, TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
-        + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY '
+        + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY, '
+        + `${DEEPSEEK_KEY_VARIABLE}, ${XIAOMI_KEY_VARIABLE} `
         + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
     },);
   }
+
+  // THE INFO LINES COME AFTER THE NO-KEY REFUSAL, so a launch with no key at all leaves stdout empty and says its
+  // refusal alone.
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({ tag: configureProviders.name, },);
+  if (deepSeekKey === '')
+    rl.info(
+      `${DEEPSEEK_KEY_VARIABLE} is not set, so DeepSeek is unconfigured: its meter reads dry and no call goes there`,
+    );
+  if (xiaomiKey === '')
+    rl.info(
+      `${XIAOMI_KEY_VARIABLE} is not set, so Xiaomi is unconfigured: its meter reads dry and no call goes there`,
+    );
 
   /**
    Fifth provider client when configured, over the durable energy ledger the
@@ -298,6 +351,26 @@ export function configureProviders(
     },);
 
   /**
+   DeepSeek client when configured, which reads its balance over the same key.
+   */
+  const deepseek = (deepSeekKey === '')
+    ? undefined
+    : createDeepSeekClient({
+      apiKey: deepSeekKey,
+      transport,
+    },);
+
+  /**
+   Xiaomi client when configured; it paces itself to the documented request rate.
+   */
+  const xiaomi = (xiaomiKey === '')
+    ? undefined
+    : createXiaomiClient({
+      apiKey: xiaomiKey,
+      transport,
+    },);
+
+  /**
    Providers whose credential a call found refused, held out for the rest of
    the run.
    */
@@ -311,6 +384,8 @@ export function configureProviders(
     ...((synthetic === undefined) ? {} : { synthetic, }),
     ...((hyper === undefined) ? {} : { hyper, }),
     ...((bedrock === undefined) ? {} : { bedrock, }),
+    ...((deepseek === undefined) ? {} : { deepseek, }),
+    ...((xiaomi === undefined) ? {} : { xiaomi, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
     heldOut: function credentialRefused(provider,): boolean {
       return credentialHolds.isHeld({ provider, },);
@@ -322,6 +397,8 @@ export function configureProviders(
     ...((synthetic === undefined) ? {} : { synthetic, }),
     ...((hyper === undefined) ? {} : { hyper, }),
     ...((bedrock === undefined) ? {} : { bedrock, }),
+    ...((deepseek === undefined) ? {} : { deepseek, }),
+    ...((xiaomi === undefined) ? {} : { xiaomi, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
     ...((decisions === undefined) ? {} : { decisions, }),
     credentialHolds,

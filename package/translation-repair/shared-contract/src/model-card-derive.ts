@@ -1,16 +1,19 @@
 import type {
   BedrockCard,
   DecisionsCard,
+  DeepSeekCard,
   ModelCard,
   NeuralWattCard,
   OpenRouterCard,
   SeatHold,
   ServedCard,
   SyntheticCard,
+  XiaomiCard,
 } from './model-card.ts';
 import { MODEL_CARDS, } from './model-cards.ts';
 import {
   BEDROCK_SERVED_IDS,
+  DEEPSEEK_SERVED_IDS,
   HYPER_SERVED_IDS,
   type HyperServedId,
   NEURALWATT_SERVED_IDS,
@@ -18,6 +21,7 @@ import {
   ROSTER_MODEL_IDS,
   type RosterModelId,
   SYNTHETIC_SERVED_IDS,
+  XIAOMI_SERVED_IDS,
 } from './roster-id.ts';
 
 //region Model card derivation
@@ -31,7 +35,7 @@ import {
 
  @example
  ```ts
- CARD_PROVIDERS.join('|',); // 'synthetic|hyper|openrouter|bedrock|neuralwatt'
+ CARD_PROVIDERS.join('|',); // 'synthetic|hyper|openrouter|bedrock|neuralwatt|deepseek|xiaomi'
  ```
  */
 export const CARD_PROVIDERS = [
@@ -40,6 +44,8 @@ export const CARD_PROVIDERS = [
   'openrouter',
   'bedrock',
   'neuralwatt',
+  'deepseek',
+  'xiaomi',
 ] as const;
 
 /**
@@ -123,6 +129,12 @@ const SIDE_OF: SideReaders = {
   neuralwatt: function neuralWattSide(card,): NeuralWattCard {
     return card.neuralwatt;
   },
+  deepseek: function deepSeekSide(card,): DeepSeekCard {
+    return card.deepseek;
+  },
+  xiaomi: function xiaomiSide(card,): XiaomiCard {
+    return card.xiaomi;
+  },
 };
 
 /**
@@ -134,6 +146,8 @@ const SERVED_IDS: ServedIdLists = {
   openrouter: OPENROUTER_SERVED_IDS,
   bedrock: BEDROCK_SERVED_IDS,
   neuralwatt: NEURALWATT_SERVED_IDS,
+  deepseek: DEEPSEEK_SERVED_IDS,
+  xiaomi: XIAOMI_SERVED_IDS,
 };
 
 /**

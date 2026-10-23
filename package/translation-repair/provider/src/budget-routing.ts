@@ -1,12 +1,16 @@
 import type { BedrockCredits, } from './bedrock-ledger.ts';
+import type { DeepSeekBalance, } from './deepseek-balance.ts';
 import type { OpenRouterCredits, } from './openrouter-credits.ts';
 import {
   type HyperCredits,
   PROVIDER_ORDER,
   type ProviderName,
   type ProviderRecord,
+  providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { XiaomiSpend, } from './xiaomi-spend.ts';
+import { neuralWattTimeOfDayUtc, } from './neuralwatt-day.ts';
 
 //region Budget routing
 // WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
@@ -44,6 +48,105 @@ import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provi
 // that point nothing can be bought at all.
 
 /**
+ What the run knows of when NeuralWatt's free energy returns, for the refusal that ends the run to state.
+
+ THREE CASES, because the answers differ: a run with no NeuralWatt client has no energy to return, a run whose client
+ never learned its day start (no usable quota reading and no day-start setting) can name no time, and a run that
+ decided the day start at launch states it. THE OWNER'S RULING OF 2026-10-20: the day is "not 00:00 UTC".
+
+ @example
+ ```ts
+ const day: NeuralWattReturn = { kind: 'at', msOfDay: 69_308_000, };
+ ```
+ */
+export type NeuralWattReturn =
+  | {
+    /**
+     The day start was decided: it recurs at this time of day in UTC.
+     */
+    readonly kind: 'at';
+
+    /**
+     Milliseconds after 00:00 UTC the day starts at.
+     */
+    readonly msOfDay: number;
+  }
+    | {
+    /**
+     NeuralWatt is configured, but the run learned no day start.
+     */
+      readonly kind: 'unanchored';
+    }
+    | {
+    /**
+     NeuralWatt is off for this run: it has no client.
+     */
+      readonly kind: 'off';
+    };
+
+/**
+ The milliseconds of a time of day that starts on a whole second.
+ */
+const WHOLE_SECOND_MILLIS = '.000';
+
+/**
+ The opening clause about NeuralWatt, which says only what the run knows of it: spent when a day start is decided, refused
+ until one is learned when none is, and absent when NeuralWatt is off and so has no energy to be out of.
+
+ @param day - what the run knows of NeuralWatt's day
+
+ @returns A clause ending in a comma and a space, or nothing for an off provider
+
+ @example
+ ```ts
+ openingClauseOf({ day: { kind: 'off', }, },); // => ''
+ ```
+ */
+function openingClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string {
+  if (day.kind === 'off')
+    return '';
+  if (day.kind === 'unanchored')
+    return 'NeuralWatt is refused until its day start is learned, ';
+  return 'NeuralWatt has no free daily energy left, ';
+}
+
+/**
+ The clause saying when NeuralWatt's free energy returns, one of three fixed sentences with at most a time of day.
+
+ @param day - what the run knows of NeuralWatt's day
+
+ @returns A clause ending in a semicolon and a space
+
+ @example
+ ```ts
+ returnClauseOf({ day: { kind: 'at', msOfDay: 69_308_000, }, },);
+ // => 'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run decided or learned; '
+ ```
+ */
+function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string {
+  if (day.kind === 'off')
+    return 'NeuralWatt is off for this run, so it returns no energy; ';
+  if (day.kind === 'unanchored')
+    return 'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return; ';
+
+  /**
+   The time of day with its milliseconds.
+   */
+  const withMillis = neuralWattTimeOfDayUtc({ msOfDay: day.msOfDay, },);
+  /**
+   The time of day, whole seconds where the day starts on one.
+   */
+  const timeOfDay = withMillis.endsWith(WHOLE_SECOND_MILLIS,)
+    ? withMillis.slice(
+      0,
+      -WHOLE_SECOND_MILLIS.length,
+    )
+    : withMillis;
+  return `NeuralWatt's free energy returns when its day starts again, at ${timeOfDay} UTC, the day start this run `
+    + 'decided or learned; ';
+}
+
+/**
  Refusal raised when no provider has budget left.
 
  ENDS THE RUN, at the owner's instruction. Every other budget state leaves
@@ -60,7 +163,7 @@ import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provi
 export class EveryProviderDryError extends Error {
   /**
    Declares this message safe to forward: fixed sentences plus, at most, the
-   meter states and hold lengths the decision was made on, never content.
+   meter states and hold lengths the decision was made on and NeuralWatt's day-start time of day, never content.
    */
   readonly messageNamesOnly: true = true;
 
@@ -72,21 +175,57 @@ export class EveryProviderDryError extends Error {
    composed by the caller from the dryness record and the holds, and "no
    reading cited" where the caller has none
 
+   @param unserving - providers whose meter read wet but which were counted
+   dry because they serve nothing for the model asked (`unservingMeters`),
+   so the sentence about Xiaomi names the cause that applies: a payment
+   refusal, or a wet meter that cannot serve this call
+
+   @param neuralwatt - what the run knows of NeuralWatt's day, so the sentence about its return states the account's
+   own time of day and never midnight; "not decided" where the caller has none
+
    @example
    ```ts
    new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
    ```
    */
   public constructor(
-    { measured = 'no reading cited', }: { readonly measured?: string; } = {},
+    {
+      measured = 'no reading cited',
+      unserving = [],
+      neuralwatt = { kind: 'unanchored', },
+    }: {
+      readonly measured?: string;
+      readonly unserving?: readonly ProviderName[];
+      readonly neuralwatt?: NeuralWattReturn;
+    } = {},
   ) {
+    /**
+     Whether Xiaomi is in the count only because it serves other models: its meter reads wet, so no payment refusal
+     is behind it.
+     */
+    const xiaomiWetButUnserving = unserving.includes('xiaomi',);
+    /**
+     The clause naming why Xiaomi is out, one of two fixed sentences.
+     */
+    const xiaomiCause = xiaomiWetButUnserving
+      ? 'Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked, '
+      : 'Xiaomi has refused a call for payment, ';
+    /**
+     The clause saying when Xiaomi comes back, a fixed sentence or nothing.
+     */
+    const xiaomiRefill = xiaomiWetButUnserving
+      ? ''
+      : 'Xiaomi, once refused for payment, is read again only after one of its calls settles, so a top-up is '
+        + 'seen on the next launch; ';
     super(
-      'Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
+      `Every provider is out of budget at once: ${openingClauseOf({ day: neuralwatt, },)}`
         + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
         + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
-        + 'card, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. NeuralWatt\'s '
-        + 'free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper and OpenRouter refill '
-        + 'on purchase; Bedrock\'s credit is never topped up. '
+        + `card, DeepSeek has no balance left (or says its account is unavailable), ${xiaomiCause}`
+        + 'and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
+        + `${returnClauseOf({ day: neuralwatt, },)}Synthetic regenerates on its own schedule; Hyper, `
+        + `DeepSeek and OpenRouter refill on purchase; ${xiaomiRefill}`
+        + 'Bedrock\'s credit is never topped up. '
         + `Measured at the decision: ${measured}.`,
     );
     this.name = 'EveryProviderDryError';
@@ -105,6 +244,78 @@ export class EveryProviderDryError extends Error {
  ```
  */
 export type ModelReach = ProviderRecord<boolean>;
+
+/**
+ Providers whose meter can never read dry by itself: Xiaomi documents no balance, so its meter answers wet always
+ (`xiaomi-spend.ts`) and only a payment refusal at the wire marks it dry.
+ */
+const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>(['xiaomi',],);
+
+/**
+ The providers `dryForTheModelAsked` flips: an always-wet meter that reads wet and serves nothing for the model asked.
+
+ A provider that read dry itself, a payment refusal among the causes, is not listed, so the refusal text can tell the
+ two causes apart.
+
+ @param reach - providers that serve the model asked
+
+ @param dry - dryness per provider, budget reading and anything learned at the wire taken together
+
+ @returns The providers read dry only because they serve nothing here, in spending order
+
+ @example
+ ```ts
+ const flipped = unservingMeters({ reach, dry, },);
+ ```
+ */
+export function unservingMeters(
+  {
+    reach,
+    dry,
+  }: {
+    readonly reach: ModelReach;
+    readonly dry: ProviderRecord<boolean>;
+  },
+): readonly ProviderName[] {
+  return PROVIDER_ORDER.filter(function flipped(provider,): boolean {
+    return ALWAYS_WET_METERS.has(provider,) && (!dry[provider])
+      && (!reach[provider]);
+  },);
+}
+
+/**
+ The dryness the run-ending stop reads for one model: a provider whose meter cannot read dry, and which does not serve
+ the model asked, counts dry, since its wet reading buys nothing for this call.
+
+ Every other provider keeps its own reading, wet or dry, whether or not it serves the model. A model whose serving
+ providers are all dry while some other provider reads wet is still a lost seat for that model, not the end of the run.
+
+ @param reach - providers that serve the model asked
+
+ @param dry - dryness per provider, budget reading and anything learned at the wire taken together
+
+ @returns Dryness per provider with the always-wet providers that serve nothing here read dry
+
+ @example
+ ```ts
+ const effective = dryForTheModelAsked({ reach, dry, },);
+ ```
+ */
+export function dryForTheModelAsked(
+  {
+    reach,
+    dry,
+  }: {
+    readonly reach: ModelReach;
+    readonly dry: ProviderRecord<boolean>;
+  },
+): ProviderRecord<boolean> {
+  return providerRecord({
+    of: function dryOf(provider,): boolean {
+      return dry[provider] || (ALWAYS_WET_METERS.has(provider,) && (!reach[provider]));
+    },
+  },);
+}
 
 /**
  Reading given when no provider in order both serves a model and has budget.
@@ -272,6 +483,77 @@ export function bedrockIsDry(
 }
 
 /**
+ Balance at or under which DeepSeek reads dry, in USD.
+
+ NO MARGIN ABOVE ZERO, THE REASONING OF HYPER'S AND OPENROUTER'S FLOORS. What
+ one call costs on this route has not been measured in a keyed run, so any
+ cushion would be a number nobody established. A call costs at most a few
+ cents at the peak rates the card prices (the measured cap of the card is
+ 13,082 completion tokens, 0.016 USD at 1.2 USD per million), against a balance
+ given to use "as you wish", and a balance too small for the next call
+ surfaces as `402 Insufficient Balance` at the wire
+ (`https://api-docs.deepseek.com/quick_start/error_codes`, read 2026-10-22),
+ which the router passes to `markRefused` as a payment refusal, and the budget layer then holds the provider dry until
+ the
+ meter's level moves (`provider-budget.ts`). Bedrock alone
+ carries a margin, because its overshoot reaches the owner's card; DeepSeek's
+ money is prepaid.
+ */
+export const DEEPSEEK_DRY_FLOOR_USD = 0;
+
+/**
+ Decimal places the Xiaomi spend field is printed to.
+ */
+const XIAOMI_SPEND_PLACES = 4;
+
+/**
+ Whether DeepSeek's balance says nothing more can be bought there.
+
+ DRY WHEN DEEPSEEK SAYS IT CANNOT SERVE (`is_available` false) OR THE BALANCE
+ IS AT THE FLOOR, whichever reads first: the flag is DeepSeek's own verdict on
+ the account and the figure is the money behind it.
+
+ @param balance - most recent balance reading
+
+ @returns Whether that reading leaves nothing buyable
+
+ @example
+ ```ts
+ const dry = deepSeekIsDry({ balance, },);
+ ```
+ */
+export function deepSeekIsDry(
+  { balance, }: { readonly balance: DeepSeekBalance; },
+): boolean {
+  return (!balance.isAvailable) || (balance.totalUsd <= DEEPSEEK_DRY_FLOOR_USD);
+}
+
+/**
+ Whether Xiaomi's meter says nothing more can be bought there: never.
+
+ XIAOMI DOCUMENTS NO BALANCE ENDPOINT, so its meter has nothing to be dry on
+ and answers wet always (`xiaomi-spend.ts`). Exhaustion is learned from a
+ payment refusal at the wire, which `markRefused` holds dry.
+
+ @param spend - most recent spend reading, which does not decide
+
+ @returns False
+
+ @example
+ ```ts
+ const dry = xiaomiIsDry({ spend, },);
+ ```
+ */
+export function xiaomiIsDry(
+  { spend, }: { readonly spend: XiaomiSpend; },
+): boolean {
+  // The reading is carried so the verdict and the field come off one read,
+  // like every other meter; it decides nothing.
+  void spend;
+  return false;
+}
+
+/**
  First provider in spending order that serves a model and has budget.
 
  THE SEAT READER'S QUESTION AS WELL AS THE ROUTER'S: `run-seats.ts` asks
@@ -316,6 +598,9 @@ export function providerServing(
  limit already taken, which is the overflow trigger; a provider with no such
  limit is never saturated
 
+ @param neuralwatt - what the run knows of NeuralWatt's day, which the refusal that ends the run states the return
+ time from; absent where the caller has none
+
  @returns Provider to call, or why none can be
 
  @throws {@link EveryProviderDryError} when no provider has budget left,
@@ -331,26 +616,42 @@ export function routeProviderFor(
     reach,
     dry,
     saturated,
+    neuralwatt,
   }: {
     readonly reach: ModelReach;
     readonly dry: ProviderRecord<boolean>;
     readonly saturated: ProviderRecord<boolean>;
+    readonly neuralwatt?: NeuralWattReturn;
   },
 ): ProviderChoice {
   if (PROVIDER_ORDER.every(function isDry(provider,): boolean {
-    return dry[provider];
+    return dryForTheModelAsked({
+      reach,
+      dry,
+    },)[provider];
   },)) {
     // THE READING IT DECIDED ON, cited (ledger P12): this refusal said "no
     // reading cited" where the router had the whole dryness record in hand.
     // EVERY PROVIDER READS DRY HERE: this branch runs only when `isDry` held
-    // for every provider in `PROVIDER_ORDER`, so each clause says "dry".
+    // for every provider in `PROVIDER_ORDER`, so each clause says "dry", or, for a wet meter that serves nothing
+    // here, why it counts as dry.
+    /**
+     Providers read dry only for serving nothing here, whose clause says so instead of "dry".
+     */
+    const unserving = unservingMeters({
+      reach,
+      dry,
+    },);
     throw new EveryProviderDryError({
       measured: `meters read ${
         PROVIDER_ORDER.map(function stateOf(provider,): string {
-          return `${provider} dry`;
+          return unserving.includes(provider,) ? `${provider} wet but not serving this model` : `${provider} dry`;
         },)
           .join(', ',)
       }; no holds read at this decision`,
+      unserving,
+      // Conditional spread keeps the day absent where the caller has none.
+      ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     },);
   }
 
@@ -534,6 +835,55 @@ export function bedrockMeterLevel(
     `bedrockUsd=${remainingUsd.toFixed(2,)}`,
     `bedrockReckonedUsd=${reckonedUsd.toFixed(2,)}`,
   ];
+}
+
+/**
+ Renders what the DeepSeek meter actually said, as record fields.
+
+ WHAT IS LEFT, IN USD, TO TWO PLACES, as for OpenRouter: the unit the owner
+ tops up in. The availability flag is not a field of its own; a false flag
+ reads dry and the balance beside it shows what the account held.
+
+ @param balance - balance the dryness verdict was read from
+
+ @returns `key=value` tokens, no value carrying a space
+
+ @example
+ ```ts
+ deepSeekMeterLevel({ balance, },);
+ // => ['deepseekUsd=9.96',]
+ ```
+ */
+export function deepSeekMeterLevel(
+  { balance, }: { readonly balance: DeepSeekBalance; },
+): readonly string[] {
+  return [`deepseekUsd=${balance.totalUsd
+    .toFixed(2,)}`,];
+}
+
+/**
+ Renders what the Xiaomi meter actually said, as record fields.
+
+ THE RUN'S OWN PRICED SPEND, TO FOUR PLACES: a call on this model costs
+ hundredths of a cent, so two places would read zero for a long time. It is
+ what this process spent, not what the account holds, which is worth
+ remembering when reading one.
+
+ @param spend - spend the verdict was read from
+
+ @returns `key=value` tokens, no value carrying a space
+
+ @example
+ ```ts
+ xiaomiMeterLevel({ spend, },);
+ // => ['xiaomiUsdSpent=0.0042',]
+ ```
+ */
+export function xiaomiMeterLevel(
+  { spend, }: { readonly spend: XiaomiSpend; },
+): readonly string[] {
+  return [`xiaomiUsdSpent=${spend.spentUsd
+    .toFixed(XIAOMI_SPEND_PLACES,)}`,];
 }
 
 //endregion Budget routing

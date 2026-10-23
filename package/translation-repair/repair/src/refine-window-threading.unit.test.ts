@@ -266,6 +266,7 @@ function settledOutcome(
     heardCriticIds: [],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   };
 }
 

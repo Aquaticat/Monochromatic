@@ -135,6 +135,8 @@ export function reachPastCredentialHolds(
       synthetic: open('synthetic',),
       hyper: open('hyper',),
       bedrock: open('bedrock',),
+      deepseek: open('deepseek',),
+      xiaomi: open('xiaomi',),
       openrouter: open('openrouter',),
     },
     refused: PROVIDER_ORDER.filter(function servesAndRefused(provider,): boolean {
@@ -446,6 +448,8 @@ export function foldCredentialHolds(
     synthetic: dryOrHeld('synthetic',),
     hyper: dryOrHeld('hyper',),
     bedrock: dryOrHeld('bedrock',),
+    deepseek: dryOrHeld('deepseek',),
+    xiaomi: dryOrHeld('xiaomi',),
     openrouter: dryOrHeld('openrouter',),
   };
 }

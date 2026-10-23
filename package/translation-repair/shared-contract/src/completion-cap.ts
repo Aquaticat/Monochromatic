@@ -34,8 +34,9 @@ import {
 //
 // NOT A THINKING PARAMETER. The owner's standing instruction of 2026-08-25
 // ("don't set any thinking parameter or budget tokens") is about reasoning
-// controls, which stay off the wire; `max_tokens` is the ordinary output
-// ceiling every endpoint takes, and the owner's instruction of 2026-09-09,
+// controls, and since 2026-10-22 it holds for third tier providers alone
+// ("I'm only against thinking params on 3rd tier providers"); `max_tokens` is
+// the ordinary output ceiling every endpoint takes, whatever its tier, and the owner's instruction of 2026-09-09,
 // "do everything in our power to NOT bleed", is what puts it on. A reply
 // that meets the cap ends `finish_reason=length`, which
 // `chat-json-outcome.ts` already reads as a truncated voice. Hyper keeps its

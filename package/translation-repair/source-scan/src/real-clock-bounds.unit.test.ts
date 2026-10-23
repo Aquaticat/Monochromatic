@@ -41,6 +41,14 @@
  as `baseMs` or `pollMs`, are left out on purpose: load only lengthens them,
  and a race against one shows up at the bound or the sleep on its other side.
 
+ THE HOLDS A TEST REGISTERS FOR A PROVIDER, which reach a sleep through a client's reader of holds and not through
+ a timer call (ledger B817): a hold of 1000 ms or more written onto a member named `holds` (`rig.holds.synthetic = N`),
+ and a property of an object literal inside a `providerHolds` or `holds` property or a constant named for a hold, such
+ as `HYPER_HELD`. Its value is a number, a top-level constant bound to one, the greater branch of a conditional, or a
+ sum, difference or product of such; an assignment whose value is none of these is a finding too, keyed `holds.<name> =
+ value`, and a property that is none is left. The scan flags by size and cannot tell a hold the seat reading sleeps from
+ one it does not, since that depends on whether a bench is short; a listed hold carries the reason it sleeps nothing.
+
  THE LISTED BOUNDS name every finding that stands, with how many times its
  key occurs, its class (`reached`: a bound a case means to reach, whose work
  cannot end before it on any machine; `read back`: a value a case asserts or
@@ -63,6 +71,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   declaringModule,
@@ -221,6 +231,31 @@ type ListedBound = {
 const DEFERRED: Readonly<Record<string, string>> = {};
 
 /**
+ Milliseconds from which a hold a test registers for a provider is read as a real wait: the seat reading
+ sleeps the shortest hold it is told of (`waitOutHold`, `budget-hold-wait.ts`), and the router registers 300000 on a
+ refusal from a meter that reads dry, so a case that hands its client such a hold and drives a reading that
+ waits pays it in real time (the padded-checkers case of `pass-reseat.unit.test.ts` ran 300 s in every gate
+ from 2026-10-21 (UTC), ledger B817). The poll interval of that wait is the same second (`HOLD_POLL_MS`).
+ */
+const HOLD_READ_MS = 1_000;
+
+/**
+ Names that mark a rig's holds: a member `holds` that a case writes a provider's hold onto, and a property or
+ constant that a holds reader returns or a case names for a hold.
+ */
+const HOLDS_MEMBER = 'holds';
+
+/**
+ Words that name a hold in a constant's name.
+ */
+const HOLD_WORDS: ReadonlySet<string> = new Set(['hold', 'holds', 'held',],);
+
+/**
+ Key a scripted run client answers its holds reader under.
+ */
+const HOLDS_READER_KEY = 'providerHolds';
+
+/**
  Why a field of a record keeps its value: the case builds an error, a stream
  progress reading or a log line with it and reads it back, and nothing arms a
  timer with it.
@@ -327,6 +362,23 @@ const CHUNK_PACING = 'the pause between two chunks of a scripted body, so a stre
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
+  'corpus-pass/stop-landing-hook.test-fixture.ts#<module>: hold hyper: 60_000': {
+    count: 1,
+    bound: 'other',
+    reason: 'a minute\'s hold the reading is told of after the stop has already landed: the stop aborts inside the '
+      + 'dryness read that comes first, and the wait that follows throws the abort before it sleeps',
+  },
+  'provider/budget-hold-wait.unit.test.ts#<module>: hold hyper: 4_000': {
+    count: 2,
+    bound: 'read back',
+    reason: 'a record `shortestHold` is asked the shortest of, which only reads the numbers and sleeps nothing',
+  },
+  'run/corpus-run/run-seats-read.unit.test.ts#<module>: hold openrouter: 60_000': {
+    count: 1,
+    bound: 'other',
+    reason: 'a hold under a view where every provider is wet, so no bench is short and the reading takes its one '
+      + 'dryness read without a wait; the case asserts that one read',
+  },
   'provider-stream/cut-stream.test-fixture.ts#cutStreamError: firstByteMs: (firstByte === \'never\') ? -1 : FIRST_BYTE_MS': {
     count: 1,
     bound: 'read back',
@@ -336,6 +388,12 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
+  },
+  'provider/deepseek-client.unit.test.ts#<module>: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget-xiaomi-hold.unit.test.ts#xiaomiBudgets: freshForMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
   },
   'provider/provider-budget-held-meters.unit.test.ts#budgetsOnClock: freshForMs: FRESH_MS': {
     count: 1,
@@ -593,7 +651,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: CALL_CONFIG,
   },
   'slice-cache/corpus-run/pass-stop-before-next.unit.test.ts#<module>: softBudgetMs: ROOMY_BUDGET_MS': {
-    count: 5,
+    count: 9,
     bound: 'read back',
     reason: 'a budget handed to a pure decision beside the elapsed time the case gives it; no clock is read',
   },
@@ -1293,6 +1351,314 @@ function objectBounds({ node, }: { readonly node: TreeNode; },): readonly BoundR
 }
 
 /**
+ Whether a name is one a case gives a record of holds.
+
+ @param name - constant's name
+
+ @returns Whether one word of the name, split at underscores, hyphens and case changes, is hold, holds or
+ held, so that `NO_HOLDS`, `noHolds` and `HYPER_HELD` name holds and `threshold` does not
+
+ @example
+ ```ts
+ const named = namesAHold({ name: 'HYPER_HELD', },); // true
+ ```
+ */
+function namesAHold({ name, }: { readonly name: string; },): boolean {
+  /**
+   The name with a separator before each capital that follows a lower-case letter, so camel case reads as words.
+   */
+  const spaced = Array.from(name,)
+    .map(function separated(char, at, chars,): string {
+      /**
+       Character before this one.
+       */
+      const before = chars.at(at - 1,) ?? '';
+      return ((at > 0) && (char !== char.toLowerCase()) && (before === before.toLowerCase()))
+        ? `_${char}`
+        : char;
+    },)
+    .join('',);
+  return spaced
+    .toLowerCase()
+    .replaceAll(
+    '-',
+    '_',
+    )
+    .replaceAll(
+    '$',
+    '_',
+    )
+    .split('_',)
+    .some(function isHoldWord(word,): boolean {
+      return HOLD_WORDS.has(word,);
+    },);
+}
+
+/**
+ Numbers the top-level constants of a file are bound to, so a hold written as a named constant reads as its
+ value. A constant that spells more than one number, or none, is left out.
+
+ @param program - file's program
+
+ @returns Each constant's name and the number its initializer spells
+
+ @example
+ ```ts
+ const numbers = numericConstantsOf({ program, },); // Map { 'LONG_MS' => 300000 }
+ ```
+ */
+function numericConstantsOf({ program, }: { readonly program: TreeNode; },): ReadonlyMap<string, number> {
+  /**
+   Constants read so far, each only after the constants it reads.
+   */
+  const numbers = new Map<string, number>();
+  for (const statement of (program.body as readonly TreeNode[])) {
+    /**
+     The declaration, inside an export when the file exports it.
+     */
+    const declaration = (statement.type === 'ExportNamedDeclaration') ? statement.declaration : statement;
+    if ((!isTreeNode(declaration,)) || (declaration.type !== 'VariableDeclaration'))
+      continue;
+    for (const declarator of (declaration.declarations as readonly TreeNode[])) {
+      /**
+       Numbers the initializer spells.
+       */
+      const spelled = numbersOf({
+        node: declarator.init,
+        numbers,
+      },);
+      if (spelled.length === 1) {
+        numbers.set(
+          identifierName({ node: declarator.id, },),
+          nonNullishOrThrow(spelled[0],),
+        );
+      }
+    }
+  }
+  return numbers;
+}
+
+/**
+ How each binary operator a hold may be written with combines its operands.
+ */
+const OPERATORS: Readonly<Record<string, (left: number, right: number,) => number>> = {
+  '*': function times(left, right,): number {
+    return left * right;
+  },
+  '+': function plus(left, right,): number {
+    return left + right;
+  },
+  '-': function minus(left, right,): number {
+    return left - right;
+  },
+};
+
+/**
+ The numbers an expression can spell: a numeric literal, a constant bound to one, both branches of a conditional,
+ or a sum, difference or product of such numbers.
+
+ @param node - expression read
+
+ @param numbers - top-level constants and their numbers
+
+ @returns Every number the expression can spell, none where it spells none
+
+ @example
+ ```ts
+ const spelled = numbersOf({ node: init, numbers, },); // [300000, 0] for held ? LONG_MS : 0
+ ```
+ */
+function numbersOf(
+  {
+    node,
+    numbers,
+  }: {
+    readonly node: unknown;
+    readonly numbers: ReadonlyMap<string, number>;
+  },
+): readonly number[] {
+  /**
+   The expression inside any parentheses and casts.
+   */
+  const { inner, } = unwrapped({ node, },);
+  if (!isTreeNode(inner,))
+    return [];
+  if (inner.type === 'Literal')
+    return ((typeof inner.value) === 'number') ? [inner.value as number,] : [];
+  if (inner.type === 'Identifier') {
+    /**
+     The number the constant is bound to.
+     */
+    const bound = numbers.get(identifierName({ node: inner, },),);
+    return (bound === undefined) ? [] : [bound,];
+  }
+  if (inner.type === 'ConditionalExpression') {
+    return [
+      ...numbersOf({
+        node: inner.consequent,
+        numbers,
+      },),
+      ...numbersOf({
+        node: inner.alternate,
+        numbers,
+      },),
+    ];
+  }
+  if ((inner.type !== 'BinaryExpression') || (!Object.hasOwn(
+    OPERATORS,
+    inner.operator as string,
+  )))
+    return [];
+  /**
+   How the operator combines two numbers.
+   */
+  const combine = nonNullishOrThrow(OPERATORS[inner.operator as string],);
+  /**
+   The numbers the right operand can spell.
+   */
+  const rights = numbersOf({
+    node: inner.right,
+    numbers,
+  },);
+  return numbersOf({
+    node: inner.left,
+    numbers,
+  },)
+    .flatMap(function withEachRight(left,): readonly number[] {
+      return rights.map(function combined(right,): number {
+        return combine(
+          left,
+          right,
+        );
+      },);
+    },);
+}
+
+/**
+ Whether a node opens a record of holds: a property a run client answers its holds reader under, or a
+ member named `holds`, or a constant named for a hold that an object literal initializes.
+
+ @param node - node visited
+
+ @returns Whether the properties inside it are providers' holds
+
+ @example
+ ```ts
+ const opens = opensHolds({ node, },); // true for `providerHolds: () => ({ ... })`
+ ```
+ */
+function opensHolds({ node, }: { readonly node: TreeNode; },): boolean {
+  if ((node.type === 'Property') && (node.computed !== true)) {
+    /**
+     The property's key.
+     */
+    const key = identifierName({ node: node.key, },);
+    return (key === HOLDS_READER_KEY) || (key === HOLDS_MEMBER);
+  }
+  if (node.type !== 'VariableDeclarator')
+    return false;
+  /**
+   The initializer inside any parentheses and casts.
+   */
+  const { inner, } = unwrapped({ node: node.init, },);
+  return isTreeNode(inner,) && (inner.type === 'ObjectExpression')
+    && namesAHold({ name: identifierName({ node: node.id, },), },);
+}
+
+/**
+ Whether an assignment writes onto a rig's holds: its target is a member of something called `holds`.
+
+ @param target - left side of the assignment
+
+ @returns Whether the target is `holds.x` or `rig.holds.x`, written with a dot or a string key
+
+ @example
+ ```ts
+ const onHolds = writesOntoHolds({ target, },); // true for rig.holds.synthetic
+ ```
+ */
+function writesOntoHolds({ target, }: { readonly target: unknown; },): boolean {
+  if ((!isTreeNode(target,)) || (target.type !== 'MemberExpression'))
+    return false;
+  /**
+   What the target is a member of.
+   */
+  const { object, } = target;
+  if (!isTreeNode(object,))
+    return false;
+  return (identifierName({ node: object, },) === HOLDS_MEMBER)
+    || ((object.type === 'MemberExpression') && (memberName({ node: object, },) === HOLDS_MEMBER));
+}
+
+/**
+ The holds of a second or more a node registers for a provider: an assignment onto a rig's holds, whose value
+ that spells no number under that second is a finding too since the case cannot show it short, and a property
+ of a record of holds whose value is a number from that second.
+
+ @param node - node visited
+
+ @param holding - whether the node sits inside a record of holds
+
+ @param numbers - top-level constants of the file and their numbers
+
+ @returns One read per hold of a second or more, none for any other node
+
+ @example
+ ```ts
+ const reads = holdBounds({ node, holding, numbers, },);
+ ```
+ */
+function holdBounds(
+  {
+    node,
+    holding,
+    numbers,
+  }: {
+    readonly node: TreeNode;
+    readonly holding: boolean;
+    readonly numbers: ReadonlyMap<string, number>;
+  },
+): readonly BoundRead[] {
+  if (node.type === 'AssignmentExpression') {
+    if ((node.operator !== '=') || (!writesOntoHolds({ target: node.left, },)))
+      return [];
+    /**
+     The holds the assignment can write.
+     */
+    const written = numbersOf({
+      node: node.right,
+      numbers,
+    },);
+    return ((written.length > 0) && written.every(function isShort(hold,): boolean {
+      return hold < HOLD_READ_MS;
+    },))
+      ? []
+      : [{
+        form: `${HOLDS_MEMBER}.${memberName({ node: node.left as TreeNode, },)} =`,
+        value: node.right,
+      },];
+  }
+  if ((!holding) || (node.type !== 'ObjectExpression'))
+    return [];
+  return (node.properties as readonly TreeNode[])
+    .filter(function holdsASecond(property,): boolean {
+      return (property.type === 'Property') && numbersOf({
+        node: property.value,
+        numbers,
+      },)
+        .some(function isASecond(hold,): boolean {
+          return hold >= HOLD_READ_MS;
+        },);
+    },)
+    .map(function holdOf(property,): BoundRead {
+      return {
+        form: `hold ${identifierName({ node: property.key, },) || literalText({ node: property.key, },)}:`,
+        value: property.value,
+      };
+    },);
+}
+
+/**
  How a bound's value reads in its key: its source text, each line trimmed
  and the lines joined by a space, or `(none)` where the timer is called
  without a delay.
@@ -1369,10 +1735,16 @@ function unsharedBounds({ files, }: { readonly files: readonly SourceText[]; },)
     const pending: {
       readonly node: TreeNode;
       readonly site: string;
+      readonly holding: boolean;
     }[] = [{
       node: program,
       site: '<module>',
+      holding: false,
     },];
+    /**
+     Top-level constants of the file and the numbers they spell, which a hold may be written as.
+     */
+    const numbers = numericConstantsOf({ program, },);
     for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
       /**
        Node visited now, and the site it sits in.
@@ -1380,6 +1752,7 @@ function unsharedBounds({ files, }: { readonly files: readonly SourceText[]; },)
       const {
         node,
         site,
+        holding,
       } = next;
       /**
        Enclosing named function for the node's children.
@@ -1388,12 +1761,19 @@ function unsharedBounds({ files, }: { readonly files: readonly SourceText[]; },)
       /**
        Bounds the node sets.
        */
-      const reads = (node.type === 'CallExpression')
-        ? callBounds({
+      const reads = [
+        ...((node.type === 'CallExpression')
+          ? callBounds({
+            node,
+            names,
+          },)
+          : objectBounds({ node, },)),
+        ...holdBounds({
           node,
-          names,
-        },)
-        : objectBounds({ node, },);
+          holding,
+          numbers,
+        },),
+      ];
       for (const read of reads) {
         /**
          The value inside any parentheses and casts.
@@ -1413,10 +1793,15 @@ function unsharedBounds({ files, }: { readonly files: readonly SourceText[]; },)
           }`,);
         }
       }
+      /**
+       Whether the children sit inside a record of holds.
+       */
+      const holdingBelow = holding || opensHolds({ node, });
       pending.push(...childNodes({ node, },).map(function withSite(child,) {
         return {
           node: child,
           site: here,
+          holding: holdingBelow,
         };
       },),);
     }
@@ -1677,6 +2062,54 @@ await describe({
           'tabby-clients.unit.test.ts#napClients: bedrockFor of the built package (none)',
           'tabby-clients.unit.test.ts#napClients: createBedrockClient of the built package (none)',
           'tabby-clients.unit.test.ts#napClients: streamBoundMsOverride: 300',
+        ],);
+      },
+    },),
+    it({
+      name: 'FINDS A HOLD OF A SECOND OR MORE a case registers for a provider, written onto a rig\'s holds, in a '
+        + 'record a holds reader returns or in a constant named for a hold, and leaves a short hold, a hold of 0, '
+        + 'a provider-keyed number that is no hold, and package source (a pass-reseat case once waited out 300000 ms '
+        + 'for real, because the seat reading sleeps the hold it is told of)',
+      fn: async () => {
+        /**
+         A rig whose holds are written, returned and named, beside numbers that are no hold.
+         */
+        const files: readonly SourceText[] = [
+          {
+            path: 'litter.unit.test.ts',
+            text: [
+              'const SHORT_MS = 40;',
+              'const LONG_MS = 300_000;',
+              'const HYPER_HELD = { synthetic: 0, hyper: 60_000, };',
+              'const budgets = { synthetic: 5_000, hyper: 10, };',
+              'export function rigFor({ held, }: { held: boolean; },): unknown {',
+              '  const holds = { synthetic: 0, hyper: 0, };',
+              '  holds.synthetic = LONG_MS;',
+              '  rig.holds.hyper = 2_000;',
+              '  rig.holds[\'bedrock\'] = SHORT_MS;',
+              '  rig.holds.openrouter = held;',
+              '  rig.holds.xiaomi = 0;',
+              '  rig.budgets.synthetic = 90_000;',
+              '  return {',
+              '    providerHolds: () => ({ neuralwatt: 0, synthetic: held ? LONG_MS : 0, hyper: SHORT_MS, }),',
+              '    providerBudgets: () => ({ synthetic: 90_000, }),',
+              '  };',
+              '}',
+            ].join('\n',),
+            isTest: true,
+          },
+          {
+            path: 'litter.ts',
+            text: 'export const holds = { synthetic: 300_000, };',
+            isTest: false,
+          },
+        ];
+        expect(unsharedBounds({ files, },),).toEqual([
+          'litter.unit.test.ts#<module>: hold hyper: 60_000',
+          'litter.unit.test.ts#rigFor: hold synthetic: held ? LONG_MS : 0',
+          'litter.unit.test.ts#rigFor: holds.hyper = 2_000',
+          'litter.unit.test.ts#rigFor: holds.openrouter = held',
+          'litter.unit.test.ts#rigFor: holds.synthetic = LONG_MS',
         ],);
       },
     },),

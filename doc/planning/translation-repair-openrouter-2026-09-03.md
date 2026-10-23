@@ -829,14 +829,19 @@ named for that subject and listed here.
   - [The providers of XingZ6017](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-providers.md)
   - [The page of XingZ6017](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-page.md)
 - [OpenRouter and the corpus passes: the rotation on build 8864316eb2 after the owner's answers (2026-10-22)](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart.md):
-  What was read on 2026-10-22 of the passes on the build that landed the owner's answers of that day;
+  What was read on 2026-10-22 of the passes on the build that landed the owner's answers of that day,
+  and of the two passes on the build after it;
   zheermao23 settled with NeuralWatt dry and the Mercury window never reached,
   CuspariaKLSY23 settled in 17.1 min with Mercury clean and tense left open by the repair lane again,
-  and XingZ6018 was launched.
+  XingZ6018 ended after 62.4 min with no page while every provider ran dry,
+  XingZ6019 ended after 19.2 min on a short writing bench with NeuralWatt dry,
+  and XingZ6020 was relaunched.
   Entries:
   zheermao23,
   CuspariaKLSY23,
-  XingZ6018.
+  XingZ6018,
+  XingZ6019,
+  XingZ6020.
   Files:
   - [The run of zheermao23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-zheermao23-run.md)
   - [The stages of zheermao23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-zheermao23-stages.md)
@@ -844,3 +849,7 @@ named for that subject and listed here.
   - [The run of CuspariaKLSY23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-run.md)
   - [The stages of CuspariaKLSY23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-stages.md)
   - [The evidence of CuspariaKLSY23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-evidence.md)
+  - [The run of XingZ6018](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-run.md)
+  - [The providers of XingZ6018](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-providers.md)
+  - [The defects of XingZ6018](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-defects.md)
+  - [XingZ6019 and XingZ6020](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6019.md)

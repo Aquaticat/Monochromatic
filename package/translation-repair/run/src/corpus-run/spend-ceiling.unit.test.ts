@@ -17,7 +17,7 @@ import {
 
 import {
   resolveSpendCeilingUsd,
-  SPEND_CEILING_PROVIDER,
+  SPEND_CEILING_PROVIDERS,
   SPEND_CEILING_USD,
   SPEND_CEILING_VAR,
   spendCeilingNote,
@@ -200,6 +200,22 @@ await describe({
     },),
 
     describe({
+      name: 'SPEND_CEILING_PROVIDERS',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'METERS every provider whose spend no balance bounds, OpenRouter, DeepSeek and Xiaomi, each against '
+            + 'the one built-in allowance',
+          fn: async () => {
+            expect(SPEND_CEILING_PROVIDERS,).toContain('deepseek',);
+            expect(SPEND_CEILING_PROVIDERS,).toContain('openrouter',);
+            expect(SPEND_CEILING_PROVIDERS,).toContain('xiaomi',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: spendCeilingNote.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
@@ -210,12 +226,13 @@ await describe({
              The line the scheduler prints when it stops.
              */
             const note = spendCeilingNote({
+              provider: 'xiaomi',
               spentUsd: 20.4,
               ceilingUsd: 20,
             },);
             expect(note.startsWith('SPEND CEILING reached',),).toBe(true,);
             expect(note,).toContain('20.4 of 20 USD',);
-            expect(note,).toContain(SPEND_CEILING_PROVIDER,);
+            expect(note,).toContain('USD spent on xiaomi this run',);
             expect(note,).toContain(SPEND_CEILING_VAR,);
           },
         },),
@@ -236,7 +253,9 @@ await describe({
              */
             const note = spendCeilingOverrideNote({ ceilingUsd: SPEND_CEILING_USD + FALLBACK, },);
             expect(note.startsWith(`SPEND CEILING OVERRIDDEN by ${SPEND_CEILING_VAR}`,),).toBe(true,);
-            expect(note,).toContain(`${String(SPEND_CEILING_USD + FALLBACK,)} USD on ${SPEND_CEILING_PROVIDER}`,);
+            expect(note,).toContain(
+              `${String(SPEND_CEILING_USD + FALLBACK,)} USD on any one of ${SPEND_CEILING_PROVIDERS.join(', ',)}`,
+            );
             expect(note,).toContain(`rather than the built-in ${String(SPEND_CEILING_USD,)}`,);
           },
         },),

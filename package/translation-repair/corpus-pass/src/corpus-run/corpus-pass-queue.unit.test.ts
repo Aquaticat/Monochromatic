@@ -24,13 +24,23 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import {
+  EveryProviderDryError,
+  type ModelClient,
+} from '@monochromatic-dev/translation-repair-provider';
+import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { resetRunSpend, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { currentLogContext, } from '@monochromatic-dev/translation-repair-typography';
 import {
   type AttemptMap,
   readAttemptMap,
 } from '@monochromatic-dev/translation-repair-glossary';
-import { runPassQueue, } from '../../dist/final/node/index.mjs';
+import {
+  createPassDryStop,
+  runPassQueue,
+} from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { relayingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 
@@ -90,6 +100,22 @@ function clockReading({ instants, }: { readonly instants: readonly number[]; },)
   };
 }
 
+/**
+ Chat call whose router finds every provider dry.
+
+ @returns Never
+
+ @throws {@link EveryProviderDryError} always
+
+ @example
+ ```ts
+ await refuseDry();
+ ```
+ */
+async function refuseDry(): Promise<never> {
+  throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
+}
+
 await describe({
   name: runPassQueue.name,
   concurrency: 1,
@@ -139,6 +165,7 @@ await describe({
             'slice-cache',
           ),
           pipelineDigest: GENERATION,
+          dryStop: createPassDryStop(),
           softBudgetMs: 1_000,
           spendCeilingUsd: 20,
           start: 0,
@@ -220,6 +247,7 @@ await describe({
             'slice-cache',
           ),
           pipelineDigest: GENERATION,
+          dryStop: createPassDryStop(),
           softBudgetMs: 1_000,
           spendCeilingUsd: 20,
           start: 100,
@@ -264,6 +292,7 @@ await describe({
             'slice-cache',
           ),
           pipelineDigest: GENERATION,
+          dryStop: createPassDryStop(),
           softBudgetMs: 1_000,
           spendCeilingUsd: 0,
           start: 0,
@@ -310,6 +339,7 @@ await describe({
           ),
           sliceCacheDir,
           pipelineDigest: GENERATION,
+          dryStop: createPassDryStop(),
           softBudgetMs: 1_000,
           spendCeilingUsd: 20,
           start: 0,
@@ -392,6 +422,7 @@ await describe({
           ),
           sliceCacheDir,
           pipelineDigest: GENERATION,
+          dryStop: createPassDryStop(),
           softBudgetMs: 1_000,
           spendCeilingUsd: 20,
           start: 0,
@@ -428,6 +459,190 @@ await describe({
           'STALLED tabby: its 2 cache records are what it started with, so a further attempt in this '
             + 'invocation would repeat it',
         ],);
+      },
+    },),
+    it({
+      name: 'STOPS BEFORE THE NEXT ENTRY ONCE EVERY PROVIDER READ DRY, says so in one line naming the cause, and queues no '
+        + 'second attempt, so the run ships what it settled instead of starting an entry no provider can serve',
+      fn: async (ctx) => {
+        resetRunSpend();
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-queue-', },);
+        /**
+         Gate between the run and its provider, as the pass builds it.
+         */
+        const dryStop = createPassDryStop();
+        /**
+         Client whose every call meets the dry router.
+         */
+        const rawClient: ModelClient = {
+          chatText: refuseDry,
+          chatJson: refuseDry,
+          quotas: async () => {
+            throw new Error('quotas unused',);
+          },
+        };
+        /**
+         Same client behind the gate.
+         */
+        const dryClient = dryStop.guard({ client: rawClient, },);
+        /**
+         Entries attempted.
+         */
+        const made: string[] = [];
+
+        await runPassQueue({
+          pending: [
+            pairOf({ id: 'tabby', },),
+            pairOf({ id: 'mittens', },),
+          ],
+          attempts: new Map(),
+          attemptsPath: join(
+            scratch.path,
+            'attempts.json',
+          ),
+          sliceCacheDir: join(
+            scratch.path,
+            'slice-cache',
+          ),
+          pipelineDigest: GENERATION,
+          dryStop,
+          softBudgetMs: HANG_STOP_MS,
+          spendCeilingUsd: 20,
+          start: 0,
+          now: clockReading({ instants: [0,], },),
+          settle: async function settle({ entry, },) {
+            made.push(entry.id,);
+            await rejectionOf(async function dryCall(): Promise<unknown> {
+              return await dryClient.chatText({
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                messages: [],
+                signal: dryStop.signal,
+              },);
+            },);
+            return { kind: 'stopped', };
+          },
+        },);
+
+        expect(made,).toEqual(['tabby',],);
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toHaveLength(1,);
+        expect(printed.lines.some(function isReattempt(line,): boolean {
+          return line.startsWith('REATTEMPT',);
+        },),).toBe(false,);
+        expect(printed.lines.at(-1,),).toContain('every provider',);
+        expect(printed.lines.at(-1,),).toContain('meters read synthetic dry, openrouter dry',);
+      },
+    },),
+    it({
+      name: 'PRINTS THE STOP LINE EVEN WHEN THE ENTRY THAT MET THE DRY ROUTER WAS THE LAST ONE, once, so the cause is '
+        + 'on the log however the queue ended',
+      fn: async (ctx) => {
+        resetRunSpend();
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-queue-', },);
+        /**
+         Gate between the run and its provider, as the pass builds it.
+         */
+        const dryStop = createPassDryStop();
+        await runPassQueue({
+          pending: [pairOf({ id: 'tabby', },),],
+          attempts: new Map(),
+          attemptsPath: join(
+            scratch.path,
+            'attempts.json',
+          ),
+          sliceCacheDir: join(
+            scratch.path,
+            'slice-cache',
+          ),
+          pipelineDigest: GENERATION,
+          dryStop,
+          softBudgetMs: HANG_STOP_MS,
+          spendCeilingUsd: 20,
+          start: 0,
+          now: clockReading({ instants: [0,], },),
+          settle: async function settle() {
+            dryStop.trip({ error: new EveryProviderDryError({ measured: 'meters read synthetic dry', },), },);
+            return { kind: 'stopped', };
+          },
+        },);
+
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toHaveLength(1,);
+        expect(printed.lines.at(-1,),).toContain('meters read synthetic dry',);
+      },
+    },),
+    it({
+      name: 'PRINTS NO REATTEMPT OR STALLED LINE FOR AN ENTRY THE DRY ROUTER STOPPED even when a layer filed its failure '
+        + 'as a resumable error and it cached a record, and queues no second attempt: the stop line follows alone',
+      fn: async (ctx) => {
+        resetRunSpend();
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-queue-', },);
+        /**
+         Slice cache the attempts write into.
+         */
+        const sliceCacheDir = join(
+          scratch.path,
+          'slice-cache',
+        );
+        /**
+         Gate between the run and its provider, as the pass builds it.
+         */
+        const dryStop = createPassDryStop();
+        /**
+         Entries attempted.
+         */
+        const made: string[] = [];
+        await runPassQueue({
+          pending: [
+            pairOf({ id: 'tabby', },),
+            pairOf({ id: 'mittens', },),
+          ],
+          attempts: new Map(),
+          attemptsPath: join(
+            scratch.path,
+            'attempts.json',
+          ),
+          sliceCacheDir,
+          pipelineDigest: GENERATION,
+          dryStop,
+          softBudgetMs: HANG_STOP_MS,
+          spendCeilingUsd: 20,
+          start: 0,
+          now: clockReading({ instants: [0,], },),
+          settle: async function settle({ entry, },) {
+            made.push(entry.id,);
+            await mkdir(
+              join(
+                sliceCacheDir,
+                entry.id,
+              ),
+              { recursive: true, },
+            );
+            await writeFile(
+              join(
+                sliceCacheDir,
+                entry.id,
+                '0.json',
+              ),
+              '{}',
+            );
+            dryStop.trip({ error: new EveryProviderDryError({ measured: 'meters read synthetic dry', },), },);
+            return { kind: 'resumable-failure', };
+          },
+        },);
+
+        expect(made,).toEqual(['tabby',],);
+        expect(printed.lines.filter(function isReattemptOrStalled(line,): boolean {
+          return line.startsWith('REATTEMPT',) || line.startsWith('STALLED',);
+        },),).toEqual([],);
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toHaveLength(1,);
       },
     },),
   ],

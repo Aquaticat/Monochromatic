@@ -1,6 +1,6 @@
 import { runSpendUsd, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
-  SPEND_CEILING_PROVIDER,
+  SPEND_CEILING_PROVIDERS,
   spendCeilingNote,
   spendCeilingReached,
 } from '@monochromatic-dev/translation-repair-run/ts';
@@ -8,7 +8,7 @@ import {
 //region Stop before the next entry
 // THE TWO REASONS A PASS STARTS NO FURTHER ENTRY, asked by the attempt queue
 // before each one and never mid-entry: the soft time budget, and since
-// 2026-09-04 the per-run spend ceiling on the provider that bills in USD.
+// 2026-09-04 the per-run spend ceiling, applied since 2026-10-22 to each provider that bills in USD on its own.
 // Split out of `corpus-pass.ts` at the line cap, and because the pass had no
 // unit test of its scheduler's stop rules while both rules were inline.
 
@@ -25,7 +25,7 @@ import {
 
  @param softBudgetMs - time after which no new entry starts
 
- @param ceilingUsd - USD this run may spend on the metered provider before
+ @param ceilingUsd - USD this run may spend on any one metered provider before
  no new entry starts
 
  @returns Whether the queue must stop before its next attempt
@@ -51,20 +51,23 @@ export function stopBeforeNextEntry(
     return true;
   }
 
-  /**
-   What this run has spent so far on the provider the ceiling meters.
-   */
-  const spentUsd = runSpendUsd({ provider: SPEND_CEILING_PROVIDER, },);
+  for (const provider of SPEND_CEILING_PROVIDERS) {
+    /**
+     What this run has spent so far on this provider, never summed with another's.
+     */
+    const spentUsd = runSpendUsd({ provider, },);
 
-  if (spendCeilingReached({
-    spentUsd,
-    ceilingUsd,
-  },)) {
-    console.log(spendCeilingNote({
+    if (spendCeilingReached({
       spentUsd,
       ceilingUsd,
-    },),);
-    return true;
+    },)) {
+      console.log(spendCeilingNote({
+        provider,
+        spentUsd,
+        ceilingUsd,
+      },),);
+      return true;
+    }
   }
   return false;
 }

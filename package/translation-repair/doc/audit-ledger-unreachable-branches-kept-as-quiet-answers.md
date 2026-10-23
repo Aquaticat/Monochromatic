@@ -542,3 +542,71 @@ so none was skipped.
 Recurrence:
 `mistake-prevention-guards-searches-and-claims.md`,
 "Guards a census wants gone".
+
+## B824: the decision seat's run-ending branch is reached by a test and not by the router
+
+Status:
+kept and documented on 2026-10-22 (UTC) in `9d6095ae7e`,
+found by note N1 of the review of the XingZ6018 fixes.
+
+`stage/src/stage-decision-call.ts` rethrows a failure that `endsTheRun` names,
+and its TSDoc promised `@throws EveryProviderDryError`.
+The decisions route (`provider/src/provider-router-decide.ts`) never raises that class.
+When OpenRouter is dry it raises `NoProviderForModelError` ("the decisions endpoint reads dry"),
+and only `chooseProvider`,
+`routeProviderFor` and `readBudgetsPastHolds` raise the dry error,
+all three on chat calls.
+`stage-decision-call.unit.test.ts` reaches the branch by throwing the class from a scripted `decide`,
+which proves the branch and not that production gets there.
+In production a decision seat on a fully dry system is a lost voice (`unreachable`),
+the shape the run-ending change meant to remove for chat seats.
+
+The decision:
+the branch stays,
+because a test reaches it and the pass guard wraps `decide`,
+and its TSDoc now says the shipped route raises `NoProviderForModelError` and not the dry error.
+Whether a dry decisions route alone ends the run was left open by that review.
+The ruling of 2026-10-22 on model-level dryness answers it:
+a dry OpenRouter with other providers wet is not run-wide dryness,
+so the decision seat is a lost voice,
+which is what the router does (B822).
+
+Cache versions:
+none.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"A refusal that ends the run":
+a branch written for an error is shown reachable from the router that raises it,
+and a test that throws the error itself shows the branch and not the route.
+
+## B825: the re-ask elsewhere catches every failure, and the run-ending refusal cannot reach that catch
+
+Status:
+recorded on 2026-10-22 (UTC) as a comment in `provider/src/nudged-reask.ts` (`reaskElsewhereNudged`),
+no code change and no test,
+found as the fourth catch listed by the review's S2 (B818),
+where the reviewer had not traced whether the error could arrive.
+
+The catch logs any failure of the re-ask as "no re-ask elsewhere" and keeps the first answer,
+which is defensible because an answer exists.
+The trace:
+the re-ask is hinted away from the provider that served the first answer (`otherThan`),
+so the router serves it through `routedTextElsewhere`,
+which reads the budgets once (`secondOpinionsFrom`) and raises only `NoProviderForModelError`.
+The one path that raises `EveryProviderDryError` is `routedText`,
+and a hinted ask never takes it.
+Under the pass guard the shared signal is already aborted when any error reaches the catch,
+and the catch rethrows on `request.signal.aborted`.
+No input reaches the refusal there,
+so no test could,
+and none was written;
+the comment says so,
+so a later reader does not add a check that nothing exercises.
+
+Cache versions:
+none.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"A refusal that ends the run".

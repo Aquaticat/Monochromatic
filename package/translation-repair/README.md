@@ -268,14 +268,24 @@ the fifth provider since 2026-10-20,
 serves DeepSeek V4.1 Flash and GLM-5.3-Flash on a free daily energy allowance the package meters itself
 (`doc/decision/translation-repair-neuralwatt-provider.md`);
 it has no local concurrency ceiling either.
+DeepSeek and Xiaomi,
+the sixth and seventh providers since 2026-10-22,
+are called on the owner's own keys and each for exactly one model
+(DeepSeek V4.1 Flash and MiMo V2.6 Flash);
+a key left unset leaves that provider unconfigured
+(`doc/decision/translation-repair-direct-providers.md`).
 Routing walks `PROVIDER_ORDER` (NeuralWatt,
 Synthetic,
 Bedrock,
+DeepSeek,
+Xiaomi,
 Hyper,
 OpenRouter;
 NeuralWatt first by the owner's decision of 2026-10-20 so the free energy is spent before anything else,
 Bedrock ahead of Hyper by the owner's decision of 2026-09-07,
-so the seats both serve spend the expiring credits before the balance the Hyper-only seats run on):
+so the seats both serve spend the expiring credits before the balance the Hyper-only seats run on,
+and the two direct routes ahead of Hyper and OpenRouter,
+an order open to the owner's veto):
 the first provider that serves the model and has budget takes the call,
 a saturated provider overflows to the next usable one,
 and a dry provider passes the call down the order.

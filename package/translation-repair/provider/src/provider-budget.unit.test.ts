@@ -145,6 +145,8 @@ const ALL_WET = {
   synthetic: false,
   hyper: false,
   bedrock: true,
+  deepseek: true,
+  xiaomi: true,
   openrouter: false,
 } as const;
 
@@ -184,6 +186,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
         expect(await hyperOnly.read({ signal: SIGNAL, },),).toEqual({
@@ -191,6 +195,8 @@ await describe({
           synthetic: true,
           hyper: false,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
         expect(await openRouterOnly.read({ signal: SIGNAL, },),).toEqual({
@@ -198,6 +204,8 @@ await describe({
           synthetic: true,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: false,
         },);
       },
@@ -273,6 +281,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
       },
@@ -316,6 +326,8 @@ await describe({
           synthetic: 'unreadable',
           hyper: 'dry',
           bedrock: 'dry',
+          deepseek: 'dry',
+          xiaomi: 'dry',
           openrouter: 'wet',
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
@@ -323,6 +335,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: false,
         },);
       },
@@ -406,6 +420,8 @@ await describe({
           synthetic: 0,
           hyper: 300,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
 
@@ -421,6 +437,8 @@ await describe({
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
@@ -580,6 +598,8 @@ await describe({
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
         // The refuser is still spendable at once; only the dry providers are out.
@@ -588,6 +608,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
       },
@@ -618,6 +640,8 @@ await describe({
           synthetic: 300,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
       },
@@ -824,6 +848,8 @@ await describe({
           synthetic: 50,
           hyper: 50,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
       },
@@ -874,6 +900,44 @@ await describe({
         await budgets.read({ signal: SIGNAL, },);
         await budgets.read({ signal: SIGNAL, },);
         expect(reads,).toEqual({ quota: 1, credits: 1, openrouter: 1, },);
+      },
+    },),
+    it({
+      name: 'REPORTS THE NEURALWATT DAY TO A REFUSAL THAT ENDS THE RUN: off with no NeuralWatt client, unanchored '
+        + 'while its client has decided no day start, and the decided start once it has',
+      fn: async () => {
+        /** Stub providers with budget everywhere. */
+        const { synthetic, hyper, openrouter, } = stubProviders({},);
+        /** The anchor the stub client has decided, none at first. */
+        const decided: { anchor: { readonly known: false; } | { readonly known: true; readonly msOfDay: number; }; } = {
+          anchor: { known: false, },
+        };
+        /** Budget view over no NeuralWatt client. */
+        const without = createProviderBudgets({ synthetic, hyper, openrouter, },);
+        /** Budget view over a stub NeuralWatt client. */
+        const withClient = createProviderBudgets({
+          neuralwatt: {
+            // Asking for the NeuralWatt day must not read the energy.
+            energy: async () => {
+              throw new Error('the energy ledger must not be read to state the day',);
+            },
+            dayAnchor: () => decided.anchor,
+          },
+          synthetic,
+          hyper,
+          openrouter,
+        },);
+
+        expect(without.neuralwattReturn(),).toEqual({ kind: 'off', },);
+        expect(withClient.neuralwattReturn(),).toEqual({ kind: 'unanchored', },);
+        decided.anchor = {
+          known: true,
+          msOfDay: 69_308_000,
+        };
+        expect(withClient.neuralwattReturn(),).toEqual({
+          kind: 'at',
+          msOfDay: 69_308_000,
+        },);
       },
     },),
   ],

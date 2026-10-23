@@ -596,3 +596,121 @@ probe,
 repair,
 run,
 stage and translate-stage.
+
+## M288: about 30 gates took five minutes longer than the gates before them, and nobody compared the time
+
+Status:
+happened from g138 (`3637592bd4`,
+2026-10-21 (UTC)) and was found on 2026-10-22 (UTC) in `tr-w290`,
+by an implementer who asked why the corpus-pass package's `test:unit` took five minutes.
+The defect is B817.
+
+What happened:
+in every gate up to g137 (at `7c9d5fa35f`) that package's `test:unit` took 43 to 85 s.
+From g138 it took 305 to 313 s in every gate,
+about 30 gates in all,
+and each gate read its `[FAIL]` count (zero) and went on.
+A case of `pass-reseat.unit.test.ts` slept a 300000 ms hold for real and then passed (B817).
+The rotation sweep runs that package's tests on every salt,
+so the case ran on all ten.
+
+Why nothing flagged it:
+every check a gate runs reads a count,
+and the count did not move.
+The wait was constant,
+so it never looked like a flaky case,
+it sat inside one block of parallel cases,
+so no case reported it,
+and no case failed.
+A gate's wall time was read as a cost and not as a measurement:
+305 s in one gate was the same 305 s in the next,
+and a figure that does not change from gate to gate is not noticed.
+Nothing in the gate list compared a package's time with the gates before it.
+
+How it was found:
+the log of the package's `test:unit` prints each block's duration after its name,
+and the block of the lanes hooks read 300.3 s,
+which is the router's hold of 300000 ms to within the start-up of the block.
+A duration that matches a constant of the code under test is a sleep.
+
+Recurrence:
+M2 and M12,
+which record a gate read by its exit code and not by its `[FAIL]` lines,
+and B813,
+a real-clock wait that held in every run and was wrong in one.
+Those mistakes read a result too weakly;
+this one read a result and skipped its duration.
+
+Prevention:
+`mistake-prevention-tests-clocks-and-arrival-order.md`,
+"Tests on the real clock",
+and step 2 of "Before a run launches" in `mistake-prevention.md`:
+a gate compares each package's `test:unit` time with the same package's time in the gates before it
+whenever the time jumps,
+reads the block durations in the log,
+and takes any block whose duration matches a constant of the code under test as a sleep to be found.
+The real-clock scan reads the holds a test registers for a provider (B817).
+
+## M293: a count was expected from the corpus-pass test runner, and it prints none
+
+Status:
+found on 2026-10-22 (UTC) by the implementer of the review fixes of B818,
+who recorded it in the notes of that round.
+
+The test runner of the corpus-pass package prints no count of cases or files,
+so a gate that looks for "N passed" finds nothing,
+and a gate that takes the absence for a pass has read nothing.
+The same output also prints a `[PASS]` line for a suite with failing cases (M125),
+so that line alone proves no more than the count did.
+
+Prevention:
+`mistake-prevention-tasks-builds-and-bulk-output.md`,
+"Tasks,
+builds and bulk output":
+that package's gate reads the exit code,
+the `[FAIL]` lines (zero),
+and the `[PASS]` lines of the suites the change added or touched,
+by name (M288,
+and `AGENTS.md` rule TRV:
+a green run counts only when its output holds the expected suite and test names).
+
+## M294: the gate scanned the tree before a merge of main, and the merge brought in three doc lines that fail the source scan
+
+Status:
+fixed on 2026-10-22 (UTC).
+The three lines were fixed in `b18a4f7a40`,
+and the land script now holds the check that would have refused them.
+Found when main failed `source-scan` after the land merge `ecbbae7fa3`;
+gate g171 read the repaired tree green at 2803 tests and none failing.
+
+What happened:
+the gate that cleared the landing scanned the tree as it stood before main was merged into the translation-repair branch.
+The merge `ecbbae7fa3` (main at `1d46232457` into the branch) brought in three doc lines
+that the source scans refuse:
+a position reference with no named target in the evidence file of the `CuspariaKLSY23` read,
+another in its stages file,
+and zone-less clock times in the stages file of the `zheermao23` read.
+Each side had passed its own scans.
+The scans that read docs (clock times,
+position references,
+the Markdown linter) read the whole tree,
+so a merge of docs can fail them though neither parent does,
+and main stayed red until `b18a4f7a40` named the targets and zoned the times.
+
+Why nothing flagged it:
+the scan was run on the parents and not on the result,
+and a merge commit is the one tree no author and no gate had seen.
+
+Prevention:
+the land script runs `//package/translation-repair/source-scan:test:unit` on the merged tree whenever it merges main,
+and refuses to push when it fails.
+`mistake-prevention-docs-and-references.md`,
+"The Markdown linter",
+holds the rule and its limit:
+the scan imports the gate's `dist` builds,
+so a merge that changes markup,
+typography or document structure needs a fresh gate and not the scan alone.
+
+Recurrence:
+M250 and D35,
+where docs-only commits landed without the one task that reads the line limit and main went red.

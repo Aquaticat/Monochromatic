@@ -1,7 +1,9 @@
 import {
   BEDROCK_MANTLE_BASE_URL,
+  DEEPSEEK_BASE_URL,
   NEURALWATT_BASE_URL,
   SYNTHETIC_CHAT_BASE_URL,
+  XIAOMI_BASE_URL,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { CardProvider, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -24,6 +26,12 @@ export const LISTING_URL: Readonly<Record<CardProvider, string>> = {
   openrouter: 'https://openrouter.ai/api/v1/models',
   bedrock: `${BEDROCK_MANTLE_BASE_URL}/v1/models`,
   neuralwatt: `${NEURALWATT_BASE_URL}/models`,
+  // THE TWO DIRECT PROVIDERS SPEAK THE OPENAI-COMPATIBLE PROTOCOL, whose listing is `GET /models`. NEITHER ADDRESS
+  // WAS PROBED by the change that added them (no key was used and nothing was fetched): DeepSeek's rests on its
+  // documentation, and Xiaomi's API reference was read on 2026-10-22 without a listing page, so its address is the
+  // protocol's alone.
+  deepseek: `${DEEPSEEK_BASE_URL}/models`,
+  xiaomi: `${XIAOMI_BASE_URL}/models`,
 };
 
 /**
@@ -35,6 +43,8 @@ const KEY_VAR: Readonly<Record<CardProvider, string>> = {
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
   neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
+  deepseek: 'DEEPSEEK_API_KEY',
+  xiaomi: 'TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY',
 };
 
 /**

@@ -25,6 +25,7 @@ import {
   type DecisionRequest,
   statedWaitMsOf,
 } from '../dist/final/node/index.mjs';
+import { holdNothing, } from './provider-router-wet-budgets.test-fixture.ts';
 
 /**
  Abort signal every call in these cases carries.
@@ -79,6 +80,8 @@ function budgetsReading({ openrouterDry, }: { readonly openrouterDry: boolean; }
           synthetic: false,
           hyper: false,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: openrouterDry,
         };
       },
@@ -99,15 +102,7 @@ function budgetsReading({ openrouterDry, }: { readonly openrouterDry: boolean; }
           ...((paymentRequired === undefined) ? {} : { paymentRequired, }),
         },);
       },
-      holds: function holds() {
-        return {
-          neuralwatt: 0,
-          synthetic: 0,
-          hyper: 0,
-          bedrock: 0,
-          openrouter: 0,
-        };
-      },
+      holds: holdNothing,
     },
   };
 }

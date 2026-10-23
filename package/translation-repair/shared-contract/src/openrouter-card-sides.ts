@@ -36,7 +36,8 @@ export const GLM_5_3_FLASH_ON_OPENROUTER: OpenRouterCard = {
   // characters a reply, Parasail 38 at 99 s and 22,050, InferenceNet 52
   // at 114 s and 14,247, while Wafer served 40 at 14.5 s and 651 (XingZ624
   // and XingZ625 the same shape: Together 73 s and 82 s, Wafer 6.4 s and
-  // 9 s). The pipeline sends no reasoning parameter by the owner's rule,
+  // 9 s). OpenRouter is not cleared for thinking parameters (the owner's
+  // rulings of 2026-10-22 name no tier for it, so it counts as third tier),
   // so the seat names the measured endpoint instead.
   preferredEndpoints: ['wafer',],
   // Raw characters per completion token over pass-run logs, median of 15,239 streams
@@ -141,7 +142,8 @@ export const DEEPSEEK_V4_1_FLASH_ON_OPENROUTER: OpenRouterCard = {
   // at generating (186 and 219 characters a second after the first byte
   // against Morph's 168): they reason at length by default, 8,813 and
   // 8,355 characters a reply against Morph's 514, and the pipeline sends
-  // no reasoning parameter by the owner's rule. DekaLLM also answered 22
+  // no reasoning parameter to OpenRouter, which is not cleared for one
+  // (third tier, the owner's rulings of 2026-10-22). DekaLLM also answered 22
   // in-stream 502s. Ignoring the next cheapest endpoint each run chases
   // the listing (DeepInfra, Wafer, OpenInference, now these two, Relace
   // next and unmeasured), so the seat names Morph ahead of the price

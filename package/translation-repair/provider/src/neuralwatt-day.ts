@@ -273,6 +273,29 @@ export function neuralWattDayAfter({ start, }: { readonly start: Date; },): Date
 }
 
 /**
+ The time of day an anchor places the NeuralWatt day's start at, in UTC.
+
+ @param msOfDay - milliseconds after 00:00 UTC
+
+ @returns The time as `HH:MM:SS.sss`
+
+ @example
+ ```ts
+ neuralWattTimeOfDayUtc({ msOfDay: 69_308_000, },); // '19:15:08.000'
+ ```
+ */
+export function neuralWattTimeOfDayUtc({ msOfDay, }: { readonly msOfDay: number; },): string {
+  /**
+   The instant that many milliseconds into 1970-01-01, which spells the time of day.
+   */
+  const iso = new Date(msOfDay,).toISOString();
+  return iso.slice(
+    'YYYY-MM-DDT'.length,
+    'YYYY-MM-DDTHH:MM:SS.sss'.length,
+  );
+}
+
+/**
  Seconds between a failed read of the quota and the next attempt to read it for the same purpose: the cadence of the
  budget layer's meter readings, shared by the day anchor keeper and the quota session's starting reading.
  */

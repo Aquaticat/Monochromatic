@@ -24,6 +24,7 @@ import {
   gatherStageVoices,
   mapOverlapped,
   type OverlappedRow,
+  silentStageLabel,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { logBallotIrregularities, } from './ballot-irregularity-log.ts';
@@ -55,6 +56,16 @@ export type PanelStageResult = {
    Packet-located ballot irregularities in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   One label for each packet the panel heard fewer voices than its quorum on, naming the cluster, such as
+   `panel 0/6 (cluster/abc)`; empty when every packet reached its quorum.
+
+   DATA BESIDE THE LOCATED FINDING, because that finding begins `panel-packet (cluster): ` and so no reader of
+   where a finding begins finds the silence: XingZ6018 slice 85 heard nobody on five packets, its 12 issues all stood
+   at needs-human, and the settlement was cached as examined.
+   */
+  readonly silentStages: readonly string[];
 };
 
 /**
@@ -100,6 +111,11 @@ type PanelPacketResult = {
    Packet-specific participation and wire findings.
    */
   readonly findings: readonly string[];
+
+  /**
+   The label of this packet when its gather heard fewer voices than quorum, else empty.
+   */
+  readonly silentStages: readonly string[];
 };
 
 /**
@@ -437,6 +453,18 @@ export async function runPanelStage(
         ].map(function locate(finding,): string {
           return `panel-packet (${cluster.clusterId}): ${finding}`;
         },),
+        silentStages: gather.quorumMet
+          ? []
+          : [
+            silentStageLabel({
+              stage: 'panel',
+              heard: gather.voices
+                .length,
+              asked: gather.asked
+                .size,
+              where: cluster.clusterId,
+            },),
+          ],
       };
     },
   },);
@@ -453,6 +481,9 @@ export async function runPanelStage(
     heardPanelists: heard.size,
     findings: outcomes.flatMap(function diagnostics(outcome,): readonly string[] {
       return outcome.findings;
+    },),
+    silentStages: outcomes.flatMap(function silence(outcome,): readonly string[] {
+      return outcome.silentStages;
     },),
   };
 }

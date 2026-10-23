@@ -64,6 +64,8 @@ export function unchangedChunkOutcome(
     heardCritics: critic.heardCritics,
     heardCriticIds: critic.heardCriticIds,
     claimAttributions: critic.claimAttributions,
+    // NO STAGE AFTER THE CRITICS RAN on the exits that spread this before the panel; a later exit gives the panel's.
+    silentStages: [],
   };
 }
 

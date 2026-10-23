@@ -35,6 +35,7 @@ import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import {
   readOlderProvidersWet,
   stubWetBudgets,
+  holdNothing,
 } from './provider-router-wet-budgets.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
@@ -84,15 +85,7 @@ function stubFullyWetBudgets(): ReturnType<typeof stubWetBudgets> {
     markRefused: async function markNobodyRefused(): Promise<void> {
       return undefined;
     },
-    holds: function holdNothingBack(): ProviderRecord<number> {
-      return {
-        neuralwatt: 0,
-        synthetic: 0,
-        hyper: 0,
-        bedrock: 0,
-        openrouter: 0,
-      };
-    },
+    holds: holdNothing,
   };
 }
 
@@ -120,6 +113,8 @@ function stubBudgetsDryOnceRefused(): ReturnType<typeof stubWetBudgets> {
         synthetic: refused.has('synthetic',),
         hyper: refused.has('hyper',),
         bedrock: refused.has('bedrock',),
+        deepseek: refused.has('deepseek',),
+        xiaomi: refused.has('xiaomi',),
         openrouter: refused.has('openrouter',),
       };
     },
@@ -225,6 +220,8 @@ function stubProviders(
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),
+      deepseek: callerFor('deepseek',),
+      xiaomi: callerFor('xiaomi',),
       openrouter: callerFor('openrouter',),
     },
   };

@@ -265,6 +265,15 @@ export async function repairChunk(
   },);
 
   /**
+   The unchanged outcome of an exit past the panel, which also says whether the panel heard nobody on some packet:
+   a settlement the panel was deaf to reads "nothing to edit" and would be cached as examined.
+   */
+  const unchangedAfterPanel = {
+    ...unchangedOutcome,
+    silentStages: panel.silentStages,
+  };
+
+  /**
    Panel issues with same-place accepted duplicates merged into one.
 
    Applied HERE, before envelopes are cut, because the cost a duplicate
@@ -311,7 +320,7 @@ export async function repairChunk(
   if (envelopes.length === 0) {
     l.info(`chunk ${String(sliceIndex,)}: nothing to edit, unchanged`,);
     return {
-      ...unchangedOutcome,
+      ...unchangedAfterPanel,
       issues: recordedIssues,
       findings: stageFindings,
     };
@@ -361,7 +370,7 @@ export async function repairChunk(
     === 0) {
     l.info(`chunk ${String(sliceIndex,)}: no operation survived the gate, unchanged`,);
     return {
-      ...unchangedOutcome,
+      ...unchangedAfterPanel,
       issues: recordedIssues,
       rounds: editor.rounds,
       findings: [
@@ -421,7 +430,7 @@ export async function repairChunk(
     === 0) {
     l.info(`chunk ${String(sliceIndex,)}: every edit was stripped as worse-voted, unchanged`,);
     return {
-      ...unchangedOutcome,
+      ...unchangedAfterPanel,
       issues: recordedIssues,
       rounds: editor.rounds,
       findings: [
@@ -486,6 +495,7 @@ export async function repairChunk(
     heardCritics: critic.heardCritics,
     heardCriticIds: critic.heardCriticIds,
     claimAttributions: critic.claimAttributions,
+    silentStages: panel.silentStages,
     findings: [
       ...stageFindings,
       ...editor.findings,

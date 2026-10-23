@@ -63,6 +63,7 @@ import {
   routedTextElsewhere,
 } from './provider-router-reask.ts';
 import type { RoutedReply, } from './provider-router-reply.ts';
+import { DEEPSEEK_PER_MODEL_CONCURRENCY, } from './deepseek-client.ts';
 import { NEURALWATT_PER_MODEL_CONCURRENCY, } from './neuralwatt-client.ts';
 import type { ProviderCallers, } from './provider-callers.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
@@ -131,6 +132,11 @@ const DEFAULT_SLOT_LIMITS: SlotLimits = {
   synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
+  // DeepSeek states 2,500 concurrent requests for its one model (2026-10-22,
+  // `deepseek-client.ts`), the only real ceiling in this table; Xiaomi states
+  // a request rate instead, which its pacer meets (`paces`).
+  deepseek: DEEPSEEK_PER_MODEL_CONCURRENCY,
+  xiaomi: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -322,6 +328,7 @@ export function createRoutingClient(
     const dry = await readBudgetsPastHolds({
       budgets,
       modelId: request.modelId,
+      reach,
       signal: request.signal,
       refused,
       pollMs: holdPollMs,
@@ -331,6 +338,11 @@ export function createRoutingClient(
      How long each pacing provider's window would make this call wait.
      */
     const waits = paceWaitsOf({ paces, },);
+
+    /**
+     What the run knows of NeuralWatt's day, for the refusal that ends the run to state when its energy returns.
+     */
+    const neuralwatt = budgets.neuralwattReturn?.();
 
     /**
      Where the owner's policy sends this call: a provider whose slots are all
@@ -345,6 +357,8 @@ export function createRoutingClient(
         saturated: ledger.saturated({ modelId: request.modelId, },),
         waits,
       },),
+      // Conditional spread keeps the day absent on budgets that report none.
+      ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     },);
 
     logWindowOverflow({
@@ -480,18 +494,9 @@ export function createRoutingClient(
      */
     const last: { refused: ProviderName | typeof NOBODY_REFUSED; } = { refused: NOBODY_REFUSED, };
 
-    /**
-     What is left of this model's own hold, zero when it is free.
-     */
-    const heldMs = modelHolds.remainingMs({ modelId: request.modelId, },);
-    if (heldMs > 0) {
-      // REFUSED WITHOUT A CALL, so a round counts the seat unreachable and
-      // neither asks nor waits for it (class sixty-four).
-      throw new NoProviderForModelError({
-        modelId: request.modelId,
-        reason: `its upstream endpoint rate-limited this model; held out for another ${String(heldMs,)}ms`,
-      },);
-    }
+    // REFUSED WITHOUT A CALL while the model's own hold runs, so a round counts the seat unreachable and neither
+    // asks nor waits for it (class sixty-four).
+    modelHolds.refuseWhileHeld({ modelId: request.modelId, },);
 
     /**
      Which providers serve this call at all. COUNTED OVER THE REACH RATHER

@@ -98,6 +98,7 @@ function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
     heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   };
 }
 
@@ -222,6 +223,58 @@ await describe({
             expect(second.resumed.size,).toBe(1,);
             expect(second.resumed.has('slice-hash-heard',),).toBe(true,);
             expect(second.resumed.has('slice-hash-silent',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'DISCARDS A SETTLEMENT WHOSE PANEL HEARD NOBODY, the record XingZ6018 slice 85 left (12 needs-human '
+            + 'issues, four critics heard, findings `panel-packet (cluster/...): stage-quorum-unmet (panel 0/6)` and '
+            + 'no field naming the silence), and one that carries the silence as data, so the slice is bought again',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
+            /**
+             Entry directory for this case.
+             */
+            const dir = join(
+              scratch.path,
+              'Mittens',
+            );
+            /**
+             The findings the XingZ6018 record held, panel findings located by cluster.
+             */
+            const located = [
+              'panel-packet (cluster/140d4baeb9bc14cc): stage-quorum-unmet (panel 0/6)',
+              'panel-packet (cluster/445028edbb565f77): stage-quorum-unmet (panel 0/5)',
+            ];
+            /**
+             That record as the build before this one wrote it: no `silentStages` field at all.
+             */
+            const { silentStages: _absent, ...legacy } = catOutcome({ sliceIndex: 85, },);
+            void _absent;
+            const first = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+            await first.persist({
+              key: 'slice-hash-legacy-silent-panel',
+              serialized: JSON.stringify({ ...legacy, heardCritics: 4, findings: located, },),
+            },);
+            await first.persist({
+              key: 'slice-hash-typed-silent-panel',
+              serialized: JSON.stringify({
+                ...catOutcome({ sliceIndex: 85, },),
+                heardCritics: 4,
+                findings: located,
+                silentStages: ['panel 0/6 (cluster/140d4baeb9bc14cc)', 'panel 0/5 (cluster/445028edbb565f77)',],
+              },),
+            },);
+            await first.persist({
+              key: 'slice-hash-heard',
+              serialized: JSON.stringify(catOutcome({ sliceIndex: 1, },),),
+            },);
+            /**
+             Cache reopened, which is what a resumed run does.
+             */
+            const second = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+            expect(second.resumed.has('slice-hash-legacy-silent-panel',),).toBe(false,);
+            expect(second.resumed.has('slice-hash-typed-silent-panel',),).toBe(false,);
+            expect(second.resumed.has('slice-hash-heard',),).toBe(true,);
           },
         },),
         it({

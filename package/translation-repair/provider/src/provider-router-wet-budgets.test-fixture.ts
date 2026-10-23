@@ -29,6 +29,8 @@ function readWetBudgets(): Promise<BudgetView> {
     synthetic: true,
     hyper: false,
     bedrock: false,
+    deepseek: false,
+    xiaomi: false,
     openrouter: false,
   },);
 }
@@ -51,6 +53,8 @@ export function readOlderProvidersWet(): Promise<BudgetView> {
     synthetic: false,
     hyper: false,
     bedrock: false,
+    deepseek: false,
+    xiaomi: false,
     openrouter: false,
   },);
 }
@@ -77,12 +81,14 @@ function markNothingRefused(): Promise<void> {
  const held = holdNothing();
  ```
  */
-function holdNothing(): ProviderRecord<number> {
+export function holdNothing(): ProviderRecord<number> {
   return {
     neuralwatt: 0,
     synthetic: 0,
     hyper: 0,
     bedrock: 0,
+    deepseek: 0,
+    xiaomi: 0,
     openrouter: 0,
   };
 }

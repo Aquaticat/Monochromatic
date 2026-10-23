@@ -5,6 +5,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type {
+  EveryProviderDryError,
   JsonSchemaResponseFormat,
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -20,6 +21,7 @@ import {
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { roundLine, } from './stage-round-line.ts';
+import { isDryRefusal, } from './stage-run-end.ts';
 import { StragglerCutError, } from './straggler-cut.ts';
 
 //region Stage round
@@ -116,7 +118,8 @@ export type RoundOutcome<ValueT,> = {
  rejection as the caller's own abort.
 
  AN ASK REJECTS ONLY ONCE THE CALLER'S SIGNAL HAS ABORTED: `askOnce` turns
- every other failure into a lost voice. What it rejects with is whatever ITS
+ every other failure into a lost voice, bar the router's every-provider-dry
+ refusal, which it rethrows as it is. What it rejects with is whatever ITS
  call caught, which is the caller's forwarded reason unless the call's own
  deadline or transport failure landed as the caller aborted. So two asks
  could reject with different values, and the race handed the round whichever
@@ -510,6 +513,12 @@ export async function runGatherRound<ValueT,>(
   const taken: RosterModelId[] = [];
 
   /**
+   Refusals that end the run, as the asks that met them raised them, kept so the grace window's wait, which swallows a
+   rejected ask, can raise the first.
+   */
+  const dryRefusals: EveryProviderDryError[] = [];
+
+  /**
    Router refusals this round has seen, which the wait for quorum reads.
    */
   const refusals: RefusalTally = {
@@ -563,6 +572,10 @@ export async function runGatherRound<ValueT,>(
 
    @throws Whatever the seat's call raised, once the caller aborted, having
    written it on the seat's line unless it is the caller's reason itself
+
+   @throws `EveryProviderDryError`, unchanged, when the router found no
+   provider with budget left, which ends the round and the run instead of
+   costing one seat its voice
    */
   async function askOnce(
     {
@@ -612,6 +625,12 @@ export async function runGatherRound<ValueT,>(
       // first. Rendered as the seat's lost voice is (`attemptStageCall`), so
       // a refusal keeps its status and the provider's words, the key masked
       // where the transport built it.
+      // EVERY PROVIDER DRY ENDS THE RUN, so the round fails with it rather than turning it into an abandoned
+      // straggler: no other seat can be served either.
+      if (isDryRefusal(error,)) {
+        dryRefusals.push(error,);
+        throw error;
+      }
       if (signal.aborted) {
         if (error !== signal.reason) {
           l.warn(
@@ -736,6 +755,15 @@ export async function runGatherRound<ValueT,>(
     promise: Promise.allSettled(asks,),
     ms: graceMs,
   },);
+  // A DRY REFUSAL THAT LANDED IN THE WINDOW ENDS THE RUN TOO. `allSettled` swallows the ask that raised it, and the
+  // position would come out of the assembly as a silent seat in an ordinary thin roster, so the refusal `askOnce`
+  // recorded as it ended is raised here. Before quorum it already surfaced through `awaitHeard`.
+  /**
+   The first such refusal, absent when none landed.
+   */
+  const [dryRefusal,] = dryRefusals;
+  if (dryRefusal !== undefined)
+    throw dryRefusal;
   // ABORTED WITH A REASON THE SEAT TALLY READS: a call this cuts is the straggler window closing, which counts against
   // its seat when the call had delivered nothing (`seat-tally.ts`), where a caller leaving never does.
   abandon.abort(new StragglerCutError(),);

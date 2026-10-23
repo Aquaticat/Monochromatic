@@ -33,9 +33,13 @@ export {
   PROVIDERS_LEFT_OFF,
 } from './corpus-run/providers-off.ts';
 export {
+  isRequirable,
+  REQUIRABLE_PROVIDERS,
+  type RequiredProvider,
+} from './corpus-run/requirable-providers.ts';
+export {
   assertRequiredProvidersReady,
   readRequiredProviders,
-  type RequiredProvider,
   RequiredProviderError,
 } from './corpus-run/required-providers.ts';
 export { type RunClient, } from './corpus-run/run-client-contract.ts';
@@ -79,6 +83,7 @@ export {
   readPhaseSeats,
   type SeatReadingClient,
 } from './corpus-run/run-seats-read.ts';
+export { writtenRefusal, } from './corpus-run/run-seats-refusal.ts';
 export {
   type BenchName,
   type JudgeSeatPhase,

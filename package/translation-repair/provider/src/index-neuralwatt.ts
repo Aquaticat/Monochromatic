@@ -13,6 +13,7 @@ export {
   neuralWattModelsUrlFor,
   neuralWattUsageByModelUrlFor,
 } from './neuralwatt-catalog.ts';
+export { type NeuralWattReturn, } from './budget-routing.ts';
 export {
   createNeuralWattClient,
   NEURALWATT_PER_MODEL_CONCURRENCY,

@@ -286,6 +286,8 @@ await describe({
               synthetic: true,
               hyper: true,
               bedrock: true,
+              deepseek: false,
+              xiaomi: false,
               openrouter: true,
             },);
           },
@@ -304,6 +306,8 @@ await describe({
               synthetic: false,
               hyper: true,
               bedrock: false,
+              deepseek: false,
+              xiaomi: false,
               openrouter: true,
             },);
 
@@ -312,6 +316,8 @@ await describe({
               synthetic: false,
               hyper: true,
               bedrock: true,
+              deepseek: false,
+              xiaomi: false,
               openrouter: true,
             },);
           },
@@ -357,6 +363,8 @@ await describe({
               synthetic: false,
               hyper: true,
               bedrock: false,
+              deepseek: false,
+              xiaomi: false,
               openrouter: true,
             },);
 
@@ -365,6 +373,8 @@ await describe({
               synthetic: false,
               hyper: true,
               bedrock: false,
+              deepseek: false,
+              xiaomi: false,
               openrouter: true,
             },);
           },
@@ -379,6 +389,8 @@ await describe({
               synthetic: true,
               hyper: true,
               bedrock: false,
+              deepseek: false,
+              xiaomi: false,
               openrouter: false,
             },);
           },
@@ -393,6 +405,8 @@ await describe({
               synthetic: false,
               hyper: false,
               bedrock: false,
+              deepseek: false,
+              xiaomi: false,
               openrouter: false,
             },);
           },
@@ -410,6 +424,8 @@ await describe({
               synthetic: false,
               hyper: false,
               bedrock: true,
+              deepseek: false,
+              xiaomi: false,
               openrouter: true,
             },);
             expect(visionReachOf({ modelId: SEAT_BEDROCK_ONLY_TEXT, },),).toEqual({
@@ -417,6 +433,8 @@ await describe({
               synthetic: false,
               hyper: false,
               bedrock: false,
+              deepseek: false,
+              xiaomi: false,
               openrouter: false,
             },);
           },

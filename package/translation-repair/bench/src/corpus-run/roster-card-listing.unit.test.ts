@@ -41,6 +41,8 @@ const KEY_VARIABLE_OF = {
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
   neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
+  deepseek: 'DEEPSEEK_API_KEY',
+  xiaomi: 'TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY',
 } as const;
 
 /**
@@ -52,6 +54,8 @@ const PROVIDERS = [
   'openrouter',
   'bedrock',
   'neuralwatt',
+  'deepseek',
+  'xiaomi',
 ] as const;
 
 await describe({

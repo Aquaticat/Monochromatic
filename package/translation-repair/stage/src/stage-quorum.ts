@@ -31,7 +31,10 @@ import {
   repeatedRosterIds,
   StageRosterRepeatError,
 } from './stage-roster-repeat.ts';
-import { stageQuorumUnmetFinding, } from './stage-silence.ts';
+import {
+  lostVoiceFindings,
+  rosterShortfallFindings,
+} from './stage-voice-lost.ts';
 import {
   RUN_SEATS,
   type SeatTally,
@@ -560,82 +563,15 @@ export async function gatherStageVoices<ValueT,>(
   }
 
   /**
-   Shortfall wording shared by both degradation findings: heard against
-   asked, since a seat the window spared was never owed an answer.
+   One finding per model that went quiet, emitted even when quorum was met (`stage-voice-lost.ts` says why).
    */
-  const shortfall = `${stage} ${String(voices.length,)}/${String(asked.size,)}`;
-
-  /**
-   Models that were asked and never answered, in roster order.
-   */
-  const unheard = seated.filter(function askedAndNeverHeard(modelId,): boolean {
-    if (!asked.has(modelId,))
-      return false;
-    return !voices.some(function isVoice(voice,): boolean {
-      return voice.modelId === modelId;
-    },);
+  const lostFindings: readonly string[] = lostVoiceFindings({
+    stage,
+    seated,
+    asked,
+    voices,
   },);
 
-  /**
-   Naming of every model that went quiet, which the ARTIFACT carries and a
-   log line does not.
-
-   Voice loss reached only `l.warn` before this. That made every question
-   about it, which model, which stage, how often, answerable solely from a
-   captured run log, and on 2026-08-13 a run spent twenty minutes writing its
-   log into a pipe whose reader had exited: the losses happened and nothing
-   recorded them. Findings travel into the per-entry artifact, which is
-   written durably and survives whatever spawned the pass.
-
-   Emitted even when quorum was MET, which is the case the old findings
-   dropped entirely and the one that hides a model degrading quietly while
-   the stage still looks healthy.
-
-   ONE FINDING PER MODEL rather than one naming a list, so counting the
-   findings counts voices lost. A list-valued finding counts GATHERS that
-   lost at least one voice, which is a different number, and reading the
-   first as the second is the mistake that made the earlier per-model tally
-   unusable: it summed to 113 mentions over 97 lines and was reported as
-   though it were events.
-   */
-  const lostFindings: readonly string[] = unheard.map(function toFinding(modelId,): string {
-    return `stage-voice-lost (${stage} ${modelId})`;
-  },);
-
-  if (!quorumMet) {
-    return {
-      voices,
-      quorumMet,
-      quorum: quorum.needed,
-      findings: [
-        ...shortFindings,
-        ...lostFindings,
-        stageQuorumUnmetFinding({ shortfall, },),
-      ],
-      asked,
-      unreachable,
-      unreadable,
-    };
-  }
-  // Emitted whenever the roster ended short, not only when retries were still
-  // chasing it. The ratio is the part per-model loss findings cannot carry, and
-  // a stage that met quorum with a voice missing is exactly the case that reads
-  // as healthy everywhere else.
-  if (voices.length < asked.size) {
-    return {
-      voices,
-      quorumMet,
-      quorum: quorum.needed,
-      findings: [
-        ...shortFindings,
-        ...lostFindings,
-        `stage-roster-incomplete (${shortfall})`,
-      ],
-      asked,
-      unreachable,
-      unreadable,
-    };
-  }
   return {
     voices,
     quorumMet,
@@ -643,6 +579,12 @@ export async function gatherStageVoices<ValueT,>(
     findings: [
       ...shortFindings,
       ...lostFindings,
+      ...rosterShortfallFindings({
+        stage,
+        quorumMet,
+        voices,
+        asked,
+      },),
     ],
     asked,
     unreachable,

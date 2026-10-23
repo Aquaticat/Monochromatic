@@ -80,6 +80,8 @@ const ALL_WET: BudgetView = {
   synthetic: false,
   hyper: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   openrouter: false,
 };
 
@@ -91,6 +93,8 @@ const SYNTHETIC_DRY: BudgetView = {
   synthetic: true,
   hyper: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   openrouter: false,
 };
 
@@ -102,6 +106,8 @@ const OPENROUTER_ONLY: BudgetView = {
   synthetic: true,
   hyper: true,
   bedrock: true,
+  deepseek: false,
+  xiaomi: false,
   openrouter: false,
 };
 
@@ -367,6 +373,8 @@ await describe({
           synthetic: true,
           hyper: true,
           bedrock: false,
+          deepseek: false,
+          xiaomi: false,
           openrouter: false,
         };
         /** Benches read under that view. */

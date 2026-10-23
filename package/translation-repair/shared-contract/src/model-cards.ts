@@ -1,3 +1,7 @@
+import {
+  DEEPSEEK_V4_1_FLASH_ON_DEEPSEEK,
+  MIMO_V2_6_FLASH_ON_XIAOMI,
+} from './direct-card-sides.ts';
 import type { ModelCard, } from './model-card.ts';
 import {
   DEEPSEEK_V4_1_FLASH_ON_NEURALWATT,
@@ -19,8 +23,9 @@ import type { RosterModelId, } from './roster-id.ts';
 // `openrouter-abandoned-spend.ts`, `run-config.ts`, `run-seats.ts`) and in
 // `doc/decision/translation-repair-roster-seating-2026-09-01.md`. The
 // NeuralWatt sides and the OpenRouter sides that name their endpoints sit
-// in `neuralwatt-card-sides.ts` and `openrouter-card-sides.ts`, with their
-// evidence.
+// in `neuralwatt-card-sides.ts` and `openrouter-card-sides.ts`, and the two
+// direct sides (DeepSeek's and Xiaomi's own APIs, each serving one model) in
+// `direct-card-sides.ts`, with their evidence.
 //
 // TO ADD A MODEL: run `mise run roster-card -- <provider> <served id>` for a
 // card with the live listing's fields, paste it here with `completionCap:
@@ -303,6 +308,13 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
   // and this card has no Synthetic side; seating one would be a new route
   // and not a migration, so none was added.
   //
+  // DEEPSEEK'S OWN API IS A ROUTE OF THIS CARD SINCE 2026-10-22, as
+  // `deepseek-flash`, which DeepSeek's documentation says is served by
+  // DeepSeek-V4.1-Flash-1017: the 1017 claim rests on that documentation,
+  // since no dated id exists to send. The owner's grant limits that key to
+  // this model, and the route carries no retention promise (the owner's PII
+  // ruling of 2026-10-05 permits it).
+  //
   // THE MEASURED VALUES ON THIS CARD WERE MEASURED ON THE PRE-1017 IDS and
   // carry over as an assumption until the first runs on 1017 measure them
   // again: the completion cap, Hyper's `maxOutputLength`, `rawCharsPerToken`,
@@ -325,6 +337,10 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // The hold on this card was recorded before NeuralWatt joined and stays: no
     // transcription of a picture has been measured on any stack of this model.
     neuralwatt: DEEPSEEK_V4_1_FLASH_ON_NEURALWATT,
+    // DEEPSEEK'S OWN API, 2026-10-22: `deepseek-flash`, the one model the
+    // owner's DeepSeek key is granted for ("you may only use deepseek v4.1
+    // flash 1017 with that key"; `direct-card-sides.ts`). No hold changes.
+    deepseek: DEEPSEEK_V4_1_FLASH_ON_DEEPSEEK,
     // HYPER'S 99TH PERCENTILE IS THE CAP ITSELF (ledger P10, 2026-09-28).
     // The card said "no completed-call distribution of its own yet" long
     // after it had one. Over pass-run logs since the caps went on the wire,
@@ -464,21 +480,29 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 131_072,
       promptUsdPerMillion: 0.14,
       completionUsdPerMillion: 0.28,
-      // DEEPINFRA IS THE ONLY ENDPOINT THE RUN CAN REACH, so no preference is
-      // named. Of the two endpoints listed on 2026-09-27 only DeepInfra is on
-      // OpenRouter's zero-data-retention list (`/api/v1/endpoints/zdr`), and
-      // every request carries `zdr: true`; Xiaomi's own endpoint is not, so
-      // `order: ['xiaomi']` changed nothing (17 of 17 calls still DeepInfra).
-      // Through the run client the 170 checker sheets answered at 3,859 ms
-      // median and 22,406 ms at the ninetieth percentile, one stream cut
-      // short; by raw fetch without `zdr` they answered at 349 and 809 ms,
-      // which is the non-retaining route this pipeline does not use.
+      // DEEPINFRA IS THE ONLY ENDPOINT THIS ROUTE CAN REACH, so no preference
+      // is named. Of the two endpoints listed on 2026-09-27 only DeepInfra is
+      // on OpenRouter's zero-data-retention list (`/api/v1/endpoints/zdr`), and
+      // every request here carries `zdr: true`; Xiaomi's own endpoint is not,
+      // so `order: ['xiaomi']` changed nothing (17 of 17 calls still
+      // DeepInfra). Through the run client the 170 checker sheets answered at
+      // 3,859 ms median and 22,406 ms at the ninetieth percentile, one stream
+      // cut short; by raw fetch without `zdr` they answered at 349 and 809 ms.
+      // SINCE 2026-10-22 THE PIPELINE ALSO REACHES XIAOMI'S OWN ENDPOINT
+      // DIRECTLY, with the owner's key and under the `xiaomi` side of this
+      // card: no retention promise, permitted by the owner's PII ruling of
+      // 2026-10-05 and by the grant ("You may only use v2.6-flash with this
+      // key"). That route is ahead of this one in the provider order.
       ignoredEndpoints: [],
       preferredEndpoints: [],
       // Raw characters per completion token over pass-run logs, median of 78 run
       // streams, all since 2026-09-21 (ledger P7, 2026-09-28).
       rawCharsPerToken: 93,
     },
+    // XIAOMI'S OWN API, 2026-10-22: `mimo-v2.6-flash`, the one model the
+    // owner's Xiaomi key is granted for (`direct-card-sides.ts`). No hold
+    // changes.
+    xiaomi: MIMO_V2_6_FLASH_ON_XIAOMI,
     // 78 completed calls on OpenRouter, p99 1,719, under the 100 calls the
     // rule reads (`completion-cap.ts`; ledger P10, 2026-09-28).
     completionCap: 'pooled-p99',

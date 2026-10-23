@@ -170,6 +170,10 @@ const SEAT_OF_SERVED: ReadonlyMap<string, RosterModelId> = new Map(
         .id}`,]),
       ...((card.bedrock === undefined) ? [] : [`bedrock ${card.bedrock
         .id}`,]),
+      ...((card.deepseek === undefined) ? [] : [`deepseek ${card.deepseek
+        .id}`,]),
+      ...((card.xiaomi === undefined) ? [] : [`xiaomi ${card.xiaomi
+        .id}`,]),
     ].map(function keyed(key,): readonly [
       string,
       RosterModelId

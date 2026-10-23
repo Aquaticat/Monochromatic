@@ -32,6 +32,8 @@ const ONE_SYNTHETIC_SLOT = {
   synthetic: 1,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
+  deepseek: Number.POSITIVE_INFINITY,
+  xiaomi: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -50,6 +52,8 @@ await describe({
           synthetic: false,
           hyper: false,
           bedrock: false,
+          deepseek: false,
+          xiaomi: false,
           openrouter: false,
         },);
         ledger.take({
@@ -69,6 +73,8 @@ await describe({
           synthetic: true,
           hyper: false,
           bedrock: false,
+          deepseek: false,
+          xiaomi: false,
           openrouter: false,
         },);
         expect(ledger.limits({ provider: 'synthetic', },),).toBe(true,);

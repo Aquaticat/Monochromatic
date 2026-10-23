@@ -84,6 +84,13 @@ which lists every file of these commitments.
   a page that does not parse stays as it was and is reported.
   A pass meets an older build's pages only on a resume the operator opted into,
   since the build-generation guard refuses one otherwise.
+  The entry in flight when the router's every-provider-dry refusal stops a run is not shipped:
+  it stays `INCOMPLETE` and resumable with its cache,
+  and the entries settled earlier ship.
+  That is a ruling of the lead of 2026-10-22,
+  open to the owner's veto
+  ([the rulings of 2026-10-22](design-commitments-rulings-of-2026-10-22.md),
+  ledger B821).
 - **A settled page ships with its defects reported.**
   Owner,
   2026-09-27,

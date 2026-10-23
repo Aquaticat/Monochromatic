@@ -132,6 +132,7 @@ function catOutcome(
     heardCriticIds: [],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   };
 }
 

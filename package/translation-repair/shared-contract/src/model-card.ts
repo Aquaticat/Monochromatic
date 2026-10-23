@@ -1,10 +1,12 @@
 import type {
   BedrockServedId,
+  DeepSeekServedId,
   HyperServedId,
   NeuralWattServedId,
   OpenRouterDecisionId,
   OpenRouterServedId,
   SyntheticServedId,
+  XiaomiServedId,
 } from './roster-id.ts';
 
 //region Model card
@@ -324,22 +326,84 @@ export type NeuralWattCard = ServedCard<NeuralWattServedId> & {
   /**
    Reasoning effort sent with a call that carries a picture, on this
    provider only. THE ONLY REQUEST PARAMETER ANY CARD CAN NAME, and it lives
-   on this side alone, so no other provider's client has a field to read.
-   The owner, 2026-10-21: "NeuralWatt is a special case of all the
+   on this side alone, so no other provider's client has a field to read:
+   the other providers cleared for thinking parameters have none measured yet:
+   DeepSeek and Xiaomi (first rate), and Anthropic, which the owner ruled
+   first rate although no direct Anthropic client exists yet (one is being
+   built), so no client here sends it one. The rest are third tier. The owner, 2026-10-21: "NeuralWatt is a special case of all the
    providers: It implements what it documents correctly, almost always -
-   I'm lifting the ban on passing params, but only for NeuralWatt." Absent
-   where no picture reading on this model has been measured to need one.
+   I'm lifting the ban on passing params, but only for NeuralWatt." On
+   2026-10-22: "Anthropic counts as first rate, neuralwatt counts as second
+   rate", "NeuralWatt does implement what they document correctly, so
+   they're clear on thinking params", and "we should never disable thinking
+   on anything", so no value here turns thinking off. Absent where no
+   picture reading on this model has been measured to need one.
    */
   readonly pictureReasoningEffort?: NeuralWattReasoningEffort;
 
   /**
    Reasoning effort sent with a call that carries no picture, on this
-   provider only, under the same lift of the owner's ban (2026-10-21, "only
-   for NeuralWatt"). Absent where the repo records no `supported_efforts` list
+   provider only, under the same clearance (2026-10-21, "only for NeuralWatt";
+   2026-10-22, second rate). Absent where the repo records no `supported_efforts` list
    for the model, so a call to it sends nothing. Never a field of another
    provider's card.
    */
   readonly textReasoningEffort?: NeuralWattReasoningEffort;
+};
+
+/**
+ DeepSeek's own API's side of a card: the one model the owner's key there is
+ granted for, priced the way DeepSeek's page prices it.
+
+ @example
+ ```ts
+ const card: DeepSeekCard = { id: 'deepseek-flash', readsImages: true, maxOutputLength: 393_216, promptCacheHitUsdPerMillion: 0.006, promptCacheMissUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, };
+ ```
+ */
+export type DeepSeekCard = ServedCard<DeepSeekServedId> & {
+  /**
+   USD per million prompt tokens served from DeepSeek's cache, at the peak
+   price (the upper bound: peak is 01:00 to 04:00 UTC and 06:00 to 10:00 UTC,
+   Monday to Friday, excluding Chinese public holidays, and the run cannot
+   know the holidays, so every call is priced as if at peak).
+   */
+  readonly promptCacheHitUsdPerMillion: number;
+
+  /**
+   USD per million prompt tokens not served from the cache, at the peak price.
+   */
+  readonly promptCacheMissUsdPerMillion: number;
+
+  /**
+   USD per million completion tokens, thinking included, at the peak price.
+   */
+  readonly completionUsdPerMillion: number;
+};
+
+/**
+ Xiaomi's own API's side of a card: the one model the owner's key there is
+ granted for, priced the way Xiaomi's pay-as-you-go page prices it.
+
+ @example
+ ```ts
+ const card: XiaomiCard = { id: 'mimo-v2.6-flash', readsImages: true, maxOutputLength: 131_072, promptCacheHitUsdPerMillion: 0.0028, promptCacheMissUsdPerMillion: 0.14, completionUsdPerMillion: 0.28, };
+ ```
+ */
+export type XiaomiCard = ServedCard<XiaomiServedId> & {
+  /**
+   USD per million prompt tokens served from Xiaomi's cache.
+   */
+  readonly promptCacheHitUsdPerMillion: number;
+
+  /**
+   USD per million prompt tokens not served from the cache.
+   */
+  readonly promptCacheMissUsdPerMillion: number;
+
+  /**
+   USD per million completion tokens, thinking included.
+   */
+  readonly completionUsdPerMillion: number;
 };
 
 /**
@@ -412,6 +476,18 @@ export type ModelCard = {
    NeuralWatt's entry, where it serves the model on the standard lane.
    */
   readonly neuralwatt?: NeuralWattCard;
+
+  /**
+   DeepSeek's own API's entry, on the one card the owner's key there is
+   granted for.
+   */
+  readonly deepseek?: DeepSeekCard;
+
+  /**
+   Xiaomi's own API's entry, on the one card the owner's key there is granted
+   for.
+   */
+  readonly xiaomi?: XiaomiCard;
 
   /**
    OpenRouter's decisions endpoint's entry, where it serves the model as a

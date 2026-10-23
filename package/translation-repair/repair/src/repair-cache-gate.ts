@@ -1,5 +1,5 @@
 import type { ChunkRepairOutcome, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import { silentStagesOf, } from '@monochromatic-dev/translation-repair-stage/ts';
+import { silentStagesOfRecord, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Repair cache gate
 // WHY A SETTLED SLICE MAY NOT BE CACHED, said as reasons rather than as a
@@ -10,6 +10,10 @@ import { silentStagesOf, } from '@monochromatic-dev/translation-repair-stage/ts'
 // an ordinary "unchanged" exit with critics heard and only a finding says
 // otherwise. Cached, that finding travelled with a record every later run
 // resumed as "examined and found nothing to change".
+//
+// THE SILENCE IS READ FROM THE OUTCOME'S DATA FIRST (`silentStages`, then the plain findings), because a stage that
+// locates its findings by place hides them from a reader of where a finding begins: XingZ6018 slice 85, whose panel
+// heard nobody on five packets, was cached as examined for that reason.
 
 /**
  Reasons a settled slice must not be cached, empty when it may be.
@@ -29,9 +33,9 @@ export function cacheRefusalsOf(
 ): readonly string[] {
   if (outcome.heardCritics === 0)
     return ['no critic was heard',];
-  return silentStagesOf({ findings: outcome.findings, },)
-    .map(function toReason(finding,): string {
-      return `a stage heard fewer than quorum (${finding})`;
+  return silentStagesOfRecord({ record: outcome, },)
+    .map(function toReason(silent,): string {
+      return `a stage heard fewer than quorum (${silent})`;
     },);
 }
 

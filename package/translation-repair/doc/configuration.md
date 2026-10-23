@@ -293,6 +293,21 @@ each uses an empty export as given.
     Set it when the console reads a different balance;
     anything that is not a non-negative number is refused at once.
 
+-   `DEEPSEEK_API_KEY` and `TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY`.
+    Bearer tokens for the two direct providers,
+    granted by the owner on 2026-10-22,
+    each for one model:
+    DeepSeek V4.1 Flash on the first and MiMo V2.6 Flash on the second.
+    Both are optional and never fall back to another key:
+    an unset one leaves its provider unconfigured,
+    with one info line naming the variable,
+    and neither is accepted by `--require-providers`.
+    The `METERS` line carries `deepseek=` and `deepseekUsd=`,
+    and `xiaomi=` and `xiaomiUsdSpent=`
+    (`doc/decision/translation-repair-direct-providers.md`).
+    A 401 from either provider reaches the log without the provider's own words,
+    since a refusal may echo a fragment of the key that the transport's mask would not find.
+
 Every key lives in the sops-encrypted,
 gitignored `.env.local.json` at the repository root,
 which `mise run` decrypts into the task's environment.
@@ -424,9 +439,10 @@ naming the checkers that are padding the bench with no wet provider behind them.
     a non-negative number of USD,
     built in at 20 (`doc/decision/translation-repair-run-spend-ceiling.md`,
     the owner's decision of 2026-09-04).
-    Every OpenRouter call's reported `cost=` feeds a process-wide meter as its `SPEND` line is written,
-    and before each entry the scheduler stops starting new ones once the run's OpenRouter spend is at or
-    past the ceiling,
+    Every call's reported or priced cost on those providers feeds a process-wide meter as its `SPEND` line is written,
+    and before each entry the scheduler stops starting new ones once the run's spend on any one of OpenRouter,
+    DeepSeek and Xiaomi is at or past the ceiling (each against the ceiling alone,
+    never summed),
     printing `SPEND CEILING reached`;
     entries already running finish.
     Unset and blank are the built-in;

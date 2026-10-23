@@ -25,7 +25,7 @@ import {
 // READ-ONLY AND KEY-SILENT: the key goes in a bearer header and is never
 // printed; the listing is fetched once and only the named row is read.
 //
-// usage: mise run roster-card -- <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>
+// usage: mise run roster-card -- <synthetic|hyper|openrouter|bedrock|neuralwatt|deepseek|xiaomi> <served id>
 
 /**
  List constant in `roster-id.ts` each provider's spellings go on.
@@ -36,6 +36,8 @@ const SERVED_LIST: Readonly<Record<CardProvider, string>> = {
   openrouter: 'OPENROUTER_SERVED_IDS',
   bedrock: 'BEDROCK_SERVED_IDS',
   neuralwatt: 'NEURALWATT_SERVED_IDS',
+  deepseek: 'DEEPSEEK_SERVED_IDS',
+  xiaomi: 'XIAOMI_SERVED_IDS',
 };
 
 /**

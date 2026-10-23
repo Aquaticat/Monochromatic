@@ -23,6 +23,7 @@ import {
   createProviderBudgets,
   createRoutingClient,
   EveryProviderDryError,
+  type NeuralWattReturn,
 } from '../dist/final/node/index.mjs';
 import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import {
@@ -104,6 +105,8 @@ const ONE_SYNTHETIC_SLOT = {
   synthetic: 1,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
+  deepseek: Number.POSITIVE_INFINITY,
+  xiaomi: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -116,6 +119,8 @@ type PerProvider<ValueT,> = {
   readonly synthetic?: ValueT;
   readonly hyper?: ValueT;
   readonly bedrock?: ValueT;
+  readonly deepseek?: ValueT;
+  readonly xiaomi?: ValueT;
   readonly openrouter?: ValueT;
 };
 
@@ -164,6 +169,8 @@ function stubProviders(
     synthetic: text.synthetic ?? '{"spot":"windowsill"}',
     hyper: text.hyper ?? '{"spot":"radiator"}',
     bedrock: text.bedrock ?? '{"spot":"cat tree"}',
+    deepseek: text.deepseek ?? '{"spot":"laundry basket"}',
+    xiaomi: text.xiaomi ?? '{"spot":"laundry basket"}',
     openrouter: text.openrouter ?? '{"spot":"laundry basket"}',
   };
 
@@ -175,6 +182,8 @@ function stubProviders(
     synthetic: refusals.synthetic ?? (((status.synthetic ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     hyper: refusals.hyper ?? (((status.hyper ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     bedrock: refusals.bedrock ?? (((status.bedrock ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    deepseek: refusals.deepseek ?? (((status.deepseek ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    xiaomi: refusals.xiaomi ?? (((status.xiaomi ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     openrouter: refusals.openrouter ?? (((status.openrouter ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
   };
 
@@ -209,6 +218,8 @@ function stubProviders(
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),
+      deepseek: callerFor('deepseek',),
+      xiaomi: callerFor('xiaomi',),
       openrouter: callerFor('openrouter',),
     },
   };
@@ -222,6 +233,8 @@ function stubProviders(
  @param holdsMs - what the holds report
 
  @param onHoldEnd - what a read after the holds were asked for does first
+
+ @param neuralwatt - the NeuralWatt day the budgets report to a refusal that ends the run
 
  @returns Budget view plus the providers marked as having refused us
 
@@ -238,13 +251,17 @@ function stubBudgets(
       synthetic: 0,
       hyper: 0,
       bedrock: 0,
+      deepseek: 0,
+      xiaomi: 0,
       openrouter: 0,
     },
     onHoldEnd,
+    neuralwatt = { kind: 'unanchored', },
   }: {
     readonly dry?: PerProvider<boolean>;
     readonly holdsMs?: ProviderRecord<number>;
     readonly onHoldEnd?: () => void;
+    readonly neuralwatt?: NeuralWattReturn;
   },
 ) {
   /**
@@ -271,6 +288,10 @@ function stubBudgets(
     // models these cases route, and a wet meter on a provider that serves
     // nothing would turn an all-dry ending into a no-provider one.
     bedrock: dry.bedrock ?? true,
+    // DRY UNLESS A CASE SAYS OTHERWISE, like Bedrock: the two direct providers
+    // each serve one model, and `direct-routing.unit.test.ts` has their cases.
+    deepseek: dry.deepseek ?? true,
+    xiaomi: dry.xiaomi ?? true,
     openrouter: dry.openrouter ?? false,
   };
 
@@ -309,6 +330,9 @@ function stubBudgets(
       holds: function holds(): ProviderRecord<number> {
         holdReads.count += 1;
         return { ...holdsMs, };
+      },
+      neuralwattReturn: function neuralwattReturn(): NeuralWattReturn {
+        return neuralwatt;
       },
     },
   };
@@ -520,6 +544,8 @@ await describe({
             synthetic: 429,
             hyper: 429,
             bedrock: 0,
+            deepseek: 0,
+            xiaomi: 0,
             openrouter: 402,
           },
         },);
@@ -579,6 +605,8 @@ await describe({
             synthetic: true,
             hyper: true,
             bedrock: true,
+            deepseek: true,
+            xiaomi: true,
             openrouter: true,
           },
           holdsMs: {
@@ -586,6 +614,8 @@ await describe({
             synthetic: 5,
             hyper: 20,
             bedrock: 0,
+            deepseek: 0,
+            xiaomi: 0,
             openrouter: 20,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -624,6 +654,8 @@ await describe({
             synthetic: 5,
             hyper: 0,
             bedrock: 0,
+            deepseek: 0,
+            xiaomi: 0,
             openrouter: 0,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -703,6 +735,8 @@ await describe({
           neuralwatt: 0,
           synthetic: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           hyper: 0,
           openrouter: 0,
         },);
@@ -720,7 +754,14 @@ await describe({
             synthetic: true,
             hyper: true,
             bedrock: true,
+            deepseek: true,
+            xiaomi: true,
             openrouter: true,
+          },
+          // The XingZ6018 account: its day starts at 19:15:08 UTC.
+          neuralwatt: {
+            kind: 'at',
+            msOfDay: 69_308_000,
           },
         },);
         const client = createRoutingClient({
@@ -737,14 +778,52 @@ await describe({
           'EveryProviderDryError: Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
             + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply '
             + 'that still carries that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left '
-            + 'short of the owner\'s card, and OpenRouter has no credit left. Nothing further can be bought, so this '
-            + 'run ends. NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; '
-            + 'Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
-            + 'Measured at the decision: meters read neuralwatt dry, synthetic dry, bedrock dry, hyper dry, openrouter dry; '
-            + 'holds neuralwatt 0ms, synthetic 0ms, bedrock 0ms, hyper 0ms, openrouter 0ms.',
+            + 'short of the owner\'s card, DeepSeek has no balance left (or says its account is unavailable), Xiaomi '
+            + 'has refused a call for payment, and OpenRouter has no credit left. Nothing further can be bought, so '
+            + 'this run ends. NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day '
+            + 'start this run decided or learned; Synthetic regenerates on its own '
+            + 'schedule; Hyper, DeepSeek and OpenRouter refill on purchase; Xiaomi, once refused for payment, is '
+            + 'read again only after one of its calls settles, so a top-up is seen on the next launch; '
+            + 'Bedrock\'s credit is never topped up. '
+            + 'Measured at the decision: meters read neuralwatt dry, synthetic dry, bedrock dry, deepseek dry, '
+            + 'xiaomi dry, hyper dry, openrouter dry; '
+            + 'holds neuralwatt 0ms, synthetic 0ms, bedrock 0ms, deepseek 0ms, xiaomi 0ms, hyper 0ms, openrouter 0ms.',
         );
         expect(called,).toEqual([],);
         expect(holdReads.count,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'ENDS THE RUN when every provider reads dry but Xiaomi, whose always-wet meter serves one model, and the '
+        + 'model asked is one Xiaomi does not serve: its wet reading buys nothing for this call',
+      fn: async () => {
+        const { callers, called, } = stubProviders({},);
+        const { budgets, } = stubBudgets({
+          dry: {
+            neuralwatt: true,
+            synthetic: true,
+            hyper: true,
+            bedrock: true,
+            deepseek: true,
+            xiaomi: false,
+            openrouter: true,
+          },
+        },);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+          holdPollMs: 1,
+        },);
+
+        const outcome = await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
+        if (!('thrown' in outcome))
+          throw new Error('a fleet dry for this model must end the call with a refusal',);
+        expect(outcome.thrown,).toBeInstanceOf(EveryProviderDryError,);
+        expect(called,).toEqual([],);
       },
     },),
 

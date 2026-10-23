@@ -1,7 +1,5 @@
-import {
-  CARD_PROVIDERS,
-  PROVIDER_ORDER,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { CARD_PROVIDERS, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { REQUIRABLE_PROVIDERS, } from './requirable-providers.ts';
 import type {
   CommandLineFor,
   CommandLineSpec,
@@ -171,7 +169,7 @@ export const COMMAND_LINES: CommandLines = {
     ...NO_ARGUMENTS,
     valued: {
       only: ENTRY_IDS,
-      'require-providers': `providers of ${PROVIDER_ORDER.join(', ',)}`,
+      'require-providers': `providers of ${REQUIRABLE_PROVIDERS.join(', ',)}`,
     },
     switches: { plan: true, },
   },

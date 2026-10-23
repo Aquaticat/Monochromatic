@@ -120,6 +120,10 @@ const HELD_READS: Readonly<Record<string, {
   readonly calls: number;
   readonly why: string;
 }>> = {
+  'provider/deepseek-balance.ts#readBalanceText: Number': {
+    calls: 1,
+    why: 'reads only an amount isUnsignedNumberText took, so a signed, spelled or exponent form is refused before it',
+  },
   'provider/bedrock-ledger.ts#bedrockCreditUsdFrom: Number': {
     calls: 1,
     why: PLAIN_DECIMAL,
@@ -264,7 +268,7 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: PLAIN_DECIMAL,
   },
-  'provider/neuralwatt-day-anchor.ts#decideNeuralWattDayAnchor: new Date': {
+  'provider/neuralwatt-day.ts#neuralWattTimeOfDayUtc: new Date': {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },

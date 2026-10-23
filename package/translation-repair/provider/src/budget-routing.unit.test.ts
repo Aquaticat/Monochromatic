@@ -70,6 +70,8 @@ const everyReach = {
   synthetic: true,
   hyper: true,
   bedrock: true,
+  deepseek: false,
+  xiaomi: false,
   openrouter: true,
 } as const;
 
@@ -81,6 +83,8 @@ const allWet = {
   synthetic: false,
   hyper: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   openrouter: false,
 } as const;
 
@@ -88,6 +92,44 @@ const allWet = {
  Nobody saturated.
  */
 const noneSaturated = allWet;
+
+/**
+ Every provider dry by its meter or a refusal.
+ */
+const allDry = {
+  neuralwatt: true,
+  synthetic: true,
+  hyper: true,
+  bedrock: true,
+  deepseek: true,
+  xiaomi: true,
+  openrouter: true,
+} as const;
+
+/**
+ Message the router's run-ending refusal carries for one reading.
+
+ @param dry - which providers read dry, budget and wire taken together
+
+ @returns The refusal's message
+
+ @throws Error when the reading leaves a provider buyable, so no refusal is raised
+
+ @example
+ ```ts
+ const message = allDryMessageOf({ dry: allDry, },);
+ ```
+ */
+function allDryMessageOf({ dry, }: { readonly dry: Readonly<Record<keyof typeof allDry, boolean>>; },): string {
+  try {
+    routeProviderFor({ reach: everyReach, dry, saturated: noneSaturated, },);
+  } catch (error) {
+    if (error instanceof EveryProviderDryError)
+      return error.message;
+    throw error;
+  }
+  throw new Error('the reading was meant to end the run',);
+}
 
 await describe({
   name: '',
@@ -250,6 +292,8 @@ await describe({
                 synthetic: true,
                 hyper: true,
                 bedrock: true,
+                deepseek: true,
+                xiaomi: true,
                 openrouter: true,
               },
             },),).toBe(NO_PROVIDER,);
@@ -334,6 +378,8 @@ await describe({
                 synthetic: true,
                 hyper: true,
                 bedrock: true,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: false,
               },
               saturated: noneSaturated,
@@ -352,6 +398,8 @@ await describe({
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
+                deepseek: true,
+                xiaomi: true,
                 openrouter: true,
               },
               saturated: {
@@ -373,6 +421,8 @@ await describe({
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: false,
               },
               saturated: {
@@ -394,6 +444,8 @@ await describe({
                   synthetic: true,
                   hyper: true,
                   bedrock: true,
+                  deepseek: true,
+                  xiaomi: true,
                   openrouter: true,
                 },
                 saturated: noneSaturated,
@@ -413,6 +465,8 @@ await describe({
                   synthetic: false,
                   hyper: false,
                   bedrock: false,
+                  deepseek: false,
+                  xiaomi: false,
                   openrouter: false,
                 },
                 dry: {
@@ -420,6 +474,8 @@ await describe({
                   synthetic: true,
                   hyper: true,
                   bedrock: true,
+                  deepseek: true,
+                  xiaomi: true,
                   openrouter: true,
                 },
                 saturated: noneSaturated,
@@ -438,6 +494,8 @@ await describe({
                 synthetic: true,
                 hyper: false,
                 bedrock: false,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: false,
               },
               dry: allWet,
@@ -459,6 +517,8 @@ await describe({
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: true,
               },
               dry: allWet,
@@ -470,6 +530,8 @@ await describe({
                 synthetic: false,
                 hyper: true,
                 bedrock: false,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: true,
               },
               dry: allWet,
@@ -488,6 +550,8 @@ await describe({
                 synthetic: true,
                 hyper: false,
                 bedrock: false,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: false,
               },
               dry: {
@@ -509,6 +573,8 @@ await describe({
                 synthetic: false,
                 hyper: false,
                 bedrock: false,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: false,
               },
               dry: allWet,
@@ -524,6 +590,8 @@ await describe({
                 synthetic: true,
                 hyper: false,
                 bedrock: false,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: false,
               },
               dry: {
@@ -621,6 +689,133 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
+          name: 'STATES THE TIME OF DAY THE ACCOUNT\'S NEURALWATT DAY STARTS AT, in UTC, when the run decided one, '
+            + 'and never midnight: the owner ruled the day is "not 00:00 UTC"',
+          fn: async () => {
+            /**
+             The message for an account whose day starts at 19:15:08 UTC, the XingZ6018 account.
+             */
+            const { message, } = new EveryProviderDryError({
+              neuralwatt: {
+                kind: 'at',
+                msOfDay: 69_308_000,
+              },
+            },);
+            expect(message,).toContain(
+              'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run '
+                + 'decided or learned;',
+            );
+            expect(message,).not.toContain('00:00 UTC',);
+          },
+        },),
+
+        it({
+          name: 'KEEPS THE MILLISECONDS of a day start that does not fall on a whole second, which only a setting or a '
+            + 'quota reply with a fraction can give',
+          fn: async () => {
+            /**
+             The message for a day that starts half a second into 19:15:08 UTC.
+             */
+            const { message, } = new EveryProviderDryError({
+              neuralwatt: {
+                kind: 'at',
+                msOfDay: 69_308_500,
+              },
+            },);
+            expect(message,).toContain('at 19:15:08.500 UTC,',);
+          },
+        },),
+
+        it({
+          name: 'SAYS NEURALWATT IS OFF, naming no time of day, when the run has no NeuralWatt client',
+          fn: async () => {
+            /**
+             The message for a run with NeuralWatt left off.
+             */
+            const { message, } = new EveryProviderDryError({ neuralwatt: { kind: 'off', }, },);
+            expect(message,).toContain('NeuralWatt is off for this run, so it returns no energy;',);
+            expect(message,).not.toContain('UTC',);
+            // THE OPENING NAMES NO NEURALWATT ENERGY EITHER: an off provider has none to be out of.
+            expect(message,).not.toContain('has no free daily energy',);
+            expect(message.startsWith('Every provider is out of budget at once: Synthetic has no weekly credit left',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'SAYS NO DAY START WAS DECIDED, naming no time of day, when NeuralWatt is configured but its quota never '
+            + 'gave one',
+          fn: async () => {
+            /**
+             The message for a run whose NeuralWatt day start stayed unknown.
+             */
+            const { message, } = new EveryProviderDryError({ neuralwatt: { kind: 'unanchored', }, },);
+            expect(message,).toContain(
+              'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return;',
+            );
+            expect(message,).not.toContain('UTC',);
+            // THE OPENING DOES NOT CLAIM THE ENERGY IS SPENT: the keeper refuses NeuralWatt until a day start is
+            // learned, and the energy may well be there.
+            expect(message,).not.toContain('has no free daily energy',);
+            expect(message,).toContain(
+              'Every provider is out of budget at once: NeuralWatt is refused until its day start is learned, Synthetic',
+            );
+          },
+        },),
+
+        it({
+          name: 'HANDS THE ROUTER\'S NEURALWATT DAY TO THE REFUSAL it throws on an all-dry reading',
+          fn: async () => {
+            /**
+             What the router threw on an all-dry reading with a decided day start.
+             */
+            const thrown = (function refusal(): unknown {
+              try {
+                routeProviderFor({
+                  reach: {
+                    neuralwatt: true,
+                    synthetic: true,
+                    hyper: true,
+                    bedrock: true,
+                    deepseek: true,
+                    xiaomi: true,
+                    openrouter: true,
+                  },
+                  dry: {
+                    neuralwatt: true,
+                    synthetic: true,
+                    hyper: true,
+                    bedrock: true,
+                    deepseek: true,
+                    xiaomi: true,
+                    openrouter: true,
+                  },
+                  saturated: {
+                    neuralwatt: false,
+                    synthetic: false,
+                    hyper: false,
+                    bedrock: false,
+                    deepseek: false,
+                    xiaomi: false,
+                    openrouter: false,
+                  },
+                  neuralwatt: {
+                    kind: 'at',
+                    msOfDay: 69_308_000,
+                  },
+                },);
+                return undefined;
+              }
+              catch (error) {
+                return error;
+              }
+            })();
+            if (!(thrown instanceof EveryProviderDryError))
+              throw new Error('an all-dry refusal by construction',);
+            expect(thrown.message,).toContain('at 19:15:08 UTC',);
+          },
+        },),
+
+        it({
           name: 'STATES SYNTHETIC\'S LIMIT AS THE WEEKLY CREDIT, with the five-hour window named only where a reply still carries one',
           fn: async () => {
             expect(new EveryProviderDryError().message,).toContain(
@@ -646,6 +841,8 @@ await describe({
                     synthetic: true,
                     hyper: true,
                     bedrock: true,
+                    deepseek: false,
+                    xiaomi: false,
                     openrouter: true,
                   },
                   dry: {
@@ -653,6 +850,8 @@ await describe({
                     synthetic: true,
                     hyper: true,
                     bedrock: true,
+                    deepseek: true,
+                    xiaomi: true,
                     openrouter: true,
                   },
                   saturated: {
@@ -660,6 +859,8 @@ await describe({
                     synthetic: false,
                     hyper: false,
                     bedrock: false,
+                    deepseek: false,
+                    xiaomi: false,
                     openrouter: false,
                   },
                 },);
@@ -702,6 +903,35 @@ await describe({
               cited: true,
               reading: true,
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'the all-dry refusal says why Xiaomi reads dry',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SAYS A PAYMENT REFUSAL when Xiaomi was refused for payment, and reads it dry in the measured clause',
+          fn: async () => {
+            const message = allDryMessageOf({ dry: allDry, },);
+            expect(message,).toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('xiaomi dry',);
+            expect(message,).not.toContain('not serving this model',);
+          },
+        },),
+
+        it({
+          name: 'SAYS XIAOMI SERVES ANOTHER MODEL, and not a payment refusal, when its meter reads wet and it does not '
+            + 'serve the model asked, since the reader sees xiaomi=wet on the METERS line beside the refusal',
+          fn: async () => {
+            const message = allDryMessageOf({ dry: { ...allDry, xiaomi: false, }, },);
+            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
+            expect(message,)
+              .toContain('Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked',);
+            expect(message,).toContain('xiaomi wet but not serving this model',);
+            expect(message,).not.toContain('xiaomi dry',);
           },
         },),
       ],

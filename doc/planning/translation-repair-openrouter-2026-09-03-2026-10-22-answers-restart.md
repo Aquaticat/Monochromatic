@@ -4,7 +4,9 @@ What was read on 2026-10-22 of the passes of the rotation that ran on the build
 that landed the owner's answers of 2026-10-22 (UTC):
 `zheermao23`,
 `CuspariaKLSY23`
-and `XingZ6018`.
+and `XingZ6018`,
+and of the two passes of `XingZ60` that ran on the build after it,
+`XingZ6019` and `XingZ6020`.
 The passes of the build before it (`2a336603bf`) are in
 [the Gemma-lift restart overview](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart.md).
 The standing account of the readiness signal is [the readiness signal](translation-repair-readiness-signal.md).
@@ -55,8 +57,36 @@ so that no file passes the repository's limit of 1,000 lines:
   The shipped page was not read line by line.
 - `XingZ6018` (entry `XingZ60`):
   launched on 2026-10-22 at 13:44:40 UTC,
-  the launcher printing `FROZEN BUILD MATCHES; run continues`;
-  its read is owed when it settles.
+  the launcher printing `FROZEN BUILD MATCHES; run continues`.
+  [The run](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-run.md)
+  (log,
+  stages,
+  what a later run can reuse,
+  plan energy),
+  [the providers](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-providers.md)
+  (how Hyper and OpenRouter ran out,
+  the stop,
+  the third Mercury recheck,
+  the seats)
+  and [the defects](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-defects.md)
+  (the quality issues,
+  seven defects,
+  the second reader's check,
+  the points no log settles).
+  It ended after 62.4 min (`TALLY status=ERROR`,
+  then `STALLED`) with no artifact and no page:
+  Hyper and OpenRouter ran dry in turn on top of Synthetic,
+  NeuralWatt and Bedrock,
+  and the writing bench's floor ended the entry.
+  A second reader checked the read against the log and the source,
+  and the check's confirmed reading is the one filed.
+  The page was not written,
+  so no page was read.
+- `XingZ6019` and `XingZ6020` (entry `XingZ60`) are on the later build described in "The later build",
+  and are recorded in
+  [the XingZ6019 record](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6019.md).
+  `XingZ6019` ended with no page after 19.2 min on a short writing bench;
+  `XingZ6020` was running when the record was filed.
 
 ## The build
 
@@ -91,3 +121,21 @@ so that no file passes the repository's limit of 1,000 lines:
   2026-10-22 at about 12:30 UTC:
   "You don't need to align launches to NeuralWatt starts."
   [The NeuralWatt decision](../decision/translation-repair-neuralwatt-provider.md) records it under "When a pass launches".
+
+## The later build
+
+- `XingZ6019` and `XingZ6020` ran on the frozen build `sha256-tree-v1:44ce3051...`,
+  built from commit `1d46232457` (made at 18:52 UTC on 2026-10-22).
+  It carries the direct DeepSeek and Xiaomi routes
+  and not the fixes of the `XingZ6018` read (ledger B818 to B820),
+  which are not among its ancestors.
+- `XingZ6019` ran with NeuralWatt dry for its whole run,
+  because its 550 Wh day had been spent by the earlier runs,
+  and the account's day restarted at 19:15:08 UTC.
+  The pass ended at 19:14:20 UTC,
+  48 s before that,
+  with a writing bench short of its floor
+  (ledger B826).
+  `XingZ6020` was relaunched at 19:32:29 UTC,
+  after the restart,
+  and what NeuralWatt held during it is not recorded here.

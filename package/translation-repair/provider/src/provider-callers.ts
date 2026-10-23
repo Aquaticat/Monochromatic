@@ -35,6 +35,16 @@ export type ProviderCallers = {
   readonly bedrock?: Pick<ModelCaller, 'chatText'>;
 
   /**
+   DeepSeek's own API's text call, when its key is set; it serves one model.
+   */
+  readonly deepseek?: Pick<ModelCaller, 'chatText'>;
+
+  /**
+   Xiaomi's own API's text call, when its key is set; it serves one model.
+   */
+  readonly xiaomi?: Pick<ModelCaller, 'chatText'>;
+
+  /**
    Third provider's text call, when its key is set.
    */
   readonly openrouter?: Pick<ModelCaller, 'chatText'>;

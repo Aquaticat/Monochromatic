@@ -11,7 +11,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SPEND_CEILING_PROVIDER, } from '@monochromatic-dev/translation-repair-run';
 import {
   noteRunSpend,
   resetRunSpend,
@@ -31,7 +30,7 @@ await describe({
       fn: async () => {
         resetRunSpend();
         noteRunSpend({
-          provider: SPEND_CEILING_PROVIDER,
+          provider: 'openrouter',
           costUsd: 4.5,
         },);
         expect(stopBeforeNextEntry({
@@ -68,8 +67,68 @@ await describe({
           ceilingUsd: 20,
         },),).toBe(false,);
         noteRunSpend({
-          provider: SPEND_CEILING_PROVIDER,
+          provider: 'openrouter',
           costUsd: 20,
+        },);
+        expect(stopBeforeNextEntry({
+          elapsedMs: 10,
+          softBudgetMs: ROOMY_BUDGET_MS,
+          ceilingUsd: 20,
+        },),).toBe(true,);
+        resetRunSpend();
+      },
+    },),
+    it({
+      name: 'STOPS once the run has spent its allowance on Xiaomi, which no balance bounds and which takes the seat '
+        + 'OpenRouter\'s ceiling used to bound, and LETS entries start below it',
+      fn: async () => {
+        resetRunSpend();
+        noteRunSpend({
+          provider: 'xiaomi',
+          costUsd: 19.99,
+        },);
+        expect(stopBeforeNextEntry({
+          elapsedMs: 10,
+          softBudgetMs: ROOMY_BUDGET_MS,
+          ceilingUsd: 20,
+        },),).toBe(false,);
+        noteRunSpend({
+          provider: 'xiaomi',
+          costUsd: 0.01,
+        },);
+        expect(stopBeforeNextEntry({
+          elapsedMs: 10,
+          softBudgetMs: ROOMY_BUDGET_MS,
+          ceilingUsd: 20,
+        },),).toBe(true,);
+        resetRunSpend();
+      },
+    },),
+    it({
+      name: 'STOPS once the run has spent its allowance on DeepSeek, each provider against the ceiling alone, '
+        + 'so spend split across providers below the ceiling each does not stop the run',
+      fn: async () => {
+        resetRunSpend();
+        noteRunSpend({
+          provider: 'xiaomi',
+          costUsd: 12,
+        },);
+        noteRunSpend({
+          provider: 'deepseek',
+          costUsd: 12,
+        },);
+        noteRunSpend({
+          provider: 'openrouter',
+          costUsd: 12,
+        },);
+        expect(stopBeforeNextEntry({
+          elapsedMs: 10,
+          softBudgetMs: ROOMY_BUDGET_MS,
+          ceilingUsd: 20,
+        },),).toBe(false,);
+        noteRunSpend({
+          provider: 'deepseek',
+          costUsd: 8,
         },);
         expect(stopBeforeNextEntry({
           elapsedMs: 10,

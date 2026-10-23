@@ -5,10 +5,14 @@ routing a call to the provider that serves its model and still has budget,
 the NeuralWatt,
 Synthetic,
 Hyper,
-OpenRouter and Bedrock clients,
+OpenRouter,
+Bedrock,
+DeepSeek and Xiaomi clients,
 the NeuralWatt,
 Synthetic,
-OpenRouter and Bedrock catalogues,
+OpenRouter,
+Bedrock,
+DeepSeek and Xiaomi catalogues,
 the Anthropic Messages wire format that Hyper speaks,
 retries,
 deadlines and spend reporting.
@@ -82,6 +86,9 @@ The groups that follow name the main ones.
   `openrouter-catalog.ts`,
   `bedrock-catalog.ts`,
   `neuralwatt-catalog.ts`,
+  `direct-catalog.ts` (the DeepSeek and Xiaomi catalogues,
+  one model each),
+  `direct-reach.ts`,
   and `roster-reach.ts`.
 - NeuralWatt free daily energy:
   meter the 550 Wh a day the owner's NeuralWatt account covers on DeepSeek V4.1 Flash and GLM-5.3-Flash,
@@ -301,3 +308,81 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 - [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.
+
+## DeepSeek and Xiaomi, called directly
+
+`direct-client.ts` is one OpenAI-compatible client over a route (endpoint,
+model lock,
+response format,
+price),
+and `deepseek-client.ts` and `xiaomi-client.ts` are the two thin wrappers.
+`createDeepSeekClient` also reads the account balance (`credits`,
+parsed by `deepseek-balance.ts`),
+and `createXiaomiClient` paces its calls to 100 a minute and reports the run's priced spend (`spend`).
+Each client serves one model and throws `DeepSeekModelNotServedError` or `XiaomiModelNotServedError`
+for any other before a request is built.
+No request carries a reasoning member.
+Prices are in `direct-cost.ts` (DeepSeek always at peak),
+the cache split and `system_fingerprint` readers are in `direct-usage.ts`,
+and the record is `doc/decision/translation-repair-direct-providers.md`.
+
+## Thinking-parameter evidence
+
+The owner's rulings of 2026-10-22 decide which providers may be sent a thinking parameter:
+none on third tier,
+the documented ones on NeuralWatt (second rate),
+and a value that disables thinking on none.
+This section holds the measurements the card comments cite
+(`shared-contract/src/neuralwatt-card-sides.ts`,
+`synthetic-client.ts`),
+so their figures can be checked.
+
+### NeuralWatt `glm-5.3-flash`, 2026-10-22
+
+A keyed probe of one digit-sum question,
+text only,
+three repeats at each setting.
+Reasoning tokens in each repeat:
+
+- No effort sent:
+  3947,
+  558,
+  1144.
+- `low`:
+  143,
+  116,
+  118.
+- `high`:
+  169,
+  222,
+  182.
+- `max`:
+  555,
+  579,
+  355.
+
+Every `low` repeat reasoned,
+so `low` keeps thinking on.
+`low` answered 2 of 3 right,
+where `high`,
+`max` and the unset default answered 3 of 3.
+The limits are the probe's:
+one question,
+three repeats,
+no picture call,
+and the unset default's spread (558 to 3947) is wider than any gap between settings.
+
+### Synthetic `glm-5.3-flash`, 2026-10-22
+
+Synthetic's probes of the same day on the same question:
+`low` turned thinking off,
+and `high` and `max` did not separate,
+at about 430 to 740 reasoning tokens each.
+NeuralWatt's copy of the same model separated them
+(`low` 116 to 143,
+`high` 169 to 222,
+`max` 355 to 579).
+A setting that turns thinking off is not one to send,
+and two settings that do not separate cannot size a call.
+Only the ranges reached this record,
+not each repeat's figure.

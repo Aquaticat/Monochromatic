@@ -42,6 +42,17 @@ export type ProviderPaces = {
   readonly bedrock?: Pick<RequestPace, 'waitMs'>;
 
   /**
+   DeepSeek's window, when it paces; it states a concurrency limit and no
+   request rate, so it does not.
+   */
+  readonly deepseek?: Pick<RequestPace, 'waitMs'>;
+
+  /**
+   Xiaomi's window, when it paces: 100 requests a minute.
+   */
+  readonly xiaomi?: Pick<RequestPace, 'waitMs'>;
+
+  /**
    OpenRouter's window, when it paces.
    */
   readonly openrouter?: Pick<RequestPace, 'waitMs'>;
@@ -98,6 +109,8 @@ export function paceWaitsOf(
     synthetic: waitOf('synthetic',),
     hyper: waitOf('hyper',),
     bedrock: waitOf('bedrock',),
+    deepseek: waitOf('deepseek',),
+    xiaomi: waitOf('xiaomi',),
     openrouter: waitOf('openrouter',),
   };
 }
@@ -131,6 +144,8 @@ export function withFullWindows(
     synthetic: saturated.synthetic || (waits.synthetic > 0),
     hyper: saturated.hyper || (waits.hyper > 0),
     bedrock: saturated.bedrock || (waits.bedrock > 0),
+    deepseek: saturated.deepseek || (waits.deepseek > 0),
+    xiaomi: saturated.xiaomi || (waits.xiaomi > 0),
     openrouter: saturated.openrouter || (waits.openrouter > 0),
   };
 }

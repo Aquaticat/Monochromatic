@@ -1,3 +1,5 @@
+import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
+
 //region Upstream model hold
 // THE SIXTY-FOURTH CLASS (XingZ613, 2026-09-19). Class sixty-two lets a
 // model whose upstream endpoint rate-limited it lose its seat for the round
@@ -37,6 +39,14 @@ export type UpstreamModelHolds = {
    Milliseconds one model's hold has left, zero when it is free.
    */
   readonly remainingMs: (args: { readonly modelId: string; },) => number;
+
+  /**
+   Refuses a call for a model whose hold has not ended, before any call is made, so a round counts the seat
+   unreachable and neither asks nor waits for it (class sixty-four).
+
+   @throws {@link NoProviderForModelError} while the model is held
+   */
+  readonly refuseWhileHeld: (args: { readonly modelId: string; },) => void;
 };
 
 /**
@@ -66,6 +76,31 @@ export function createUpstreamModelHolds(
    When each held model's hold ends, by model id.
    */
   const until = new Map<string, number>();
+
+  /**
+   Milliseconds one model's hold has left, zero when it is free, a lapsed hold forgotten.
+
+   @param modelId - model asked about
+
+   @returns Milliseconds left
+   */
+  function remainingMs({ modelId, }: { readonly modelId: string; },): number {
+    /**
+     When this model's hold ends, absent when it was never held.
+     */
+    const ends = until.get(modelId,);
+    if (ends === undefined)
+      return 0;
+    /**
+     What is left of the hold, negative once it has ended.
+     */
+    const left = ends - now();
+    if (left <= 0) {
+      until.delete(modelId,);
+      return 0;
+    }
+    return left;
+  }
   return {
     hold: function hold({ modelId, }: { readonly modelId: string; },): void {
       until.set(
@@ -73,22 +108,18 @@ export function createUpstreamModelHolds(
         now() + holdMs,
       );
     },
-    remainingMs: function remainingMs({ modelId, }: { readonly modelId: string; },): number {
+    remainingMs,
+    refuseWhileHeld: function refuseWhileHeld({ modelId, }: { readonly modelId: string; },): void {
       /**
-       When this model's hold ends, absent when it was never held.
+       What is left of this model's own hold, zero when it is free.
        */
-      const ends = until.get(modelId,);
-      if (ends === undefined)
-        return 0;
-      /**
-       What is left of the hold, negative once it has ended.
-       */
-      const left = ends - now();
-      if (left <= 0) {
-        until.delete(modelId,);
-        return 0;
+      const heldMs = remainingMs({ modelId, },);
+      if (heldMs > 0) {
+        throw new NoProviderForModelError({
+          modelId,
+          reason: `its upstream endpoint rate-limited this model; held out for another ${String(heldMs,)}ms`,
+        },);
       }
-      return left;
     },
   };
 }

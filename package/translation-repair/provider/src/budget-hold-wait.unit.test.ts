@@ -23,17 +23,32 @@ import {
   EveryProviderDryError,
   HOLD_POLL_MS,
   NOBODY_REFUSED,
+  type NeuralWattReturn,
   type ProviderBudgets,
   readBudgetsPastHolds,
   shortestHold,
   waitOutHold,
 } from '../dist/final/node/index.mjs';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 
 /**
  Abort signal that never fires.
  */
 const SIGNAL = new AbortController().signal;
+
+/**
+ Every provider serves the model: the reach the cases that are not about reach read under.
+ */
+const ALL_SERVE: ProviderRecord<boolean> = {
+  neuralwatt: true,
+  synthetic: true,
+  hyper: true,
+  bedrock: true,
+  deepseek: true,
+  xiaomi: true,
+  openrouter: true,
+};
 
 /**
  Model named in the log line.
@@ -48,6 +63,11 @@ const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
 
  @param holds - what the holds report
 
+ @param neuralwatt - the NeuralWatt day the budgets report to a refusal that ends the run
+
+ @param neuralwattAfter - the day the budgets report once this many reads have happened, in place of `neuralwatt`, for a
+ day that changes while a hold is waited out
+
  @returns Budget view plus counts of reads and hold asks
 
  @example
@@ -59,9 +79,13 @@ function scriptedBudgets(
   {
     views,
     holds,
+    neuralwatt = { kind: 'unanchored', },
+    neuralwattAfter,
   }: {
     readonly views: readonly BudgetView[];
     readonly holds: ProviderRecord<number>;
+    readonly neuralwatt?: NeuralWattReturn;
+    readonly neuralwattAfter?: { readonly reads: number; readonly day: NeuralWattReturn; };
   },
 ): {
   readonly budgets: ProviderBudgets;
@@ -100,6 +124,11 @@ function scriptedBudgets(
         holdAsks.count += 1;
         return { ...holds, };
       },
+      neuralwattReturn: function neuralwattReturn(): NeuralWattReturn {
+        return ((neuralwattAfter !== undefined) && (reads.count >= neuralwattAfter.reads))
+          ? neuralwattAfter.day
+          : neuralwatt;
+      },
     },
   };
 }
@@ -112,6 +141,8 @@ const ALL_DRY: BudgetView = {
   synthetic: true,
   hyper: true,
   bedrock: true,
+  deepseek: true,
+  xiaomi: true,
   openrouter: true,
 };
 
@@ -123,6 +154,8 @@ const SYNTHETIC_BACK: BudgetView = {
   synthetic: false,
   hyper: true,
   bedrock: true,
+  deepseek: true,
+  xiaomi: true,
   openrouter: true,
 };
 
@@ -134,8 +167,35 @@ const NO_HOLDS: ProviderRecord<number> = {
   synthetic: 0,
   hyper: 0,
   bedrock: 0,
+  deepseek: 0,
+  xiaomi: 0,
   openrouter: 0,
 };
+
+/**
+ What the run-ending read throws for a model Xiaomi does not serve.
+
+ @param budgets - scripted budgets the read goes over
+
+ @returns The thrown value, or undefined when the read returned
+
+ @example
+ ```ts
+ const thrown = await refusalWithoutXiaomiServing({ budgets, },);
+ ```
+ */
+async function refusalWithoutXiaomiServing(
+  { budgets, }: { readonly budgets: ProviderBudgets; },
+): Promise<unknown> {
+  return await rejectionOf(() => readBudgetsPastHolds({
+    budgets,
+    modelId: MODEL_ID,
+    reach: { ...ALL_SERVE, xiaomi: false, },
+    signal: SIGNAL,
+    refused: NOBODY_REFUSED,
+    pollMs: 1,
+  },),);
+}
 
 await describe({
   name: '',
@@ -154,6 +214,8 @@ await describe({
                 synthetic: 0,
                 hyper: 4_000,
                 bedrock: 0,
+                deepseek: 0,
+                xiaomi: 0,
                 openrouter: 0,
               },
             },),).toBe(4_000,);
@@ -163,6 +225,8 @@ await describe({
                 synthetic: 300,
                 hyper: 4_000,
                 bedrock: 0,
+                deepseek: 0,
+                xiaomi: 0,
                 openrouter: 900,
               },
             },),).toBe(300,);
@@ -221,6 +285,137 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
+          name: 'READS XIAOMI AS DRY for a model it does not serve, so a fleet dry but for its always-wet meter ends '
+            + 'the run, and reads it as wet for the model it does serve',
+          fn: async () => {
+            const view: BudgetView = {
+              neuralwatt: true,
+              synthetic: true,
+              hyper: true,
+              bedrock: true,
+              deepseek: true,
+              xiaomi: false,
+              openrouter: true,
+            };
+            const { budgets, } = scriptedBudgets({ views: [view,], holds: NO_HOLDS, },);
+            let thrown: unknown;
+            try {
+              await readBudgetsPastHolds({
+                budgets,
+                modelId: MODEL_ID,
+                reach: { ...ALL_SERVE, xiaomi: false, },
+                signal: SIGNAL,
+                refused: NOBODY_REFUSED,
+                pollMs: 1,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              reach: ALL_SERVE,
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),).toEqual(view,);
+          },
+        },),
+        it({
+          name: 'STATES THE ACCOUNT\'S NEURALWATT DAY START in the run-ending refusal, from the budgets\' own reading '
+            + 'of the decided anchor, whether the refusal comes at once or after a hold is waited out',
+          fn: async () => {
+            /**
+             The XingZ6018 account: its day starts at 19:15:08 UTC.
+             */
+            const neuralwatt: NeuralWattReturn = {
+              kind: 'at',
+              msOfDay: 69_308_000,
+            };
+            /**
+             The refusal raised at once, with no hold to wait out.
+             */
+            const atOnce = await refusalWithoutXiaomiServing({
+              budgets: scriptedBudgets({ views: [ALL_DRY,], holds: NO_HOLDS, neuralwatt, },).budgets,
+            },);
+            expect((atOnce as EveryProviderDryError).message,).toContain('at 19:15:08 UTC',);
+            expect((atOnce as EveryProviderDryError).message,).not.toContain('00:00 UTC',);
+            /**
+             The refusal raised after the shortest hold ended and every provider still read dry.
+             */
+            const afterWait = await refusalWithoutXiaomiServing({
+              budgets: scriptedBudgets({ views: [ALL_DRY,], holds: { ...NO_HOLDS, synthetic: 5, }, neuralwatt, },).budgets,
+            },);
+            expect((afterWait as EveryProviderDryError).message,).toContain('after waiting 5ms',);
+            expect((afterWait as EveryProviderDryError).message,).toContain('at 19:15:08 UTC',);
+          },
+        },),
+
+        it({
+          name: 'READS THE NEURALWATT DAY AGAIN FOR THE REFUSAL AFTER THE WAIT, so a day start the run learned while the '
+            + 'hold was waited out is stated and the refusal does not say that no time of day can be stated',
+          fn: async () => {
+            /**
+             The refusal raised after the shortest hold ended, with the day start learned on the second budget read.
+             */
+            const afterWait = await refusalWithoutXiaomiServing({
+              budgets: scriptedBudgets({
+                views: [ALL_DRY,],
+                holds: { ...NO_HOLDS, synthetic: 5, },
+                neuralwatt: { kind: 'unanchored', },
+                neuralwattAfter: { reads: 2, day: { kind: 'at', msOfDay: 69_308_000, }, },
+              },).budgets,
+            },);
+            const { message, } = afterWait as EveryProviderDryError;
+            expect(message,).toContain('after waiting 5ms',);
+            expect(message,).toContain('at 19:15:08 UTC',);
+            expect(message,).not.toContain('no time of day can be stated',);
+          },
+        },),
+
+        it({
+          name: 'SAYS XIAOMI SERVES ANOTHER MODEL in the run-ending refusal, not a payment refusal, when its wet '
+            + 'meter is '
+            + 'the only reading that kept the fleet from reading dry',
+          fn: async () => {
+            const { budgets, } = scriptedBudgets({ views: [{ ...ALL_DRY, xiaomi: false, },], holds: NO_HOLDS, },);
+            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
+            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            const { message, } = thrown as EveryProviderDryError;
+            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('xiaomi wet but not serving this model',);
+          },
+        },),
+
+        it({
+          name: 'SAYS A PAYMENT REFUSAL when Xiaomi reads dry itself, even though it serves nothing here',
+          fn: async () => {
+            const { budgets, } = scriptedBudgets({ views: [ALL_DRY,], holds: NO_HOLDS, },);
+            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
+            const { message, } = thrown as EveryProviderDryError;
+            expect(message,).toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('xiaomi dry',);
+          },
+        },),
+
+        it({
+          name: 'ENDS THE RUN AFTER THE WAIT when a hold on another provider is waited out and Xiaomi, wet but serving '
+            + 'nothing here, is the only reading that is not dry: the second reading folds it in as the first does',
+          fn: async () => {
+            const view: BudgetView = { ...ALL_DRY, xiaomi: false, };
+            const { budgets, reads, } = scriptedBudgets({
+              views: [view,],
+              holds: { ...NO_HOLDS, synthetic: 5, },
+            },);
+            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
+            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            expect((thrown as EveryProviderDryError).message,).toContain('after waiting 5ms',);
+            expect(reads.count,).toBe(2,);
+          },
+        },),
+
+        it({
           name: 'RETURNS THE READING with the routing refusal folded in when at least one provider is '
             + 'spendable, asking for no holds',
           fn: async () => {
@@ -230,6 +425,8 @@ await describe({
                 synthetic: false,
                 hyper: false,
                 bedrock: false,
+                deepseek: false,
+                xiaomi: false,
                 openrouter: false,
               },],
               holds: NO_HOLDS,
@@ -237,6 +434,7 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -245,6 +443,8 @@ await describe({
               synthetic: true,
               hyper: false,
               bedrock: false,
+              deepseek: false,
+              xiaomi: false,
               openrouter: false,
             },);
             expect(reads.count,).toBe(1,);
@@ -263,12 +463,15 @@ await describe({
                 synthetic: 5,
                 hyper: 20,
                 bedrock: 0,
+                deepseek: 0,
+                xiaomi: 0,
                 openrouter: 0,
               },
             },);
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: NOBODY_REFUSED,
               pollMs: 1,
@@ -293,6 +496,8 @@ await describe({
                 synthetic: false,
                 hyper: true,
                 bedrock: true,
+                deepseek: true,
+                xiaomi: true,
                 openrouter: true,
               },],
               holds: {
@@ -300,12 +505,15 @@ await describe({
                 synthetic: 5,
                 hyper: 0,
                 bedrock: 0,
+                deepseek: 0,
+                xiaomi: 0,
                 openrouter: 0,
               },
             },);
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -314,6 +522,8 @@ await describe({
               synthetic: false,
               hyper: true,
               bedrock: true,
+              deepseek: true,
+              xiaomi: true,
               openrouter: true,
             },);
             expect(reads.count,).toBe(2,);
@@ -334,6 +544,8 @@ await describe({
               synthetic: false,
               hyper: true,
               bedrock: true,
+              deepseek: true,
+              xiaomi: true,
               openrouter: true,
             };
             const { budgets, reads, holdAsks, } = scriptedBudgets({
@@ -343,6 +555,7 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -367,6 +580,8 @@ await describe({
                 synthetic: 5,
                 hyper: 20,
                 bedrock: 0,
+                deepseek: 0,
+                xiaomi: 0,
                 openrouter: 0,
               }, 2,],
             ] as const).map(async function endsTheRun([holds, expectedReads,],): Promise<{
@@ -382,6 +597,7 @@ await describe({
                 await readBudgetsPastHolds({
                   budgets,
                   modelId: MODEL_ID,
+                  reach: ALL_SERVE,
                   signal: SIGNAL,
                   refused: NOBODY_REFUSED,
                   pollMs: 1,
@@ -405,7 +621,10 @@ await describe({
               // The message states what was measured, so a reader can tell
               // exhaustion from refusal holds.
               expect((outcome.thrown as Error).message,)
-                .toContain('meters read neuralwatt dry, synthetic dry, bedrock dry, hyper dry, openrouter dry; holds neuralwatt',);
+                .toContain(
+                'meters read neuralwatt dry, synthetic dry, bedrock dry, deepseek dry, xiaomi dry, hyper dry, '
+                  + 'openrouter dry; holds neuralwatt',
+                );
             }
             /**
              The waited case names the wait it made.

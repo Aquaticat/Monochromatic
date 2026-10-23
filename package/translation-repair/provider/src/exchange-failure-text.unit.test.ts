@@ -78,6 +78,8 @@ await describe({
           'refused by ProviderHttpError from neuralwatt with HTTP 401',
           'refused by ProviderHttpError from synthetic with HTTP 401',
           'refused by ProviderHttpError from bedrock with HTTP 401',
+          'refused by ProviderHttpError from deepseek with HTTP 401',
+          'refused by ProviderHttpError from xiaomi with HTTP 401',
           'refused by ProviderHttpError from hyper with HTTP 401',
           'refused by ProviderHttpError from openrouter with HTTP 401',
         ],);

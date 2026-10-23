@@ -340,6 +340,8 @@ await describe({
               '\nneuralwatt: wet=0 dry=0 unreadable=0',
               '\nsynthetic: wet=1 dry=1 unreadable=0',
               '\nbedrock: wet=0 dry=0 unreadable=0',
+              '\ndeepseek: wet=0 dry=0 unreadable=0',
+              '\nxiaomi: wet=0 dry=0 unreadable=0',
               '\nhyper: wet=2 dry=0 unreadable=0',
               '\nopenrouter: wet=0 dry=0 unreadable=0',
             ],);

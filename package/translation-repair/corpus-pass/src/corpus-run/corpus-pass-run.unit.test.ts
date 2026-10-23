@@ -23,6 +23,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -37,6 +38,7 @@ import {
   runClientFrom,
   RunsDirectoryBusyError,
 } from '@monochromatic-dev/translation-repair-run';
+import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import type { EntryOutcome, } from '@monochromatic-dev/translation-repair-slice-cache';
 import {
   digestPipeline,
@@ -53,6 +55,8 @@ import {
   scratchDirWith,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { relayingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 import { makeCorpusPassClone, } from './corpus-pass-clone.test-fixture.ts';
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
@@ -120,6 +124,15 @@ type Overrides = {
    */
   readonly transport?: CorpusPassInput['transport'];
 
+  /**
+   What building the client does.
+   */
+  readonly newClient?: CorpusPassInput['newClient'];
+
+  /**
+   What settling one entry does.
+   */
+  readonly settle?: CorpusPassInput['settle'];
 };
 
 /**
@@ -818,6 +831,149 @@ await describe({
             + 'soft=259200000ms hard=25200000ms',
         ],);
         expect(watched.clients,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'STOPS THE RUN WHEN THE ROUTER FINDS EVERY PROVIDER DRY: the entry in flight is stopped by the abort the '
+        + 'refusal raised, no further entry starts, the entries already settled stay counted, and one STOP line names '
+        + 'the cause',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'mittens',
+            sourceText: '猫玩耍。\n',
+            targetText: 'The cat plays.\n',
+          },
+          {
+            id: 'whiskers',
+            sourceText: '猫吃饭。\n',
+            targetText: 'The cat dines.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+        /**
+         What the entry that met the dry router saw its base signal become.
+         */
+        const seen: { reason?: unknown; } = {};
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: {
+            newClient: function dryClient() {
+              /**
+               Router refusal every call meets.
+               */
+              const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+              return {
+                ...runClientFrom({
+                  env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
+                  transport: unreachedTransport,
+                },),
+                chatText: async () => {
+                  throw dry;
+                },
+              };
+            },
+            settle: async function settle({ entry, client, artifactsDir, baseSignal, },): Promise<EntryOutcome> {
+              watched.settled.push(entry.id,);
+              if (watched.settled.length === 1) {
+                await writeFile(
+                  join(
+                    artifactsDir,
+                    `${entry.id}.json`,
+                  ),
+                  '{}',
+                );
+                return { kind: 'settled', };
+              }
+              await rejectionOf(async function ask(): Promise<unknown> {
+                return await client.chatText({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  messages: [],
+                  signal: baseSignal,
+                },);
+              },);
+              seen.reason = baseSignal.reason;
+              return { kind: 'stopped', };
+            },
+          },
+        },);
+
+        expect(watched.settled.length,).toBe(2,);
+        expect(seen.reason,).toBeInstanceOf(EveryProviderDryError,);
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toEqual([
+          `STOP every provider is out of budget, so no further entry starts; the entries already settled keep their `
+            + `pages and the entry in flight is left resumable. Cause: ${(seen.reason as Error).message}`,
+        ],);
+        expect(printed.lines.at(-1,),).toContain('DONE processed=1 of pending=3; artifacts=1/3',);
+      },
+    },),
+    it({
+      name: 'STOPS THE RUN WHEN AN ENTRY IS ENDED BY THE REFUSAL WITHOUT A GUARDED CALL, as the seat reading ends it before '
+        + 'any chat call: the entry hands the refusal to the run, no further entry starts and one STOP line names the cause',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'mittens',
+            sourceText: '猫玩耍。\n',
+            targetText: 'The cat plays.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: {
+            settle: async function settle({ entry, endRun, },): Promise<EntryOutcome> {
+              watched.settled.push(entry.id,);
+              nonNullishOrThrow(endRun,)({
+                error: new EveryProviderDryError({ measured: 'the seat reading found every meter dry', },),
+              },);
+              return { kind: 'stopped', };
+            },
+          },
+        },);
+
+        expect(watched.settled.length,).toBe(1,);
+        /**
+         The stop lines the run printed.
+         */
+        const stops = printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },);
+        expect(stops,).toHaveLength(1,);
+        expect(stops[0],).toContain('the seat reading found every meter dry',);
       },
     },),
   ],

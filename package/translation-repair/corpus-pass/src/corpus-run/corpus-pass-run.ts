@@ -20,6 +20,7 @@ import {
 } from './corpus-pass-lines.ts';
 import { assertPassResumable, } from './corpus-pass-guards.ts';
 import { runPassQueue, } from './corpus-pass-queue.ts';
+import { createPassDryStop, } from './pass-dry-stop.ts';
 import { selectPendingEntries, } from './corpus-pass-select.ts';
 import {
   artifactBackedIds,
@@ -208,9 +209,14 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
     console.log(offLine,);
 
   /**
-   Shared client using measured production provider concurrency.
+   Gate ending the pass when the router finds every provider dry (`pass-dry-stop.ts`).
    */
-  const client = input.newClient({ promptPayloadDir, },);
+  const dryStop = createPassDryStop();
+
+  /**
+   Shared client using measured production provider concurrency, guarded so a dry refusal stops the pass.
+   */
+  const client = dryStop.guard({ client: input.newClient({ promptPayloadDir, },), },);
 
   if (line.switched('plan',)) {
     console.log(passPlanLine({
@@ -243,18 +249,13 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
    */
   const start = now();
 
-  /**
-   Shared base signal each entry's deadline forwards from; the driver
-   never aborts it, so only a per-entry timeout ever fires.
-   */
-  const neverAbort = new AbortController().signal;
-
   await runPassQueue({
     pending,
     attempts,
     attemptsPath,
     sliceCacheDir,
     pipelineDigest,
+    dryStop,
     softBudgetMs: SOFT_BUDGET_MS,
     spendCeilingUsd,
     start,
@@ -271,11 +272,14 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
         pipelineDigest,
         pin,
         hardCapMs,
-        baseSignal: neverAbort,
+        // Aborted by the dry gate and by nothing else, so only a per-entry timeout or every provider dry ever fires.
+        baseSignal: dryStop.signal,
         outsideReads: input.outsideReads,
         pictureSources: input.pictureSources,
         overlap: input.overlap,
         stageSettings: input.stageSettings,
+        // The refusal that ended an entry reaches the gate even where no guarded call carried it.
+        endRun: dryStop.trip,
       },);
     },
   },);

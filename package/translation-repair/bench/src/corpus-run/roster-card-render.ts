@@ -429,7 +429,8 @@ export function cardFieldsFrom(
     };
   }
   // Bedrock's listing names the model and its retention mode and nothing a
-  // card needs; the model card page carries the rest.
+  // card needs; DeepSeek's and Xiaomi's name the model and its owner and
+  // nothing else; the model card page carries the rest.
   return {
     readsImages: NOT_LISTED,
     maxOutputLength: numberFrom(row.max_output_tokens,),
@@ -565,6 +566,18 @@ export function renderProviderCard(
         value: fields.contextLength,
         says: 'the model card page',
       },),
+    ],
+    // THE DIRECT PROVIDERS' LISTINGS CARRY NO PRICE, so the three rates are
+    // read off the provider's public pricing page, as Bedrock's are.
+    deepseek: [
+      '      promptCacheHitUsdPerMillion: /* the public pricing page */,',
+      '      promptCacheMissUsdPerMillion: /* the public pricing page */,',
+      '      completionUsdPerMillion: /* the public pricing page */,',
+    ],
+    xiaomi: [
+      '      promptCacheHitUsdPerMillion: /* the public pricing page */,',
+      '      promptCacheMissUsdPerMillion: /* the public pricing page */,',
+      '      completionUsdPerMillion: /* the public pricing page */,',
     ],
   };
   return [

@@ -14,8 +14,8 @@ import type {
 // hypercredits and priced, metered in hypercredits and missing from the price
 // table, on a flat subscription that bills no credits at all, on NeuralWatt's
 // free daily energy (metered in watt-hours by the energy ledger; the nominal
-// cost its calls report is no bill), or billed in USD on OpenRouter
-// with the cost read off the wire. Only the first has a credit figure and only
+// cost its calls report is no bill), or billed in USD on OpenRouter,
+// Bedrock, DeepSeek or Xiaomi with the cost read off the wire. Only the first has a credit figure and only
 // the last a USD figure. A total that folded the others in
 // would read as a cheaper run for the second and as an invented currency for
 // the third and fourth.
@@ -96,8 +96,8 @@ export type SpendCost = {
   readonly freeEnergy: readonly SeatSpend[];
 
   /**
-   Seats billed in USD per token, on OpenRouter or on Bedrock, costliest
-   first, each carrying the USD its lines reported.
+   Seats billed in USD per token, on OpenRouter, Bedrock, DeepSeek or
+   Xiaomi, costliest first, each carrying the USD its lines reported.
 
    A FOURTH BUCKET AND A SECOND CURRENCY. Hypercredits and USD are never
    summed: `totalCredits` stays a credit figure, and this bucket's
@@ -212,7 +212,9 @@ export function priceTally(
   const openRouter = tally
     .seats
     .filter(function isBilledInUsd(seat,): boolean {
-      return (seat.provider === 'openrouter') || (seat.provider === 'bedrock');
+      return (seat.provider === 'openrouter') || (seat.provider === 'bedrock')
+        || (seat.provider === 'deepseek')
+        || (seat.provider === 'xiaomi');
     },)
     .toSorted(function costliestFirst(
       left,

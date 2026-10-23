@@ -177,7 +177,7 @@ and each task sets it to its own name.
   provider's live listing,
   so seating a model is one card and one list entry.
   Usage after `--`:
-  `<synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>`.
+  `<synthetic|hyper|openrouter|bedrock|neuralwatt|deepseek|xiaomi> <served id>`.
   Read-only;
   the key is never printed.
 - `reader-measure`:

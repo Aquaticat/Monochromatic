@@ -47,7 +47,7 @@ export {
 } from './corpus-run/runs-lock.ts';
 export {
   resolveSpendCeilingUsd,
-  SPEND_CEILING_PROVIDER,
+  SPEND_CEILING_PROVIDERS,
   SPEND_CEILING_USD,
   SPEND_CEILING_VAR,
   spendCeilingNote,

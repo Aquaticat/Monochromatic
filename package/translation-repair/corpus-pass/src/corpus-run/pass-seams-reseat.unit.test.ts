@@ -73,6 +73,8 @@ const ALL_WET: BudgetView = {
   neuralwatt: false,
   synthetic: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: false,
   openrouter: false,
 };
@@ -209,6 +211,8 @@ function viewChangingClient(
       neuralwatt: 0,
       synthetic: held ? HOLD_MS : 0,
       bedrock: 0,
+      deepseek: 0,
+      xiaomi: 0,
       hyper: 0,
       openrouter: 0,
     }),

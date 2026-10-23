@@ -223,7 +223,7 @@ Artifact fields are of `artifacts/CuspariaKLSY.json`.
 - Mercury:
   maximum first content line 1530 (21,327 ms);
   the 64 first-content times:
-  `mercury.ts` over the stream lines (listed below);
+  `mercury.ts` over the stream lines (listed in the paragraph "The 64 first-content times of Mercury");
   `SEAT` 2217;
   unusable answers 954 (with 953 `no re-ask elsewhere`) and 2187 (2186);
   JSON recoveries 244 and 1295;

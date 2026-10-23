@@ -33,6 +33,7 @@ const HEARD = {
   },),
   heardCritics: 3,
   findings: [],
+  silentStages: [],
 };
 
 /**
@@ -82,6 +83,27 @@ await describe({
             },),).toStrictEqual([
               'a stage heard fewer than quorum (stage-quorum-unmet (panel 1/3))',
               'a stage heard fewer than quorum (stage-quorum-unmet (checker 1/3))',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A SLICE WHOSE PANEL HEARD NOBODY when the only finding about it was relocated, as the '
+            + 'XingZ6018 slice 85 record was: 12 needs-human issues, heard critics, and five findings that began '
+            + '`panel-packet (cluster/...): ` so no prefix reader saw them',
+          fn: async () => {
+            expect(cacheRefusalsOf({
+              outcome: {
+                ...HEARD,
+                heardCritics: 4,
+                findings: [
+                  'panel-packet (cluster/140d): stage-quorum-unmet (panel 0/6)',
+                  'panel-packet (cluster/445d): stage-quorum-unmet (panel 0/5)',
+                ],
+                silentStages: ['panel 0/6 (cluster/140d)', 'panel 0/5 (cluster/445d)',],
+              },
+            },),).toStrictEqual([
+              'a stage heard fewer than quorum (panel 0/6 (cluster/140d))',
+              'a stage heard fewer than quorum (panel 0/5 (cluster/445d))',
             ],);
           },
         },),

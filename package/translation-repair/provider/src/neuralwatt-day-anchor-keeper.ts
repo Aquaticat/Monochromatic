@@ -30,6 +30,12 @@ export type NeuralWattAnchorKeeper = {
    The anchor, learned on the first call that can and tried again, spaced, while it is unknown.
    */
   readonly anchorFor: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattDayAnchor>;
+
+  /**
+   The anchor this keeper has already learned, without learning one: unknown until a call of `anchorFor` has found it.
+   NO QUOTA READ, so a message built while the run ends can ask it.
+   */
+  readonly decided: () => NeuralWattDayAnchor;
 };
 
 /**
@@ -117,7 +123,28 @@ export function createNeuralWattAnchorKeeper(
     },);
     return anchor;
   }
-  return { anchorFor, };
+
+  /**
+   The anchor already learned, without learning one.
+
+   @returns The kept anchor's time of day, without the fresh quota a retried anchor carries, or that none is known yet
+   */
+  function decided(): NeuralWattDayAnchor {
+    /**
+     The kept anchor, if one has been learned.
+     */
+    const kept = state.known;
+    if (kept?.known !== true)
+      return { known: false, };
+    return {
+      known: true,
+      msOfDay: kept.msOfDay,
+    };
+  }
+  return {
+    anchorFor,
+    decided,
+  };
 }
 
 //endregion NeuralWatt day anchor keeper

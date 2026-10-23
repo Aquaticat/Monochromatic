@@ -15,7 +15,10 @@ import {
   ContributorCompletenessError,
   SliceSpliceError,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
-import { PromptPayloadStoreError, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  endsTheRun,
+  PromptPayloadStoreError,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import { VisualEvidenceInterruptedError, } from './visual-evidence-completeness.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
@@ -64,6 +67,8 @@ export function entryErrorOutcome(
   const stopped = (error instanceof ArchiveOriginalCompletenessError)
     || (error instanceof ContributorCompletenessError)
     || (error instanceof DroppedDestinationError)
+    // The owner's rule: every provider dry ends the run. A whole-entry retry meets the same dry router.
+    || endsTheRun({ error, },)
     || (error instanceof FrontMatterCompletenessError)
     || (error instanceof NaturalnessRepairInterruptedError)
     || (error instanceof NaturalnessCompletenessError)
@@ -98,7 +103,12 @@ export function entryErrorOutcome(
 
  @param durationMs - time before it failed, on `monotonicMs`
 
- @param aborted - whether the hard-ceiling abort fired
+ @param aborted - whether the entry's signal had aborted when it failed: the hard-ceiling abort fired, or the dry
+ router stopped the run (the TALLY line prints it as `aborted=`)
+
+ @param endRun - told of the failure when it ends the run, before the entry is filed, so the pass stops starting
+ entries however the failure reached the entry: a guarded call carries it by the shared abort, the seat reading and a
+ layer that re-raises it reach here without one
 
  @returns Scheduling disposition, never a settlement
 
@@ -113,11 +123,13 @@ export function tallyCaughtEntry(
     error,
     durationMs,
     aborted,
+    endRun,
   }: {
     readonly entryId: string;
     readonly error: unknown;
     readonly durationMs: number;
     readonly aborted: boolean;
+    readonly endRun?: (args: { readonly error: unknown; },) => void;
   },
 ): EntryErrorOutcome['outcome'] {
   /**
@@ -128,6 +140,8 @@ export function tallyCaughtEntry(
    Tally and retry classification for caught state.
    */
   const classified = entryErrorOutcome({ error, },);
+  if (endsTheRun({ error, },))
+    endRun?.({ error, },);
   // THE FINDINGS REACH THE LOG, one line each, since the tally line carries the
   // reason alone and the sixth yuki418330012 pass of 2026-09-09 stopped twice
   // as carried-evidence-lost with nothing in the log saying which region.

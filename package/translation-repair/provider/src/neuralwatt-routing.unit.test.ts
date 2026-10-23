@@ -78,6 +78,8 @@ const ALL_REACH = {
   neuralwatt: true,
   synthetic: true,
   bedrock: true,
+  deepseek: false,
+  xiaomi: false,
   hyper: true,
   openrouter: true,
 } as const;
@@ -89,6 +91,8 @@ const NONE_DRY = {
   neuralwatt: false,
   synthetic: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: false,
   openrouter: false,
 } as const;

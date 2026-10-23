@@ -16,7 +16,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  EveryProviderDryError,
+  type ModelClient,
+} from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
   attemptStageCall,
@@ -325,6 +328,26 @@ await describe({
           },),
           decision: DECISION,
         },),).rejects.toThrow('cat nap',);
+      },
+    },),
+
+    it({
+      name: 'THROWS an every-provider-dry refusal although the signal did not abort, since it ends the run',
+      fn: async () => {
+        /**
+         The refusal the router raised, held so the assertion proves THAT object propagated.
+         */
+        const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+
+        await expect(attemptStageCall({
+          ...SHARED,
+          client: clientWith({
+            decide: async () => {
+              throw dry;
+            },
+          },),
+          decision: DECISION,
+        },),).rejects.toBe(dry,);
       },
     },),
   ],

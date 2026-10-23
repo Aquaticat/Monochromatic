@@ -128,6 +128,13 @@ the rewrite of `_.path` in the root `mise.toml` follows the worktree's installs,
 so it is read against them first,
 and a scratch worktree's partial install is never committed as that list.
 
+The corpus-pass package's test runner prints no count of cases or files (ledger M293).
+Its gate reads the exit code,
+the `[FAIL]` lines (zero),
+and the `[PASS]` lines of the suites the change added or touched,
+by name,
+because a suite with failing cases still prints its pass line.
+
 What enforces it:
 the coverage census,
 which refuses a suite whose log carries a failing marker,

@@ -618,8 +618,31 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  consistency (7), page title (6) versions move with this one; the pairing version stays, by its own account of
  2026-10-18 (`slice-reading/src/pairing-cache-version.ts`). No record has been written at 43, which this change sets
  first.
+
+ Version 44 covers what a settlement may be cached as: the outcome gains `silentStages`, the stages that heard fewer
+ voices than quorum as data, and the cache refuses to write or resume a settlement that names one
+ (`repair-cache-gate.ts`, `slice-cache-store.ts`). Run XingZ6018 (2026-10-22, built on `8864316eb2`, which holds 43)
+ wrote slice-cache records at 43, among them slice 85 of `XingZ60`: five panel packets heard nobody, the panel's
+ findings began `panel-packet (cluster/...): ` and so no reader of where a finding begins saw them, and the settlement
+ with its 12 needs-human issues was cached as examined. The key hashes the version, the shape of the run and the texts,
+ not the rule that decides what may be stored, so a record written before would be served after: records stand at 43,
+ and the change cannot ride inside it, so the number moves. The reader also refuses a record that lacks the field, so
+ a record written at 43 is not resumed even by a run that kept the old number. The refine version stays at 14: its
+ key and its question are unchanged, and a refinement record embeds the outcome, so the same reader refuses one
+ that lacks the field; the refine write gate asks the same question as that reader (`refinementIsResumable`), so it
+ writes nothing the reader would discard.
+
+ THE OTHER VERSIONS STAY AT 44, each for its own reason. The lane-contest (16), consolidate (32), consistency (7) and
+ page-title (6) keys hash the texts and questions they decide over, and nothing here changes what any of them may store
+ or how it decides: a slice the repair lane redoes under 44 reaches them as a changed key when its text changes and as
+ the same answer when it does not. The translate slice version (25) stays because the translate lane never reads
+ `silentStages` and its own gate is unchanged. The pairing version (3) stays by its own account of 2026-10-18
+ (`slice-reading/src/pairing-cache-version.ts`). The artifact schema stays because an artifact is a record of a
+ finished pass and not a cache a run resumes, and no source under `artifact/src` names the field. The
+ every-provider-dry stop of the same day (`bae1bb310e`) moves no version: it changes whether the next entry starts, not
+ what a settlement may be cached as. No record has been written at 44, which this change sets first.
  */
-export const SLICE_CACHE_VERSION = 43;
+export const SLICE_CACHE_VERSION = 44;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

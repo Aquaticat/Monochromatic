@@ -45,6 +45,8 @@ const ALL_WET: BudgetView = {
   neuralwatt: false,
   synthetic: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: false,
   openrouter: false,
 };
@@ -57,6 +59,8 @@ const BEDROCK_ALONE: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: false,
+  deepseek: true,
+  xiaomi: true,
   hyper: true,
   openrouter: true,
 };
@@ -69,6 +73,8 @@ const XINGZ6016: BudgetView = {
   neuralwatt: false,
   synthetic: true,
   bedrock: true,
+  deepseek: false,
+  xiaomi: false,
   hyper: true,
   openrouter: false,
 };
@@ -83,6 +89,8 @@ const HYPER_ALONE: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: true,
+  deepseek: true,
+  xiaomi: true,
   hyper: false,
   openrouter: true,
 };

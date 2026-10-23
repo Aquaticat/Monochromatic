@@ -579,3 +579,77 @@ the section lists of 11 indexes,
 no archive body line added and no heading changed against `c3c0c8dda7`,
 the five doc guard tests,
 and the Markdown lint on the ten files.
+
+## D36: the ledger named `everyStageHeard` as the cache's reader, and the function no longer exists
+
+Status:
+fixed on 2026-10-22 (UTC) by in-place notes,
+found by the implementer of the review fixes of the XingZ6018 work.
+`audit-ledger-which-seats-a-quorum-counts.md` names `everyStageHeard` at four places,
+in the accounts of B141 and B160:
+"passed `everyStageHeard` and was written to the refine cache",
+"passed `everyStageHeard`",
+"fail `everyStageHeard`",
+and "failed `everyStageHeard`".
+`b423e15be8` removed the function,
+because the refine write gate and the read gate came to share one predicate,
+and the ledger had no word of it.
+The current names are `refinementIsResumable` and `silentStagesOfSettlement` in `stage/src/stage-silence.ts` (B820).
+
+The fix:
+each account keeps the name as written,
+since it is the history of what the code was called when the defect stood,
+and gains a note giving the current names and the date of the replacement (2026-10-22).
+Nothing else in the package's docs or READMEs names `everyStageHeard`
+(`rg` over the package and the repository's `doc` and `package` trees found only these four places in the ledger,
+and the entries of this round).
+
+Guard:
+none can tell a name that was replaced from one that was never written,
+so the prevention is a habit:
+a commit that removes an exported name searches the docs for it and leaves an in-place note
+where a historical record keeps it (WR6).
+
+Recurrence:
+`mistake-prevention-docs-and-references.md`,
+"Current-state docs".
+
+## D37: five comments and docs of the XingZ6018 fixes said something the code or the rulings did not
+
+Status:
+fixed on 2026-10-22 (UTC) in `9d6095ae7e`,
+found by notes N1 and N2 of the review of the fixes and by its reading of the comment round (`855963d613`).
+
+- `corpus-pass/src/corpus-run/pass-entry.ts` said the base signal is one the pass never aborts,
+  "so only a per-entry timeout ever fires".
+  The dry stop made `dryStop.signal` the base signal.
+- `slice-cache/src/corpus-run/entry-error-outcome.ts` documented `aborted` as whether the hard-ceiling abort fired,
+  and the TALLY line prints it as `aborted=`.
+  A dry stop sets it too,
+  so a reader scanning TALLY lines for hard-cap hits was misled.
+  The doc now says the field reports the dry stop as well.
+- The TSDoc of `EveryProviderDryError` and its `messageNamesOnly` comment said the message holds fixed sentences plus the
+  meter states and the hold lengths.
+  It also states a time of day (B819),
+  and "the day start decided at the start of this run" was wrong for a day start learned on a retry.
+- The Synthetic client's comment kept Synthetic in the third tier "until a bench says otherwise".
+  That condition is in no ruling.
+  It now states the bench fact:
+  Synthetic's probes of 2026-10-22 showed `low` turning thinking off,
+  while `high` and `max` do not separate (GLM-5.3-Flash `high` and `max` about 430 to 740 reasoning tokens
+  on a question where NeuralWatt's copy of the model separated `low` 116 to 143,
+  `high` 169 to 222 and `max` 355 to 579).
+- The NeuralWatt card comment cited a probe "by the parent session",
+  which means nothing to a later reader,
+  and the raw numbers stood nowhere.
+  They now stand in the section "Thinking-parameter evidence" of the provider README,
+  and the comment cites that.
+  The shared contract's comment on Anthropic now words the clearance as the owner's ruling,
+  with no direct client for it yet.
+
+Guard:
+none for the wording.
+
+Recurrence:
+`mistake-prevention-docs-and-references.md`,
+"Current-state docs".

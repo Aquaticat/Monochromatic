@@ -47,6 +47,8 @@ const ALL_WET: BudgetView = {
   neuralwatt: false,
   synthetic: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: false,
   openrouter: false,
 };
@@ -58,6 +60,8 @@ const BEDROCK_ALONE: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: false,
+  deepseek: true,
+  xiaomi: true,
   hyper: true,
   openrouter: true,
 };
@@ -185,7 +189,7 @@ await describe({
           name: 'NAMES EACH WRITING BENCH BELOW THE FLOOR WITH ITS CLAUSE, the name beside the clause the phase prints, and '
             + 'names no judge bench however short, the same benches unreachableWritingBenches words',
           fn: async () => {
-            const dry: BudgetView = { neuralwatt: true, synthetic: true, bedrock: true, hyper: true, openrouter: true, };
+            const dry: BudgetView = { neuralwatt: true, synthetic: true, bedrock: true, deepseek: true, xiaomi: true, hyper: true, openrouter: true, };
             const benches = benchesOf({ seats: judgeSeatsFor({ dry, },), },);
             const shortOfFloor = belowFloorWritingBenches({
               benches,

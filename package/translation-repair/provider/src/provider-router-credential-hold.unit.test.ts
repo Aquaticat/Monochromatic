@@ -42,6 +42,7 @@ import {
   type DecisionReply,
   type DecisionRequest,
 } from '../dist/final/node/index.mjs';
+import { holdNothing, } from './provider-router-wet-budgets.test-fixture.ts';
 import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 
 /**
@@ -106,21 +107,15 @@ function budgetsWhereBedrockComesFirst(
         synthetic: true,
         hyper: alsoDry.includes('hyper',),
         bedrock: alsoDry.includes('bedrock',),
+        deepseek: alsoDry.includes('deepseek',),
+        xiaomi: alsoDry.includes('xiaomi',),
         openrouter: alsoDry.includes('openrouter',),
       };
     },
     markRefused: async function markNothingRefused(): Promise<void> {
       return undefined;
     },
-    holds: function holdNothingBack(): ProviderRecord<number> {
-      return {
-        neuralwatt: 0,
-        synthetic: 0,
-        hyper: 0,
-        bedrock: 0,
-        openrouter: 0,
-      };
-    },
+    holds: holdNothing,
   };
 }
 

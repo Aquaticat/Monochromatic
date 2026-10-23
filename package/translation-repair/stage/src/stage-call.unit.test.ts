@@ -24,10 +24,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  EveryProviderDryError,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { attemptStageCall, } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -482,6 +483,24 @@ await describe({
             signal: controller.signal,
           },),
         ).rejects.toBe(unrelatedFailure,);
+      },
+    },),
+
+    it({
+      name: 'RETHROWS an every-provider-dry refusal although nobody aborted, since the owner ruled it ends the run: '
+        + 'a lost voice here let the run limp on for 77 s before the bench floor stopped it (XingZ6018, 2026-10-22)',
+      fn: async () => {
+        /**
+         The refusal the router raised, held so the assertion proves THAT object propagated.
+         */
+        const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+
+        await expect(
+          callWith({
+            client: scriptedClient({ thrown: dry, },),
+            signal: new AbortController().signal,
+          },),
+        ).rejects.toBe(dry,);
       },
     },),
 

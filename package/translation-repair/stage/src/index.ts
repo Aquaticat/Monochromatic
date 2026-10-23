@@ -169,11 +169,22 @@ export {
   type StageSettings,
 } from './stage-settings.ts';
 export {
-  everyStageHeard,
+  refinementIsResumable,
+  silentStageLabel,
   silentStagesOf,
+  silentStagesOfRecord,
+  silentStagesOfSettlement,
   STAGE_QUORUM_UNMET_PREFIX,
   stageQuorumUnmetFinding,
 } from './stage-silence.ts';
+export {
+  endsTheRun,
+  isDryRefusal,
+} from './stage-run-end.ts';
+export {
+  lostVoiceFindings,
+  rosterShortfallFindings,
+} from './stage-voice-lost.ts';
 export { runWindowedRounds, } from './stage-windowed-rounds.ts';
 export {
   reuseTwinOrBuy,
