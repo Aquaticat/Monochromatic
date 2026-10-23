@@ -119,7 +119,8 @@ The groups that follow name the main ones.
   `runEditorFidelityProbe`,
   `runEditorTrial`,
   `editorCeilings`,
-  `assertWithinCeiling`,
+  `spendGuardedClient`,
+  `measuredUsd`,
   `cardsOnlyClient`,
   `editorProbeEnv`.
   Declared in `editor-fidelity-trials.ts`,
@@ -127,6 +128,7 @@ The groups that follow name the main ones.
   `corpus-run/editor-fidelity-probe-run.ts`,
   `corpus-run/editor-fidelity-trial.ts`,
   `corpus-run/editor-fidelity-ceiling.ts`,
+  `corpus-run/editor-fidelity-spend-guard.ts`,
   and `corpus-run/editor-fidelity-client.ts`.
 
 ## Runners
@@ -219,7 +221,9 @@ and each task sets it to its own name.
   `--candidates-alone` (required)
   and `--max-usd n` (default 2).
   Prints the per-arm cost ceiling before any call,
-  and refuses to start when the first-pass ceiling exceeds `--max-usd`.
+  and refuses each call,
+  ending the arm,
+  when the spend measured from the replies so far plus that call's ceiling would pass `--max-usd`.
   Only the Claude key is read.
   Spends quota.
 - `damage-sample`:

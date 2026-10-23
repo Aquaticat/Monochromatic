@@ -22,8 +22,8 @@ import {
 export const DEFAULT_EDITOR_TRIAL_CAP = 16;
 
 /**
- Most a run may cost, in US dollars, when `--max-usd` is not written: the ceiling of one Sonnet card over every trial
- of the reviewed manifest sits well under it.
+ Most a run may spend, in US dollars, when `--max-usd` is not written: the spend guard refuses the call that would take
+ the spend measured from the replies, plus that call's ceiling, past it.
  */
 export const DEFAULT_EDITOR_MAX_USD = 2;
 

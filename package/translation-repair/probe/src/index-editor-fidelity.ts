@@ -1,5 +1,5 @@
 //region Editor fidelity exports
-// The editor fidelity probe's trials, score, arguments, ceiling, client, trial, plan and run.
+// The editor fidelity probe's trials, score, arguments, ceiling, spend guard, client, trial, plan and run.
 // Re-exported by `index.ts`, which is the package's one public entry.
 
 export {
@@ -8,11 +8,15 @@ export {
   readEditorFidelityArguments,
 } from './corpus-run/editor-fidelity-args.ts';
 export {
-  assertWithinCeiling,
+  callCeilingUsd,
   ceilingLine,
   type EditorCeiling,
   editorCeilings,
   MAX_ASKS_PER_TRIAL,
+  messageChars,
+  pricesOf,
+  tierFor,
+  usdText,
 } from './corpus-run/editor-fidelity-ceiling.ts';
 export {
   cardsOnlyClient,
@@ -42,6 +46,11 @@ export {
   type EditorProbeSink,
   runEditorFidelityProbe,
 } from './corpus-run/editor-fidelity-probe-run.ts';
+export {
+  guardLine,
+  measuredUsd,
+  spendGuardedClient,
+} from './corpus-run/editor-fidelity-spend-guard.ts';
 export {
   type EditorTrialReading,
   runEditorTrial,

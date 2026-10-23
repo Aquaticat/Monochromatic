@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import type { ChatTextRequest, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
@@ -12,7 +13,8 @@ import {
 import { STAGE_RETRY_ROUNDS, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Editor fidelity ceiling
-// WHAT THE PROBE MAY SPEND, printed before any call and held to the amount the operator allows.
+// WHAT THE PROBE MAY SPEND, printed before any call. The amount the operator allows is held by the spend guard
+// (`editor-fidelity-spend-guard.ts`), call by call, and this module prices the most one call can cost for it.
 //
 // THE CEILING IS BUILT FROM THE TWO THINGS A CALL CANNOT EXCEED: the prompt, sized at one input token to the
 // character of the sheet (an overshoot for English, which runs near four characters a token, and close for Chinese),
@@ -21,9 +23,9 @@ import { STAGE_RETRY_ROUNDS, } from '@monochromatic-dev/translation-repair-stage
 //
 // TWO FIGURES, BECAUSE ONE ASK A TRIAL IS NOT THE WORST. The gather asks again when a reply cannot be read: in each of
 // its retry rounds, and once more in a recovery round. The FIRST-PASS figure is one ask for each trial; the WORST CASE
-// multiplies it by the most asks one gather gives a seat. The run is held to the first-pass figure, which is what a
-// reachable arm spends; the worst case is printed so a reader knows what a seat that answers nothing readable could
-// cost.
+// multiplies it by the most asks one gather gives a seat. Both are printed so a reader knows what an arm could cost,
+// and neither gates the arm: a pool of forty trials prices past any amount an arm is allowed, and the guard stops the
+// arm at the call that would pass the amount instead.
 //
 // A CARD WITH NO PRICE TABLE IS REFUSED, never priced at zero: only the Claude cards carry one.
 
@@ -36,7 +38,7 @@ export const MAX_ASKS_PER_TRIAL: number = STAGE_RETRY_ROUNDS + 2;
 /**
  Tokens in a million, the unit the prices are written in.
  */
-const PER_MILLION = 1_000_000;
+export const PER_MILLION = 1_000_000;
 
 /**
  The ceiling for one card.
@@ -106,7 +108,37 @@ export function pricesOf({ cardId, }: { readonly cardId: RosterModelId; },): Ant
 }
 
 /**
- Most one ask can cost at a card's prices.
+ Rates that price a whole call: the long-prompt tier once the prompt passes its limit.
+
+ @param prices - the card's prices
+
+ @param promptTokens - tokens in the prompt
+
+ @returns The tier's rates
+
+ @example
+ ```ts
+ const { outputUsdPerMillion, } = tierFor({ prices, promptTokens: 9000, },);
+ ```
+ */
+export function tierFor(
+  {
+    prices,
+    promptTokens,
+  }: {
+    readonly prices: AnthropicPrices;
+    readonly promptTokens: number;
+  },
+): Pick<AnthropicPrices, 'inputUsdPerMillion' | 'outputUsdPerMillion' | 'cacheWriteUsdPerMillion'> {
+  return ((prices.longPrompt !== undefined) && (promptTokens
+    > prices.longPrompt
+      .aboveTokens))
+    ? prices.longPrompt
+    : prices;
+}
+
+/**
+ Most one call can cost at a card's prices.
 
  @param prices - the card's prices
 
@@ -116,10 +148,10 @@ export function pricesOf({ cardId, }: { readonly cardId: RosterModelId; },): Ant
 
  @example
  ```ts
- const usd = askUsd({ prices, promptTokens: 9000, },);
+ const usd = callCeilingUsd({ prices, promptTokens: 9000, },);
  ```
  */
-function askUsd(
+export function callCeilingUsd(
   {
     prices,
     promptTokens,
@@ -129,14 +161,39 @@ function askUsd(
   },
 ): number {
   /**
-   Tier that prices the whole call: the long-prompt tier once the prompt passes its limit.
+   Rates of the tier that prices the whole call.
    */
-  const tier = ((prices.longPrompt !== undefined) && (promptTokens
-    > prices.longPrompt
-      .aboveTokens))
-    ? prices.longPrompt
-    : prices;
+  const tier = tierFor({
+    prices,
+    promptTokens,
+  },);
   return ((promptTokens * tier.inputUsdPerMillion) + (CLAUDE_COMPLETION_CAP * tier.outputUsdPerMillion)) / PER_MILLION;
+}
+
+/**
+ Characters of the messages a call sends, which the ceiling sizes the prompt by.
+
+ @param messages - the request's messages
+
+ @returns Characters of every message, a part list counted as its JSON
+
+ @example
+ ```ts
+ const chars = messageChars({ messages: request.messages, },);
+ ```
+ */
+export function messageChars(
+  { messages, }: { readonly messages: ChatTextRequest['messages']; },
+): number {
+  return messages.reduce(
+    function summed(
+      total,
+      message,
+    ): number {
+      return total + (((typeof message.content) === 'string') ? message.content : JSON.stringify(message.content,)).length;
+    },
+    0,
+  );
 }
 
 /**
@@ -177,7 +234,7 @@ export function editorCeilings(
         total,
         chars,
       ): number {
-        return total + askUsd({
+        return total + callCeilingUsd({
           prices,
           promptTokens: chars,
         },);
@@ -211,7 +268,7 @@ const USD_DECIMALS = 4;
  const text = usdText({ usd: 0.648, },); // '0.6480'
  ```
  */
-function usdText({ usd, }: { readonly usd: number; },): string {
+export function usdText({ usd, }: { readonly usd: number; },): string {
   return usd.toFixed(USD_DECIMALS,);
 }
 
@@ -241,49 +298,6 @@ export function ceilingLine({ ceiling, }: { readonly ceiling: EditorCeiling; },)
     + `${String(ceiling.prices
       .outputUsdPerMillion,)} USD out per million tokens, ${String(CLAUDE_COMPLETION_CAP,)} output `
     + 'tokens an ask, one input token to the character of the sheet';
-}
-
-/**
- Refuses a run whose ceiling passes the amount the operator allows.
-
- @param ceilings - one for each card the run seats
-
- @param maxUsd - amount allowed, from `--max-usd`
-
- @throws StatedRefusalError when the first-pass ceilings, summed over the cards, pass the amount
-
- @example
- ```ts
- assertWithinCeiling({ ceilings, maxUsd: 2, },);
- ```
- */
-export function assertWithinCeiling(
-  {
-    ceilings,
-    maxUsd,
-  }: {
-    readonly ceilings: readonly EditorCeiling[];
-    readonly maxUsd: number;
-  },
-): void {
-  /**
-   Most the whole run can cost at one ask a trial.
-   */
-  const totalUsd = ceilings.reduce(
-    function summed(
-      total,
-      ceiling,
-    ): number {
-      return total + ceiling.firstPassUsd;
-    },
-    0,
-  );
-  if (totalUsd > maxUsd) {
-    throw new StatedRefusalError({
-      says: `the ceiling of this run is ${usdText({ usd: totalUsd, },)} USD against --max-usd ${usdText({ usd: maxUsd, },)}; `
-        + 'lower --cap, name fewer cards or raise --max-usd, and nothing was asked',
-    },);
-  }
 }
 
 //endregion Editor fidelity ceiling

@@ -3,7 +3,10 @@ import { buildEditorMessages, } from '@monochromatic-dev/translation-repair-repa
 import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { EditorFidelityTrial, } from '../editor-fidelity-trials.ts';
-import { pricesOf, } from './editor-fidelity-ceiling.ts';
+import {
+  messageChars,
+  pricesOf,
+} from './editor-fidelity-ceiling.ts';
 import type { EditorPair, } from './editor-fidelity-plan.ts';
 import type { EditorTrialReading, } from './editor-fidelity-trial.ts';
 import {
@@ -77,22 +80,15 @@ export function seatedCardsOf(
  ```
  */
 export function sheetCharsOf({ trial, }: { readonly trial: EditorFidelityTrial; },): number {
-  return buildEditorMessages({
-    sourceText: trial.sourceText,
-    targetText: trial.damagedText,
-    envelopes: trial.envelopes,
-    issues: trial.issues,
-  },)
-    .messages
-    .reduce(
-    function summed(
-      total,
-      message,
-    ): number {
-      return total + (((typeof message.content) === 'string') ? message.content : JSON.stringify(message.content,)).length;
-    },
-    0,
-    );
+  return messageChars({
+    messages: buildEditorMessages({
+      sourceText: trial.sourceText,
+      targetText: trial.damagedText,
+      envelopes: trial.envelopes,
+      issues: trial.issues,
+    },)
+      .messages,
+  },);
 }
 
 /**

@@ -23,7 +23,6 @@ import type {
 import { editorFidelityTrials, } from '../editor-fidelity-trials.ts';
 import { readEditorFidelityArguments, } from './editor-fidelity-args.ts';
 import {
-  assertWithinCeiling,
   ceilingLine,
   editorCeilings,
 } from './editor-fidelity-ceiling.ts';
@@ -39,6 +38,10 @@ import {
   editorTallyLine,
   editorTallyOf,
 } from './editor-fidelity-plan.ts';
+import {
+  guardLine,
+  spendGuardedClient,
+} from './editor-fidelity-spend-guard.ts';
 import { runEditorTrial, } from './editor-fidelity-trial.ts';
 import {
   pairName,
@@ -53,7 +56,8 @@ import { persistProbeRun, } from './probe-store.ts';
 //region Editor fidelity probe run
 // Seats each named Claude card alone as the editor of a hash-verified seeded defect that has a known fix, asks it what
 // the pipeline's editor stage asks an editor, and reads the patched text by comparison with the reviewed reference.
-// Nothing else is asked: no critic, panel, judge or checker, so the only model called is the card. The command line,
+// Nothing else is asked: no critic, panel, judge or checker, so the only model called is the card, and no call is made
+// that the spend measured so far plus its ceiling would take past `--max-usd`. The command line,
 // the corpus pin, the reference reader, the runs directory, the client builder, the clock, the build's identity, the
 // logger and the standard output are handed in by `editor-fidelity-probe.ts`.
 //
@@ -86,7 +90,8 @@ export type EditorProbeSink = {
  @param resolveRuns - names the runs directory, called only once a run has something to keep
 
  @param newClient - builds the client the cards are asked through, called only after the plan is on disk and handed
- the cards, so a refused request needs no key and the client is built for those cards alone
+ the cards, so a refused request needs no key and the client is built for those cards alone; the run wraps it in the
+ spend guard
 
  @param now - the clock, read for the start and for the finish
 
@@ -105,7 +110,8 @@ export type EditorProbeSink = {
  @throws {@link FidelityReferenceError} for reference drift in what the clone holds
 
  @throws StatedRefusalError when the command line asks for something the probe does not run, a request the reviewed
- references refuse, or a run whose cost ceiling passes `--max-usd`
+ references refuse, or an arm whose next call, with the spend measured so far, would pass `--max-usd`: the arm ends
+ there, and the rows it finished stay in their files
 
  @example
  ```ts
@@ -217,7 +223,7 @@ export async function runEditorFidelityProbe(
     },),);
   }
   /**
-   The most the run can cost, printed before any client exists and held to `--max-usd`.
+   The most the run can cost, printed before any client exists; the spend guard holds each call to `--max-usd`.
    */
   const ceilings = editorCeilings({
     cardIds,
@@ -227,10 +233,7 @@ export async function runEditorFidelityProbe(
   },);
   for (const ceiling of ceilings)
     log.info(ceilingLine({ ceiling, },),);
-  assertWithinCeiling({
-    ceilings,
-    maxUsd,
-  },);
+  log.info(guardLine({ maxUsd, },),);
 
   /**
    Operator-selected output root; calibration callers use a disposable directory.
@@ -302,11 +305,16 @@ export async function runEditorFidelityProbe(
     },
   );
   /**
-   Client construction follows all input verification and durable plan publication, and is for the named cards alone.
+   Client construction follows all input verification and durable plan publication, and is for the named cards alone,
+   with no call let through that could take the arm past `--max-usd`.
    */
-  const client = newClient({
-    promptPayloadDir,
-    cardIds,
+  const client = spendGuardedClient({
+    inner: newClient({
+      promptPayloadDir,
+      cardIds,
+    },),
+    maxUsd,
+    controller,
   },);
   /**
    Sequential native driver retains every outcome.
