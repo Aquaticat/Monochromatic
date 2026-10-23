@@ -18,6 +18,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  levelCapturingLogger,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { reseatHookFor, } from '../../dist/final/node/index.mjs';
 import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 
@@ -95,6 +98,75 @@ function hookBefore(
   return { hook, reads, };
 }
 
+/**
+ NeuralWatt and Bedrock wet and every other provider dry: the wide bench is 3 of 7 reachable against a quorum of 4,
+ which DeepSeek back leaves as it is.
+ */
+const WIDE_ONE_SHORT: BudgetView = {
+  neuralwatt: false,
+  synthetic: true,
+  bedrock: false,
+  deepseek: true,
+  xiaomi: true,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
+ The hook over a short bench with a hold that cannot cure it, whose hold the case ends by hand.
+
+ @param lines - receives what the readings log
+
+ @returns The hook and the switch that ends or starts the DeepSeek hold
+
+ @example
+ ```ts
+ const { hook, hold, } = hookUnderDeepSeekHold({ lines: [], },);
+ ```
+ */
+function hookUnderDeepSeekHold({ lines, }: { readonly lines: string[]; },) {
+  const hold = { ms: 3_600_000, };
+  const hook = reseatHookFor({
+    client: {
+      providerDryness: async () => WIDE_ONE_SHORT,
+      providerMeterStates: metersAllWet,
+      providerHolds: () => ({
+        neuralwatt: 0,
+        synthetic: 0,
+        bedrock: 0,
+        deepseek: hold.ms,
+        xiaomi: 0,
+        hyper: 0,
+        openrouter: 0,
+      }),
+    },
+    signal: new AbortController().signal,
+    phase: 'lane contest',
+    unseated: UNSEATED,
+    seatingOf: () => ({ seating: RESEATED, line: 'slice re-seated under a hold', }),
+    l: levelCapturingLogger({ lines, },),
+  },);
+  return { hook, hold, };
+}
+
+/**
+ The warnings among what a reading logged that say a bench was seated short without a wait.
+
+ @param lines - what the readings logged
+
+ @returns The warning lines
+
+ @example
+ ```ts
+ const warnings = shortWarningsOf({ lines, },);
+ ```
+ */
+function shortWarningsOf({ lines, }: { readonly lines: readonly string[]; },): readonly string[] {
+  return lines.filter(function isShortWarning(line,): boolean {
+    return line.startsWith('warn',) && line.includes('short of quorum',);
+  },);
+}
+
 await describe({
   name: reseatHookFor.name,
   concurrency: 1,
@@ -126,6 +198,27 @@ await describe({
         const { hook, reads, } = hookBefore({ returnInMs: 5, passLeftMs: -1, },);
         expect(await hook(),).toEqual(UNSEATED,);
         expect(reads.count,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'WRITES ONE WARNING FOR A HOLD THAT CANNOT CURE THE SHORT BENCH, however many slices run under it: a '
+        + 'DeepSeek hold over twenty slices says once that the bench is seated short, and says it again for a '
+        + 'new hold after the first has ended',
+      fn: async () => {
+        const lines: string[] = [];
+        const { hook, hold, } = hookUnderDeepSeekHold({ lines, },);
+        for (let slice = 0; slice < 20; slice += 1)
+          expect(await hook(),).toEqual(RESEATED,);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(1,);
+
+        // The hold ends, a slice runs free of it, and a later hold is a new one.
+        hold.ms = 0;
+        await hook();
+        hold.ms = 3_600_000;
+        await hook();
+        await hook();
+        expect(shortWarningsOf({ lines, },),).toHaveLength(2,);
       },
     },),
   ],
