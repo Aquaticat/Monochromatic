@@ -4,7 +4,11 @@ import {
   type EditorFidelityTrial,
   type ReviewedFidelityReference,
 } from '../dist/final/node/index.mjs';
-import { reviewedFixture, } from './fidelity-reference.test-fixture.ts';
+import {
+  REVIEW_REFERENCE,
+  REVIEW_SOURCE,
+  reviewedFixture,
+} from './fidelity-reference.test-fixture.ts';
 
 //region Invented editor fidelity fixtures
 // One invented reviewed reference, built through the real reference builder so its damaged twins are the ones the
@@ -49,6 +53,76 @@ export function inventedReference(): ReviewedFidelityReference {
     archiveFile,
     spec,
   },);
+}
+
+/**
+ Source of the section before the reviewed passage in the headed pages.
+ */
+export const HEADED_SOURCE_BEFORE = '## 前言\n猫在书店里睡觉。';
+
+/**
+ Source of the section after the reviewed passage in the headed pages.
+ */
+export const HEADED_SOURCE_AFTER = '## 后记\n猫在夜里回家。';
+
+/**
+ Archive of the section before the reviewed passage in the headed pages.
+ */
+export const HEADED_ARCHIVE_BEFORE = '## Preface\nThe cat slept in the bookshop.';
+
+/**
+ Archive of the section after the reviewed passage in the headed pages.
+ */
+export const HEADED_ARCHIVE_AFTER = '## Afterword\nThe cat came home at night.';
+
+/**
+ The invented reference on pages of three headed sections, the reviewed passage in the middle one, so that the
+ sections either side of it are its neighbours.
+
+ @returns The reference with its pages and the archive range of the passage moved to match
+
+ @example
+ ```ts
+ const reference = headedReference();
+ ```
+ */
+export function headedReference(): ReviewedFidelityReference {
+  /**
+   The invented reference the headed pages are built around.
+   */
+  const reference = inventedReference();
+  /**
+   Pages of three sections, aligned by position.
+   */
+  const pages = {
+    sourceFile: `${HEADED_SOURCE_BEFORE}\n\n## 正文\n${REVIEW_SOURCE}\n\n${HEADED_SOURCE_AFTER}\n`,
+    archiveFile: `${HEADED_ARCHIVE_BEFORE}\n\n## Body\n${REVIEW_REFERENCE}\n\n${HEADED_ARCHIVE_AFTER}\n`,
+  };
+  /**
+   Where the passage begins in the headed archive.
+   */
+  const startOffset = pages.archiveFile
+    .indexOf(REVIEW_REFERENCE,);
+  /**
+   Provenance of the invented reference, whose archive range moves.
+   */
+  const { spec, } = reference;
+  /**
+   Archive range of the invented reference before it moves.
+   */
+  const { archive, } = spec;
+  return {
+    ...reference,
+    spec: {
+      ...spec,
+      archive: {
+        ...archive,
+        startOffset,
+        endOffset: startOffset + REVIEW_REFERENCE.length,
+      },
+    },
+    pages,
+  };
 }
 
 /**

@@ -17,13 +17,17 @@ import {
 import {
   EDITOR_DAMAGE_KINDS,
   editorFidelityTrials,
+  editorSheetContextOf,
   FidelityReferenceError,
 } from '../dist/final/node/index.mjs';
 import {
   REVIEW_DONOR,
   REVIEW_REFERENCE,
 } from './fidelity-reference.test-fixture.ts';
-import { inventedReference, } from './editor-fidelity.test-fixture.ts';
+import {
+  headedReference,
+  inventedReference,
+} from './editor-fidelity.test-fixture.ts';
 
 /**
  The invented reference's trials of both families the probe builds.
@@ -167,6 +171,28 @@ await describe({
           ),);
           expect(envelope.issueIds,).toStrictEqual([nonNullishOrThrow(trial.issues[0],).issueId,],);
         }
+      },
+    },),
+
+    it({
+      name: 'GIVES EVERY TRIAL THE CONTEXT OF ITS PAGE, prepared from the whole pages of its reference: the same '
+        + 'neighbouring sections, declared names and original for both families of one reference',
+      fn: async () => {
+        /**
+         The headed reference, whose passage has a section either side.
+         */
+        const reference = headedReference();
+        /**
+         Its trials of both families.
+         */
+        const headed = editorFidelityTrials({
+          references: [reference,],
+          damageKinds: EDITOR_DAMAGE_KINDS,
+        },);
+        expect(headed.length,).toBe(2,);
+        for (const trial of headed)
+          expect(trial.context,).toStrictEqual(editorSheetContextOf({ reference, },),);
+        expect(nonNullishOrThrow(headed[0],).context.neighbouringSourceText.length,).toBeGreaterThan(0,);
       },
     },),
 

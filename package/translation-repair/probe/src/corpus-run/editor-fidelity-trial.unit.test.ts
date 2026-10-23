@@ -23,6 +23,9 @@ import {
   runEditorTrial,
 } from '../../dist/final/node/index.mjs';
 import {
+  HEADED_ARCHIVE_AFTER,
+  HEADED_SOURCE_BEFORE,
+  headedReference,
   inventedReference,
   LOW_CARD,
   regionOf,
@@ -53,6 +56,26 @@ const INSERTION: EditorFidelityTrial = nonNullishOrThrow(TRIALS.find(function is
 const ALTERATION: EditorFidelityTrial = nonNullishOrThrow(TRIALS.find(function isAlteration(trial,): boolean {
   return trial.damageKind === 'alteration';
 },),);
+
+/**
+ A text as it reads inside a JSON string, where a line break is a backslash and an n.
+
+ @param text - text to escape
+
+ @returns The text without the quotes JSON puts around it
+
+ @example
+ ```ts
+ const escaped = jsonEscaped({ text: 'a\nb', },);
+ ```
+ */
+function jsonEscaped({ text, }: { readonly text: string; },): string {
+  return JSON.stringify(text,)
+    .slice(
+    1,
+    -1,
+    );
+}
 
 await describe({
   name: runEditorTrial.name,
@@ -251,8 +274,8 @@ await describe({
     },),
 
     it({
-      name: 'ASKS ONLY THE CARD IT IS GIVEN, with the sheet `buildEditorMessages` builds for the trial\'s slice and '
-        + 'accepted issue, so the seat is read as production uses it',
+      name: 'ASKS ONLY THE CARD IT IS GIVEN, with the sheet `buildEditorMessages` builds for the trial\'s section, its '
+        + 'accepted issue and the context of its page, so the seat is read as production uses it',
       fn: async () => {
         /**
          Asks the scripted client saw.
@@ -264,14 +287,54 @@ await describe({
           asked,
         },);
         expect(asked.modelIds,).toStrictEqual([LOW_CARD,],);
+        expect(ALTERATION.context.identityContext,).toContain('pronoun: ORIGINAL refers to this person as',);
         expect(asked.sheets,).toStrictEqual([
           buildEditorMessages({
             sourceText: ALTERATION.sourceText,
             targetText: ALTERATION.damagedText,
             envelopes: ALTERATION.envelopes,
             issues: ALTERATION.issues,
+            neighbouringSourceText: ALTERATION.context.neighbouringSourceText,
+            neighbouringIncumbentText: ALTERATION.context.neighbouringIncumbentText,
+            identityContext: nonNullishOrThrow(ALTERATION.context.identityContext,),
           },).messages,
         ],);
+      },
+    },),
+
+    it({
+      name: 'SENDS THE CONTEXT OF THE PAGE ON THE SHEET: the sections either side of the passage under the headings '
+        + 'that mark them as context only, the declared names block, and the passage whole between the fences, so the '
+        + 'sheet is the production sheet less only what a web lookup buys',
+      fn: async () => {
+        const [trial,] = editorFidelityTrials({
+          references: [headedReference(),],
+          damageKinds: ['insertion',],
+        },);
+        /**
+         Asks the scripted client saw.
+         */
+        const asked = noAsks();
+        await readingFor({
+          trial: nonNullishOrThrow(trial,),
+          report: { edits: [], },
+          asked,
+        },);
+        /**
+         The user message of the one ask.
+         */
+        const sheet = JSON.stringify(nonNullishOrThrow(asked.sheets[0],)[1],);
+        expect(sheet.includes('NEARBY ORIGINAL, CONTEXT ONLY',),).toBe(true,);
+        expect(sheet.includes('NEARBY EXISTING TRANSLATION, CONTEXT ONLY',),).toBe(true,);
+        /**
+         The two neighbours as the sheet's JSON writes them.
+         */
+        const before = jsonEscaped({ text: HEADED_SOURCE_BEFORE, },);
+        const after = jsonEscaped({ text: HEADED_ARCHIVE_AFTER, },);
+        expect(sheet.includes(before,),).toBe(true,);
+        expect(sheet.includes(after,),).toBe(true,);
+        expect(sheet.includes('pronoun: ORIGINAL refers to this person as',),).toBe(true,);
+        expect(sheet.includes('CURRENT TEXT: ',),).toBe(true,);
       },
     },),
   ],
