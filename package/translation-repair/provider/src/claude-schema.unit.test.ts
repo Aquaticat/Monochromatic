@@ -20,6 +20,68 @@ import {
 
 import { claudeSchemaOf, } from '../dist/final/node/index.mjs';
 
+/**
+ What a schema is refused with, or nothing where it is sent.
+
+ @param schema - schema as a stage would write it
+
+ @returns The failure `claudeSchemaOf` throws for it, absent where it returns
+
+ @example
+ ```ts
+ const failure = refusalOf({ schema: { type: 'object', allOf: [{ $ref: '#/$defs/cat', },], }, },);
+ ```
+ */
+function refusalOf({ schema, }: { readonly schema: Readonly<Record<string, unknown>>; },): Error | undefined {
+  try {
+    claudeSchemaOf({ schema, },);
+    return undefined;
+  }
+  catch (error) {
+    return error as Error;
+  }
+}
+
+/**
+ Builds an object schema with the given number of members, of which a count are required.
+
+ @param members - how many members the object declares
+ @param required - how many of them are listed in `required`
+ @param union - whether each member is a union typed by a type array
+
+ @returns Schema of that shape
+
+ @example
+ ```ts
+ const schema = membersSchema({ members: 25, required: 0, union: false, },);
+ ```
+ */
+function membersSchema(
+  {
+    members,
+    required,
+    union,
+  }: {
+    readonly members: number;
+    readonly required: number;
+    readonly union: boolean;
+  },
+): Readonly<Record<string, unknown>> {
+  /**
+   Member names, one per cat.
+   */
+  const names = Array.from({ length: members, }, function nameOf(_unused, index,): string {
+    return `cat${String(index,)}`;
+  },);
+  return {
+    type: 'object',
+    properties: Object.fromEntries(names.map(function memberOf(name,): readonly [string, unknown] {
+      return [name, union ? { type: ['string', 'null',], } : { type: 'string', },];
+    },),),
+    required: names.slice(0, required,),
+  };
+}
+
 await describe({
   name: claudeSchemaOf.name,
   children: [
@@ -332,6 +394,169 @@ await describe({
           id: { type: 'string', format: 'uuid', },
           tint: { type: 'string', description: '{format: "color"}', },
         },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A NAMED BACKREFERENCE OUTSIDE A CLASS, which is a backreference as much as \\1 is (N5), and leaves '
+        + 'the same two characters inside a class',
+      fn: async () => {
+        /**
+         Failure for a pattern that repeats a named group.
+         */
+        const failure = refusalOf({
+          schema: { type: 'object', properties: { name: { type: 'string', pattern: String.raw`^(?<n>a)\k<n>$`, }, }, },
+        },);
+        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
+        expect(failure?.message,).toContain('backreference',);
+        expect(failure?.message,).toContain('root.name',);
+        expect(refusalOf({
+          schema: { type: 'object', properties: { name: { type: 'string', pattern: String.raw`^[\k]$`, }, }, },
+        },),).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'REFUSES AN allOf MEMBER THAT HOLDS A $ref, which the page lists as not supported (N5), and sends an allOf '
+        + 'of plain schemas',
+      fn: async () => {
+        /**
+         Failure for an allOf that points at a definition.
+         */
+        const failure = refusalOf({
+          schema: {
+            type: 'object',
+            properties: { cat: { allOf: [{ $ref: '#/$defs/cat', },], }, },
+            $defs: { cat: { type: 'string', }, },
+          },
+        },);
+        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
+        expect(failure?.message,).toContain('allOf',);
+        expect(failure?.message,).toContain('root.cat.allOf[0]',);
+        expect(refusalOf({
+          schema: { type: 'object', properties: { cat: { allOf: [{ type: 'string', },], }, }, },
+        },),).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'REFUSES AN enum MEMBER THAT IS NOT A STRING, A NUMBER, A BOOLEAN OR NULL (N5): the page allows no complex '
+        + 'type in an enum',
+      fn: async () => {
+        /**
+         Failures for an object member and an array member.
+         */
+        const failures = [{ spot: 'sunbeam', }, ['sunbeam',],].map(function failureFor(member,): Error | undefined {
+          return refusalOf({
+            schema: { type: 'object', properties: { place: { enum: ['lap', member,], }, }, },
+          },);
+        },);
+        failures.forEach(function refused(failure,): void {
+          expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
+          expect(failure?.message,).toContain('enum',);
+          expect(failure?.message,).toContain('root.place',);
+        },);
+        expect(refusalOf({
+          schema: { type: 'object', properties: { place: { enum: ['lap', 2, true, null,], }, }, },
+        },),).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'REFUSES A $ref THAT DOES NOT START WITH #, an external reference the page lists as not supported (N5), and '
+        + 'sends one into the same document',
+      fn: async () => {
+        /**
+         Failure for a reference to another document.
+         */
+        const failure = refusalOf({
+          schema: { type: 'object', properties: { cat: { $ref: 'http://example.test/cat.json', }, }, },
+        },);
+        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
+        expect(failure?.message,).toContain('$ref',);
+        expect(failure?.message,).toContain('root.cat',);
+        expect(refusalOf({
+          schema: {
+            type: 'object',
+            properties: { cat: { $ref: '#/$defs/cat', }, },
+            $defs: { cat: { type: 'string', }, },
+          },
+        },),).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'REFUSES A RECURSIVE $ref CYCLE, whether the reference points at the root or two definitions point at each '
+        + 'other (N5), and sends a definition used twice',
+      fn: async () => {
+        /**
+         Failure for a reference to the root, and for two definitions that refer to each other.
+         */
+        const failures = [
+          { type: 'object', properties: { child: { $ref: '#', }, }, },
+          {
+            type: 'object',
+            properties: { cat: { $ref: '#/$defs/cat', }, },
+            $defs: {
+              cat: { type: 'object', properties: { kitten: { $ref: '#/$defs/kitten', }, }, },
+              kitten: { type: 'object', properties: { cat: { $ref: '#/$defs/cat', }, }, },
+            },
+          },
+        ].map(function failureFor(schema,): Error | undefined {
+          return refusalOf({ schema, },);
+        },);
+        failures.forEach(function refused(failure,): void {
+          expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
+          expect(failure?.message,).toContain('recursive',);
+        },);
+        expect(refusalOf({
+          schema: {
+            type: 'object',
+            properties: { mother: { $ref: '#/$defs/cat', }, father: { $ref: '#/$defs/cat', }, },
+            $defs: { cat: { type: 'string', }, },
+          },
+        },),).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'REFUSES MORE THAN 24 OPTIONAL PARAMETERS, the page\'s limit for one request (N5), and sends 24',
+      fn: async () => {
+        /**
+         Failure for 25 members none of which is required.
+         */
+        const failure = refusalOf({ schema: membersSchema({ members: 25, required: 0, union: false, },), },);
+        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
+        expect(failure?.message,).toContain('optional parameters',);
+        expect(failure?.message,).toContain('25',);
+        expect(refusalOf({ schema: membersSchema({ members: 24, required: 0, union: false, },), },),).toBeUndefined();
+        expect(refusalOf({ schema: membersSchema({ members: 40, required: 40, union: false, },), },),).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'REFUSES MORE THAN 16 PARAMETERS THAT USE A UNION TYPE, anyOf or a type array (N5), and sends 16',
+      fn: async () => {
+        /**
+         Failure for 17 members typed by a type array.
+         */
+        const failure = refusalOf({ schema: membersSchema({ members: 17, required: 17, union: true, },), },);
+        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
+        expect(failure?.message,).toContain('union',);
+        expect(failure?.message,).toContain('17',);
+        expect(refusalOf({ schema: membersSchema({ members: 16, required: 16, union: true, },), },),).toBeUndefined();
+        /**
+         Failure for 17 members typed by anyOf.
+         */
+        const anyOfFailure = refusalOf({
+          schema: {
+            type: 'object',
+            properties: Object.fromEntries(Array.from({ length: 17, }, function memberOf(_unused, index,) {
+              return [`cat${String(index,)}`, { anyOf: [{ type: 'string', }, { type: 'null', },], },];
+            },),),
+          },
+        },);
+        expect(anyOfFailure?.message,).toContain('union',);
       },
     },),
 
