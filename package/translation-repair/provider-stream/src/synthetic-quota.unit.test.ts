@@ -190,7 +190,7 @@ await describe({
 
     it({
       name: 'READS TWO BLOCKS THAT AGREE ON `percentRemaining` AND DIFFER IN `nextRegenAt` (two instants, or an instant and a value '
-        + 'that is none) with the return marked unreadable, and one warning naming both blocks and the field, never a value',
+        + 'that is none) with the return marked unreadable, and ONE warning each naming both blocks and the field, never a value',
       fn: async () => {
         /**
          Bodies carrying both names with a spent percent, the first block's `nextRegenAt` member and then the second's, as JSON text;
@@ -225,15 +225,8 @@ await describe({
          */
         const disagreement = '[translation-repair] [weeklyWindowFromBody] Synthetic /quotas weeklyTokenLimit and planWeeklyLimit '
           + 'agree on percentRemaining and differ in nextRegenAt; the return reads unreadable';
-        expect(warned,).toEqual([
-          disagreement,
-          '[translation-repair] [weeklyWindowOf] Synthetic /quotas planWeeklyLimit.nextRegenAt is missing or no ISO-8601 instant as '
-            + 'the logger writes one; the return reads unreadable',
-          disagreement,
-          '[translation-repair] [weeklyWindowOf] Synthetic /quotas weeklyTokenLimit.nextRegenAt is missing or no ISO-8601 instant as '
-            + 'the logger writes one; the return reads unreadable',
-          disagreement,
-        ],);
+        // ONE CAUSE, ONE WARNING: the block that is missing or unspelled does not warn on its own beside the disagreement.
+        expect(warned,).toEqual([disagreement, disagreement, disagreement,],);
         expect(warned.join('\n',).includes('INJECT-SECRET',),).toBe(false,);
       },
     },),
