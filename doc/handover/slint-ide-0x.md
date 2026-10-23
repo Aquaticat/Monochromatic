@@ -1721,10 +1721,160 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `Cargo.toml`). Dry run dispatched from `main`: `gh workflow run ide-release.yml --ref main -f dry-run=true`, run
     `39832705367`, watched by a bounded background `gh run watch`; on its end: download the artifacts, check archive,
     notices and `SHA256SUMS`, run the extracted binary `--version`, record the cold build time in the decision, send
-    failures back to the agent. Two owner decisions still to ask before the first real release: (1) licensing of the
-    shipped bytes (Slint used under `GPL-3.0-only` by the `about.toml` default that the owner never decided, inside a
-    package whose manifest says `LGPL-3.0-or-later`); (2) toolchain and reproducibility (the stable compiler comes
-    from the unpinned Fedora image, not `mise.lock`; no caches; whether to pin the image, Zig and nextest later).
+    failures back to the agent. Owner answers of 2026-10-22 (asked through the question tool): (1) licensing of the
+    shipped bytes: "Keep as shipped (Recommended)" (Slint used under `GPL-3.0-only`, release notes say so, manifest
+    unchanged); (2) toolchain: "Leave unpinned, record rustc (Recommended)" (stable compiler from the Fedora image,
+    the release notes record the `rustc` version, no caches). Dry run `39832705367` RESULT: failed. `detect` and
+    every `build` step up to and including the glibc/shared-library check passed (cold build 15m37s in total, so
+    the 150-minute timeout is generous); the step "Check that no software renderer is linked" failed: `cargo tree
+    --frozen --all-features` in the container found no `async-net` (required by `i-slint-backend-testing`) in the
+    offline index of the fresh `ide-cargo` volume, so `checksums` and `release` were skipped and the later build
+    steps (`inspect:bundle`, notices, packaging, archive check) have not run on a runner. Verified: `async-net` is
+    absent from `Cargo.lock` (`rg -c` exit 1) and is an optional dependency of `i-slint-backend-testing` 1.18.1
+    (`[dependencies.async-net] optional = true`). Not yet verified: why `cargo tree --frozen --all-features` asks the
+    offline index for it on a fresh volume while the long-lived local volume answers; the fresh-volume reproduction
+    decides it. Fix sent to the same agent
+    (`a286368be67434dfd`, fresh branch off `origin/main`): reproduce with a fresh volume, fix at the cause without
+    weakening the gate, run every gate it can reproduce locally against the fresh volume, record the cold time.
+    Then: land, dispatch dry run 2, repeat until green, then download and verify the artifacts.
+    Agent hand-back (branch `fix/ide-release-no-renderer-prefetch`, tip `5e1a86d63f`): the failing command was the
+    second positive control (`--features slint/mcp`), not `--all-features`; those crates are never resolved by
+    `cargo fetch` and `--frozen` cannot download index entries, while the long-lived local volume already held them.
+    Fix in the task `inspect:no-software-renderer` (not the workflow): one network-enabled `--locked` pass per request
+    before the unchanged offline checks. I read the diff (11 lines in `mise.toml`, doc and runbook updates, one
+    workflow comment) and ran `lint`, `test:bin` 71, `test` and `inspect:no-software-renderer` on the merged
+    snapshot: all 0. LANDED: merge tip `08d1525b83` on `origin/main`, ancestry confirmed. Agent-reported, not
+    re-run by me: the full chain on a fresh volume (`bundle` 5 min 6 s locally, `inspect:bundle` 3 checks, 581,554
+    byte notices, 23,457,136 byte archive); runner timings from run 1 (base image 1 min 04 s, IDE image 1 min 30 s,
+    `bundle` 10 min 26 s; about 8 GB disk used). Dry run 2: run `39878025410`, watched in the background.
+    Dry run 2 RESULT: success, every step green (`detect` 27 s, `build` 15 min 53 s, `checksums` 9 s, `release` 6 s,
+    attestation steps skipped as a dry run; the `release` job printed the `gh release create` command only). I
+    downloaded the three artifacts: the sha256 of the archive (`4628854e30...`) and of the notices (`0fc6032c03...`)
+    match `SHA256SUMS`; the archive holds exactly `bin/monochromatic-ide`, `INSTALL.txt`, `LICENSE`, both
+    `LICENSES/` texts, the launcher entry and `THIRD-PARTY-LICENSES.txt`; the extracted binary run with an empty
+    environment prints `monochromatic-ide 0.1.0` and its `--licenses` output is byte-identical to the notices file.
+    Not proved: the real release path (attestation, `gh release create` with all assets, tag creation), a window on
+    the runner (none possible: no display, no GPU), and the binary on a machine other than this one. The owner has
+    not said go for the first real release; none has been cut. A real release needs a version bump merged to `main`
+    or `gh workflow run ide-release.yml --ref main -f dry-run=false` (runbook `doc/runbook/release-the-ide.md`).
+    The IDE release agent's worktree, branches (local and remote) and my scratch trees are removed.
+    Owner answers of 2026-10-22 (question tool): "Cut it now" for the first real IDE pre-release, and "Run the
+    sweep (Recommended)" for the 168-guard sweep. REAL RELEASE dispatched: `gh workflow run ide-release.yml --ref
+    main -f dry-run=false`, run `39882469329`, from `main` at `461c8c62b6`; watched by a bounded background `gh run
+    watch`. On its end: `gh release view ide-v0.1.0`, download the assets, `gh attestation verify` each file,
+    compare `SHA256SUMS`, run the extracted binary; record the result here and in `doc/decision/ide-releases.md`.
+    RESULT, run `39882469329`: the release was created before I could cancel it: pre-release `ide-v0.1.0` (tag
+    `ide-v0.1.0`, target `461c8c62b6`, immutable, 3 assets: `ide-0.1.0-linux-x64.tar.gz` 23,457,040 bytes,
+    `ide-0.1.0-third-party-licenses.txt` 581,554 bytes, `SHA256SUMS`). The owner then said (mid-turn) "Must also
+    support Linux ARM64"; I tried `gh run cancel` and it answered "Cannot cancel a workflow run that is completed",
+    so v0.1.0 is x86_64 only and cannot be amended (immutable); I did not delete it. ARM64 ships from the next
+    version. Not yet done for v0.1.0: `gh attestation verify` of the three published files and a download compare.
+    STANDING OWNER AUTHORIZATION (mid-turn message, 2026-10-23): "You may do new releases of the IDE and the nested
+    compositor whenever you want w/o my approval every time." So a version bump and a real release of either
+    product needs no further question, but each still follows the dry run first and the runbooks.
+    ARM64 agent `aaae391ccfc296421` (fresh Sonnet agent in its own worktree, branch push only; the earlier workflow
+    agent could not be resumed because its worktree was gone): matrix `ubuntu-24.04` and `ubuntu-24.04-arm`, audit
+    of the x86_64-only assumptions, no version bump. On its report: review the diff, merge in a scratch tree,
+    `actionlint`, land, dispatch the dry run, check both archives, then bump the IDE version to 0.1.1 and release.
+    Guard sweep: not started yet; needs a built target directory (the scratch trees that held one were removed), so
+    build one first in a capped unit, then run all 168 cases in a capped unit and repair broken guards like
+    `clip-chosen`.
+    Guard sweep finding (disposable copy, unit `conv2-guards`): `clip-chosen` removed run fails with status 100 at
+    `src/native/tile_reads.rs:187:45` (`tile texture pixels`) because the stacked tile reads no texture for a line
+    past the raster limit; the guard still bites but its expected `failure` text (`the window shows an error`) was
+    stale since the stacking landing. Changed the text to `tile texture pixels` (the only case with it); re-proof in
+    unit `conv2-guards2` with `clip-chosen`, `clip-edges`, `failed-job-freed`, `minimap-scroll-notes-bands`: all four
+    accepted in baseline, removed and restored ("Source guard controls passed ... 4 of 168 guards", 236 s), so the
+    converted `.ts` script runs end to end. 164 of 168 guards remain unrun since the stacking and minimap landings;
+    a full sweep is still a candidate real job. Conversion agent worktree and branches removed.
+    Guard sweep, owner chose "Run the sweep (Recommended)" (2026-10-23): per-guard driver `~/temp/agent/sweep-each.ts`
+    in unit `sweep-each` (one guard at a time, continues after a failing guard; results in
+    `~/temp/agent/sweep-each/summary.txt`, artifact dirs `~/temp/agent/ide-source-guard-*`, built tree
+    `~/temp/agent/land-sweep`). At the 89 of 153 mark: 84 PASS, 5 FAIL. Findings:
+    - `clip-rounding`: the test did not bite (still passed with the guard removed); strengthened in
+      `src/native/wrap_clip_tests.rs` (clip height assertion plus a band as tall as the cap), proven to fail with the
+      guard removed. UNCOMMITTED in the main checkout until the sweep ends.
+    - `tall-window-edge`: stale. Stacking raised `tile_cap`, so windows of 10,000 to 14,000 px no longer reach
+      `room` below 0.25 view heights in `recenter_edge`; removed run passes. Needs a test at a height where the stack
+      bound binds.
+    - `rewrap-view-past-cap`: stale. The test `a_view_taller_than_the_clip_cap_is_left_to_the_worker` passes with the
+      three removed checks (cause not yet found; read `begin` in `src/native/rewrap.rs` for which later defer fires).
+    - `tile-stamp-names-its-clip`, `frame-fit`, `refused-tile-keeps-image`: baseline exit 127, "Cannot create
+      temporary file in /tmp/" in the container link step while three guards ran in parallel; environment, to be
+      re-run alone and sequentially.
+    Next: when the sweep ends, re-run those three, repair the stale guards, prove each (baseline, removed, restored),
+    gate, commit explicit paths, push.
+    SWEEP DONE (153 run in `sweep-each`): 147 PASS, 6 FAIL: the five above plus `minimap-chunk-size` (removed run with
+    `CHUNK_ROWS` 4096 passes `the_densest_chunks_are_not_blank`; needs a value or a test that bites). Re-run of the
+    three environment failures alone: unit `rerun3`, log `~/temp/agent/rerun3.log`.
+    `rewrap-view-past-cap` cause: with the checks removed `rewrap::begin` returns an allowance, then `render.rs`
+    defers anyway (`measure_requested` incomplete or `raster_fits` of the settled tile), and the fixture's short
+    lines are already shaped, so `shaped + rebroken == 0` holds either way; the test needs lines that must be
+    re-broken at the new width so the removed checks show `rebroken > 0`.
+    ARM64 HAND-BACK (agent `aaae391ccfc296421`, branch `feat/ide-release-linux-arm64`, tip `bdef20f6b0`, based on
+    `0fa4950b88`, nothing dispatched, version still 0.1.0): matrix `x64` on `ubuntu-24.04` and `arm64` on
+    `ubuntu-24.04-arm`, asset `ide-<version>-linux-arm64.tar.gz`, per-architecture NEEDED list (the aarch64
+    executable has no dynamic loader entry), notices from the x64 leg only with a byte comparison against the arm64
+    leg's, toolchain lines as `toolchain-*` artifacts, `inspect:no-software-renderer` checks both targets, docs and
+    decision updated. Measured by the agent under qemu-user only (not the runner); unproven until the dry run:
+    `--pids-limit`/`--ulimit` on the arm runner, disk and time of a cold arm build, `jdx/mise-action` on arm,
+    attestation and the two-leg checksums and release jobs. Agent reported a `podman system reset --force` with a
+    private storage config that caused a burst of lock errors in the default podman state; images and containers
+    looked intact. My review: read the workflow diff in full, no defect found. Next: merge in `~/temp/agent/land-arm`,
+    `actionlint`, renderer gate, push, dispatch the dry run, verify both archives, then bump to 0.1.1.
+    ARM64 LANDED (2026-10-23): merge `785e685ff9` on `origin/main`; `actionlint` and `zizmor --offline` clean, renderer
+    gate prints "not linked ... for x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu" with both positive
+    controls reaching it. Dry run `39903652488` dispatched from main (`gh workflow run ide-release.yml --ref main
+    --field dry-run=true`), bounded watch log `~/temp/agent/arm-dry-watch.log`. On green: download both archives and
+    `SHA256SUMS`, compare, then bump `package/desktop-app/ide/Cargo.toml` to 0.1.1 (the standing authorization
+    covers it) and verify the real release including `gh attestation verify` of all assets.
+    ARM64 dry run `39903652488`: all five jobs green. I downloaded the artifacts: `sha256sum --check` OK for the three
+    assets, the arm64 binary is `ELF 64-bit ... ARM aarch64 ... interpreter /lib/ld-linux-aarch64.so.1` (90,611,544
+    bytes, as the agent's emulated build), NEEDED `libfontconfig libgcc_s libm libc`, INSTALL.txt names aarch64, the
+    released notices equal the arm64 leg's and the archive's byte for byte, rustc 1.99.1 on both. x64 binary prints
+    `monochromatic-ide 0.1.0`. The arm64 binary has not been run (this host is x86_64); nobody has opened its window.
+    REAL RELEASE 0.1.1: bump `ec2dec4e0d` pushed to `origin/main` (Cargo.toml and exactly one Cargo.lock line, via
+    `//package/desktop-app/ide:fetch`), under the standing owner authorization. Run `39905451031` (push event),
+    watch log `~/temp/agent/rel-watch.log`. On green: release page `ide-v0.1.1` has four assets and is a pre-release,
+    `gh attestation verify` of each, sha256 compare; then verify `ide-v0.1.0` the same way.
+    RELEASED `ide-v0.1.1` (run `39905451031` green, tag target `ec2dec4e0d`): immutable pre-release with
+    `ide-0.1.1-linux-arm64.tar.gz` (23,869,002 bytes), `ide-0.1.1-linux-x64.tar.gz`, `ide-0.1.1-third-party-licenses.txt`
+    and `SHA256SUMS`; I downloaded it, `sha256sum --check` OK for all three files, and `gh attestation verify
+    --repo Aquaticats/Monochromatic` exited 0 for all four files; same for `ide-v0.1.0` (three files, exit 0). The arm64
+    binary is verified as a real aarch64 ELF but has never been run on ARM64 hardware. Not done: the installed IDE
+    on this host is still the minimap build (prints 0.1.0); reinstall from the next product change.
+    GUARD SWEEP CLOSED: agent `a0207c18495764475` repaired four guards, merged by me (`90ed2bd2d1` on `origin/main`,
+    test-only: `tall_window_tests.rs`, `wrap_resize_tests.rs`, `bin/inspect-source-guards.ts`). I re-ran
+    `tall-window-edge`, `rewrap-view-past-cap`, `refused-tile-keeps-image`, `minimap-chunk-size` and `clip-rounding` on
+    the merged tree: baseline, removed and restored all accepted; gates once on that snapshot: lint 0, `test:native`
+    290 passed 5 skipped, `test` 803 passed, `test:bin`, renderer gate 0. What each repair was:
+    - `tall-window-edge`: heights now come from `tile_cap` (85 and 95 percent) with `long_text(1500)`, and two
+      asserts prove the case is reached; the removed run takes about 90 s (waits out `Waiting::slow()`).
+    - `rewrap-view-past-cap`: the step counters recorded nothing when a measurement ran out of its allowance, so
+      the assert reads the shaper's own counters; `failure` text is now `brought in lines for a view past the cap`.
+    - `refused-tile-keeps-image`: the mutation submits an empty one-texture `TileStack` to the GPU instead of the removed
+      `set_source_image`.
+    - `minimap-chunk-size`: `after` is now 8192 (the test passes up to 4096 rows and fails from 5120).
+    Follow-ups from the agent's report, DONE (`3fdc6f8bb1` on `origin/main`): the `CHUNK_ROWS` doc comment in
+    `src/minimap/plan.rs` now states the measured limit (between 4,096 and 5,120 rows, a factor of eight at 512; it
+    said 2,048 overflow before `e5787ebfae`); new guard `minimap-chunk-margin` (`CHUNK_ROWS` 4096) for
+    `the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds`, baseline, removed and restored accepted;
+    `doc/planning/ide-gpu-snapshot-harness.md` gained the section "Script names after the conversion to TypeScript".
+    Lint exit 0 and `test:bin` exit 0 on that snapshot. The reason for exactly 512 was not found (any value up to
+    4096 passes the tests).
+    Cleanup done: agent worktrees, `land-*` trees, branches `fix/ide-stale-source-guards-2`,
+    `worktree-agent-a0207c18495764475`, `feat/ide-release-linux-arm64` (local and remote, tips verified in `origin/main`),
+    sweep scratch and `ide-source-guard-*` dirs removed. Other sessions' worktrees (`agent-a563e0c526d53df51`,
+    `tr-*`) were left alone.
+    Committed `clip-rounding` test strengthening (`1b57f960de`, merge `3f220bd444`).
+    Sweep re-run of the three environment failures: `frame-fit` and `tile-stamp-names-its-clip` accepted in all three
+    phases; `refused-tile-keeps-image` is a fourth real stale guard (its `after` injects
+    `window.set_source_image(...)`, a property that no longer exists, so the removed run does not compile).
+    Guard repair agent `a0207c18495764475` (Sonnet, own worktree off `origin/main`, branch push only to
+    `fix/ide-stale-source-guards-2`; brief quotes `NLG`, `NLD`, `RXI`, `NQH`, `FHU`): repairs `tall-window-edge`,
+    `rewrap-view-past-cap`, `refused-tile-keeps-image`, `minimap-chunk-size`, each proven baseline/removed/restored.
+    On its report: read the diff, re-run the four guards myself, merge in a scratch tree, gates once (lint, test:bin,
+    one full `test:native`, test), push, remove worktree and branches, stop leftover `stalegd-*` units.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides

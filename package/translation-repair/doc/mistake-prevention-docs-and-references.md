@@ -309,6 +309,21 @@ run,
 typography and adjudication);
 on 2026-10-22 (UTC) a run without them failed every scan file at load with `ERR_MODULE_NOT_FOUND`
 for the markup package's `dist`.
+A merge of main into the branch runs that task on the merged tree before the push.
+The scans that read docs (clock times,
+position references and the Markdown lint scan) read the whole tree,
+so a merge can bring in lines that neither parent's scan saw,
+and a gate that scanned the tree before the merge cleared three such lines into main
+(ledger M294:
+the merge `ecbbae7fa3`,
+repaired in `b18a4f7a40`).
+The land script runs `//package/translation-repair/source-scan:test:unit` whenever it merges main
+and refuses to push on a failure.
+The limit of the check:
+the scan imports the gate's `dist` builds,
+so after a merge it reads the builds made before the merge,
+and a merge that changes markup,
+typography or document structure needs a fresh gate and not the scan alone.
 
 What enforces it:
 `markdown-lint-clean.unit.test.ts` in `source-scan` runs the linter over the package docs,
@@ -354,3 +369,24 @@ only a configuration block like `troubleshooting-quoted-fences` exempts a path.
 The quote cannot be altered to add documentation comments,
 so such a doc is written so that its fences are the family's own code with documentation comments,
 or it holds the quote as a plain text block.
+
+## Names that were replaced
+
+What happened:
+the ledger's accounts of B141 and B160 named `everyStageHeard` as the reader of the cache,
+the function was removed when the refine cache's two gates came to share one predicate,
+and nothing in the ledger said so (ledger D36).
+Comments of the same round cited a probe by "the parent session",
+a source no later reader can open,
+and kept a condition ("until a bench says otherwise") that no ruling states (ledger D37).
+
+The rule:
+a commit that removes or replaces an exported name searches the docs and the ledger for it.
+A historical record keeps the name as written and gains an in-place note with the current name and the date
+(the repository's rule for a moved identifier in a historical record);
+a living doc takes the new name.
+A comment that cites a measurement cites a file in the repository that holds its raw figures,
+and a comment that states a condition cites the ruling that states it.
+
+What enforces it:
+habit and review.

@@ -92,6 +92,7 @@ export function notApplicableRepair(
     nonTranslationStanding: false,
     heardCritics: 0,
     findings: [notApplicableFinding({ sliceIndex, },),],
+    silentStages: [],
   };
 }
 

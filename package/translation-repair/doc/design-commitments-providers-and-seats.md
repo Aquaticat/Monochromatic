@@ -143,3 +143,15 @@ which lists every file of these commitments.
   and the bench of readers is counted by the providers that can show a picture (ledger B721 to B723).
   The measurement met both clauses on 2026-10-21 (UTC) and the hold was lifted from that card
   (`roster-changes.md` has the three runs and their limit).
+- **Only dryness of every provider ends the run.**
+  Ruled by the lead on 2026-10-22 (UTC),
+  open to the owner's veto,
+  and queued as D4:
+  a model whose own providers are all dry while others are wet is a lost seat that the bench reseats,
+  not the end of the run.
+  The owner's ruling that the every-provider-dry refusal ends the run rests on "this one leaves nothing,
+  so no seat's voice can be heard",
+  which holds for run-wide dryness only.
+  The code still raises the refusal per model until D4 lands.
+  The full record is in
+  [the rulings of 2026-10-22](design-commitments-rulings-of-2026-10-22.md) (ledger B822).

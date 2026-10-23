@@ -409,10 +409,13 @@ export function createBedrockClient(
       /**
        Exactly what goes on the wire, hoisted so its size can be measured.
 
-       NO THINKING PARAMETER, NO TOKEN BUDGET AND NO REASONING EFFORT, EVER,
-       the owner's standing instruction of 2026-08-25, recorded in full at
-       the Synthetic body; the Gemma 4 cards recommend a reasoning effort
-       and this client sends none.
+       NO THINKING PARAMETER, NO TOKEN BUDGET AND NO REASONING EFFORT: the
+       owner's rulings of 2026-10-22, recorded in full at the Synthetic body,
+       clear thinking parameters for first and second rate providers and keep
+       them off third tier, and name no tier for Amazon Bedrock, so it is
+       treated as third tier and not cleared. The Gemma 4 cards recommend a
+       reasoning effort and this client sends none. A value that disables
+       thinking is never sent, here or anywhere.
        */
       const bodyJson = JSON.stringify({
         model: servedId,

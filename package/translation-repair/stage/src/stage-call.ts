@@ -26,6 +26,7 @@ import {
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { endsTheRun, } from './stage-run-end.ts';
 import {
   type UnreadableCause,
   unreadableCauseOf,
@@ -39,8 +40,10 @@ import {
 // One guarded model exchange for pipeline stages: non-ok outcomes and
 // transport failures become an absent voice (the ensemble tolerates missing
 // panelists and critics), while caller aborts always propagate so user
-// steering wins. The client's transport-level retries have already run by
-// the time this helper sees a failure.
+// steering wins, and so does the router's every-provider-dry refusal, which
+// the owner ruled ends the run (`EveryProviderDryError`). The client's
+// transport-level retries have already run by the time this helper sees a
+// failure.
 
 /**
  One stage voice as data:
@@ -339,10 +342,13 @@ export function isRequestFault({ error, }: { readonly error: unknown; },): boole
  seat on the bench; absent on a stage that has none, which loses that
  seat's voice rather than asking it for prose
 
- @returns Voice as data; a lost voice never throws unless the caller aborted or the route refused the request as
- malformed
+ @returns Voice as data; a lost voice never throws unless the caller aborted, the route refused the request as
+ malformed, or every provider read dry
 
  @throws Whatever the caller's abort carried, once the caller aborted
+
+ @throws `EveryProviderDryError` when the router refused the call because no provider has budget left, which ends the
+ run at the owner's instruction and so is never recorded as one seat's lost voice
 
  @throws {@link ClaudeSchemaKeywordError} when the response format carries a keyword the Claude route cannot send
 
@@ -456,6 +462,11 @@ export async function attemptStageCall<ValueT,>(
     // refusal at build time that exists to stop it (F5 of the re-check of the
     // second fix round).
     if (isRequestFault({ error, },))
+      throw error;
+
+    // EVERY PROVIDER DRY ENDS THE RUN, at the owner's instruction, so it is not one seat's lost voice. XingZ6018
+    // (2026-10-22) recorded it as one for 77 s of rounds until the bench floor stopped the run with status=ERROR.
+    if (endsTheRun({ error, },))
       throw error;
     /**
      Whether the router refused the call because no wet provider serves the

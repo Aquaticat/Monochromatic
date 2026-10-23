@@ -665,3 +665,61 @@ State after the `CuspariaKLSY23` read,
   land the direct routes;
   rebuild,
   and launch the next rotation on the new build.
+
+State after the `XingZ6018` and `XingZ6019` reads,
+2026-10-22 (UTC):
+
+- The read of `XingZ6018` is filed in three files under the answers-restart record,
+  starting at `doc/planning/translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-run.md`.
+  A second reader checked it against the log and the source,
+  and the check's reading is the one filed:
+  it corrected the split of the 994 `voice lost` lines,
+  the count of round-1 retry lines (92),
+  the claim that no request left the process after the marks (the meter polls continued),
+  the cause of D3 (the panel's finding is prefixed,
+  so the gate's `startsWith` missed it),
+  and the headline that this was the first all-dry run.
+  The points the check did not examine are listed in the defects file as unconfirmed.
+- Its headlines:
+  the run ended after 62.4 min with no page,
+  Hyper ran out at 14:28 UTC and OpenRouter at 14:45 UTC,
+  the refusal that was meant to end the run was absorbed as a lost voice 990 times over 77.7 s (D1),
+  and the third Mercury recheck was clean (594 streams,
+  maximum first content 15,283 ms).
+  The fixes for D1 to D3 landed on the branch as ledger B818 to B825,
+  and the merge of main into the branch is `ecbbae7fa3`.
+- The land merge scanned the tree before the merge and not after it.
+  The merge brought in three doc lines that fail the source scan
+  (a position reference with no named target in each of the evidence and stages files of the `CuspariaKLSY23` read,
+  and zone-less clock times in the stages file of the `zheermao23` read),
+  so main failed `source-scan` until `b18a4f7a40` fixed them;
+  gate g171 was green at 2803 tests and none failing.
+  The land script now runs `//package/translation-repair/source-scan:test:unit` on the merged tree
+  whenever it merges main,
+  and refuses to push on a failure.
+  The scan imports the gate's `dist` builds,
+  so a merge that changes markup,
+  typography or document structure needs a fresh gate and not the scan alone.
+  Ledger M294;
+  the rule is in `mistake-prevention-docs-and-references.md`,
+  "The Markdown linter".
+- `XingZ6019` was launched at 18:54 UTC on the frozen build `sha256-tree-v1:44ce3051...` (commit `1d46232457`)
+  and ended `DONE processed=0` at 19:14:20 UTC after 19.2 min:
+  editors 1 of 3 and refiners 1 of 3 against a floor of 2,
+  with NeuralWatt dry for the whole run.
+  The seat reader logged `no provider has named its return`
+  although NeuralWatt's day restarts at 19:15:08 UTC,
+  48 s after the stop (ledger B826,
+  open;
+  a fix is in progress in the briefs D4 and E2 and has not landed).
+  The record is
+  `doc/planning/translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6019.md`.
+- `XingZ6020` was relaunched at 19:32:29 UTC on the same frozen build,
+  with a fresh runs directory,
+  and is running.
+- Next:
+  read `XingZ6020` when it settles;
+  land the fixes of D4 (model-level dryness,
+  B822) and E2 (B826);
+  rebuild,
+  and launch the next rotation on the new build.

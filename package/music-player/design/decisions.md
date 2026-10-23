@@ -3711,6 +3711,7 @@ Android when the file of a clicked row cannot be opened.
 The human asked for "a setting to auto play on select, default to off".
 The meaning, the Settings row and the stored form below are the implementer's reading of that one line, open to a veto.
 It amends D124 and D127, which stay as the rule for the default.
+D133 (2026-10-22) later changed the default to on; this record stays as the decision was taken.
 
 - With the setting on, a click, a tap or `Enter` on a track row that is not the current track selects it and starts
   it at once, and so does activating the result of such a track in Search.
@@ -3888,6 +3889,38 @@ The readings below are the implementer's, open to a veto.
   `desktop-app/src/ui_licenses.rs`; `SettingsPage.kt`, `SettingsIcons.kt` (`SETTINGS_LICENSES_ICON`),
   `LicensesPage.kt` and `core/LicenseNoticeBlocks.kt` on Android.
   Facts, measurements and the license reading: `doc/decision/music-player-third-party-licenses.md`.
+
+### D133. Auto-play on select defaults to on on every platform (2026-10-22)
+
+The human asked: "Make 'Auto-play on select' default to on for all platforms."
+This changes only the default of D129; the rule, the Settings row and the switch are as D129 describes them.
+
+- A first run and a store with no value for the setting now read on: desktop `session.json` with no
+  `auto_play_on_select` field, and the Android `session` preferences with no `auto_play_on_select` key.
+- A value the person saved stays as saved, so someone who turned the setting off keeps it off.
+  A file or preference that never held the key reads on, including one an older build wrote.
+- With the setting on at first launch, D124 and D127 apply only after the person turns it off: a click, a tap or
+  `Enter` on another track selects and starts it, and a result in Search does the same.
+- Tests: the stored default and the old-file reads on both platforms, the fresh-install switch drawn on in the Android
+  wiring test, and the desktop end-to-end session `auto-play`, whose first launch now starts with the setting on.
+
+### D134. On Android a notification sound ducks the music instead of pausing it (2026-10-23)
+
+The human reported that other apps lower their volume for about a second when a message sound plays, while this player
+paused until the sound ended, and chose "duck, and pause only for real interruptions".
+Cause and the source reading: `doc/troubleshooting/music-player-android-pauses-instead-of-ducking-for-notification-sounds.md`.
+
+- A can-duck focus loss (a notification sound, a navigation prompt) lowers the engine volume to a fifth of the user
+  volume and keeps playing; the regained focus restores it.
+  A paused player stays paused and is lowered too.
+- A transient loss that does not allow ducking (a call), a permanent loss and the headphone unplug still pause, as
+  before; a permanent loss also clears a duck.
+- The engine does the ducking because Android never ducks AAudio output, which this engine uses, so the focus request
+  keeps `setWillPauseWhenDucked(true)` to have the listener told.
+- The pure rule is `volumeWhileDucked` in `core/FocusDuck.kt` and the user volume and the duck flag are kept apart in
+  `RustEngine.kt`.
+- Not verified on a device: the human asked for no loudspeaker playback, so the behavior rests on the Android source
+  reading and the unit test of the rule.
 
 ## Pending after the theme picks (2026-09-04)
 

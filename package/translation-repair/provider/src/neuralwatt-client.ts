@@ -32,6 +32,8 @@ import {
   neuralWattChatUrlFor,
 } from './neuralwatt-catalog.ts';
 import type { NeuralWattDayStart, } from './neuralwatt-day.ts';
+import type { NeuralWattDayAnchor, } from './neuralwatt-day-anchor.ts';
+import { createNeuralWattAnchorKeeper, } from './neuralwatt-day-anchor-keeper.ts';
 import { createNeuralWattDaySession, } from './neuralwatt-day-session.ts';
 import {
   NeuralWattAllowanceError,
@@ -63,13 +65,17 @@ import {
 // IT SPEAKS THE OPENAI-COMPATIBLE PROTOCOL the Bedrock and OpenRouter clients
 // speak: chat completions with `stream` and `stream_options.include_usage`, a
 // json_schema `response_format` and the schema stated in the system prompt,
-// `max_tokens` at the measured ceiling, and no other reasoning parameter (the
-// owner's standing instruction of 2026-08-25). THE ONE EXCEPTION IS THE
-// DOCUMENTED `reasoning_effort`, sent on a call to a model whose card names one:
-// the `pictureReasoningEffort` on a call that carries a picture and the
-// `textReasoningEffort` on one that does not (the owner, 2026-10-21: "I'm
-// lifting the ban on passing params, but only for NeuralWatt"). A model whose
-// card names none gets none; no other client has that field to send.
+// `max_tokens` at the measured ceiling, and no thinking parameter beyond the
+// documented `reasoning_effort`. NeuralWatt is second rate and cleared for its
+// documented thinking parameters (the owner, 2026-10-21: "I'm lifting the ban on
+// passing params, but only for NeuralWatt"; 2026-10-22: "NeuralWatt does
+// implement what they document correctly, so they're clear on thinking
+// params"). THE ONE PARAMETER SENT IS `reasoning_effort`, on a call to a model
+// whose card names one: the `pictureReasoningEffort` on a call that carries a
+// picture and the `textReasoningEffort` on one that does not. A model whose
+// card names none gets none, and a value that disables thinking is never sent
+// ("we should never disable thinking on anything"). No other client has that
+// field to send.
 //
 // WHAT THIS CLIENT ADDS IS THE METER'S SIDE OF EVERY CALL, because overage
 // "eats into my normal plan which I use for other stuff":
@@ -166,6 +172,13 @@ export type NeuralWattClient = ModelCaller & {
    account figure and the cap.
    */
   readonly energy: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattEnergy>;
+
+  /**
+   Where this run's NeuralWatt day starts, as far as it has been decided: the time of day the quota's period start (or
+   the day-start setting) gave, or that none is known. READ WITHOUT DECIDING, so no quota is read by asking: it is for
+   a message built while the run ends, which states when the free energy returns.
+   */
+  readonly dayAnchor: () => NeuralWattDayAnchor;
 
   /**
    Reads the quota again and reports the plan energy spent since the first
@@ -289,6 +302,15 @@ export function createNeuralWattClient(
   },);
 
   /**
+   Keeper of the day anchor, which learns it again while it is unknown and reports what it has decided.
+   */
+  const anchors = createNeuralWattAnchorKeeper({
+    quota,
+    setting: dayStartSetting,
+    now,
+  },);
+
+  /**
    The day the account has, which the ledger counts in.
    */
   const days = createNeuralWattDaySession({
@@ -298,7 +320,7 @@ export function createNeuralWattClient(
     retryPolicy,
     quota,
     now,
-    setting: dayStartSetting,
+    anchors,
   },);
 
   /**
@@ -377,14 +399,15 @@ export function createNeuralWattClient(
       /**
        Exactly what goes on the wire, hoisted so its size can be measured.
 
-       NO THINKING PARAMETER AND NO TOKEN BUDGET, the owner's standing
-       instruction of 2026-08-25, recorded in full at the Synthetic body.
-       `thinking_token_budget` stays out because its support table
-       (2026-08-26) does not name `glm-5.3-flash`.
+       NeuralWatt is SECOND RATE AND CLEARED for its documented thinking
+       parameters (the owner's rulings of 2026-10-22, recorded in full at the
+       Synthetic body), and it sends one. `thinking_token_budget` stays out
+       because its support table (2026-08-26) does not name `glm-5.3-flash`.
 
        THE ONE PARAMETER IS `reasoning_effort`, since 2026-10-21, when the owner
-       lifted the ban for this provider alone, and only where the card's
-       NeuralWatt side names one for the kind of call. `glm-5.3-flash` spent its
+       lifted the ban for this provider, and only where the card's
+       NeuralWatt side names one for the kind of call. `low` keeps thinking on,
+       and no value that disables it is ever sent. `glm-5.3-flash` spent its
        whole completion cap reasoning at the default `max` on a dense
        screenshot (XingZ6016, ledger B719) and, on text, on 11 of 288 calls
        over the pass logs from zheermao19 to zheermao22 (ledger B807).
@@ -575,6 +598,7 @@ export function createNeuralWattClient(
     chatText,
     chatJson,
     energy,
+    dayAnchor: anchors.decided,
     planSpend: quota.planSpend,
   };
 }

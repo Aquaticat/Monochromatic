@@ -242,3 +242,35 @@ and asset names with a traversal,
 a space and a 300-letter extension.
 No scan finds a derived name beside a fixed one;
 a new writer of scratch files is reviewed against this rule.
+
+## Facts a cache gate reads
+
+What happened:
+a panel that heard nobody on five packets was cached as examined,
+because the gate matched a finding by the text it began with
+and the panel's stage had put the packet's place in front of it (ledger B820).
+The refine cache's write gate asked a narrower question than its read gate,
+so a record the reader always discards was written,
+counted as progress by the attempt queue,
+and queued a whole-entry attempt that could change nothing (ledger B820).
+
+The rule:
+a fact a gate depends on travels as data on the record,
+required on every writer so that the type checker finds the one that omits it,
+and a finding's text is for readers and is never matched.
+The write gate and the read gate of one cache ask one predicate from one module
+(`refinementIsResumable`),
+and a progress measure counts only what the reader would resume.
+A change to what a gate refuses moves the version of every cache holding records written under the old rule
+(`SLICE_CACHE_VERSION` 43 to 44),
+and its commit and the version's TSDoc name the versions that stay and why,
+as the account of version 43 did (ledger M28).
+A record that lacks the new field is refused by the reader,
+so the records already on disk are redone and not trusted.
+
+What enforces it:
+`stage-silence.unit.test.ts`,
+`repair-cache-gate.unit.test.ts`,
+`repair-chunk-exits.unit.test.ts`,
+`refine-phase.unit.test.ts` (a refinement whose outcome names a silent panel writes no file),
+and `slice-cache-store.unit.test.ts` (a record shaped like slice 85 is not resumed).

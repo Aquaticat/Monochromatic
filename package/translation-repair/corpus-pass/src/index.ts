@@ -28,6 +28,10 @@ export {
 } from './corpus-run/corpus-pass-lines.ts';
 export { orderPendingEntries, } from './corpus-run/corpus-pass-order.ts';
 export { runPassQueue, } from './corpus-run/corpus-pass-queue.ts';
+export {
+  createPassDryStop,
+  type PassDryStop,
+} from './corpus-run/pass-dry-stop.ts';
 export { runCorpusPassOver, } from './corpus-run/corpus-pass-run.ts';
 export {
   assertSchemasSendable,
@@ -51,8 +55,9 @@ export {
   contestHooksFor,
 } from './corpus-run/pass-contest-reseat.ts';
 export { runPassContest, } from './corpus-run/pass-contest.ts';
+export { withEntryBound, } from './corpus-run/pass-entry-bound.ts';
 export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
-export { settleEntry, } from './corpus-run/pass-entry.ts';
+export { settleEntry, } from './corpus-run/pass-entry-settle.ts';
 export {
   relabelArchiveFootnotes,
   type RelabelledArchive,

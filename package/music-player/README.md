@@ -136,8 +136,8 @@ and the playback mode.
 On both platforms,
 clicking or tapping a track row that is not the current track selects it and leaves it paused,
 and any track that was playing stops (D124),
-unless the Auto-play on select setting is on (D129),
-which also starts the track at once.
+when the Auto-play on select setting is off (D129);
+the setting is on by default (D133), and with it on the click also starts the track at once.
 Clicking or tapping the current row toggles play and pause,
 which also starts a track restored from the last session.
 A track that failed to open stays selected on both platforms and the next click or tap tries it again (D128);
@@ -145,7 +145,7 @@ Next, Previous and the end of a track still skip unreadable files and report the
 `Enter` on the focused row does the same.
 A Search result for a track follows the same rule (D127):
 the first activation selects the track and leaves it paused, and the second toggles play and pause,
-or, with Auto-play on select on, the first activation also starts it.
+or, with Auto-play on select on (the default), the first activation also starts it.
 The Play item of the track menu starts a track at once with the setting on or off.
 
 One playback mode of four applies on both platforms,
@@ -231,7 +231,7 @@ so selecting a row never navigates.
 A narrower window shows the list,
 and a row opens that template's editor page.
 Under the templates, a Playback group holds one switch row,
-Auto-play on select, which is off by default.
+Auto-play on select, which is on by default (D133).
 With it on, a click, tap or `Enter` on a track that is not the current track, and a Search result for one,
 selects the track and starts it at once (D129).
 The row toggles in place by click, tap, `Space` or `Enter`,

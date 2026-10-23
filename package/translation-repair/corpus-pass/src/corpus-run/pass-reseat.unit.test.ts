@@ -111,15 +111,19 @@ const NO_HOLDS = {
 };
 
 /**
- The hold the router registers on a refusal from a meter that reads dry.
+ A hold short enough for a case to wait it out, and the hold the router registers on a refusal from a meter that reads
+ dry.
 
  A READING UNDER A HOLD SLEEPS ITS SHORTEST HOLD ONCE WHEN A BENCH IT LEANS ON IS SHORT OF QUORUM, on the real clock
- (`run/src/corpus-run/run-seats-read.ts`, `readDrynessPastShortBench`). This file's views under this hold are short in
- one of them (the padded view, 3 of 8 wide seats against a quorum of 4 with the Claude key reading dry), and the
- describe took 300.3 s at `f2f77b0701` and at the tip of the second review. `viewClient` therefore reports every hold as
- ending within {@link SHORT_HOLD_MS}, whatever a case names, and a case that needs a hold to run names this one.
+ (`run/src/corpus-run/run-seats-read.ts`, `readDrynessPastShortBench`). The router registers 300000 ms on such a
+ refusal, so a case that handed its client that figure and drove such a reading waited five real minutes in every
+ gate (ledger B817). This file's views under this hold are short in one of them (the padded view, 3 of 8 wide seats
+ against a quorum of 4 with the Claude key reading dry), and the describe took 300.3 s at `f2f77b0701` and at the tip
+ of the second review. `viewClient` therefore reports every hold as ending within {@link SHORT_HOLD_MS}, whatever a
+ case names, and a case that needs a hold to run names this one. A case whose bench stays short can also end every
+ hold at a named read (`holdEndsAtRead`).
  */
-const DRY_HOLD_MS = 300_000;
+const SHORT_HOLD_MS = 40;
 
 /**
  Synthetic and Bedrock wet, Hyper and OpenRouter dry: the one view under which
@@ -136,11 +140,6 @@ const HYPER_AND_OPENROUTER_DRY: BudgetView = {
   hyper: true,
   openrouter: true,
 };
-
-/**
- A hold short enough for a case to wait it out.
- */
-const SHORT_HOLD_MS = 40;
 
 /**
  Logger the hooks write to.
@@ -192,21 +191,26 @@ function endingHolds(
  @param capMs - longest a hold the client reports lasts; the short window unless a case waits the hold
  out on a fake clock
 
+ @param holdEndsAtRead - read at which every running hold has ended, for a case whose bench stays short and whose
+ wait would otherwise last as long as the hold does; a hold that never ends is not a hold
+
  @returns Client beside its read counter and its hold setter
 
  @example
  ```ts
  const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
- rig.holds.synthetic = DRY_HOLD_MS;
+ rig.holds.synthetic = SHORT_HOLD_MS;
  ```
  */
 function viewClient(
   {
     view,
     capMs = SHORT_HOLD_MS,
+    holdEndsAtRead,
   }: {
     readonly view: BudgetView;
     readonly capMs?: number;
+    readonly holdEndsAtRead?: number;
   },
 ) {
   /**
@@ -223,6 +227,8 @@ function viewClient(
     client: {
       providerDryness: async (): Promise<BudgetView> => {
         counter.reads += 1;
+        if (counter.reads === holdEndsAtRead)
+          Object.assign(holds, NO_HOLDS,);
         return view;
       },
       providerMeterStates: metersAllWet,
@@ -335,7 +341,7 @@ await describe({
             + 'lane)',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             const hooks = lanesHooksFor({
               client: rig.client,
               signal: new AbortController().signal,
@@ -374,8 +380,8 @@ await describe({
             + 'Synthetic ran dry and neither line said so)',
           fn: async () => {
             /** Rig whose NeuralWatt and Bedrock alone are wet, under a running hold. */
-            const padded = viewClient({ view: NEURALWATT_AND_BEDROCK, },);
-            padded.holds.synthetic = DRY_HOLD_MS;
+            const padded = viewClient({ view: NEURALWATT_AND_BEDROCK, holdEndsAtRead: 2, },);
+            padded.holds.synthetic = SHORT_HOLD_MS;
             /** Lines the padded rig's hook wrote. */
             const paddedLines: string[] = [];
             await lanesHooksFor({
@@ -386,7 +392,7 @@ await describe({
             },).beforeSlice({ lane: 'repair', },);
             /** Rig whose every checker a wet provider serves, under a running hold. */
             const served = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            served.holds.synthetic = DRY_HOLD_MS;
+            served.holds.synthetic = SHORT_HOLD_MS;
             /** Lines the served rig's hook wrote. */
             const servedLines: string[] = [];
             await lanesHooksFor({
@@ -396,6 +402,21 @@ await describe({
               l: capturingLogger({ messages: servedLines, },),
             },).beforeSlice({ lane: 'repair', },);
 
+            // The padded bench is short of quorum, so this reading waits the hold out once, which is why the
+            // hold is the short one; the served bench is full, so its reading waits for nothing.
+            /** Text the reading's warning gives for a wait out of the hold. */
+            const waitedOut = `waiting ${String(SHORT_HOLD_MS,)}ms for the shortest hold to end`;
+            expect({
+              padded: paddedLines.some(function namesTheWait(line,): boolean {
+                return line.includes(waitedOut,);
+              },),
+              served: servedLines.some(function namesAWait(line,): boolean {
+                return line.includes('for the shortest hold to end',);
+              },),
+            },).toEqual({
+              padded: true,
+              served: false,
+            },);
             expect(paddedLines.filter(function isChunkLine(line,): boolean {
               return line.includes('chunk re-seated under a hold',);
             },),).toEqual([
@@ -560,7 +581,7 @@ await describe({
             + 'the roster read before the dry-out',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             const hooks = lanesHooksFor({
               client: rig.client,
               signal: new AbortController().signal,
@@ -599,7 +620,7 @@ await describe({
             + 'three, one hundred nine and one hundred thirteen fixed one at a time)',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             const hooks = lanesHooksFor({
               client: rig.client,
               signal: new AbortController().signal,
@@ -634,7 +655,7 @@ await describe({
             + 'nothing once the hold has ended, since the translate lane has not read its own',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             const hooks = lanesHooksFor({
               client: rig.client,
               signal: new AbortController().signal,
@@ -666,7 +687,7 @@ await describe({
             + 'are not, so the translate lane seats on one read and the repair lane waits the hold out and stops the '
             + 'entry',
           fn: async () => {
-            const rig = viewClient({ view: HYPER_AND_OPENROUTER_DRY, },);
+            const rig = viewClient({ view: HYPER_AND_OPENROUTER_DRY, holdEndsAtRead: 3, },);
             rig.holds.hyper = SHORT_HOLD_MS;
             const hooks = lanesHooksFor({
               client: rig.client,
@@ -708,7 +729,7 @@ await describe({
             + 'has ended',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             /**
              Every line the hook wrote.
              */
@@ -789,7 +810,7 @@ await describe({
             + 'consolidation, handing the slice the reading\'s judges, and keeps them once the hold has ended',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             /**
              Every line the hook wrote.
              */
@@ -851,7 +872,7 @@ await describe({
             + 'buys item by item, handing the picture the reading\'s readers, and keeps them once the hold has ended',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             /**
              Every line the hook wrote.
              */
@@ -913,7 +934,7 @@ await describe({
             + 'the candidate the reading\'s roster, and keeps it once the hold has ended',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             /**
              Every line the hook wrote.
              */
@@ -975,7 +996,7 @@ await describe({
             + 'the reading\'s roster, and keeps it once the hold has ended, so every later stage stays re-seated',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
+            rig.holds.synthetic = SHORT_HOLD_MS;
             /**
              Every line the hook wrote.
              */

@@ -23,6 +23,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -37,7 +38,7 @@ import {
   runClientFrom,
   RunsDirectoryBusyError,
 } from '@monochromatic-dev/translation-repair-run';
-import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-repair-provider';
+import { EveryProviderDryError, type JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-repair-provider';
 import type { EntryOutcome, } from '@monochromatic-dev/translation-repair-slice-cache';
 import {
   digestPipeline,
@@ -54,6 +55,8 @@ import {
   scratchDirWith,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { relayingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { makeCorpusPassClone, } from './corpus-pass-clone.test-fixture.ts';
@@ -108,6 +111,11 @@ type Watched = {
  */
 type Overrides = {
   /**
+   The pass's monotonic clock, for a case that moves it by hand.
+   */
+  readonly now?: () => number;
+
+  /**
    Note naming the straggler window.
    */
   readonly graceNote?: string;
@@ -131,6 +139,16 @@ type Overrides = {
    Producers of answer schemas the pass-start check reads.
    */
   readonly schemaProducers?: NonNullable<CorpusPassInput['schemaProducers']>;
+
+  /**
+   What building the client does.
+   */
+  readonly newClient?: CorpusPassInput['newClient'];
+
+  /**
+   What settling one entry does.
+   */
+  readonly settle?: CorpusPassInput['settle'];
 };
 
 /**
@@ -682,6 +700,125 @@ await describe({
       },
     },),
     it({
+      name: 'HANDS THE CLIENT WHAT THE PASS HAS LEFT, unbounded before the loop starts and the hard cap or less once '
+        + 'an entry runs, so the seat reader waits for NeuralWatt\'s return only inside it',
+      fn: async (ctx) => {
+        using _printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         The bound the client was handed and what it read before the loop and at the first entry.
+         */
+        const seen: { before?: number; during?: number; } = {};
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {
+            newClient: function newClient({ passLeftMs, },) {
+              seen.before = passLeftMs();
+              return runClientFrom({
+                env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
+                transport: unreachedTransport,
+                passLeftMs,
+              },);
+            },
+            settle: async function settle({ entry, client, artifactsDir, },): Promise<EntryOutcome> {
+              // Conditional write keeps an absent bound absent, which the assertions then fail on.
+              if (client.passLeftMs !== undefined)
+                seen.during = client.passLeftMs();
+              await writeFile(
+                join(
+                  artifactsDir,
+                  `${entry.id}.json`,
+                ),
+                '{}',
+              );
+              return { kind: 'settled', };
+            },
+          },
+        },);
+
+        expect(seen.before,).toBe(Number.POSITIVE_INFINITY,);
+        expect(seen.during,).toBeLessThanOrEqual(25_200_000,);
+        expect(seen.during,).toBeGreaterThan(0,);
+      },
+    },),
+    it({
+      name: 'COUNTS THE SOFT BUDGET DOWN ON THE PASS\'S CLOCK in what the client is handed: the first entry reads the '
+        + '420 min hard cap (the soft budget is far longer), and once the pass\'s clock has run to 320 min short of '
+        + 'the soft budget the bound is exactly what the soft budget has left, falling with the clock',
+      fn: async (ctx) => {
+        using _printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         The pass's monotonic clock, held still until the case moves it.
+         */
+        const clock = { now: 1_000, };
+        /**
+         What the client read at the first entry, then after the clock ran to 20 min short of the soft budget,
+         then a minute later.
+         */
+        const seen: number[] = [];
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {
+            now: function now() {
+              return clock.now;
+            },
+            newClient: function newClient({ passLeftMs, },) {
+              return runClientFrom({
+                env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
+                transport: unreachedTransport,
+                passLeftMs,
+              },);
+            },
+            settle: async function settle({ entry, client, artifactsDir, },): Promise<EntryOutcome> {
+              seen.push(client.passLeftMs?.() ?? Number.NaN,);
+              // 259,200,000 ms of soft budget less 20 min (1,200,000 ms) left.
+              clock.now += 258_000_000;
+              seen.push(client.passLeftMs?.() ?? Number.NaN,);
+              clock.now += 60_000;
+              seen.push(client.passLeftMs?.() ?? Number.NaN,);
+              await writeFile(
+                join(
+                  artifactsDir,
+                  `${entry.id}.json`,
+                ),
+                '{}',
+              );
+              return { kind: 'settled', };
+            },
+          },
+        },);
+
+        expect(seen,).toEqual([25_200_000, 1_200_000, 1_140_000,],);
+      },
+    },),
+    it({
       name: 'ENDS ON THE PLAN LINE under --plan, with the client built and no entry settled',
       fn: async (ctx) => {
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
@@ -877,6 +1014,206 @@ await describe({
             + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
         ],);
         expect(watched.clients,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'STOPS THE RUN WHEN THE ROUTER FINDS EVERY PROVIDER DRY: the entry in flight is stopped by the abort the '
+        + 'refusal raised, no further entry starts, the entries already settled stay counted, and one STOP line names '
+        + 'the cause',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'mittens',
+            sourceText: '猫玩耍。\n',
+            targetText: 'The cat plays.\n',
+          },
+          {
+            id: 'whiskers',
+            sourceText: '猫吃饭。\n',
+            targetText: 'The cat dines.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+        /**
+         What the entry that met the dry router saw its base signal become.
+         */
+        const seen: { reason?: unknown; } = {};
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: {
+            newClient: function dryClient() {
+              /**
+               Router refusal every call meets.
+               */
+              const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+              return {
+                ...runClientFrom({
+                  env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
+                  transport: unreachedTransport,
+                },),
+                chatText: async () => {
+                  throw dry;
+                },
+              };
+            },
+            settle: async function settle({ entry, client, artifactsDir, baseSignal, },): Promise<EntryOutcome> {
+              watched.settled.push(entry.id,);
+              if (watched.settled.length === 1) {
+                await writeFile(
+                  join(
+                    artifactsDir,
+                    `${entry.id}.json`,
+                  ),
+                  '{}',
+                );
+                return { kind: 'settled', };
+              }
+              await rejectionOf(async function ask(): Promise<unknown> {
+                return await client.chatText({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  messages: [],
+                  signal: baseSignal,
+                },);
+              },);
+              seen.reason = baseSignal.reason;
+              return { kind: 'stopped', };
+            },
+          },
+        },);
+
+        expect(watched.settled.length,).toBe(2,);
+        expect(seen.reason,).toBeInstanceOf(EveryProviderDryError,);
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toEqual([
+          `STOP every provider is out of budget, so no further entry starts; the entries already settled keep their `
+            + `pages and the entry in flight is left resumable. Cause: ${(seen.reason as Error).message}`,
+        ],);
+        expect(printed.lines.at(-1,),).toContain('DONE processed=1 of pending=3; artifacts=1/3',);
+      },
+    },),
+    it({
+      name: 'STOPS THE RUN WHEN AN ENTRY IS ENDED BY THE REFUSAL WITHOUT A GUARDED CALL, as the seat reading ends it before '
+        + 'any chat call: the entry hands the refusal to the run, no further entry starts and one STOP line names the cause',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'mittens',
+            sourceText: '猫玩耍。\n',
+            targetText: 'The cat plays.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: {
+            settle: async function settle({ entry, endRun, },): Promise<EntryOutcome> {
+              watched.settled.push(entry.id,);
+              nonNullishOrThrow(endRun,)({
+                error: new EveryProviderDryError({ measured: 'the seat reading found every meter dry', },),
+              },);
+              return { kind: 'stopped', };
+            },
+          },
+        },);
+
+        expect(watched.settled.length,).toBe(1,);
+        /**
+         The stop lines the run printed.
+         */
+        const stops = printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },);
+        expect(stops,).toHaveLength(1,);
+        expect(stops[0],).toContain('the seat reading found every meter dry',);
+      },
+    },),
+    it({
+      name: 'GIVES EVERY ENTRY THE RUN\'S ANSWER TO WHETHER IT PARKED FOR A FAILURE: the entry that hands the gate a '
+        + 'refusal naming a return 5 ms away is told the run is parked for it, an unrelated failure is not, and the '
+        + 'entry is attempted again after the park',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+        /**
+         What the entry was told about its park, per attempt.
+         */
+        const told: { forRefusal?: boolean; forOther?: boolean; } = {};
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: {
+            settle: async function settle({ entry, endRun, parked, },): Promise<EntryOutcome> {
+              watched.settled.push(entry.id,);
+              if (watched.settled.length === 1) {
+                /**
+                 The refusal that names a return the pass can wait for.
+                 */
+                const dry = new EveryProviderDryError({
+                  measured: 'the seat reading found every meter dry',
+                  neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+                  neuralwattReturnsInMs: 5,
+                },);
+                nonNullishOrThrow(endRun,)({ error: dry, },);
+                told.forRefusal = nonNullishOrThrow(parked,)({ error: dry, },);
+                told.forOther = nonNullishOrThrow(parked,)({ error: new Error('connection reset',), },);
+              }
+              return { kind: 'stopped', };
+            },
+          },
+        },);
+
+        expect(told,).toEqual({ forRefusal: true, forOther: false, },);
+        expect(watched.settled,).toEqual(['tabby', 'tabby',],);
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toEqual([],);
       },
     },),
     it({

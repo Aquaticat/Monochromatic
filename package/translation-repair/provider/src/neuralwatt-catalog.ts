@@ -39,16 +39,27 @@ import {
 // matrix the meter estimates from was drawn over traffic that ran the same
 // defaults, so a call at a shallower effort uses less than its hold.
 //
-// THE ONE PARAMETER THIS PROVIDER MAY BE SENT, since 2026-10-21, and only where
-// the card's NeuralWatt side names one: `reasoning_effort`, `low` on
-// GLM-5.3-Flash for a call that carries a picture (`pictureReasoningEffort`)
-// and for one that does not (`textReasoningEffort`), and none on DeepSeek V4.1
-// Flash, whose supported efforts the repo does not record. The owner:
-// "NeuralWatt is a special case of all the providers: It implements what it
-// documents correctly, almost always - I'm lifting the ban on passing params,
-// but only for NeuralWatt." The standing rule of 2026-08-25 ("don't set any
-// thinking parameter or budget tokens", recorded at the Synthetic body) holds
-// for every other provider.
+// NEURALWATT IS SECOND RATE AND CLEARED FOR ITS DOCUMENTED THINKING PARAMETERS.
+// The owner, 2026-10-21: "NeuralWatt is a special case of all the providers: It
+// implements what it documents correctly, almost always - I'm lifting the ban
+// on passing params, but only for NeuralWatt." And on 2026-10-22: "No, I'm only
+// against thinking params on 3rd tier providers." "Anthropic counts as first
+// rate, neuralwatt counts as second rate." "NeuralWatt does implement what they
+// document correctly, so they're clear on thinking params." "But we should
+// never disable thinking on anything." The 2026-08-25 instruction ("don't set
+// any thinking parameter or budget tokens", recorded at the Synthetic body)
+// now holds for third tier alone; the other cleared providers are DeepSeek and
+// Xiaomi, first rate, and Anthropic, which the owner ruled first rate before
+// any direct Anthropic client exists (one is being built).
+//
+// WHAT THIS PROVIDER IS SENT, only where the card's NeuralWatt side names one:
+// `reasoning_effort`, `low` on GLM-5.3-Flash for a call that carries a picture
+// (`pictureReasoningEffort`) and for one that does not (`textReasoningEffort`),
+// and none on DeepSeek V4.1 Flash, whose supported efforts the repo does not
+// record. The clearance does not reach a value the listing does not name, so
+// that is a gap in the record and not a ban. `low` keeps thinking on, so it
+// complies with "never disable thinking"; no value that turns thinking off is
+// sent.
 
 /**
  Base address every NeuralWatt route hangs off.

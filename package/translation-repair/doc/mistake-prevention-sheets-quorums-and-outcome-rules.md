@@ -729,3 +729,110 @@ habit and review;
 `translate-stage.unit.test.ts`,
 `translate-document.unit.test.ts` and `consolidate-driver.unit.test.ts` count the calls on a blind slice,
 and `translate-floor-ground.unit.test.ts` pins the reach and the floor to one reading.
+
+## A refusal that ends the run
+
+What happened:
+the router's every-provider-dry refusal says it ends the run,
+and for the whole of the run of XingZ6018 it was lost as one seat's voice,
+in 990 lines of its log,
+until the bench floor stopped the entry 77 s after the first mark (ledger B818).
+The fix was tested with the pass guard in every call path,
+so four catches that swallowed the refusal stayed green until a review read them (ledger M289).
+The seat reader met the dry state before any chat call and stopped the entry as an error that every pending entry was charged for,
+and the stop was announced only when another attempt was pending (ledger B818).
+The decision seat has a branch for the refusal that the decisions route never raises (ledger B824),
+and the re-ask elsewhere has a catch the refusal cannot reach (ledger B825).
+The words "a run always ships" were read to cover the entry in flight (ledger B821),
+and the refusal was raised for one model's providers and ended the whole run (ledger B822).
+The case that pinned the seat reader's reading depends on which roster it reads (ledger B823).
+
+The rule:
+a layer that turns a failed call into a lost voice asks `endsTheRun` first and rethrows what it names,
+and the pass guard is the cover for the layers that have no check and never the reason to leave one out.
+A test of "this error ends the run" builds its client without the guard,
+asserts that the error reaches the caller unchanged,
+and adds a positive control:
+the same case with an error that does not end the run is still contained.
+A test that overrides the function it claims about (`settle`,
+`decide`) shows the stub.
+A branch written for an error is shown reachable from the function that raises it,
+and a test that throws the class itself shows the branch and not the route;
+where the error cannot arrive,
+a comment says why and cites the router path.
+A state that ends the run is handed to the run by whichever layer meets it first,
+the seat reading included,
+and an entry stopped that way is neither re-attempted nor charged an attempt.
+The stop is logged where it trips and announced once,
+also when the entry that met it was the last.
+A rule that says a run ships names what it covers for work in flight:
+the entry the stop interrupts stays `INCOMPLETE` and stopped,
+with its cache,
+because the archive path settles an entry and discards its cache.
+A refusal that ends the run is raised for the run,
+not for a model:
+a model whose providers are all dry is a lost seat,
+and the case that asserts a dryness reading pins the roster it is relative to.
+
+What enforces it:
+`endsTheRun` and `isDryRefusal` (`stage-run-end.ts`);
+the cases without the guard in `stage-round.unit.test.ts` (grace window),
+`overlapped-map.unit.test.ts`,
+`image-reading-contain.unit.test.ts` and `image-reading-pair.unit.test.ts`;
+`stage-decision-call.unit.test.ts` and `stage-call.unit.test.ts`;
+`entry-error-outcome.unit.test.ts` and the `settleEntry` case of `pass-entry.unit.test.ts`;
+`pass-dry-stop.unit.test.ts`,
+`corpus-pass-queue.unit.test.ts` and `corpus-pass-run.unit.test.ts`;
+and `run-seats-refusal.unit.test.ts` for the seat reading.
+The ruling on the entry in flight and the ruling on model-level dryness are in
+`design-commitments-rulings-of-2026-10-22.md`;
+each is open to the owner's veto.
+
+## A test fleet models every provider shape of the live roster
+
+What happened:
+the seat reader waited out a hold on any provider while a bench stood short.
+The tests that pinned the wait used fleets with one wet provider and one held provider,
+where the held provider was always one that cured the shortfall,
+so a hold on a provider that cannot cure it
+(DeepSeek,
+whose one wide seat is a seat the wet providers already reach,
+or Xiaomi,
+which serves no wide seat)
+was waited out in full and the bench was seated short all the same.
+The second review of the Claude route found it with a fleet whose Claude key read dry
+and the wide bench stood one seat short of its quorum;
+the review of the seat bound found the same defect from the other side
+(a hold on a provider that serves no seat of a short bench).
+
+The rule:
+a test fleet models every provider shape of the live roster,
+not the shapes the case happens to need:
+a provider that cures a short bench,
+one that serves seats of it and cannot cure it,
+one that serves none of its seats,
+a dry key that is a meter reading and holds `0`,
+and two or more holds that each cure the bench alone
+(a necessity test,
+"the bench stays short without this provider",
+counts neither of them,
+so the reader seated the bench short with two curing holds running;
+round 5 found it).
+The shapes come from the roster through `reachOf`,
+and a case that asserts a wait asserts the control (a hold that must be waited for)
+beside the hold that must not be.
+A new provider joins the fleet of these cases when its route lands.
+
+What enforces it:
+habit and review;
+`run-seats-cure.unit.test.ts` pins the shape on this tree's roster
+(NeuralWatt and Bedrock wet,
+the wide bench 3 of 7 against a quorum of 4,
+with Synthetic and Hyper held,
+Synthetic and OpenRouter held,
+and,
+with NeuralWatt wet,
+Synthetic,
+Bedrock and Hyper held),
+and `run-seats-hold-need.unit.test.ts` pins it for the translate lane.
+The ruling is the lead's and is open to the owner's veto.

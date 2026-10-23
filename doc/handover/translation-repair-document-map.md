@@ -62,6 +62,16 @@ and the Synthetic meter was unreadable in every reading.
 The owner's answers it serves are in the family's
 [design commitments](../../package/translation-repair/doc/design-commitments.md)
 under 2026-10-11.
+The latest passes,
+of 2026-10-22,
+are filed in the
+[answers-restart record](../planning/translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart.md):
+`XingZ6018` ended with no page after every provider ran dry
+(ledger B818 to B825),
+`XingZ6019` ended on a short writing bench while NeuralWatt was dry
+(ledger B826,
+open),
+and `XingZ6020` was running when this status was last written.
 
 The finite redesign stopped after Candidate M failed on 2026-09-01.
 No Candidate A through M is production-eligible,

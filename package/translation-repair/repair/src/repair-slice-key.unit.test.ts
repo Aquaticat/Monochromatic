@@ -88,7 +88,7 @@ await describe({
           + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
           + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(45,);
+        expect(SLICE_CACHE_VERSION,).toBe(46,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -174,13 +174,19 @@ await describe({
         // VERSION 43 ON 2026-10-22 (a short bench closes one voice below every live seat once the grace ends, ledger B816):
         // moved the same way.
         //
-        // VERSION 44 ON 2026-10-22 (the fence length left the system text of the candidate selection, R4 of the third
-        // review of the Claude route): moved the same way.
+        // VERSION 44 ON 2026-10-22 (the outcome carries `silentStages`, and the cache refuses a settlement that names a
+        // silent stage; XingZ6018 slice 85, a panel that heard nobody cached as examined): moved the same way, for the record
+        // and the rule that stores it.
         //
-        // VERSION 45 ON 2026-10-23 (the reader takes a value that differs from a listed enum or const value only in
-        // capitalization as the listed value): moved the same way.
+        // VERSION 44 ON 2026-10-22 ON THE CLAUDE ROUTE (the fence length left the system text of the candidate selection, R4 of
+        // the third review of the Claude route): moved the same way.
+        //
+        // VERSION 45 ON 2026-10-23 ON THE CLAUDE ROUTE (the reader takes a value that differs from a listed enum or const value
+        // only in capitalization as the listed value): moved the same way.
+        //
+        // VERSION 46 ON 2026-10-23 (the merge of the three moves above, which no line held as one number): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('4e049b8f1d98306dfdfb56eaed3cbd14af364d913532b8ae579048c868ef18ef',);
+          .toBe('cd4085ca1b4c02ea7b32420cf1a97c487718385a9dc6b0f44c765a59872a112f',);
       },
     },),
     it({

@@ -169,6 +169,7 @@ function outcomeOf(
     heardCriticIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   };
 }
 

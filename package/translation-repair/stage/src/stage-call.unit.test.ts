@@ -33,6 +33,7 @@ import {
   ClaudeSchemaKeywordError,
   DeepSeekModelNotServedError,
   EmptyConversationError,
+  EveryProviderDryError,
   MalformedImageUriError,
   type ModelClient,
   ModelNotServedError,
@@ -43,6 +44,7 @@ import {
   XiaomiModelNotServedError,
 } from '@monochromatic-dev/translation-repair-provider';
 import { attemptStageCall, } from '../dist/final/node/index.mjs';
+import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import { warningRecordingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { quotingFailure, } from '@monochromatic-dev/translation-repair-test-fixture/ts/quoting-failure.test-fixture.ts';
@@ -633,6 +635,42 @@ await describe({
             signal: controller.signal,
           },),
         ).rejects.toBe(unrelatedFailure,);
+      },
+    },),
+
+    it({
+      name: 'RETHROWS an every-provider-dry refusal although nobody aborted, since the owner ruled it ends the run: '
+        + 'a lost voice here let the run limp on for 77 s before the bench floor stopped it (XingZ6018, 2026-10-22)',
+      fn: async () => {
+        /**
+         The refusal the router raised, held so the assertion proves THAT object propagated.
+         */
+        const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+
+        await expect(
+          callWith({
+            client: scriptedClient({ thrown: dry, },),
+            signal: new AbortController().signal,
+          },),
+        ).rejects.toBe(dry,);
+      },
+    },),
+
+    it({
+      name: 'CONTAINS A MODEL-DARK REFUSAL as an unreachable voice although nobody aborted, since a model whose own '
+        + 'providers are all out of budget is a lost seat and the run goes on, and the log names the dry provider',
+      fn: async () => {
+        const warnings: string[] = [];
+        const voice = await callWith({
+          client: scriptedClient({ thrown: modelDarkRefusal({ modelId: MODEL_ID, },), },),
+          signal: new AbortController().signal,
+          logger: warningRecordingLogger({ base: l, warnings, },),
+        },);
+
+        expect(voice,).toMatchObject({ heard: false, answered: false, unreachable: true, },);
+        expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain('every provider serving this model is out of budget (hyper dry)',);
+        expect(warnings[0],).toContain('seat unreachable',);
       },
     },),
 

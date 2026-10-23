@@ -120,7 +120,9 @@ named for that subject and listed here.
   each under its own letter.
 - [Audit ledger: docs and comments that disagreed with the code](audit-ledger-docs-against-code.md):
   Statements in the docs,
-  comments and examples that the code or the record contradicted.
+  comments and examples that the code or the record contradicted,
+  among them a function the ledger still named after its removal (D36)
+  and comments of the XingZ6018 fixes that said more than the code or the rulings (D37).
 - [Audit ledger: doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md):
   Conventions the docs broke across many files and the guards written for each:
   clock times with no zone,
@@ -499,7 +501,9 @@ named for that subject and listed here.
 - [Audit ledger: branches no input reaches, kept as quiet answers](audit-ledger-unreachable-branches-kept-as-quiet-answers.md):
   Branches no input reaches that answered quietly where a loud refusal belongs,
   most met when a coverage census asked for them to be removed,
-  and the four branches of the markup ranges that left a node out for want of a position (B683).
+  the four branches of the markup ranges that left a node out for want of a position (B683),
+  a decision-seat branch only a test reaches (B824),
+  and a re-ask catch the run-ending refusal cannot reach (B825).
 - [Audit ledger: the source scans and the coverage census](audit-ledger-source-scans-and-coverage-census.md):
   What the source scans and the coverage census counted wrongly,
   could not see,
@@ -529,12 +533,29 @@ named for that subject and listed here.
   where the owner let the grace open,
   with the round's need read again at each refusal,
   artifact generation 20 and the cache versions that moved with the rule (B816).
+- [Audit ledger: holds a test registers and the seat reading sleeps](audit-ledger-holds-a-test-registers-and-the-seat-reading-sleeps.md):
+  A hold a test registers for a provider that the seat reading sleeps for real:
+  the router's five-minute hold slept by a unit test in every gate from g138 on,
+  and the scan that now reads the holds tests register (B817).
+- [Audit ledger: the every-provider-dry refusal, what it stops and what it says](audit-ledger-the-every-provider-dry-refusal.md):
+  The router's refusal for a call made with every provider out of budget:
+  lost as one seat's voice for 77 s and swallowed by four catches the pass guard hid (B818),
+  the NeuralWatt return it stated as 00:00 UTC (B819),
+  the entry in flight that ships nothing (B821),
+  the refusal raised per model (B822),
+  and the seat reader's case that depends on the roster (B823).
+- [Audit ledger: a stage that heard nobody, recorded as data](audit-ledger-silent-stages-recorded-as-data.md):
+  A panel that heard nobody on five packets cached as examined
+  because its finding no longer began with the text the gate matched,
+  the cache version that moved with the rule,
+  and the refine cache's two gates that asked different questions (B820).
 - [Audit ledger: providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md):
   A provider an owner ruling keeps off that every run still asked (B760),
   a seat never withheld although its streams carried nothing (B761),
   a meter line that read a held provider differently from the router (B763),
-  and a model the owner's answer took off the lane-contest and consolidation benches
-  after the grace cut 40 of its 95 streams (B815).
+  a model the owner's answer took off the lane-contest and consolidation benches
+  after the grace cut 40 of its 95 streams (B815),
+  and a writing-bench floor that stopped an entry for want of a named return though NeuralWatt's return was 48 s away (B826).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,
@@ -621,7 +642,11 @@ named for that subject and listed here.
   lint left unread,
   edits aimed by a stale line number,
   tests that touched the real world,
-  and seams added the wrong way.
+  seams added the wrong way,
+  tests of a run-ending refusal that the pass guard made green (M289),
+  a scripted merge of describe blocks (M290),
+  blocks added to files at the line limit (M291),
+  and a type guard on a catch binding (M292).
 - [Audit ledger: process mistakes, questions and handoffs to the owner](audit-ledger-process-questions-to-the-owner.md):
   What was put to the owner wrongly:
   measurable questions,
@@ -673,7 +698,11 @@ named for that subject and listed here.
   the scans or the type check that would have refused them,
   a round landed without the round before it,
   a test round reported before the scans had read its tests (M266),
-  and a bench change landed with the run package's tests only (M287).
+  a bench change landed with the run package's tests only (M287),
+  about 30 gates that took five minutes longer than the gates before them with no comparison of the time (M288),
+  a count expected from a runner that prints none (M293),
+  and a gate that scanned the tree before a merge of main,
+  which then brought in three doc lines that fail the scan (M294).
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md):
   Turns that ended with work still listed,
   and waits spent polling.
@@ -847,6 +876,9 @@ Filed in:
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md)
 - [Audit ledger: which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md)
 - [Audit ledger: short benches and the last live seat](audit-ledger-short-benches-and-the-last-live-seat.md)
+- [Audit ledger: holds a test registers and the seat reading sleeps](audit-ledger-holds-a-test-registers-and-the-seat-reading-sleeps.md)
+- [Audit ledger: the every-provider-dry refusal, what it stops and what it says](audit-ledger-the-every-provider-dry-refusal.md)
+- [Audit ledger: a stage that heard nobody, recorded as data](audit-ledger-silent-stages-recorded-as-data.md)
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md)
 - [Audit ledger: the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md)
 - [Audit ledger: defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md)

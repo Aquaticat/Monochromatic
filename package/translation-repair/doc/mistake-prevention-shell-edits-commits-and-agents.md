@@ -477,6 +477,12 @@ which it cannot follow (ledger B118);
 which fails on a line ending in whitespace outside a template literal's text (ledger B119;
 issue 585 asks for a repository-wide lint rule in its place).
 
+A guard for a caught value takes it as `unknown` and returns a type predicate,
+and the caller rethrows the narrowed value:
+a type guard on a destructured catch binding tripped TS1230 and the lint rule `only-throw-error`
+(ledger M292,
+`isDryRefusal` in `stage/src/stage-run-end.ts`).
+
 ## Commit messages
 
 What happened:

@@ -7,6 +7,7 @@ import {
   type NeuralWattDayStart,
   neuralWattDayStartAt,
   neuralWattDayStartOfInstant,
+  neuralWattTimeOfDayUtc,
 } from './neuralwatt-day.ts';
 import type { NeuralWattQuota, } from './neuralwatt-quota.ts';
 import type {
@@ -199,14 +200,7 @@ export async function decideNeuralWattDayAnchor(
     msOfDay: chosen.msOfDay,
   },);
   rl.info(
-    `NeuralWatt day starts at ${
-      new Date(chosen.msOfDay,)
-        .toISOString()
-        .slice(
-          'YYYY-MM-DDT'.length,
-          'YYYY-MM-DDTHH:MM:SS.sss'.length,
-        )
-    } UTC every day, from ${chosen.source}${retry ? ' (learned on a retry)' : ''}; the current day began ${
+    `NeuralWatt day starts at ${neuralWattTimeOfDayUtc({ msOfDay: chosen.msOfDay, },)} UTC every day, from ${chosen.source}${retry ? ' (learned on a retry)' : ''}; the current day began ${
       today.toISOString()
     }`,
   );

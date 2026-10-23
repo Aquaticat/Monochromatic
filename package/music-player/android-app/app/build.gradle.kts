@@ -104,6 +104,12 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            // `-PdebugApplicationIdSuffix=.duck` installs the debug build next to the owner's release-signed app under
+            // another package name, so a device test never replaces or wipes the owner's installed app and its data.
+            // Without the property the debug build keeps the release package name, as the instrumented flow expects.
+            providers.gradleProperty("debugApplicationIdSuffix").orNull?.let { suffix -> applicationIdSuffix = suffix }
+        }
         getByName("release") {
             // R8 shrinks the 30 MB of unshrunk dex (Compose, Material 3, media3, WorkManager) to what the app
             // reaches, and resource shrinking drops the matching resources. The only keep rule the app needs is the

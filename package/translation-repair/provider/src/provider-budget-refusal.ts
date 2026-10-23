@@ -144,7 +144,8 @@ export function isBudgetRefusal(
 ): boolean {
   // NEURALWATT'S OWN LEDGER REFUSING BEFORE A REQUEST LEAVES (2026-10-20): the
   // day's free energy cannot take the call, so the next provider is asked. NOT
-  // A PAYMENT REFUSAL: nothing is owed, and the energy returns at 00:00 UTC.
+  // A PAYMENT REFUSAL: nothing is owed, and the energy returns when the account's day starts again, at the time of day
+  // the run decided at launch (`neuralwatt-day-anchor.ts`), not at 00:00 UTC.
   if (error instanceof NeuralWattAllowanceError)
     return true;
   if (!(error instanceof ProviderHttpError))

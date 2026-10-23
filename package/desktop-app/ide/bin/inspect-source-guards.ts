@@ -165,7 +165,7 @@ const cases: Guard[] = [
     after: 'if true {',
     native: true,
     test: 'a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view',
-    failure: 'the window shows an error'
+    failure: 'tile texture pixels'
   },
   {
     name: 'clip-edges',
@@ -315,11 +315,12 @@ const cases: Guard[] = [
     test: 'a_tile_cut_by_the_shaper_is_stamped_with_the_clip_it_was_cut_to',
     failure: 'does not name the clip it was cut to'
   },
+  // The tile is a texture: blanking it after a refusal hands the GPU an empty scene of the shown tile's size.
   {
     name: 'refused-tile-keeps-image',
     file: 'src/native/render.rs',
     before: '                current.frame_stamp = None;\n                drop(current);\n',
-    after: '                current.frame_stamp = None;\n                drop(current);\n                window.set_source_image(slint::Image::default());\n',
+    after: '                current.frame_stamp = None;\n                if let Some(view) = current.shaped.as_ref() {\n                    current.gpu.submit_tile(ide_app::tile_scene::TileStack {\n                        textures: vec![ide_app::tile_scene::TileScene {\n                            scene: vello::Scene::new(),\n                            width: view.width,\n                            height: view.height,\n                        }],\n                        width: view.width,\n                        height: view.height,\n                    });\n                }\n                drop(current);\n',
     native: true,
     test: 'a_refused_tile_keeps_the_text_on_screen_and_names_the_failure',
     failure: 'a refused tile blanked the source'
@@ -825,7 +826,7 @@ const cases: Guard[] = [
     ],
     native: true,
     test: 'a_view_taller_than_the_clip_cap_is_left_to_the_worker',
-    failure: 'was not left to the worker'
+    failure: 'brought in lines for a view past the cap'
   },
   {
     name: 'rewrap-lines-bound',
@@ -1392,14 +1393,28 @@ const cases: Guard[] = [
     test: 'a_tall_slice_is_cut_into_chunks_of_at_most_the_chunk_rows',
     failure: equality
   },
+  // Measured on 2026-10-23: the test passes at chunks of up to 4096 rows (the renderer holds that many of the densest
+  // text since selected rows are drawn once) and fails from 5120 rows, so the removed run takes a chunk as tall as the
+  // widest slice.
   {
     name: 'minimap-chunk-size',
     file: 'src/minimap/plan.rs',
     before: 'pub const CHUNK_ROWS: u32 = 512;',
-    after: 'pub const CHUNK_ROWS: u32 = 4096;',
+    after: 'pub const CHUNK_ROWS: u32 = 8192;',
     native: true,
     test: 'the_densest_chunks_are_not_blank',
     failure: 'nearly blank'
+  },
+  // Measured on 2026-10-23: two chunks drawn as one render keep their ink at 512 rows each and lose it at 4096 rows each
+  // (8192 rows in one render), so this test is what keeps a margin of two inside the buffers.
+  {
+    name: 'minimap-chunk-margin',
+    file: 'src/minimap/plan.rs',
+    before: 'pub const CHUNK_ROWS: u32 = 512;',
+    after: 'pub const CHUNK_ROWS: u32 = 4096;',
+    native: true,
+    test: 'the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds',
+    failure: 'one render of 8192 rows drew'
   },
   {
     name: 'minimap-chunk-cut',

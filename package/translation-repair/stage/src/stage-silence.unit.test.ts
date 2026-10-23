@@ -16,8 +16,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  everyStageHeard,
+  refinementIsResumable,
+  silentStageLabel,
   silentStagesOf,
+  silentStagesOfRecord,
+  silentStagesOfSettlement,
   STAGE_QUORUM_UNMET_PREFIX,
   stageQuorumUnmetFinding,
 } from '../dist/final/node/index.mjs';
@@ -43,35 +46,23 @@ await describe({
     },),
 
     describe({
-      name: everyStageHeard.name,
+      name: silentStagesOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'ANSWERS true for findings that carry no shortfall, lost voices included',
+          name: 'NAMES nothing for findings that carry no shortfall, lost voices included',
           fn: async () => {
-            expect(everyStageHeard({ findings: [], },),).toBe(true,);
-            expect(everyStageHeard({
+            expect(silentStagesOf({ findings: [], },),).toStrictEqual([],);
+            expect(silentStagesOf({
               findings: [
                 'stage-voice-lost (critic hf:zai-org/GLM-5.3-Flash)',
                 'stage-short (critic 5/6)',
               ],
-            },),).toBe(true,);
+            },),).toStrictEqual([],);
           },
         },),
         it({
-          name: 'ANSWERS false when any stage fell short of quorum, wherever the finding sits',
-          fn: async () => {
-            expect(everyStageHeard({
-              findings: [
-                'stage-voice-lost (editor minimax-m3)',
-                stageQuorumUnmetFinding({ shortfall: 'editor 1/3', },),
-                'non-translation-dominance (0.2)',
-              ],
-            },),).toBe(false,);
-          },
-        },),
-        it({
-          name: 'NAMES every silent stage and nothing else, in order',
+          name: 'NAMES every silent stage and nothing else, in order, wherever the finding sits',
           fn: async () => {
             expect(silentStagesOf({
               findings: [
@@ -83,6 +74,109 @@ await describe({
               'stage-quorum-unmet (critic 0/6)',
               'stage-quorum-unmet (checker 1/3)',
             ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: silentStageLabel.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SPELLS heard against asked, and where the stage ran when it ran once for each of several places',
+          fn: async () => {
+            expect(silentStageLabel({ stage: 'critic', heard: 2, asked: 6, },),).toBe('critic 2/6',);
+            expect(silentStageLabel({
+              stage: 'panel',
+              heard: 0,
+              asked: 6,
+              where: 'cluster/abc',
+            },),).toBe('panel 0/6 (cluster/abc)',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: silentStagesOfRecord.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES A SILENT STAGE THE RECORD CARRIES AS DATA even when every finding about it was relocated, '
+            + 'which the XingZ6018 slice 85 record had: its panel findings began `panel-packet (cluster/...): `',
+          fn: async () => {
+            /**
+             The relocated finding the XingZ6018 record held, which the prefix reader misses.
+             */
+            const relocated = 'panel-packet (cluster/140d): stage-quorum-unmet (panel 0/6)';
+            expect(silentStagesOf({ findings: [relocated,], },),).toStrictEqual([],);
+            expect(silentStagesOfRecord({
+              record: {
+                findings: [relocated,],
+                silentStages: ['panel 0/6 (cluster/140d)',],
+              },
+            },),).toStrictEqual(['panel 0/6 (cluster/140d)',],);
+          },
+        },),
+        it({
+          name: 'NAMES THE DATA FIRST, then the stages that left an unrelocated finding, and nothing for a stage that heard',
+          fn: async () => {
+            expect(silentStagesOfRecord({
+              record: {
+                findings: [stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },), 'stage-voice-lost (editor x)',],
+                silentStages: ['panel 0/6 (cluster/a)',],
+              },
+            },),).toStrictEqual(['panel 0/6 (cluster/a)', 'stage-quorum-unmet (checker 1/3)',],);
+            expect(silentStagesOfRecord({ record: { findings: [], silentStages: [], }, },),).toStrictEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: silentStagesOfSettlement.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the silence the embedded outcome carries and the silence the refinement\'s own findings carry, '
+            + 'in that order',
+          fn: async () => {
+            expect(silentStagesOfSettlement({
+              settlement: {
+                outcome: { findings: [], silentStages: ['panel 0/6 (cluster/a)',], },
+                findings: [stageQuorumUnmetFinding({ shortfall: 'rewriter 0/3', },),],
+              },
+            },),).toStrictEqual(['panel 0/6 (cluster/a)', 'stage-quorum-unmet (rewriter 0/3)',],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: refinementIsResumable.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ANSWERS true only when neither the outcome nor the refinement names a silent stage',
+          fn: async () => {
+            /**
+             An outcome that heard every stage.
+             */
+            const heard = { findings: [], silentStages: [], };
+            expect(refinementIsResumable({ settlement: { outcome: heard, findings: [], }, },),).toBe(true,);
+            expect(refinementIsResumable({
+              settlement: { outcome: { ...heard, silentStages: ['panel 0/6 (cluster/a)',], }, findings: [], },
+            },),).toBe(false,);
+            expect(refinementIsResumable({
+              settlement: {
+                outcome: { ...heard, findings: [stageQuorumUnmetFinding({ shortfall: 'critic 0/6', },),], },
+                findings: [],
+              },
+            },),).toBe(false,);
+            expect(refinementIsResumable({
+              settlement: { outcome: heard, findings: [stageQuorumUnmetFinding({ shortfall: 'rewriter 0/3', },),], },
+            },),).toBe(false,);
           },
         },),
       ],

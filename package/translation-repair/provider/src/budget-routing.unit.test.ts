@@ -28,6 +28,7 @@ import {
   EveryProviderDryError,
   hyperIsDry,
   hyperMeterLevel,
+  type NeuralWattDryness,
   NO_PROVIDER,
   providerServing,
   routeProviderFor,
@@ -617,8 +618,75 @@ await describe({
               saturated: noneSaturated,
             },),).toEqual({
               kind: 'unreachable',
-              reason: 'every provider serving this model is out of budget',
+              reason: 'every provider serving this model is out of budget (synthetic dry); the providers that do not '
+                + 'serve it read neuralwatt wet, bedrock wet, deepseek wet, xiaomi wet, hyper wet, openrouter wet',
             },);
+          },
+        },),
+
+        it({
+          name: 'DOES NOT END THE RUN for a model Xiaomi does not serve when every other provider reads dry and '
+            + 'Xiaomi reads wet, because only every provider dry ends it and this model alone has lost its '
+            + 'providers',
+          fn: async () => {
+            expect(routeProviderFor({
+              reach: everyReach,
+              dry: {
+                ...allDry,
+                xiaomi: false,
+              },
+              saturated: noneSaturated,
+            },).kind,).toBe('unreachable',);
+          },
+        },),
+
+        it({
+          name: 'NAMES THE PROVIDERS THAT SERVE THE DARK MODEL AND HOW EACH READS, and how the ones that do not serve '
+            + 'it read, so a read of the run tells a lost seat from the run-ending stop',
+          fn: async () => {
+            expect(routeProviderFor({
+              reach: {
+                ...everyReach,
+                synthetic: false,
+                bedrock: false,
+                hyper: true,
+                deepseek: true,
+              },
+              dry: {
+                ...allWet,
+                hyper: true,
+                deepseek: true,
+                openrouter: true,
+              },
+              saturated: noneSaturated,
+            },),).toEqual({
+              kind: 'unreachable',
+              reason: 'every provider serving this model is out of budget (deepseek dry, hyper dry, openrouter dry); '
+                + 'the providers that do not serve it read neuralwatt wet, synthetic wet, bedrock wet, xiaomi wet',
+            },);
+          },
+        },),
+
+        it({
+          name: 'REPORTS a Hyper-only model as unreachable while Hyper is dry and NeuralWatt and DeepSeek read wet, '
+            + 'since the providers that serve the other seats are not this seat\'s',
+          fn: async () => {
+            expect(routeProviderFor({
+              reach: {
+                neuralwatt: false,
+                synthetic: false,
+                hyper: true,
+                bedrock: false,
+                deepseek: false,
+                xiaomi: false,
+                openrouter: false,
+              },
+              dry: {
+                ...allWet,
+                hyper: true,
+              },
+              saturated: noneSaturated,
+            },).kind,).toBe('unreachable',);
           },
         },),
       ],
@@ -647,6 +715,75 @@ await describe({
               'syntheticWeekly=99.8%',
               'syntheticFiveHour=none',
               'syntheticThrottled=none',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'STATES THE WEEKLY RETURN when the weekly budget is spent, and only then, so a dry reading names when it ends',
+          fn: async () => {
+            expect(syntheticMeterLevel({
+              quota: {
+                weekly: {
+                  percentRemaining: 0,
+                  nextRegenAt: '2026-10-23T05:03:47.000Z',
+                },
+              },
+            },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=none',
+              'syntheticThrottled=none',
+              'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
+            ],);
+            expect(syntheticMeterLevel({
+              quota: {
+                ...roomyQuota,
+                weekly: {
+                  percentRemaining: 0,
+                  nextRegenAt: '2026-08-25T00:12:58.000Z',
+                },
+              },
+            },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=750/750',
+              'syntheticThrottled=no',
+              'syntheticWeeklyReturn=2026-08-25T00:12:58.000Z',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'PRINTS ONLY A VALIDATED INSTANT as the weekly return: a value with a space and a newline, an empty one and a '
+            + 'spelling the logger does not write read `unreadable`, so no snapshot can forge a field or a line',
+          fn: async () => {
+            /**
+             The return field printed for each weekly return a snapshot might carry.
+             */
+            const returned = [
+              'a synthetic=wet\nINJECT',
+              '',
+              '2026-10-23T05:03:47Z',
+              '2026-10-23T05:03:47.000Z',
+            ].map(function returnFieldFor(nextRegenAt,): string {
+              return syntheticMeterLevel({
+                quota: { weekly: { percentRemaining: 0, nextRegenAt, }, },
+              },)
+                .find(function isReturn(field,): boolean {
+                  return field.startsWith('syntheticWeeklyReturn',);
+                },) ?? 'no return field';
+            },);
+            expect(returned,).toEqual([
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
+            ],);
+            // A window the parser marked unreadable carries no `nextRegenAt` at all.
+            expect(syntheticMeterLevel({ quota: { weekly: { percentRemaining: 0, }, }, },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=none',
+              'syntheticThrottled=none',
+              'syntheticWeeklyReturn=unreadable',
             ],);
           },
         },),
@@ -704,6 +841,133 @@ await describe({
       name: 'the all-dry refusal names every provider (ledger P12)',
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'STATES THE TIME OF DAY THE ACCOUNT\'S NEURALWATT DAY STARTS AT, in UTC, when the run decided one, '
+            + 'and never midnight: the owner ruled the day is "not 00:00 UTC"',
+          fn: async () => {
+            /**
+             The message for an account whose day starts at 19:15:08 UTC, the XingZ6018 account.
+             */
+            const { message, } = new EveryProviderDryError({
+              neuralwatt: {
+                kind: 'at',
+                msOfDay: 69_308_000,
+              },
+            },);
+            expect(message,).toContain(
+              'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run '
+                + 'decided or learned;',
+            );
+            expect(message,).not.toContain('00:00 UTC',);
+          },
+        },),
+
+        it({
+          name: 'KEEPS THE MILLISECONDS of a day start that does not fall on a whole second, which only a setting or a '
+            + 'quota reply with a fraction can give',
+          fn: async () => {
+            /**
+             The message for a day that starts half a second into 19:15:08 UTC.
+             */
+            const { message, } = new EveryProviderDryError({
+              neuralwatt: {
+                kind: 'at',
+                msOfDay: 69_308_500,
+              },
+            },);
+            expect(message,).toContain('at 19:15:08.500 UTC,',);
+          },
+        },),
+
+        it({
+          name: 'SAYS NEURALWATT IS OFF, naming no time of day, when the run has no NeuralWatt client',
+          fn: async () => {
+            /**
+             The message for a run with NeuralWatt left off.
+             */
+            const { message, } = new EveryProviderDryError({ neuralwatt: { kind: 'off', }, },);
+            expect(message,).toContain('NeuralWatt is off for this run, so it returns no energy;',);
+            expect(message,).not.toContain('UTC',);
+            // THE OPENING NAMES NO NEURALWATT ENERGY EITHER: an off provider has none to be out of.
+            expect(message,).not.toContain('has no free daily energy',);
+            expect(message.startsWith('Every provider is out of budget at once: Synthetic has no weekly credit left',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'SAYS NO DAY START WAS DECIDED, naming no time of day, when NeuralWatt is configured but its quota never '
+            + 'gave one',
+          fn: async () => {
+            /**
+             The message for a run whose NeuralWatt day start stayed unknown.
+             */
+            const { message, } = new EveryProviderDryError({ neuralwatt: { kind: 'unanchored', }, },);
+            expect(message,).toContain(
+              'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return;',
+            );
+            expect(message,).not.toContain('UTC',);
+            // THE OPENING DOES NOT CLAIM THE ENERGY IS SPENT: the keeper refuses NeuralWatt until a day start is
+            // learned, and the energy may well be there.
+            expect(message,).not.toContain('has no free daily energy',);
+            expect(message,).toContain(
+              'Every provider is out of budget at once: NeuralWatt is refused until its day start is learned, Synthetic',
+            );
+          },
+        },),
+
+        it({
+          name: 'HANDS THE ROUTER\'S NEURALWATT DAY TO THE REFUSAL it throws on an all-dry reading',
+          fn: async () => {
+            /**
+             What the router threw on an all-dry reading with a decided day start.
+             */
+            const thrown = (function refusal(): unknown {
+              try {
+                routeProviderFor({
+                  reach: {
+                    neuralwatt: true,
+                    synthetic: true,
+                    hyper: true,
+                    bedrock: true,
+                    deepseek: true,
+                    xiaomi: true,
+                    openrouter: true,
+                  },
+                  dry: {
+                    neuralwatt: true,
+                    synthetic: true,
+                    hyper: true,
+                    bedrock: true,
+                    deepseek: true,
+                    xiaomi: true,
+                    openrouter: true,
+                  },
+                  saturated: {
+                    neuralwatt: false,
+                    synthetic: false,
+                    hyper: false,
+                    bedrock: false,
+                    deepseek: false,
+                    xiaomi: false,
+                    openrouter: false,
+                  },
+                  neuralwatt: {
+                    kind: 'at',
+                    msOfDay: 69_308_000,
+                  },
+                },);
+                return undefined;
+              }
+              catch (error) {
+                return error;
+              }
+            })();
+            if (!(thrown instanceof EveryProviderDryError))
+              throw new Error('an all-dry refusal by construction',);
+            expect(thrown.message,).toContain('at 19:15:08 UTC',);
+          },
+        },),
+
         it({
           name: 'STATES SYNTHETIC\'S LIMIT AS THE WEEKLY CREDIT, with the five-hour window named only where a reply still carries one',
           fn: async () => {
@@ -801,6 +1065,44 @@ await describe({
     },),
 
     describe({
+      name: 'the all-dry refusal states why NeuralWatt reads dry',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'STATES THE DAY START AND THE DISTANCE for a spent day, and the key\'s own time for a blocked key, '
+            + 'and neither a day start nor a return for energy held by calls in flight: only the true cause',
+          fn: async () => {
+            /**
+             The message for one cause of NeuralWatt's dryness.
+             */
+            const messageFor = (neuralwattDryness: NeuralWattDryness,): string => new EveryProviderDryError({
+              measured: 'meters read every provider dry',
+              neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+              neuralwattDryness,
+            },).message;
+
+            const spent = messageFor({
+              kind: 'spent-day',
+              dayStart: '2026-10-23T19:15:08.000Z',
+              returnsInMs: 301_000,
+            },);
+            expect(spent,).toContain('at 19:15:08 UTC (in 5 min 1 s)',);
+
+            const blocked = messageFor({ kind: 'key-blocked', until: '2026-10-23T05:00:00.000Z', },);
+            expect(blocked,).toContain('blocked until 2026-10-23T05:00:00.000Z',);
+            expect(blocked,).not.toContain('day starts again',);
+            expect(blocked,).not.toContain('19:15:08',);
+
+            const reserved = messageFor({ kind: 'reserved', },);
+            expect(reserved,).toContain('held by calls in flight',);
+            expect(reserved,).not.toContain('day starts again',);
+            expect(reserved,).not.toContain('19:15:08',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: 'the all-dry refusal says why Xiaomi reads dry',
       concurrency: DEFAULT_CONCURRENCY,
       children: [
@@ -810,20 +1112,45 @@ await describe({
             const message = allDryMessageOf({ dry: allDry, },);
             expect(message,).toContain('Xiaomi has refused a call for payment',);
             expect(message,).toContain('xiaomi dry',);
-            expect(message,).not.toContain('not serving this model',);
           },
         },),
 
         it({
-          name: 'SAYS XIAOMI SERVES ANOTHER MODEL, and not a payment refusal, when its meter reads wet and it does not '
-            + 'serve the model asked, since the reader sees xiaomi=wet on the METERS line beside the refusal',
+          name: 'SAYS XIAOMI READS WET BUT SERVES NO SEAT THAT WRITES when it is the one provider not dry and only '
+            + 'checker seats are Xiaomi\'s, and ends the run even for a call Xiaomi would serve: nothing that writes '
+            + 'a page can be bought, so the run cannot go on; with a writer seat on Xiaomi it routes there instead',
           fn: async () => {
-            const message = allDryMessageOf({ dry: { ...allDry, xiaomi: false, }, },);
-            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
-            expect(message,)
-              .toContain('Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked',);
-            expect(message,).toContain('xiaomi wet but not serving this model',);
-            expect(message,).not.toContain('xiaomi dry',);
+            /**
+             Every provider dry but Xiaomi, and a model only Xiaomi serves.
+             */
+            const reach = {
+              ...allWet,
+              xiaomi: true,
+            };
+            /**
+             What the router raises when Xiaomi serves nothing that writes.
+             */
+            const message = ((): string => {
+              try {
+                routeProviderFor({
+                  reach,
+                  dry: { ...allDry, xiaomi: false, },
+                  saturated: noneSaturated,
+                  writing: { ...allDry, xiaomi: false, },
+                },);
+              } catch (error) {
+                return (error as Error).message;
+              }
+              return 'no refusal';
+            })();
+            expect(message,).toContain('Xiaomi reads wet but serves no seat that writes',);
+            expect(message,).toContain('xiaomi wet (serves no seat that writes)',);
+            expect(routeProviderFor({
+              reach,
+              dry: { ...allDry, xiaomi: false, },
+              saturated: noneSaturated,
+              writing: allDry,
+            },),).toEqual({ kind: 'xiaomi', },);
           },
         },),
       ],

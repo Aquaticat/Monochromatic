@@ -2310,9 +2310,9 @@ const LISTED_CALLS: readonly ListedSite[] = [
     site: 'slice-reading/image-reading-pair.ts#readImagePair',
     combinator: 'allSettled',
     reason: 'settled-in-input-order',
-    restsOn: ['contained',],
-    note: 'contained reads the settlements by position and keeps a failed reader\'s failure as its reading; an '
-      + 'abort is raised from the caller\'s signal',
+    restsOn: ['containFailedReaders',],
+    note: 'containFailedReaders reads the settlements by position and keeps a failed reader\'s failure as its '
+      + 'reading, but raises a refusal that ends the run; an abort is raised from the caller\'s signal',
   },
   {
     site: 'stage/stage-round.ts#runGatherRound',

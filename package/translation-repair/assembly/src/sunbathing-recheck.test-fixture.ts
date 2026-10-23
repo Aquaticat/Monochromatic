@@ -187,6 +187,7 @@ export function sunbathingOutcome(
     heardCriticIds: [],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   };
 }
 

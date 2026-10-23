@@ -619,7 +619,40 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  2026-10-18 (`slice-reading/src/pairing-cache-version.ts`). No record has been written at 43, which this change sets
  first.
 
- Version 44 covers the system text of 2026-10-22 (R4 of the third review of the Claude route): the sentence naming the
+ Version 46 covers three moves that main and the Claude route each made at a number of their own: the settlement a
+ cache may hold (`silentStages`, set as 44 on main), the system text and answer schemas of the route (set as 44
+ there) and the reader taking a capital-only difference as the listed value (set as 45 there). Both lines held 44, so
+ a merge that kept either 44 would serve a record written by the other line, and a build with the fold and without
+ `silentStages` holds 45; 46 differs from every number either line wrote, so no record of either line stands at it.
+ No record has been written at 46, which the merge sets first. The account of each move follows, each in the words
+ of the line that made it.
+
+ The settlement that may be cached (first set as 44 on main): the outcome gains `silentStages`, the stages that
+ heard fewer voices than quorum as data, and the cache refuses to write or resume a settlement that names one
+ (`repair-cache-gate.ts`, `slice-cache-store.ts`). Run XingZ6018 (2026-10-22, built on `8864316eb2`, which holds 43)
+ wrote slice-cache records at 43, among them slice 85 of `XingZ60`: five panel packets heard nobody, the panel's
+ findings began `panel-packet (cluster/...): ` and so no reader of where a finding begins saw them, and the settlement
+ with its 12 needs-human issues was cached as examined. The key hashes the version, the shape of the run and the texts,
+ not the rule that decides what may be stored, so a record written before would be served after: records stand at 43,
+ and the change cannot ride inside it, so the number moves. The reader also refuses a record that lacks the field, so
+ a record written at 43 is not resumed even by a run that kept the old number. The refine version stays at 14: its
+ key and its question are unchanged, and a refinement record embeds the outcome, so the same reader refuses one
+ that lacks the field; the refine write gate asks the same question as that reader (`refinementIsResumable`), so it
+ writes nothing the reader would discard.
+
+ THE OTHER VERSIONS STAY AT 44 ON THAT MOVE, each for its own reason (the numbers in this paragraph are those of main
+ when it was made). The lane-contest (16), consolidate (32), consistency (7) and
+ page-title (6) keys hash the texts and questions they decide over, and nothing here changes what any of them may store
+ or how it decides: a slice the repair lane redoes under 44 reaches them as a changed key when its text changes and as
+ the same answer when it does not. The translate slice version (25) stays because the translate lane never reads
+ `silentStages` and its own gate is unchanged. The pairing version (3) stays by its own account of 2026-10-18
+ (`slice-reading/src/pairing-cache-version.ts`). The artifact schema stays because an artifact is a record of a
+ finished pass and not a cache a run resumes, and no source under `artifact/src` names the field. The
+ every-provider-dry stop of the same day (`bae1bb310e`) moves no version: it changes whether the next entry starts, not
+ what a settlement may be cached as. No record has been written at 44, which this change sets first.
+
+ The system text and answer schemas (first set as 44 on the Claude route): the system text of 2026-10-22 (R4 of the
+ third review of the Claude route), where the sentence naming the
  length of the fence that encloses each block left the system text of the candidate selection
  (`adjudication/src/candidate-select-wire.ts`) and opens its user turn, because the length grows with the longest run
  of equals signs a shown text holds and so made the cached system prompt differ from call to call. The sentence is the
@@ -654,7 +687,8 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  argument that holds is the ancestry argument: no record written by code without the commit can stand at this number.
  The one bump covers both the system text and the schemas, and the number does not move twice for one release.
 
- Version 45 covers the reader of a model's reply taking a value that differs from a listed `enum` or `const` value
+ The reader taking a capital-only difference as the listed value (first set as 45 on the Claude route): the reader of a
+ model's reply takes a value that differs from a listed `enum` or `const` value
  only in capitalization as the listed value (`provider/src/enum-case-fold.ts`, run by `readJsonOutcome`). The panel,
  the critic, the introduced-defect check, the resolution check and the coverage judge list their labels as an enum
  (`adjudication/src/adjudicate-wire.ts`, `adjudication/src/critic-wire.ts`,
@@ -667,7 +701,7 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  pipeline digest differs discards the namespace before it reads it (`openNamespacedCache`), and the number is the belt
  beside that brace. The account of every cache is in the header of `provider/src/enum-case-fold.ts`.
  */
-export const SLICE_CACHE_VERSION = 45;
+export const SLICE_CACHE_VERSION = 46;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

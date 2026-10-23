@@ -78,6 +78,10 @@ mise run //package/music-player/android-app:run:release
 
 - `build:native` compiles only the release-mode Rust shared libraries for both supported ABIs.
 - `build` rebuilds the native libraries and assembles the debug APK.
+- `install` installs the debug APK under the release package name, which fails with a signature mismatch on a device
+  that holds the release-signed app.
+  Setting the environment variable `ORG_GRADLE_PROJECT_debugApplicationIdSuffix` to `.duck` installs it beside that app
+  as `dev.monochromatic.musicplayer.duck`, with its own data, so the installed app is never replaced or wiped.
 - `build:release` rebuilds the native libraries and assembles the optimized,
   non-debuggable release APK.
   The release variant uses the debug signing key so it can be installed without a separate keystore,
@@ -356,7 +360,7 @@ A Search result for a track follows the same rule (D127): `PlayerHost.openSearch
 the current track (`SearchActivation.SelectTrack`, through `activateRow`, so it also starts with the setting on) and
 toggles with `togglePlay` for the current one; `wiring/PlayerHostWiringTest` taps a result through the real host.
 The setting is stored by `SessionStore` in the `session` preferences under `auto_play_on_select`, outside `Session`
-(a missing key is off), and `AutoPlaySettingWiringTest` covers the switch row and the taps with it on and off.
+(a missing key is on, D133), and `AutoPlaySettingWiringTest` covers the switch row and the taps with it on and off.
 The desktop app follows the same rule.
 `PlayerControllerRowTest`, `PlayerControllerRowFailureTest` and `wiring/RowTapWiringTest` pin it.
 

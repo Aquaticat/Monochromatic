@@ -5,6 +5,10 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import {
+  endsTheRun,
+  parksTheRun,
+} from './stage-run-end.ts';
 
 //region Overlapped map
 // Runs one job per item with a bounded number in flight, and hands the results
@@ -24,7 +28,9 @@ import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-p
 // twin memoized by an earlier slice is registered before its twin looks for
 // it. A failure stops further items from starting; the items already in
 // flight finish, or throw under the same abort; and the error thrown is the
-// lowest position's, which is the one the sequential loop would have thrown.
+// lowest position's, which is the one the sequential loop would have thrown,
+// unless a failure ends the run (`endsTheRun`), which is thrown instead, or else one carries a NeuralWatt return the
+// pass may park on (`parksTheRun`), which is thrown instead of the lowest position's.
 // Results come back in item order whatever order the items finished in, so
 // records and findings aggregate the same way at any overlap.
 //
@@ -290,9 +296,28 @@ export async function mapOverlapped<Item, Result,>(
      */
     const earliest = Math.min(...failures.keys(),);
     /**
+     The failure to throw in place of the lowest position's, when any qualifies: the first to arrive that ends the run
+     (`endsTheRun`, which the every-provider-dry refusal holds), and only when none does the first that carries a
+     NeuralWatt return the pass may park on (`parksTheRun`). Searched in that order, so the refusal wins whichever
+     arrived first and a bench error that carries a return is not hidden behind an earlier item's ordinary failure.
+     */
+    const endingEntry = [...failures.entries(),]
+      .find(function endsRun([, error,],): boolean {
+        return endsTheRun({ error, },);
+      },)
+      ?? [...failures.entries(),]
+        .find(function mayPark([, error,],): boolean {
+          return parksTheRun({ error, },);
+        },);
+    /**
+     Position whose failure is thrown: one that ends the run wins over an earlier failure of one item, since no item
+     could be served once every provider is dry and the earlier item's own failure is not what ended the work.
+     */
+    const thrownAt = (endingEntry === undefined) ? earliest : endingEntry[0];
+    /**
      The failure thrown, which reaches the caller's own catch.
      */
-    const thrown = failures.get(earliest,);
+    const thrown = failures.get(thrownAt,);
     /**
      Logger naming this helper beneath the caller's tags.
      */
@@ -301,12 +326,21 @@ export async function mapOverlapped<Item, Result,>(
       l,
     },);
     /**
+     Why the thrown failure outranks an earlier one: it ends the run, or it names a NeuralWatt return that the run's
+     gate may park on, which this map only hands over and does not decide.
+     */
+    const winsBecause = endsTheRun({ error: thrown, },)
+      ? 'ends the run'
+      : 'names a NeuralWatt return the run\'s gate may park on';
+    /**
      Why the work ended, as each line about an unthrown failure says it: the
      caller's stop, or the failure thrown, named by its item.
      */
     const ending = signal.aborted
       ? 'and the caller stopped the work'
-      : `and the failure thrown is ${nameOf(nonNullishOrThrow(rows[earliest],),)}'s, which comes before it`;
+      : `and the failure thrown is ${nameOf(nonNullishOrThrow(rows[thrownAt],),)}'s, which ${
+        (thrownAt === earliest) ? 'comes before it' : winsBecause
+      }`;
     // Read once every lane has ended, so every failure is written in position
     // order whichever ended first, including one that ended before a stop.
     for (const row of rows) {

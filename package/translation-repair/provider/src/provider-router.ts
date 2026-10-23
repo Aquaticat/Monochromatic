@@ -16,8 +16,10 @@ import {
   readBudgetsPastHolds,
 } from './budget-hold-wait.ts';
 import {
+  EVERY_PROVIDER_COUNTS,
   type ModelReach,
   routeProviderFor,
+  type WritingReach,
 } from './budget-routing.ts';
 import {
   callHoldingRefusedCredential,
@@ -25,6 +27,10 @@ import {
   createCredentialHolds,
   reachPastCredentialHolds,
 } from './credential-hold.ts';
+import {
+  createDarkWarnings,
+  refuseDarkModel,
+} from './model-dark-reason.ts';
 import { routedDecide, } from './provider-router-decide.ts';
 import {
   reachOfRequest,
@@ -154,6 +160,9 @@ const routerRoot = contextRoot({ tag: 'translation-repair', },);
  learned once, and reads the same set for the view its seat readers use
  (`foldCredentialHolds`)
 
+ @param writing - providers whose wet reading keeps the run going, because they serve a model seated in a writing
+ bench; the run derives it from its roster, and every provider counts where none is given (`WritingReach`)
+
  @returns Client surface a stage calls without naming a provider
 
  @example
@@ -173,6 +182,7 @@ export function createRoutingClient(
     paces = {},
     l = routerRoot,
     credentialHolds = createCredentialHolds(),
+    writing = EVERY_PROVIDER_COUNTS,
   }: {
     readonly callers: ProviderCallers;
     readonly budgets: ProviderBudgets;
@@ -184,6 +194,7 @@ export function createRoutingClient(
     readonly paces?: ProviderPaces;
     readonly l?: Logger;
     readonly credentialHolds?: CredentialHolds;
+    readonly writing?: WritingReach;
   },
 ): ModelCaller {
   /**
@@ -198,6 +209,11 @@ export function createRoutingClient(
     holdMs: modelHoldMs,
     now,
   },);
+
+  /**
+   Whether the warn for a dark model is due, once per model per cooldown.
+   */
+  const darkWarnDue = createDarkWarnings({ now, },);
 
   /**
    Providers held out for one model after a call there ran past the card's
@@ -305,16 +321,21 @@ export function createRoutingClient(
     const dry = await readBudgetsPastHolds({
       budgets,
       modelId: request.modelId,
-      reach,
       signal: request.signal,
       refused,
       pollMs: holdPollMs,
+      writing,
     },);
 
     /**
      How long each pacing provider's window would make this call wait.
      */
     const waits = paceWaitsOf({ paces, },);
+
+    /**
+     What the run knows of NeuralWatt's day, for the refusal that ends the run to state when its energy returns.
+     */
+    const neuralwatt = budgets.neuralwattReturn?.();
 
     /**
      Where the owner's policy sends this call: a provider whose slots are all
@@ -329,6 +350,9 @@ export function createRoutingClient(
         saturated: ledger.saturated({ modelId: request.modelId, },),
         waits,
       },),
+      writing,
+      // Conditional spread keeps the day absent on budgets that report none.
+      ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     },);
 
     logWindowOverflow({
@@ -339,11 +363,16 @@ export function createRoutingClient(
       chosen: choice.kind,
     },);
 
-    if (choice.kind === 'unreachable')
-      throw new NoProviderForModelError({
+    // A LOST SEAT, NOT THE RUN'S END: this model alone has no provider, and the log line names the model and how each
+    // provider read so a read of the run can tell the two apart.
+    if (choice.kind === 'unreachable') {
+      refuseDarkModel({
         modelId: request.modelId,
         reason: choice.reason,
+        l,
+        warn: darkWarnDue({ modelId: request.modelId, },),
       },);
+    }
 
     // THE SLOT IS TAKEN HERE, NOT AT DISPATCH, and there must be no `await`
     // between reading `ledger.saturated` and this line. Two calls choosing at
@@ -464,18 +493,9 @@ export function createRoutingClient(
      */
     const last: { refused: ProviderName | typeof NOBODY_REFUSED; } = { refused: NOBODY_REFUSED, };
 
-    /**
-     What is left of this model's own hold, zero when it is free.
-     */
-    const heldMs = modelHolds.remainingMs({ modelId: request.modelId, },);
-    if (heldMs > 0) {
-      // REFUSED WITHOUT A CALL, so a round counts the seat unreachable and
-      // neither asks nor waits for it (class sixty-four).
-      throw new NoProviderForModelError({
-        modelId: request.modelId,
-        reason: `its upstream endpoint rate-limited this model; held out for another ${String(heldMs,)}ms`,
-      },);
-    }
+    // REFUSED WITHOUT A CALL while the model's own hold runs, so a round counts the seat unreachable and neither
+    // asks nor waits for it (class sixty-four).
+    modelHolds.refuseWhileHeld({ modelId: request.modelId, },);
 
     /**
      Which providers serve this call at all. COUNTED OVER THE REACH RATHER

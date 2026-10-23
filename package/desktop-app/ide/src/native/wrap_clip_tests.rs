@@ -212,11 +212,27 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
                 stack_fits(columns, rows),
                 "width {width} scale {scale} height {height}: a raster of {columns}x{rows} passes the limit"
             );
+            assert!(
+                clip.bottom - clip.top <= cap,
+                "width {width} scale {scale} height {height}: a clip of {} rows passes the limit of {cap}",
+                clip.bottom - clip.top
+            );
             assert_eq!(clip.top % CODE_ROW, 0.0);
             assert_eq!(clip.bottom % CODE_ROW, 0.0);
             assert!(clip.top >= 0.0 && clip.bottom <= 1_000_000.0 && clip.top < clip.bottom);
         }
     }
+    // A band as tall as the cap that starts inside a code row is rounded out by up to two rows, and is cut back to
+    // the rows the cap allows.
+    let cap = 100.0 * CODE_ROW;
+    let Some(clip) = band_clip(0.0, 1_000_000.0, (13.0, 13.0 + cap - 1.0), cap) else {
+        panic!("a million pixels of lines fit one raster");
+    };
+    assert!(
+        clip.bottom - clip.top <= cap,
+        "a clip of {} rows passes the limit of {cap}",
+        clip.bottom - clip.top
+    );
     // Lines that fit are not clipped.
     assert!(band_clip(0.0, 1000.0, (0.0, 3000.0), tile_cap(782.0, 1.0, 660.0)).is_none());
 }

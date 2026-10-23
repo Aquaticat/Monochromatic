@@ -12,11 +12,8 @@ import {
   readAliasMap,
 } from './neuralwatt-account-read.ts';
 import type { NeuralWattAliasMap, } from './neuralwatt-aliases.ts';
-import { createNeuralWattAnchorKeeper, } from './neuralwatt-day-anchor-keeper.ts';
-import {
-  type NeuralWattDayStart,
-  neuralWattDayStartAt,
-} from './neuralwatt-day.ts';
+import type { NeuralWattAnchorKeeper, } from './neuralwatt-day-anchor-keeper.ts';
+import { neuralWattDayStartAt, } from './neuralwatt-day.ts';
 import type { NeuralWattDay, } from './neuralwatt-energy.ts';
 import {
   blockedUntilOf,
@@ -62,7 +59,7 @@ const LOG_DECIMALS = 4;
 
  @example
  ```ts
- const days = createNeuralWattDaySession({ headers, baseUrl, transport, retryPolicy, quota, now, setting, },);
+ const days = createNeuralWattDaySession({ headers, baseUrl, transport, retryPolicy, quota, now, anchors, },);
  ```
  */
 export type NeuralWattDaySession = {
@@ -93,13 +90,14 @@ export type NeuralWattDaySession = {
 
  @param now - clock
 
- @param setting - the day-start setting, empty where the owner set none
+ @param anchors - the client's keeper of the day anchor, which learns it again while it is unknown; the client keeps
+ the keeper itself so that it can report what was decided without reading anything
 
  @returns Session surface
 
  @example
  ```ts
- const days = createNeuralWattDaySession({ headers, baseUrl, transport, retryPolicy, quota, now, setting, },);
+ const days = createNeuralWattDaySession({ headers, baseUrl, transport, retryPolicy, quota, now, anchors, },);
  ```
  */
 export function createNeuralWattDaySession(
@@ -110,7 +108,7 @@ export function createNeuralWattDaySession(
     retryPolicy,
     quota,
     now,
-    setting,
+    anchors,
   }: {
     readonly headers: Readonly<Record<string, string>>;
     readonly baseUrl: string;
@@ -118,7 +116,7 @@ export function createNeuralWattDaySession(
     readonly retryPolicy: RetryPolicy;
     readonly quota: NeuralWattQuotaSession;
     readonly now: () => Date;
-    readonly setting: NeuralWattDayStart;
+    readonly anchors: NeuralWattAnchorKeeper;
   },
 ): NeuralWattDaySession {
   /**
@@ -147,15 +145,6 @@ export function createNeuralWattDaySession(
     allowanceMalformed: false,
     blockedWarned: false,
   };
-
-  /**
-   Keeper of the anchor, which learns it again while it is unknown.
-   */
-  const anchors = createNeuralWattAnchorKeeper({
-    quota,
-    setting,
-    now,
-  },);
 
   /**
    Reads which names are tracking aliases of a covered model, falling back to the usage rows' own served model.

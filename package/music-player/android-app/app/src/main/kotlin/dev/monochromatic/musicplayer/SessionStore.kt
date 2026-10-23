@@ -147,7 +147,7 @@ object SessionStore {
 
     // What:     `private const val KEY_AUTO_PLAY_ON_SELECT: String = "auto_play_on_select"` names the setting key.
     // Why:      D129 keeps Auto-play on select beside the templates in this preference file; a file without the key
-    //           reads as off, so an old file loads unchanged and nothing needs migrating.
+    //           reads as on (the default), so an old file loads unchanged and nothing needs migrating.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -308,16 +308,16 @@ object SessionStore {
     }
 
     // What:     `fun loadAutoPlayOnSelect(context: Context): Boolean` reads the Auto-play on select setting.
-    // Why:      The host reads it when it first composes, and a missing key means off (D129). `warmUp` has already
+    // Why:      The host reads it when it first composes, and a missing key means on (D133). `warmUp` has already
     //           loaded the preference file, so the read is from memory and needs no cache of its own.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // function loadAutoPlayOnSelect(context: Context): boolean { return storage.getBoolean(KEY, false); }
+    // function loadAutoPlayOnSelect(context: Context): boolean { return storage.getBoolean(KEY, true); }
     // ```
-    /** Returns whether selecting a track also starts it, or false when nothing was saved. */
+    /** Returns whether selecting a track also starts it, or true when nothing was saved. */
     fun loadAutoPlayOnSelect(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_AUTO_PLAY_ON_SELECT, false)
+        prefs(context).getBoolean(KEY_AUTO_PLAY_ON_SELECT, true)
 
     // What:     `fun saveAutoPlayOnSelect(context: Context, enabled: Boolean)` writes the setting.
     // Why:      The Settings switch calls this on every toggle, so the choice survives a restart; it sits outside

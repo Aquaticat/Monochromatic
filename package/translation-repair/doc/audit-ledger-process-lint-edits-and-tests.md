@@ -622,3 +622,97 @@ an author runs a fixer only on the files it changed,
 or reports every file the fixer touched.
 `mistake-prevention.md`,
 "Lint and edits".
+
+## M289: the tests of the run-ending change were green because the pass guard sat in every call path
+
+Status:
+happened on 2026-10-22 (UTC) in the first round of B818,
+found by the review of that round (its note N7 and its should-fix S2).
+
+The first tests built their clients with the pass guard (`PassDryStop`) already in the call path.
+The guard aborts the shared signal before the error reaches any catch,
+and every layer that checks `signal.aborted` rethrows,
+so a catch that swallowed the refusal still ended the run through the guard.
+Four catches could swallow it with no guard in the path:
+the picture readers' settle,
+the stage round's grace window,
+the overlapped map's rethrow of the earliest failure,
+and the seat reader's own refusal.
+The tests and the claim "checked in the stage catches" held for the stage calls and for nothing else.
+Two run-level cases were weaker still:
+the new case of `corpus-pass-run.unit.test.ts` overrides `settle`,
+so it never runs `pass-entry.ts` and shows nothing of the in-flight entry's classification,
+and `entry-error-outcome.unit.test.ts` feeds the error class to the classifier directly,
+so nothing showed that the class arrives there unwrapped.
+Any layer that wraps the error instead of rethrowing it would have filed the entry as `resumable-failure`,
+printed a REATTEMPT line before the stop line,
+and left every test green.
+
+The fix:
+a case for each catch with a client built without the guard,
+asserting that the refusal reaches the caller unchanged (reds `b1f1196379` and `51e18a1831`),
+and a `settleEntry` case that asserts the entry hands the refusal that ended it to the run (B818).
+
+Prevention:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"A refusal that ends the run":
+a test of the claim "this error ends the run" builds its client without the guard,
+asserts the error reaches the caller unchanged,
+and adds a positive control,
+the same case with an error that does not end the run,
+which must still be contained.
+A test that overrides the function under claim shows the stub.
+
+## M290: a scripted merge of two top-level describe blocks broke three test files, and the formatter left whitespace the source scan lists
+
+Status:
+happened on 2026-10-22 (UTC) in the second round of B818 (`3dcd82ed6d`),
+repaired by `462a2d8772`.
+
+The merged test files take one top-level describe.
+A scripted merge by text substitution (a Python rewrite) broke three of them,
+and the merge left trailing whitespace on blank lines inside object literals.
+`oxlint --fix` does not strip that whitespace;
+the source scan for trailing whitespace does.
+`462a2d8772` stripped the whitespace "as the whitespace scan lists".
+
+Prevention:
+`mistake-prevention-moves-splits-and-rewrite-scripts.md`,
+"Scripted merges of test blocks":
+a merge of two describe blocks is edited by hand or with a structural tool,
+never by text substitution,
+and the source-scan `test:unit` runs after any scripted file merge.
+
+## M291: a block was added to files near the line limit, and three extractions followed the code
+
+Status:
+happened on 2026-10-22 (UTC) across `068d523090` and `3dcd82ed6d`.
+
+The `max-lines` rule (300 lines,
+comments and blank lines skipped) forced three extractions after the code was written:
+the voice-loss and shortfall findings moved to `stage-voice-lost.ts`,
+the reader contain step to `image-reading-contain.ts`,
+and the seat refusal to `run-seats-refusal.ts`.
+
+Prevention:
+`mistake-prevention-moves-splits-and-rewrite-scripts.md`,
+"Files near the line limit":
+before a block goes into a file near the limit,
+count its lines the way the rule counts them and plan the extraction first,
+as its own commit.
+
+## M292: a type guard written on a destructured catch binding tripped TS1230 and the rule against throwing non-errors
+
+Status:
+happened on 2026-10-22 (UTC) in `068d523090`,
+and was repaired in the same commit.
+
+A type guard on a destructured catch binding tripped the type checker's TS1230 and the lint rule `only-throw-error`.
+The form that passes takes `error: unknown` and narrows it with a predicate:
+`isDryRefusal` in `stage/src/stage-run-end.ts` returns `error is EveryProviderDryError`.
+
+Prevention:
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Lint and edits":
+a guard for a caught value takes it as `unknown` and returns a predicate,
+and the caller rethrows the narrowed value.

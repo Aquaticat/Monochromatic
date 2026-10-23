@@ -16,8 +16,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  EveryProviderDryError,
+  type ModelClient,
+} from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
+import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import {
   attemptStageCall,
   type StageDecision,
@@ -325,6 +329,42 @@ await describe({
           },),
           decision: DECISION,
         },),).rejects.toThrow('cat nap',);
+      },
+    },),
+
+    it({
+      name: 'CONTAINS A MODEL-DARK REFUSAL FROM THE DECISIONS ROUTE as an unreachable voice, since a dry decisions '
+        + 'endpoint costs the decision seat its voice while other providers are wet',
+      fn: async () => {
+        expect(await attemptStageCall({
+          ...SHARED,
+          client: clientWith({
+            decide: async () => {
+              throw modelDarkRefusal({ modelId: SHARED.modelId, },);
+            },
+          },),
+          decision: DECISION,
+        },),).toMatchObject({ heard: false, answered: false, unreachable: true, },);
+      },
+    },),
+
+    it({
+      name: 'THROWS an every-provider-dry refusal although the signal did not abort, since it ends the run',
+      fn: async () => {
+        /**
+         The refusal the router raised, held so the assertion proves THAT object propagated.
+         */
+        const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+
+        await expect(attemptStageCall({
+          ...SHARED,
+          client: clientWith({
+            decide: async () => {
+              throw dry;
+            },
+          },),
+          decision: DECISION,
+        },),).rejects.toBe(dry,);
       },
     },),
   ],

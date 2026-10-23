@@ -402,6 +402,20 @@ The hold is 1000 ms now.
 A client-side barrier that holds the straggler until every other seat has answered holds nothing,
 since the other seats answer synchronously and the slow part is the stage after the client returns.
 
+A case registered the router's own hold of 300000 ms for a provider
+on a view whose checker bench was short of quorum,
+and the seat reading sleeps the shortest hold it is told of when a bench is short,
+so the case slept five real minutes and then passed (ledger B817).
+The corpus-pass package's `test:unit` went from 43 to 85 s in the gates up to g137
+to 305 to 313 s in every gate from g138 on,
+and about 30 gates were read as green and went on without anyone noticing,
+since each gate counted its `[FAIL]` lines and no gate compared the time (ledger M288).
+No timer call stood in the case for a scan to read,
+because a hold reaches the sleep through a client's reader of holds.
+The fix is that no case registers a hold of a second or more:
+a case needs a hold only to be running,
+and registers 40 ms.
+
 The rule:
 a real-clock case asserts only bounds that load can widen and not break;
 a case that needs a caller asleep uses a window no stall outlasts;
@@ -421,7 +435,13 @@ or as no more than a span the case reads itself over the same work,
 up to a turn of the event loop or a timer armed after the work's own and as long,
 which no stall can make shorter than what it bounds;
 synchronous work is timed on the process's CPU clock;
-a new timing case counts as passing only once the whole suite has run it.
+a new timing case counts as passing only once the whole suite has run it;
+a hold a case registers for a provider is the short one,
+since the seat reading sleeps the hold it is told of (ledger B817);
+a gate that reads a package's `test:unit` time compares it with the same package's time in the gates before it,
+and looks into a jump before the gate counts as green,
+by reading the block durations the log prints after each block's name
+and taking a duration that matches a constant of the code under test as a sleep (ledger M288).
 A bound on scripted work is a stop for a hang,
 which no case waits for,
 documented as such where it is declared;
@@ -445,6 +465,20 @@ unless it is listed with its class and reason,
 and fails a listed bound or a deferred file the source no longer holds,
 with no file deferred since ledger B378;
 the whole unit suite run before a batch's work is called done.
+`real-clock-bounds.unit.test.ts` also reads the holds tests register for a provider (ledger B817):
+a hold of 1000 ms or more written onto a rig's `holds`,
+or given to a provider in a record that a holds reader returns or a constant named for a hold holds,
+fails the scan unless it is listed with why it sleeps nothing,
+and the three listed (`stop-landing-hook.test-fixture.ts`,
+`budget-hold-wait.unit.test.ts`,
+`run-seats-read.unit.test.ts`) each name the reason.
+It flags by size and cannot tell a hold that is slept from one that is not,
+since that depends on whether a bench is short,
+and it does not reach a hold built from a name it does not read or handed on by a parameter.
+It keys a case written as an anonymous function `<module>`,
+so it counts the holds of a file and does not locate one.
+Nothing in the repository compares a package's test time with its previous gates:
+that stays a habit of the gate (ledger M288).
 No scan reads an upper bound on elapsed time;
 review holds each to a span the case reads itself.
 Since the stage windows became a `StageSettings` value (ledger B398),

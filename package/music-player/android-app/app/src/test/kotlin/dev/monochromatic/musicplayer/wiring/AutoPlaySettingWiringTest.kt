@@ -111,7 +111,7 @@ class AutoPlaySettingWiringTest {
     /** Colors the host draws with, derived the way the app derives them. */
     private lateinit var scheme: androidx.compose.material3.ColorScheme
 
-    /** Starts every case with the setting off, as a fresh install has it, and with an idle sweep. */
+    /** Starts every case with the setting saved off, which most cases need, and with an idle sweep. */
     @Before
     fun resetProcessState() {
         SessionStore.saveAutoPlayOnSelect(context, enabled = false)
@@ -163,7 +163,18 @@ class AutoPlaySettingWiringTest {
 
     //region Settings switch row
 
-    /** The row is a switch with the title as its label, and it is off when nothing was saved. */
+    /** A fresh install, with nothing saved, shows the switch on (D133). */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun aFreshInstallShowsTheSwitchOn() {
+        context.getSharedPreferences("session", Context.MODE_PRIVATE).edit().remove("auto_play_on_select").commit()
+        showHost()
+        openSettings()
+        switchRow().assertIsOn()
+        composeTestRule.onNodeWithText("Select and play at once").assertExists()
+        assertTrue(SessionStore.loadAutoPlayOnSelect(context))
+    }
+
+    /** The row is a switch with the title as its label, and it is off when off was saved. */
     @Test(timeout = CASE_LIMIT_MS)
     fun theRowIsAnOffSwitchLabelledByItsTitle() {
         showHost()

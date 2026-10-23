@@ -11,9 +11,11 @@ and several sections point there instead of repeating it.
 
 ## What a release is
 
-One release holds three files:
+A release holds four files
+(`ide-v0.1.0` predates the ARM64 archive and holds the other three):
 
-- `ide-<version>-linux-x64.tar.gz`:
+- `ide-<version>-linux-x64.tar.gz` (Linux x86_64) and `ide-<version>-linux-arm64.tar.gz` (Linux ARM64,
+  aarch64):
   `bin/monochromatic-ide` (one executable,
   about 92 MB,
   with its grammars,
@@ -23,15 +25,24 @@ One release holds three files:
   `LICENSES/`,
   `THIRD-PARTY-LICENSES.txt`,
   and `INSTALL.txt`.
+  Each is built natively on its own runner
+  (`ubuntu-24.04` and `ubuntu-24.04-arm`).
 - `ide-<version>-third-party-licenses.txt`:
   the license notices,
-  byte for byte what `monochromatic-ide --licenses` prints and what the archive holds as `THIRD-PARTY-LICENSES.txt`.
+  byte for byte what `monochromatic-ide --licenses` prints and what each archive holds as `THIRD-PARTY-LICENSES.txt`
+  (both executables print the same notices;
+  the workflow fails if they do not).
 - `SHA256SUMS`.
 
 The tag is `ide-v<version>`.
 Every release is flagged as a pre-release.
 Every file is attested with GitHub build provenance.
-Only Linux x86_64 is built.
+Only Linux x86_64 and Linux ARM64 are built.
+
+The release `ide-v0.1.0` holds the x86_64 archive only:
+it was published before the ARM64 build existed,
+and it is immutable,
+so the ARM64 archive first ships with the version after it.
 
 Releases are immutable in this repository.
 After a release is published,
@@ -70,7 +81,9 @@ and fails loudly on:
     The build job is the long one,
     because it builds the container images and the program from empty.
 6.  Open the release page `https://github.com/Aquaticats/Monochromatic/releases/tag/ide-v<version>` and check that
-    the three files are attached and that it is marked as a pre-release.
+    the four files are attached (both archives,
+    the notices and `SHA256SUMS`) and that it is marked as a
+    pre-release.
 7.  Verify one file as a user would (see "Verifying attestations").
 
 If the tag already exists when the run starts,
@@ -112,19 +125,30 @@ Start one with `gh workflow run ide-release.yml --ref <branch> --field dry-run=t
 A dispatch from any ref other than `main` is always a dry run,
 and the run refuses `dry-run=false` there.
 
-Read these steps of the `build` job log:
+The `build` job runs once per architecture (`build (x64)` and `build (arm64)`),
+and both legs must pass before the `checksums` and `release` jobs start.
+A failed leg blocks the whole release,
+and an immutable release cannot receive the missing archive later,
+so read the log of both legs.
 
+Read these steps of each `build` leg:
+
+- "Check the runner architecture" prints the machine name the runner reports (`x86_64` or `aarch64`).
 - "Free disk space on the runner" and the later `df` lines print how much of the disk the build used.
-  The first dry run of the workflow records these numbers,
-  and the cold build time,
-  in the decision document.
+  The first dry run's numbers and the cold build time are in the decision document,
+  section "First dry run".
 - "Record the toolchain of the build image" prints `rustc`,
   `cargo` and `cargo-about` versions.
   The `rustc` line goes into the release notes.
 - "Smoke test the executable (--version)" prints `monochromatic-ide <version>`.
 - "Check the shared libraries and the glibc floor" prints the `needed` libraries and the newest glibc symbol version.
-- "Check that no software renderer is linked" ends with the line
-  `Slint software renderer is not linked into any build of this package`.
+  On x64 the list includes the dynamic loader `ld-linux-x86-64.so.2`;
+  on arm64 it is `libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6` with no loader.
+- "Check that no software renderer is linked" ends with a line that starts
+  `Slint software renderer is not linked into any build of this package`,
+  names both targets (`x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu`),
+  and says that the positive controls reach the renderer for each.
+  Both legs check both targets.
 - "Check the single executable" prints one JSON line per check and ends with
   `Bundle checks passed ... (3 of 10 checks)`.
   The other seven checks need a Wayland session and a GPU,
@@ -132,7 +156,13 @@ Read these steps of the `build` job log:
 - "Check the archive" ends with `The archive holds the verified program, its notices and a valid launcher entry.`
 
 Download a dry run's files with `gh run download <run id> --dir <new empty directory>`.
-Each `asset-*` artifact becomes a subdirectory.
+Each `asset-*` artifact becomes a subdirectory
+(`asset-linux-x64`,
+`asset-linux-arm64`,
+`asset-third-party-licenses`),
+and the run also keeps `checksums`,
+`notices-arm64` and the two `toolchain-*` artifacts,
+which are not released.
 The continuous integration run opens no window,
 so before a real release start the program from the download on a Wayland machine with a hardware GPU:
 
@@ -141,6 +171,14 @@ so before a real release start the program from the download on a Wayland machin
 tar --extract --gzip --file <download dir>/asset-linux-x64/ide-<version>-linux-x64.tar.gz --directory <extract dir>
 <extract dir>/ide-<version>-linux-x64/bin/monochromatic-ide <a project folder>
 ```
+
+On an ARM64 machine with a Wayland session and a hardware Vulkan GPU,
+do the same with `asset-linux-arm64` and `ide-<version>-linux-arm64`.
+No ARM64 machine has run the program yet (see "What is not tested"),
+so this start is the first evidence about the ARM64 build.
+If no such machine is at hand,
+whether to release without that start is the owner's call;
+the release notes state that nobody has opened the ARM64 window.
 
 The window must open and show the folder,
 and the file tree must list it.
@@ -164,6 +202,24 @@ the upload then conflicts with the file already uploaded and a fresh dispatch is
 
 Failures that belong to this workflow:
 
+- "Check the runner architecture" fails:
+  the label in the matrix (`ubuntu-24.04` or `ubuntu-24.04-arm`) no longer gives the machine the entry names.
+  Fix the matrix;
+  do not weaken the check.
+- The arm64 leg fails and the x64 leg passes (or the other way round):
+  read the failing step of that leg.
+  The steps that differ by architecture are the expected library list (`matrix.needed`) in
+  "Check the shared libraries and the glibc floor",
+  the image builds (the base image downloads an architecture-specific Zig and `cargo-nextest`),
+  and the compile itself.
+  A new library,
+  a missing or additional loader or a newer glibc symbol on one architecture only means the promise in
+  `INSTALL.txt` is wrong for it;
+  the entry "Check the shared libraries and the glibc floor" in this list says what to do.
+- The `checksums` job fails with "The arm64 executable prints other license notices than the x64 executable":
+  the two build graphs now differ in a crate that `about.toml` does not cover.
+  Both release targets must be listed in `targets` there;
+  rerun the `notices` task on each architecture and compare.
 - The step "Build the base image (terminal)" or "Build the IDE build image" fails while downloading:
   the image build fetches Zig from `ziglang.org`,
   the Rust installer from `sh.rustup.rs`,
@@ -190,7 +246,22 @@ Failures that belong to this workflow:
   the executable now needs a library or a glibc version that `INSTALL.txt`,
   the README section "What the host provides" and the release notes do not name.
   Decide whether that is intended,
-  then update those texts and the `expected` list or `GLIBC_FLOOR` in the step.
+  then update those texts and the expected list (`matrix.needed`,
+  one per architecture)
+  or `GLIBC_FLOOR` in the step.
+  The floor is one value for both architectures;
+  if only one needs a newer glibc,
+  the floor is raised for both or the check gets a per-architecture value,
+  which is a decision for the decision document.
+- "Check that no software renderer is linked" fails with `no matching package named ... found` and the note about
+  `--frozen`:
+  the cargo volume lacks a registry index entry for a crate that the positive control `slint/mcp` resolves.
+  The task fills those entries with a network pass before it checks offline;
+  if that pass could not reach the network,
+  its message says so in the log,
+  and a rerun is the cure.
+  A different message means the software renderer is linked,
+  and the tree it prints names the path.
 - "Check the single executable" fails with a named check:
   the message names the embedded file or license text that is missing or differs.
   `mise run //package/desktop-app/ide:runtime` and `notices` rebuild the inputs locally.
@@ -238,6 +309,7 @@ Each file carries build provenance that binds its bytes to this workflow run and
 ```bash
 # Verify one downloaded file; fails if the bytes were changed after the workflow built them.
 gh attestation verify ide-<version>-linux-x64.tar.gz --repo Aquaticats/Monochromatic
+gh attestation verify ide-<version>-linux-arm64.tar.gz --repo Aquaticats/Monochromatic
 
 # Compare the whole set with the checksum file (verify SHA256SUMS itself the same way).
 sha256sum --check --ignore-missing SHA256SUMS
@@ -248,7 +320,9 @@ Dry runs are not attested.
 ## What is not tested
 
 The project has run the program on Linux x86_64 under Wayland only.
-CI starts the executable with `--version` and checks its embedded files and notices,
+The ARM64 archive is built and checked natively on an ARM64 runner,
+but nobody has started its program on ARM64 hardware.
+CI starts each executable with `--version` and checks its embedded files and notices,
 and it never opens a window,
 because a runner has no display and no GPU.
 A bug report from another distribution,

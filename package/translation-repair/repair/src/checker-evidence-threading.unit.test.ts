@@ -425,6 +425,7 @@ const LOST_PATCH_OUTCOME: ChunkRepairOutcome = {
   heardCriticIds: [],
   claimAttributions: [],
   findings: [],
+  silentStages: [],
 };
 
 /**

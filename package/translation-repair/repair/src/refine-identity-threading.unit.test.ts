@@ -180,6 +180,7 @@ const OUTCOMES: readonly ChunkRepairOutcome[] = [
     heardCriticIds: [],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   },
 ];
 

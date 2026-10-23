@@ -421,7 +421,31 @@ this section is the readiness reading of it.
   Both runs printed plan energy with no NeuralWatt call (326.9 and 255.7 Wh);
   the owner said on 2026-10-22 that the dsh harness's NeuralWatt key is on the same account,
   so that figure counts the harness's use too.
-  `XingZ6018` is running.
+  `XingZ6018` ended after 62.4 min with no page
+  ([the run](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6018-run.md)):
+  Synthetic,
+  NeuralWatt and Bedrock read dry from the first reading,
+  Hyper ran out at 14:28 UTC and OpenRouter at 14:45 UTC,
+  and the router's every-provider-dry refusal was absorbed as a lost voice 990 times over 77.7 s
+  before the writing bench's floor ended the entry
+  (ledger B818;
+  B819 for the NeuralWatt time its text got wrong,
+  and B820 for a slice cached with a silent panel;
+  all fixed on 2026-10-22 UTC,
+  after the run).
+  The third Mercury recheck was clean:
+  594 streams completed with a maximum first content of 15,283 ms,
+  so 779 streams across three runs have neither been cut nor come near the 90,000 ms window,
+  which still shows neither that the window works nor that it is needed.
+  `XingZ6019` ended after 19.2 min on a build made before those fixes,
+  with editors 1 of 3 and refiners 1 of 3 reachable against a floor of 2 while NeuralWatt was dry
+  ([the record](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-xingz6019.md)).
+  The seat reader did not count NeuralWatt's known return (19:15:08 UTC,
+  48 s after the stop) as a named return,
+  so the floor stopped the entry instead of waiting (ledger B826,
+  open,
+  the fix in progress).
+  `XingZ6020` was relaunched at 19:32:29 UTC on the same build and is running.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";
