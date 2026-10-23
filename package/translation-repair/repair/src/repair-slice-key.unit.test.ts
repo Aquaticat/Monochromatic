@@ -88,7 +88,7 @@ await describe({
           + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
           + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(44,);
+        expect(SLICE_CACHE_VERSION,).toBe(45,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -176,8 +176,11 @@ await describe({
         //
         // VERSION 44 ON 2026-10-22 (the fence length left the system text of the candidate selection, R4 of the third
         // review of the Claude route): moved the same way.
+        //
+        // VERSION 45 ON 2026-10-23 (the reader takes a value that differs from a listed enum or const value only in
+        // capitalization as the listed value): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('167c783587bbd2b6ee64b8a8c7591cd45b26df54224bdca9470b167adb24a0d5',);
+          .toBe('4e049b8f1d98306dfdfb56eaed3cbd14af364d913532b8ae579048c868ef18ef',);
       },
     },),
     it({

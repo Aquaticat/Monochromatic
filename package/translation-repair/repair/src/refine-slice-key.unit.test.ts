@@ -91,12 +91,12 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: `IS AT VERSION 15 (R4 of the third review): the system text of the selection slates, the writers and `
-            + `the gates moved in this change (fence length, rendered-break counts), and the key hashes the version, `
-            + `the shape of the run and the texts, not the sheet, so only this number retires a record written under `
-            + `the sheet before`,
+          name: 'IS AT VERSION 16: the reader of a model\'s reply takes a value that differs from a listed enum or '
+            + 'const value only in capitalization as the listed value, and the key hashes the version, the shape of '
+            + 'the run and the texts, not the reader, so only this number retires a record written under the reader '
+            + 'before',
           fn: async () => {
-            expect(REFINE_CACHE_VERSION,).toBe(15,);
+            expect(REFINE_CACHE_VERSION,).toBe(16,);
           },
         },),
         it({
@@ -125,9 +125,11 @@ await describe({
             + 'answered under the old reply keys; and from 13 to 14 with the quorum rule of 2026-10-22 (ledger B816): '
             + 'a stored refinement was gathered before a short bench could close one voice fewer than every live '
             + 'seat; and from 14 to 15 with the fence length moved out of the system text of the slates, R4 of the '
-            + 'third review of the Claude route)',
+            + 'third review of the Claude route; and from 15 to 16 with the reader that takes a capitalization-only '
+            + 'difference from a listed value as the listed value: a stored refinement may rest on a round that lost '
+            + 'such a voice)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('a2f1071216e7875d6427ee63429c7353643b6e41467479787d1b7fd729b182ca',);
+            expect(refineSliceKey(BASE,),).toBe('dc6b56d4e49a54a9744cc6a573b1cdcf864df31b53ab2fbdb612cee43ab2bb97',);
           },
         },),
 

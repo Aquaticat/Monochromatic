@@ -90,11 +90,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  straggler grace ends (ledger B816).
  Version 26 moves the fence length and the rendered-break counts out of the system text into the user turn (R4 of the
  third review of the Claude route).
+ Version 27 reads a reply value that differs from a listed enum or const value only in capitalization as the listed
+ value.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = 'e1c4ca501a4c490fc774b6aaa04b53522f549f64ca096ca643e3be062343710c';
+const LEGACY_WINDOWLESS_KEY = '3aafcd70beafc75dd298bc1c1f9ef3aa58bc95bbe69cbfe076d2eddb55e3bb44';
 
 /**
  One slice's key, with whatever this case wants to vary.
@@ -127,12 +129,11 @@ await describe({
   name: translateSliceKey.name,
   children: [
     it({
-      name: `IS AT VERSION 26 (R4 of the third review): the system text of the selection slates, the writers and the `
-        + `gates moved in this change (fence length, rendered-break counts), and the key hashes the version, the `
-        + `shape of the run and the texts, not the sheet, so only this number retires a record written under the `
-        + `sheet before`,
+      name: 'IS AT VERSION 27: the reader of a model\'s reply takes a value that differs from a listed enum or const '
+        + 'value only in capitalization as the listed value, and the key hashes the version, the shape of the run and '
+        + 'the texts, not the reader, so only this number retires a record written under the reader before',
       fn: async () => {
-        expect(TRANSLATE_SLICE_CACHE_VERSION,).toBe(26,);
+        expect(TRANSLATE_SLICE_CACHE_VERSION,).toBe(27,);
       },
     },),
     it({

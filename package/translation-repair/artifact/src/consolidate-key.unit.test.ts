@@ -77,12 +77,11 @@ await describe({
   name: consolidateSliceKey.name,
   children: [
     it({
-      name: `IS AT VERSION 33 (R4 of the third review): the system text of the selection slates, the writers and the `
-        + `gates moved in this change (fence length, rendered-break counts), and the key hashes the version, the `
-        + `shape of the run and the texts, not the sheet, so only this number retires a record written under the `
-        + `sheet before`,
+      name: 'IS AT VERSION 34: the reader of a model\'s reply takes a value that differs from a listed enum or const '
+        + 'value only in capitalization as the listed value, and the key hashes the version, the shape of the run and '
+        + 'the texts, not the reader, so only this number retires a record written under the reader before',
       fn: async () => {
-        expect(CONSOLIDATE_CACHE_VERSION,).toBe(33,);
+        expect(CONSOLIDATE_CACHE_VERSION,).toBe(34,);
       },
     },),
     it({
@@ -439,8 +438,11 @@ await describe({
         // value this expectation names.
         // Version 33 (2026-10-22) moved the rendered-break counts out of the system
         // text into the user turn (R4 of the third review of the Claude route).
+        // Version 34 (2026-10-23) reads a reply value that differs from a listed
+        // enum or const value only in capitalization as the listed value, which
+        // moved this literal.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'a7f9b5ecb702518ee267ba023f94b17464edfbd89bf1b920cd2a06179fd4c452',
+          '6a36b56a69f8c798de956690d4e43fa32cb443dff77f8bad9922e57de394b1d1',
         );
       },
     },),
