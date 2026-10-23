@@ -1804,6 +1804,39 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
       re-run alone and sequentially.
     Next: when the sweep ends, re-run those three, repair the stale guards, prove each (baseline, removed, restored),
     gate, commit explicit paths, push.
+    SWEEP DONE (153 run in `sweep-each`): 147 PASS, 6 FAIL: the five above plus `minimap-chunk-size` (removed run with
+    `CHUNK_ROWS` 4096 passes `the_densest_chunks_are_not_blank`; needs a value or a test that bites). Re-run of the
+    three environment failures alone: unit `rerun3`, log `~/temp/agent/rerun3.log`.
+    `rewrap-view-past-cap` cause: with the checks removed `rewrap::begin` returns an allowance, then `render.rs`
+    defers anyway (`measure_requested` incomplete or `raster_fits` of the settled tile), and the fixture's short
+    lines are already shaped, so `shaped + rebroken == 0` holds either way; the test needs lines that must be
+    re-broken at the new width so the removed checks show `rebroken > 0`.
+    ARM64 HAND-BACK (agent `aaae391ccfc296421`, branch `feat/ide-release-linux-arm64`, tip `bdef20f6b0`, based on
+    `0fa4950b88`, nothing dispatched, version still 0.1.0): matrix `x64` on `ubuntu-24.04` and `arm64` on
+    `ubuntu-24.04-arm`, asset `ide-<version>-linux-arm64.tar.gz`, per-architecture NEEDED list (the aarch64
+    executable has no dynamic loader entry), notices from the x64 leg only with a byte comparison against the arm64
+    leg's, toolchain lines as `toolchain-*` artifacts, `inspect:no-software-renderer` checks both targets, docs and
+    decision updated. Measured by the agent under qemu-user only (not the runner); unproven until the dry run:
+    `--pids-limit`/`--ulimit` on the arm runner, disk and time of a cold arm build, `jdx/mise-action` on arm,
+    attestation and the two-leg checksums and release jobs. Agent reported a `podman system reset --force` with a
+    private storage config that caused a burst of lock errors in the default podman state; images and containers
+    looked intact. My review: read the workflow diff in full, no defect found. Next: merge in `~/temp/agent/land-arm`,
+    `actionlint`, renderer gate, push, dispatch the dry run, verify both archives, then bump to 0.1.1.
+    ARM64 LANDED (2026-10-23): merge `785e685ff9` on `origin/main`; `actionlint` and `zizmor --offline` clean, renderer
+    gate prints "not linked ... for x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu" with both positive
+    controls reaching it. Dry run `39903652488` dispatched from main (`gh workflow run ide-release.yml --ref main
+    --field dry-run=true`), bounded watch log `~/temp/agent/arm-dry-watch.log`. On green: download both archives and
+    `SHA256SUMS`, compare, then bump `package/desktop-app/ide/Cargo.toml` to 0.1.1 (the standing authorization
+    covers it) and verify the real release including `gh attestation verify` of all assets.
+    Committed `clip-rounding` test strengthening (`1b57f960de`, merge `3f220bd444`).
+    Sweep re-run of the three environment failures: `frame-fit` and `tile-stamp-names-its-clip` accepted in all three
+    phases; `refused-tile-keeps-image` is a fourth real stale guard (its `after` injects
+    `window.set_source_image(...)`, a property that no longer exists, so the removed run does not compile).
+    Guard repair agent `a0207c18495764475` (Sonnet, own worktree off `origin/main`, branch push only to
+    `fix/ide-stale-source-guards-2`; brief quotes `NLG`, `NLD`, `RXI`, `NQH`, `FHU`): repairs `tall-window-edge`,
+    `rewrap-view-past-cap`, `refused-tile-keeps-image`, `minimap-chunk-size`, each proven baseline/removed/restored.
+    On its report: read the diff, re-run the four guards myself, merge in a scratch tree, gates once (lint, test:bin,
+    one full `test:native`, test), push, remove worktree and branches, stop leftover `stalegd-*` units.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
