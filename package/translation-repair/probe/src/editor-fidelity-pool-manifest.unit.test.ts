@@ -18,11 +18,13 @@ import {
 import { CORPUS_COMMIT_SHA, } from '@monochromatic-dev/translation-repair-corpus-source';
 import {
   DEFAULT_EDITOR_TRIAL_CAP,
+  DRAWN_EDITOR_SPECS,
   EDITOR_DAMAGE_KINDS,
   EDITOR_FIDELITY_POOL,
   type FidelityReferenceSpan,
   type FidelityReferenceSpec,
   MIN_REVIEWED_REFERENCE_CHARS,
+  POOL_DRAWN_ON,
   REVIEWED_FIDELITY_REFERENCES,
 } from '../dist/final/node/index.mjs';
 
@@ -161,6 +163,16 @@ await describe({
               REVIEWED_FIDELITY_REFERENCES,
             );
             expect(EDITOR_FIDELITY_POOL.length,).toBeGreaterThan(REVIEWED_FIDELITY_REFERENCES.length,);
+          },
+        },),
+
+        it({
+          name: 'IS THE REVIEWED REFERENCES AND THE DRAW AND NOTHING ELSE, every drawn specification dated by the draw\'s '
+            + 'freeze date, so no hand-written specification sits among the drawn ones',
+          fn: async () => {
+            expect(EDITOR_FIDELITY_POOL,).toStrictEqual([...REVIEWED_FIDELITY_REFERENCES, ...DRAWN_EDITOR_SPECS,],);
+            for (const spec of DRAWN_EDITOR_SPECS)
+              expect(spec.reviewedOn,).toBe(POOL_DRAWN_ON,);
           },
         },),
 

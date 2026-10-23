@@ -97,6 +97,7 @@ export {
   differingMiddle,
   digitRunAround,
 } from './editor-fidelity-difference.ts';
+export { DRAWN_EDITOR_SPECS, } from './editor-fidelity-pool-drawn.ts';
 export { EDITOR_FIDELITY_POOL, } from './editor-fidelity-pool-manifest.ts';
 export {
   DEFAULT_POOL_SEED,
