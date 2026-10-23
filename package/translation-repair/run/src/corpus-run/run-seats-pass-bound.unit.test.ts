@@ -21,6 +21,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
+import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup';
 import {
   rejectionOf,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
@@ -184,6 +185,7 @@ await describe({
         + 'for the pass to park on',
       fn: async () => {
         const { client, } = clientBefore({ msBeforeReturn: 700, passLeftMs: 600, now: FROZEN, },);
+        const before = monotonicMs();
         const refusal = await rejectionOf({
           promise: readPhaseSeats({
             client,
@@ -193,7 +195,12 @@ await describe({
             pollMs: 5,
           },),
         },);
+        const after = monotonicMs();
         expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
+        // THE READ THAT NAMED THE RETURN IS STAMPED, so a park measures the wait from it and not from the trip.
+        const readAt = (refusal as WritingBenchUnreachableError).neuralwattReadAtMs;
+        expect(readAt,).toBeGreaterThanOrEqual(before,);
+        expect(readAt,).toBeLessThanOrEqual(after,);
         expect((refusal as WritingBenchUnreachableError).neuralwattReturnsInMs,).toBe(700,);
         expect((refusal as WritingBenchUnreachableError).neuralwattReturnsAt,).toBe('19:15:08 UTC',);
         expect((refusal as WritingBenchUnreachableError).neuralwattDryness?.kind,).toBe('spent-day',);

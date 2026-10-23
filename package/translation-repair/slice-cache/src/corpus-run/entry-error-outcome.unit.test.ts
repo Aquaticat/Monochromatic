@@ -211,6 +211,64 @@ await describe({
         },),
 
         it({
+          name: 'PRINTS AN ENTRY THE GATE PARKED FOR AS PARKED, never ERROR or INCOMPLETE, with the reason: the hook is told '
+            + 'first, the gate is then asked whether it parked, and the entry is still filed as it was',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             Whether the gate has parked, which the hook sets as the gate does.
+             */
+            const gate = { parked: false, };
+            /**
+             The bench error with the return that would lift it.
+             */
+            const withReturn = new WritingBenchUnreachableError({
+              phase: 'lanes',
+              clauses: ['editors 0 of 3 reachable, floor 2',],
+              neuralwattReturnsInMs: 301_000,
+              neuralwattReturnsAt: '19:15:08 UTC',
+            },);
+            expect(tallyCaughtEntry({
+              entryId: 'Cat',
+              error: withReturn,
+              durationMs: 5,
+              aborted: true,
+              endRun: function endRun(): void {
+                gate.parked = true;
+              },
+              parked: function parked(): boolean {
+                return gate.parked;
+              },
+            },),).toEqual({ kind: 'resumable-failure', },);
+            /**
+             The one tally line printed.
+             */
+            const [line,] = printed.lines.filter(function tally(text,): boolean {
+              return text.startsWith('TALLY ',);
+            },);
+            expect(line,).toContain('TALLY Cat status=PARKED ',);
+            expect(line,).toContain('NeuralWatt\'s energy returns at 19:15:08 UTC',);
+            expect(line,).not.toContain('status=ERROR',);
+
+            // A gate that left the error alone (the return is past the pass) leaves the entry an ERROR.
+            gate.parked = false;
+            expect(tallyCaughtEntry({
+              entryId: 'Dog',
+              error: withReturn,
+              durationMs: 5,
+              aborted: false,
+              endRun: function endRun(): void {},
+              parked: function parked(): boolean {
+                return gate.parked;
+              },
+            },),).toEqual({ kind: 'resumable-failure', },);
+            expect(printed.lines.some(function failed(text,): boolean {
+              return text.startsWith('TALLY Dog status=ERROR',);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
           name: 'FILES THE REFUSAL ALL THE SAME when the run gave no hook to tell',
           fn: async (ctx) => {
             using printed = relayingConsoleLog({ sinon: ctx.sinon, },);

@@ -115,6 +115,8 @@ function spentDayRefusal({ dayStart, }: { readonly dayStart: string; },): EveryP
 
  @param dayStart - the day start of the spent day the return is for
 
+ @param readAtMs - the instant on the gate's clock of the read that named the return, absent for an error without one
+
  @returns The error
 
  @example
@@ -126,9 +128,11 @@ function benchErrorBefore(
   {
     returnsInMs,
     dayStart = DAY_ONE,
+    readAtMs,
   }: {
     readonly returnsInMs?: number;
     readonly dayStart?: string;
+    readonly readAtMs?: number;
   },
 ): WritingBenchUnreachableError {
   return new WritingBenchUnreachableError({
@@ -140,6 +144,7 @@ function benchErrorBefore(
         neuralwattReturnsInMs: returnsInMs,
         neuralwattReturnsAt: '19:15:08 UTC',
         neuralwattDryness: { kind: 'spent-day', dayStart, returnsInMs, },
+        ...((readAtMs === undefined) ? {} : { neuralwattReadAtMs: readAtMs, }),
       }),
   },);
 }
@@ -541,6 +546,42 @@ await describe({
         expect(waits,).toEqual([301_000,],);
         expect(dryStop.parked(),).toBe(false,);
         expect(dryStop.signal.aborted,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'WAITS FROM THE READ THAT NAMED THE RETURN, NOT FROM THE TRIP: a bench error stamped with the instant the seat '
+        + 'reader read the distance is parked for the return less the 100 s the in-flight slices took to unwind, and '
+        + 'an error with no stamp is waited for from the trip',
+      fn: async () => {
+        /**
+         Milliseconds each park waited for.
+         */
+        const waits: number[] = [];
+        /**
+         Gate whose clock reads 101 s when the entry hands over its bench error.
+         */
+        const stamped = createPassDryStop({
+          passLeftMs: () => 90_000_000,
+          now: () => 101_000,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        stamped.trip({ error: benchErrorBefore({ returnsInMs: 301_000, readAtMs: 1_000, }), },);
+        await stamped.awaitPark();
+        expect(waits,).toEqual([201_000,],);
+
+        const unstamped = createPassDryStop({
+          passLeftMs: () => 90_000_000,
+          now: () => 101_000,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        unstamped.trip({ error: benchErrorBefore({ returnsInMs: 301_000, }), },);
+        await unstamped.awaitPark();
+        expect(waits,).toEqual([201_000, 301_000,],);
       },
     },),
 
