@@ -15,8 +15,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  createProviderBudgets,
   EveryProviderDryError,
   type ModelClient,
+  NOBODY_REFUSED,
+  readBudgetsPastHolds,
 } from '@monochromatic-dev/translation-repair-provider';
 import { createPassDryStop, } from '../../dist/final/node/index.mjs';
 import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
@@ -342,6 +345,61 @@ await describe({
         later.trip({ error: refusal(), },);
         expect(later.tripped(),).toBe(false,);
         expect(later.parked(),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'PARKS ON THE REFUSAL THE ROUTER MAKES AFTER WAITING OUT ANOTHER HOLD, over real budgets: Hyper held 40 ms and '
+        + 'NeuralWatt\'s spent day 600 s from starting again, past the router\'s own 300 s, so the call waits for Hyper '
+        + 'and the refusal still carries the return, which the pass has the time for',
+      fn: async () => {
+        /**
+         Milliseconds after 00:00 UTC the account's day starts at: 19:15:08 UTC.
+         */
+        const dayStartMsOfDay = 69_308_000;
+        const budgets = createProviderBudgets({
+          hyper: { credits: async () => ({ balance: 0, }), },
+          neuralwatt: {
+            energy: async () => ({
+              dayStart: '2026-10-22T19:15:08.000Z',
+              dailyWh: 550,
+              spentWh: 550,
+              reckonedWh: 0,
+              reservedWh: 0,
+              remainingWh: 0,
+              calls: 40,
+            }),
+            dayAnchor: () => ({ known: true, msOfDay: dayStartMsOfDay, }),
+          },
+          freshForMs: 600_000,
+          cooldownMs: 40,
+          wallNow: () => new Date(Date.UTC(
+            2_026,
+            9,
+            23,
+            0,
+            0,
+            0,
+            dayStartMsOfDay - 600_000,
+          ),),
+          returnMarginMs: 0,
+        },);
+        const {signal} = new AbortController();
+        await budgets.read({ signal, },);
+        await budgets.markRefused({ provider: 'hyper', signal, },);
+        const refusal = await rejectionOf(async function route(): Promise<unknown> {
+          return await readBudgetsPastHolds({
+            budgets,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            signal,
+            refused: NOBODY_REFUSED,
+            pollMs: 1,
+          },);
+        },);
+        const dryStop = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
+        dryStop.trip({ error: refusal, },);
+        expect(dryStop.tripped(),).toBe(false,);
+        expect(dryStop.parked(),).toBe(true,);
       },
     },),
 

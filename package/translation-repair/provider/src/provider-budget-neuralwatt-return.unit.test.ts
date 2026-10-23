@@ -189,6 +189,51 @@ async function heldWithin({ msBeforeReturn, }: { readonly msBeforeReturn: number
   return budgets.holds({ returnBoundMs: 300_000, },).neuralwatt;
 }
 
+/**
+ Budgets over a spent NeuralWatt day and a Hyper meter that reads dry, so a refusal holds Hyper out for `cooldownMs` while
+ every other provider is unconfigured and so dry.
+
+ @param msBeforeReturn - how long before its day starts again the wall clock reads
+
+ @param cooldownMs - how long a refusal holds Hyper out
+
+ @returns Budgets whose reading is every provider dry
+
+ @example
+ ```ts
+ const budgets = budgetsWithHyper({ msBeforeReturn: 600_000, cooldownMs: 40, },);
+ ```
+ */
+function budgetsWithHyper(
+  {
+    msBeforeReturn,
+    cooldownMs,
+  }: {
+    readonly msBeforeReturn: number;
+    readonly cooldownMs: number;
+  },
+): ReturnType<typeof createProviderBudgets> {
+  return createProviderBudgets({
+    hyper: { credits: async () => ({ balance: 0, }), },
+    neuralwatt: {
+      energy: async () => SPENT_DAY,
+      dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
+    },
+    freshForMs: FRESH_MS,
+    cooldownMs,
+    wallNow: () => new Date(Date.UTC(
+      2_026,
+      9,
+      23,
+      0,
+      0,
+      0,
+      DAY_START_MS_OF_DAY - msBeforeReturn,
+    ),),
+    returnMarginMs: 0,
+  },);
+}
+
 await describe({
   name: 'NeuralWatt dryness names its return',
   concurrency: 1,
@@ -411,6 +456,29 @@ await describe({
         expect(view.neuralwatt,).toBe(false,);
         expect(view.xiaomi,).toBe(false,);
         expect(reads.count,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE DISTANCE ON THE REFUSAL AFTER WAITING OUT ANOTHER HOLD: every provider dry, Hyper held 40 ms and '
+        + 'NeuralWatt 600 s from its day start (past the router\'s 300 s), so the call waits out Hyper and the refusal '
+        + 'still carries the distance and the time of day, which the pass parks on',
+      fn: async () => {
+        const budgets = budgetsWithHyper({ msBeforeReturn: 600_000, cooldownMs: 40, },);
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.markRefused({ provider: 'hyper', signal: SIGNAL, },);
+        const thrown = await rejectionOf(() => readBudgetsPastHolds({
+          budgets,
+          modelId: 'glm-5.3',
+          signal: SIGNAL,
+          refused: NOBODY_REFUSED,
+          pollMs: 1,
+        },),);
+        expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+        expect((thrown as Error).message,).toContain('after waiting',);
+        expect((thrown as EveryProviderDryError).neuralwattReturnsAt,).toBe('19:15:08 UTC',);
+        expect((thrown as EveryProviderDryError).neuralwattReturnsInMs,).toBeGreaterThan(590_000,);
+        expect((thrown as EveryProviderDryError).neuralwattReturnsInMs,).toBeLessThanOrEqual(600_000,);
       },
     },),
   ],
