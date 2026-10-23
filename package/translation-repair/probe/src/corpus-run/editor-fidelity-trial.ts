@@ -9,16 +9,18 @@ import {
   type EditorFidelityScore,
   scoreEditedText,
 } from '../editor-fidelity-score.ts';
+import { sheetFieldsOf, } from '../editor-fidelity-context.ts';
 import type { EditorFidelityTrial, } from '../editor-fidelity-trials.ts';
 
 //region Editor fidelity trial
 // ONE CARD SEATED ALONE ON ONE TRIAL, asked what the pipeline's editor stage asks an editor and read by what the
 // apply gate lets through.
 //
-// THE STEP IS THE STAGE'S OWN. `gatherEditorProposals` builds the sheet from the slice, the accepted issue and the
-// envelope, asks the editors through the gather (its retry rounds and its recovery round included) and gates what they
-// propose, and `runEditorStage` takes the same step before it selects. Nothing after it runs here: no critic, no
-// panel, no judge and no checker, so the only model asked is the card.
+// THE STEP IS THE STAGE'S OWN. `gatherEditorProposals` builds the sheet (with `buildEditorMessages`, the builder the
+// corpus pass uses) from the section, the accepted issue, the envelope and the context of the page, asks the editors
+// through the gather (its retry rounds and its recovery round included) and gates what they propose, and
+// `runEditorStage` takes the same step before it selects. Nothing after it runs here: no critic, no panel, no judge and
+// no checker, so the only model asked is the card.
 //
 // FOUR READINGS, EACH ITS OWN. UNUSABLE: no reply the gather could read, or edits proposed and none landed (the stage
 // drops an edit naming a region that is not on the sheet, and the apply gate refuses one that leaves its envelope or
@@ -146,6 +148,7 @@ export async function runEditorTrial(
     targetText: trial.damagedText,
     envelopes: trial.envelopes,
     issues: trial.issues,
+    ...sheetFieldsOf({ context: trial.context, },),
     signal,
     perCallTimeoutMs,
     l,

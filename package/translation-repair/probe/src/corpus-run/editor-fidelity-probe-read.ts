@@ -2,6 +2,7 @@ import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-gloss
 import { buildEditorMessages, } from '@monochromatic-dev/translation-repair-repair/ts';
 import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { sheetFieldsOf, } from '../editor-fidelity-context.ts';
 import type { EditorFidelityTrial, } from '../editor-fidelity-trials.ts';
 import {
   messageChars,
@@ -86,6 +87,7 @@ export function sheetCharsOf({ trial, }: { readonly trial: EditorFidelityTrial; 
       targetText: trial.damagedText,
       envelopes: trial.envelopes,
       issues: trial.issues,
+      ...sheetFieldsOf({ context: trial.context, },),
     },)
       .messages,
   },);

@@ -62,6 +62,15 @@ export {
   type EditorTrialReading,
   runEditorTrial,
 } from './corpus-run/editor-fidelity-trial.ts';
+export {
+  type EditorSheetContext,
+  editorSheetContextOf,
+  sheetFieldsOf,
+} from './editor-fidelity-context.ts';
+export {
+  differingMiddle,
+  digitRunAround,
+} from './editor-fidelity-difference.ts';
 export { EDITOR_FIDELITY_POOL, } from './editor-fidelity-pool-manifest.ts';
 export { insertionRegionWithNeighbours, } from './editor-fidelity-region.ts';
 export {
