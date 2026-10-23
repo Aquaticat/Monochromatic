@@ -23,6 +23,13 @@ import {
 // no dryness read. Under a hold the reading itself waits out the shortest hold
 // once when a bench the phase leans on cannot reach quorum
 // (`run-seats-read.ts`).
+//
+// A WARNING IS WRITTEN ONCE PER HOLD (round 5). A hold that cannot cure a short bench is not waited for, so every
+// slice under it reads the same short bench and the reading warns of it each time; a Xiaomi or DeepSeek hold of hours
+// over hundreds of slices wrote hundreds of identical lines. The hook still reads the seats for every slice, since a
+// provider going dry changes the seating a slice must run on whether or not its hold would cure anything, and it
+// lets a warning through once until the holds have all ended. The hook cannot skip the read on "no running hold would
+// cure": that is also the state of a hold with no short bench at all, which is the state the seating is for.
 
 /**
  What a phase takes from one seat reading: the seating its slices run on, and
@@ -82,9 +89,27 @@ export function reseatHookFor<SeatingT,>(
    Seating as last read under a hold, handed to every slice after it.
    */
   const latest: { seating: SeatingT; } = { seating: unseated, };
+  /**
+   Warnings already written under the holds now running, which a later reading under the same holds leaves unsaid.
+   */
+  const said = new Set<string>();
+  /**
+   The entry logger with a warning let through once per hold.
+   */
+  const heldLog: Logger = {
+    ...l,
+    warn: function warnOncePerHold(message: string,): void {
+      if (said.has(message,))
+        return;
+      said.add(message,);
+      l.warn(message,);
+    },
+  };
   return async function reseatBeforeSlice(): Promise<SeatingT> {
-    if (shortestHold({ holds: holdsWithinPass({ client, },), },) === 0)
+    if (shortestHold({ holds: holdsWithinPass({ client, },), },) === 0) {
+      said.clear();
       return latest.seating;
+    }
     /**
      Benches as of this slice, the reading waiting out a named hold when a
      bench the phase leans on cannot reach quorum.
@@ -93,7 +118,7 @@ export function reseatHookFor<SeatingT,>(
       client,
       phase,
       signal,
-      l,
+      l: heldLog,
     },);
     /**
      What this phase takes from that reading.

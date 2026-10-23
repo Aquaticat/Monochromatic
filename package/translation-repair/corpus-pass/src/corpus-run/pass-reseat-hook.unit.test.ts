@@ -113,6 +113,12 @@ const WIDE_ONE_SHORT: BudgetView = {
 };
 
 /**
+ How long the DeepSeek hold of the case stands, in milliseconds: under the length from which the scan of real-clock
+ bounds reads a hold as a wait, since the reading never waits for a hold that cannot cure the bench.
+ */
+const HELD_FOR_A_MOMENT = 500;
+
+/**
  The hook over a short bench with a hold that cannot cure it, whose hold the case ends by hand.
 
  @param lines - receives what the readings log
@@ -125,7 +131,7 @@ const WIDE_ONE_SHORT: BudgetView = {
  ```
  */
 function hookUnderDeepSeekHold({ lines, }: { readonly lines: string[]; },) {
-  const hold = { ms: 3_600_000, };
+  const hold = { running: true, };
   const hook = reseatHookFor({
     client: {
       providerDryness: async () => WIDE_ONE_SHORT,
@@ -134,7 +140,7 @@ function hookUnderDeepSeekHold({ lines, }: { readonly lines: string[]; },) {
         neuralwatt: 0,
         synthetic: 0,
         bedrock: 0,
-        deepseek: hold.ms,
+        deepseek: hold.running ? HELD_FOR_A_MOMENT : 0,
         xiaomi: 0,
         hyper: 0,
         openrouter: 0,
@@ -213,9 +219,9 @@ await describe({
         expect(shortWarningsOf({ lines, },),).toHaveLength(1,);
 
         // The hold ends, a slice runs free of it, and a later hold is a new one.
-        hold.ms = 0;
+        hold.running = false;
         await hook();
-        hold.ms = 3_600_000;
+        hold.running = true;
         await hook();
         await hook();
         expect(shortWarningsOf({ lines, },),).toHaveLength(2,);
