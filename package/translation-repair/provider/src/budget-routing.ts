@@ -281,8 +281,9 @@ export class EveryProviderDryError extends Error {
    @param neuralwattDryness - why NeuralWatt reads dry as the reading found it, so the refusal states only that cause;
    absent where the caller knows none
 
-   @param neuralwattReturnsInMs - milliseconds until NeuralWatt's day starts again, set ONLY BY A REFUSAL MADE BEFORE
-   ANY WAIT: the pass reads it to park until the return instead of ending the run, and a refusal after a wait names none
+   @param neuralwattReturnsInMs - milliseconds until NeuralWatt's day starts again, set WHILE THE RETURN
+   STILL LIES AHEAD, whether or not the call waited out another hold first: the pass reads it to park until the return
+   instead of ending the run, and a return that has passed (the account lagging) names none
 
    @param afterWaiting - whether the call waited for a hold before this refusal
 
@@ -360,8 +361,8 @@ export class EveryProviderDryError extends Error {
   readonly neuralwattDryness?: NeuralWattDryness;
 
   /**
-   Milliseconds until NeuralWatt's spent day starts again, margin included, present ONLY ON A REFUSAL MADE BEFORE ANY
-   WAIT: the pass parks for it when it has the time, and a refusal after a wait names none.
+   Milliseconds until NeuralWatt's spent day starts again, margin included, present while the return still lies ahead,
+   whether or not the call waited out another hold: the pass parks for it when it has the time.
    */
   readonly neuralwattReturnsInMs?: number;
 

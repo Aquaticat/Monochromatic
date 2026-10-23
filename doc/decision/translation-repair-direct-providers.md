@@ -203,7 +203,9 @@ each bounded by what can cut it.
   A return past 300 s ends the call with the all-dry refusal,
   which states the time of day and the distance (`at 19:15:08 UTC (in 5 min 1 s)`)
   and carries the distance as `neuralwattReturnsInMs`.
-  A refusal made after a wait carries none.
+  The distance stays on the refusal while the return still lies ahead,
+  also after the call waited out another hold first,
+  so the pass can park on it.
 - The seat reader sits outside every exchange,
   so no call deadline applies.
   Its bound is what the pass has left,

@@ -407,6 +407,24 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'provider/hold-reason.unit.test.ts#<module>: hold synthetic: 5_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
   'provider/provider-budget-neuralwatt-return.unit.test.ts#budgetsBefore: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: RETURN_CACHE_WINDOW, },
   'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: RETURN_CACHE_WINDOW, },
+  'provider/provider-budget-neuralwatt-return.unit.test.ts#budgetsBefore: cooldownMs: hyperCooldownMs': {
+    count: 1,
+    bound: 'reached',
+    reason: 'how long a refusal holds a dry Hyper meter out for a case that waits that hold out for real, handed in by '
+      + 'the case (40 ms), so the wait cannot end before it on any machine',
+  },
+  'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: cooldownMs: 40': {
+    count: 1,
+    bound: 'reached',
+    reason: 'how long a refusal holds a dry Hyper meter out, which the router\'s wait sleeps out for real before it '
+      + 'refuses with the NeuralWatt distance, so the refusal cannot come before it on any machine',
+  },
+  'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: freshForMs: 600_000': {
+    count: 1,
+    bound: 'other',
+    reason: 'the cache window of a budget reading, longer than the case runs so the one reading stands; the case moves '
+      + 'no clock',
+  },
   'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: statedWaitMs: 120_000': {
     count: 1,
     bound: 'read back',

@@ -94,6 +94,10 @@ const FRESH_DAY: Reading = {
 
  @param marginMs - milliseconds the budgets add to a return (none unless the case moves it)
 
+ @param staysSpent - whether every later reading still shows the spent day (default: the new day shows from the second)
+
+ @param hyperCooldownMs - when given, the fleet carries a Hyper meter that reads dry and a refusal holds it out this long
+
  @returns Budgets that trust a reading for {@link FRESH_MS} and add no margin to a return
 
  @example
@@ -109,6 +113,8 @@ function budgetsBefore(
     spent = SPENT_DAY,
     withXiaomi = false,
     marginMs = 0,
+    staysSpent = false,
+    hyperCooldownMs,
   }: {
     readonly msBeforeReturn: number;
     readonly clock?: { now: number; };
@@ -116,15 +122,21 @@ function budgetsBefore(
     readonly spent?: Reading;
     readonly withXiaomi?: boolean;
     readonly marginMs?: number;
+    readonly staysSpent?: boolean;
+    readonly hyperCooldownMs?: number;
   },
 ): ReturnType<typeof createProviderBudgets> {
   return createProviderBudgets({
     // Conditional spread keeps the fleet without a Xiaomi client where the case asks for none.
     ...(withXiaomi ? { xiaomi: { spend: async () => ({ spentUsd: 0.0042, }), }, } : {}),
+    // Conditional spread keeps the fleet without a Hyper meter where the case asks for none.
+    ...((hyperCooldownMs === undefined)
+      ? {}
+      : { hyper: { credits: async () => ({ balance: 0, }), }, cooldownMs: hyperCooldownMs, }),
     neuralwatt: {
       energy: async () => {
         reads.count += 1;
-        return (reads.count === 1) ? spent : FRESH_DAY;
+        return ((reads.count === 1) || staysSpent) ? spent : FRESH_DAY;
       },
       dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
     },
@@ -190,48 +202,35 @@ async function heldWithin({ msBeforeReturn, }: { readonly msBeforeReturn: number
 }
 
 /**
- Budgets over a spent NeuralWatt day and a Hyper meter that reads dry, so a refusal holds Hyper out for `cooldownMs` while
- every other provider is unconfigured and so dry.
+ The refusal the router throws once it has waited out the holds it can, read over the budgets of a case.
 
- @param msBeforeReturn - how long before its day starts again the wall clock reads
+ @param budgets - budgets the case built, every provider dry
 
- @param cooldownMs - how long a refusal holds Hyper out
+ @param pollMs - how often the wait reads the holds again
 
- @returns Budgets whose reading is every provider dry
+ @returns The refusal thrown
 
  @example
  ```ts
- const budgets = budgetsWithHyper({ msBeforeReturn: 600_000, cooldownMs: 40, },);
+ const thrown = await refusalAfterHolds({ budgets, pollMs: 1, },);
  ```
  */
-function budgetsWithHyper(
+async function refusalAfterHolds(
   {
-    msBeforeReturn,
-    cooldownMs,
+    budgets,
+    pollMs,
   }: {
-    readonly msBeforeReturn: number;
-    readonly cooldownMs: number;
+    readonly budgets: ReturnType<typeof createProviderBudgets>;
+    readonly pollMs: number;
   },
-): ReturnType<typeof createProviderBudgets> {
-  return createProviderBudgets({
-    hyper: { credits: async () => ({ balance: 0, }), },
-    neuralwatt: {
-      energy: async () => SPENT_DAY,
-      dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
-    },
-    freshForMs: FRESH_MS,
-    cooldownMs,
-    wallNow: () => new Date(Date.UTC(
-      2_026,
-      9,
-      23,
-      0,
-      0,
-      0,
-      DAY_START_MS_OF_DAY - msBeforeReturn,
-    ),),
-    returnMarginMs: 0,
-  },);
+): Promise<unknown> {
+  return rejectionOf(() => readBudgetsPastHolds({
+    budgets,
+    modelId: 'glm-5.3',
+    signal: SIGNAL,
+    refused: NOBODY_REFUSED,
+    pollMs,
+  },),);
 }
 
 await describe({
@@ -296,13 +295,7 @@ await describe({
         + 'instead of stopping, and the message states the time of day',
       fn: async () => {
         const budgets = budgetsBefore({ msBeforeReturn: 301_000, clock: { now: 1_000, }, reads: { count: 0, }, },);
-        const thrown = await rejectionOf(() => readBudgetsPastHolds({
-          budgets,
-          modelId: 'glm-5.3',
-          signal: SIGNAL,
-          refused: NOBODY_REFUSED,
-          pollMs: 1,
-        },),);
+        const thrown = await refusalAfterHolds({ budgets, pollMs: 1, },);
         expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
         expect((thrown as EveryProviderDryError).neuralwattReturnsInMs,).toBe(301_000,);
         expect((thrown as Error).message,).toContain('at 19:15:08 UTC',);
@@ -381,13 +374,7 @@ await describe({
           ),),
           returnMarginMs: 20,
         },);
-        const thrown = await rejectionOf(() => readBudgetsPastHolds({
-          budgets,
-          modelId: 'glm-5.3',
-          signal: SIGNAL,
-          refused: NOBODY_REFUSED,
-          pollMs: 10,
-        },),);
+        const thrown = await refusalAfterHolds({ budgets, pollMs: 10, },);
         expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
         expect((thrown as Error).message,).toContain('after waiting',);
         expect((thrown as Error).message,).toContain('at 19:15:08 UTC',);
@@ -464,16 +451,10 @@ await describe({
         + 'NeuralWatt 600 s from its day start (past the router\'s 300 s), so the call waits out Hyper and the refusal '
         + 'still carries the distance and the time of day, which the pass parks on',
       fn: async () => {
-        const budgets = budgetsWithHyper({ msBeforeReturn: 600_000, cooldownMs: 40, },);
+        const budgets = budgetsBefore({ msBeforeReturn: 600_000, reads: { count: 0, }, staysSpent: true, hyperCooldownMs: 40, },);
         await budgets.read({ signal: SIGNAL, },);
         await budgets.markRefused({ provider: 'hyper', signal: SIGNAL, },);
-        const thrown = await rejectionOf(() => readBudgetsPastHolds({
-          budgets,
-          modelId: 'glm-5.3',
-          signal: SIGNAL,
-          refused: NOBODY_REFUSED,
-          pollMs: 1,
-        },),);
+        const thrown = await refusalAfterHolds({ budgets, pollMs: 1, },);
         expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
         expect((thrown as Error).message,).toContain('after waiting',);
         expect((thrown as EveryProviderDryError).neuralwattReturnsAt,).toBe('19:15:08 UTC',);

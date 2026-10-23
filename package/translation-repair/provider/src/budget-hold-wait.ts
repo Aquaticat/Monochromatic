@@ -190,8 +190,8 @@ function measuredAt(
 }
 
 /**
- What NeuralWatt's dryness adds to the refusal that ends the call: the cause the last reading found, and for a refusal
- made before any wait the distance to a spent day's return, which the pass reads to park until it.
+ What NeuralWatt's dryness adds to the refusal that ends the call: the cause the last reading found, and the distance
+ to a spent day's return while it still lies ahead, which the pass reads to park until it.
 
  @param budgets - shared budget view, whose NeuralWatt cause is read when it reports one
 
@@ -225,9 +225,11 @@ function dryCauseOf(
     return waited ? { afterWaiting: true, } : {};
   return {
     neuralwattDryness: dryness,
-    // The distance is named only before a wait: a refusal after one has been through the return already.
-    ...(((!waited) && (dryness.kind === 'spent-day')
-      && (dryness.returnsInMs !== undefined))
+    // THE DISTANCE IS NAMED WHENEVER THE RETURN STILL LIES AHEAD, waited or not: a call that waited out another hold has
+    // not been through NeuralWatt's return, and dropping the distance there left the pass unable to park for it (R1).
+    // A return that has passed names none (the mark reads it as lag), and `waited` only words the message.
+    ...(((dryness.kind === 'spent-day') && (dryness.returnsInMs !== undefined)
+      && (dryness.returnsInMs > 0))
       ? { neuralwattReturnsInMs: dryness.returnsInMs, }
       : {}),
     ...(waited ? { afterWaiting: true, } : {}),
