@@ -1855,9 +1855,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     - `refused-tile-keeps-image`: the mutation submits an empty one-texture `TileStack` to the GPU instead of the removed
       `set_source_image`.
     - `minimap-chunk-size`: `after` is now 8192 (the test passes up to 4096 rows and fails from 5120).
-    Open from the agent: the `CHUNK_ROWS` doc comment in `src/minimap/plan.rs` is stale against these measurements
-    (2,048 rows overflow, 4,096 fit since `e5787ebfae`); the test `the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds`
-    fails at 4096 but has no guard of its own (candidate: add one). The reason for exactly 512 was not found.
+    Follow-ups from the agent's report, DONE (`3fdc6f8bb1` on `origin/main`): the `CHUNK_ROWS` doc comment in
+    `src/minimap/plan.rs` now states the measured limit (between 4,096 and 5,120 rows, a factor of eight at 512; it
+    said 2,048 overflow before `e5787ebfae`); new guard `minimap-chunk-margin` (`CHUNK_ROWS` 4096) for
+    `the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds`, baseline, removed and restored accepted;
+    `doc/planning/ide-gpu-snapshot-harness.md` gained the section "Script names after the conversion to TypeScript".
+    Lint exit 0 and `test:bin` exit 0 on that snapshot. The reason for exactly 512 was not found (any value up to
+    4096 passes the tests).
     Cleanup done: agent worktrees, `land-*` trees, branches `fix/ide-stale-source-guards-2`,
     `worktree-agent-a0207c18495764475`, `feat/ide-release-linux-arm64` (local and remote, tips verified in `origin/main`),
     sweep scratch and `ide-source-guard-*` dirs removed. Other sessions' worktrees (`agent-a563e0c526d53df51`,
