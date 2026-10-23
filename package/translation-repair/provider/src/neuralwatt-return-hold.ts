@@ -7,25 +7,31 @@ import { NEURALWATT_SMALLEST_ESTIMATE_WH, } from './neuralwatt-estimate.ts';
 import { neuralWattIsDry, } from './neuralwatt-meter.ts';
 
 //region NeuralWatt return hold
-// WHY A NEURALWATT READING IS DRY, and when it comes back. The case is XingZ6019 (2026-10-22): NeuralWatt dry at 19:14:20
-// UTC because the day's 550 Wh was spent, its day restarting at 19:15:08 UTC, 48 s later; the bench stood short of its
-// floor and the entry stopped 48 s before the energy came back. A NeuralWatt dry reading now carries its cause, and a
-// spent day carries its return as a hold (`provider-budget.ts`), so every wait that already waits out holds waits for it.
+// WHY A NEURALWATT READING IS DRY, and when it comes back. The case is XingZ6019 (2026-10-22): NeuralWatt dry at
+// 19:14:20 UTC because the day's 550 Wh was spent, its day restarting at 19:15:08 UTC, 48 s later; the bench stood
+// short of its floor and the entry stopped 48 s before the energy came back. A NeuralWatt dry reading now carries its
+// cause, and a spent day carries its return as a hold (`provider-budget.ts`), so every wait that already waits out
+// holds waits for it.
 //
-// THE DAY STARTS AT A TIME OF DAY IN UTC (`neuralwatt-day.ts`), and a UTC day is exactly 24 hours, so the distance is
-// the clock's time of day to the day start's time of day, around midnight where it must be. No instant of the wall
+// THE DAY STARTS AT A TIME OF DAY IN UTC (`neuralwatt-day.ts`), and a UTC day is exactly 24 hours, so the distance
+// is the clock's time of day to the day start's time of day, around midnight where it must be. No instant of the wall
 // clock is read as a number (`source-scan/src/wall-clock-reads.unit.test.ts`), and no calendar is needed.
 
 /**
  The longest return one router call waits for: five minutes. THE OWNER MAY VETO THE VALUE.
 
- ONLY A WAIT INSIDE A ROUTER CALL IS BOUNDED BY IT. A call carries a deadline of 360 s (`RUN_PER_CALL_TIMEOUT_MS` in the
- run package, which this package cannot import) that cuts any longer wait with an abort, so the bound is the budget
- layer's own refusal cooldown (`REFUSAL_COOLDOWN_MS`, 300 s, in `provider-budget.ts`): the longest it holds a provider on
- its own judgment, below that deadline. A return past it ends the call with the refusal, which states the time and the
+ ONLY A WAIT INSIDE A ROUTER CALL IS BOUNDED BY IT, AND THE BOUND IS A SUM. It caps every wait of one call together,
+ the holds waited out first included: what the waits so far took comes off it before the holds are asked again, so a
+ 300 s hold waited out leaves no room for a return 250 s away, which ends the call with its refusal at once.
+
+ THE 360 s CALL DEADLINE (`RUN_PER_CALL_TIMEOUT_MS` in the run package, which this package cannot import) DOES NOT REACH
+ THE ROUTER'S WAIT: it is armed inside the per-model slot of each client, after routing, and the router waits on the
+ call's own abort signal (`stage-round.ts`: the caller's abort and the straggler cut). The bound is therefore the
+ budget layer's own refusal cooldown (`REFUSAL_COOLDOWN_MS`, 300 s, in `provider-budget.ts`): the longest it holds a
+ provider on its own judgment. A return past it ends the call with the refusal, which states the time and the
  distance, and the pass parks until the return when it has the time (`pass-dry-stop.ts`). The seat reader sits outside
- every exchange, so no call deadline applies to it: it waits for a return inside what the pass has left as it waits for
- Hyper's stated holds (923 s and 2 h 25 m on record), and refuses at once for one past it (`run-seats-short-bench.ts`).
+ every exchange: it waits for a return inside what the pass has left as it waits for Hyper's stated holds (923 s and
+ 2 h 25 m on record), and refuses at once for one past it (`run-seats-short-bench.ts`).
  */
 export const NEURALWATT_RETURN_WAIT_BOUND_MS = 300_000;
 
@@ -97,8 +103,8 @@ export type NeuralWattDryness =
     };
 
 /**
- What a budget layer says of NeuralWatt's dryness beside its holds: the cause the last reading found, and whether the hold
- that keeps NeuralWatt out is its day start and not a refusal's.
+ What a budget layer says of NeuralWatt's dryness beside its holds: the cause the last reading found, and whether the
+ hold that keeps NeuralWatt out is its day start and not a refusal's.
 
  @example
  ```ts

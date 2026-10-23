@@ -225,9 +225,9 @@ function dryCauseOf(
     return waited ? { afterWaiting: true, } : {};
   return {
     neuralwattDryness: dryness,
-    // THE DISTANCE IS NAMED WHENEVER THE RETURN STILL LIES AHEAD, waited or not: a call that waited out another hold has
-    // not been through NeuralWatt's return, and dropping the distance there left the pass unable to park for it (R1).
-    // A return that has passed names none (the mark reads it as lag), and `waited` only words the message.
+    // THE DISTANCE IS NAMED WHENEVER THE RETURN STILL LIES AHEAD, waited or not: a call that waited out another hold
+    // has not been through NeuralWatt's return, and dropping the distance there left the pass unable to park for it
+    // (R1). A return that has passed names none (the mark reads it as lag), and `waited` only words the message.
     ...(((dryness.kind === 'spent-day') && (dryness.returnsInMs !== undefined)
       && (dryness.returnsInMs > 0))
       ? { neuralwattReturnsInMs: dryness.returnsInMs, }
@@ -240,9 +240,10 @@ function dryCauseOf(
  Waits out the shortest running hold, reads the budgets again, and waits again while every provider still reads dry and
  some hold still runs.
 
- EVERY HOLD IS WAITED FOR, NOT THE FIRST ALONE. One wait for the shortest hold ended the wait at a hold on a provider that
- still read dry, with a longer hold (NeuralWatt's day starting again) a few minutes behind it, and the run ended short of
- a return it had named. The only bounds are the call's abort and the holds themselves, each of which ends.
+ EVERY HOLD IS WAITED FOR, NOT THE FIRST ALONE. One wait for the shortest hold ended the wait at a hold on a provider
+ that still read dry, with a longer hold (NeuralWatt's day starting again) a few minutes behind it, and the run ended
+ short of a return it had named. The only bounds are the call's abort, the holds themselves (each of which ends), and a
+ NeuralWatt return past what the router's bound leaves.
 
  @param budgets - shared budget view
 
@@ -254,7 +255,9 @@ function dryCauseOf(
 
  @param holds - the holds as the caller read them, with at least one running
 
- @param returnBoundMs - the longest NeuralWatt return a wait takes
+ @param returnBoundMs - the longest the waits of this call take in all, for a NeuralWatt return: every millisecond
+ already waited comes off it before the holds are asked again, so a return inside the bound alone but past what is left
+ is not waited for
 
  @param writing - the providers whose wet reading keeps the run going
 
@@ -297,13 +300,14 @@ async function readAfterHolds(
   },);
 
   /**
-   The holds the next wait is taken from, how long that wait is, and the milliseconds waited so far, for the refusal that
-   ends the run after the waits.
+   The holds the next wait is taken from, how long that wait is, the milliseconds waited so far for the refusal that
+   ends the run after the waits, and how much of the NeuralWatt return bound those waits left.
    */
   const next = {
     holds,
     shortest: shortestHold({ holds, },),
     waitedMs: 0,
+    boundLeftMs: returnBoundMs,
   };
   // The loop ends by a return or a throw: every wait is a running hold, and a hold ends.
   for (;;) {
@@ -320,7 +324,7 @@ async function readAfterHolds(
       holds: next.holds,
       shortest: next.shortest,
       neuralwatt: budgets.neuralwattReturn?.() ?? UNKNOWN_DAY,
-      neuralwattHeldByReturn: budgets.neuralwattHeldByReturn?.({ returnBoundMs, }) ?? true,
+      neuralwattHeldByReturn: budgets.neuralwattHeldByReturn?.({ returnBoundMs: next.boundLeftMs, }) ?? true,
     },);
     rl.warn(
       `${modelId}: every provider is out for now (${held.join(', ',)}); `
@@ -350,7 +354,13 @@ async function readAfterHolds(
     },))
       return again;
 
-    next.holds = budgets.holds({ returnBoundMs, },);
+    // THE BOUND IS A SUM: what the waits so far took comes off it, so a return that lay inside the bound alone but lies
+    // past what is left ends the call with its refusal (and the distance) and is not waited for on top of them (R3).
+    next.boundLeftMs = Math.max(
+      0,
+      returnBoundMs - next.waitedMs,
+    );
+    next.holds = budgets.holds({ returnBoundMs: next.boundLeftMs, },);
     next.shortest = shortestHold({ holds: next.holds, },);
     if (next.shortest === 0) {
       /**
