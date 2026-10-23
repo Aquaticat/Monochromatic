@@ -181,7 +181,17 @@ await describe({
                   rejected: 0,
                   findings: [],
                 },
-                'fixed exact, nothing else touched',
+                'clean fix exact, nothing else touched',
+              ],
+              [
+                {
+                  kind: 'answered',
+                  score: { fixed: 'defect-only', collateral: true, },
+                  applied: 1,
+                  rejected: 0,
+                  findings: [],
+                },
+                'defect only, not a clean fix, collateral',
               ],
               [
                 {

@@ -43,6 +43,7 @@ import {
 import {
   EDITOR_DAMAGE_KINDS,
   EDITOR_FIDELITY_POOL,
+  editorDecisionRuleLine,
   editorFidelityTrials,
   type FidelityReferenceSpec,
   REVIEWED_FIDELITY_REFERENCES,
@@ -228,7 +229,7 @@ function fixingClient({ asked, silent, }: { readonly asked: string[]; readonly s
         )}`,);
       },);
       /**
-       The report for it: the sentence removed, or the number put back.
+       The report for it: the region with the sentence removed, or the number put back.
        */
       const report = (silent || (trial === undefined))
         ? { unrelated: true, }
@@ -236,16 +237,14 @@ function fixingClient({ asked, silent, }: { readonly asked: string[]; readonly s
           edits: [
             {
               region: 1,
-              newText: (trial.damageKind === 'insertion')
-                ? ''
-                : trial.damagedText.slice(
-                  trial.region.startOffset,
-                  trial.region.endOffset,
-                )
-                  .replace(
-                  trial.damagedDefect,
-                  trial.cleanDefect,
-                  ),
+              newText: trial.damagedText.slice(
+                trial.region.startOffset,
+                trial.region.endOffset,
+              )
+                .replace(
+                trial.damagedDefect,
+                trial.cleanDefect,
+                ),
             },
           ],
         };
@@ -577,6 +576,24 @@ await describe({
             expect(seen.lines[ceilingAt - 1],).toBe('pool: 2 trials over 1 entry (insertion 1, alteration 1)',);
           },
         },),
+
+        it({
+          name: 'STATES THE DECISION RULE BEFORE THE FIRST CALL, so the log of every arm carries the rule the arms are read '
+            + 'by and it cannot be chosen after the counts are seen',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const seen = await probeIn({
+              runsDir: scratch.path,
+              typed: ONE_CARD,
+            },);
+            const ruleAt = seen.lines.indexOf(editorDecisionRuleLine(),);
+            const firstRowAt = seen.lines.findIndex(function isRow(line,): boolean {
+              return line.startsWith('row 1 of ',);
+            },);
+            expect(ruleAt,).toBeGreaterThan(0,);
+            expect(ruleAt,).toBeLessThan(firstRowAt,);
+          },
+        },),
       ],
     },),
 
@@ -779,8 +796,19 @@ await describe({
               ),),
             ).toBe(true,);
             expect(seen.lines,).toContain(
-              `EDITOR ${LOW_CARD}: fixed 2 of 2 (exact 1, equivalent 1, defect only 0), collateral 0, missed 0, refused 0, `
-                + 'unusable 0',
+              `EDITOR ${LOW_CARD}: clean fix 2 of 2 (exact 2, equivalent 0), defect only 0, collateral 0, missed 0, `
+                + 'refused 0, unusable 0',
+            );
+            expect(seen.lines,).toContain(
+              `EDITOR ${LOW_CARD} insertion: clean fix 1 of 1 (exact 1, equivalent 0), defect only 0, collateral 0, `
+                + 'missed 0, refused 0, unusable 0',
+            );
+            expect(seen.lines,).toContain(
+              `EDITOR ${LOW_CARD} alteration: clean fix 1 of 1 (exact 1, equivalent 0), defect only 0, collateral 0, `
+                + 'missed 0, refused 0, unusable 0',
+            );
+            expect(seen.lines,).toContain(
+              `EDITOR ${LOW_CARD} defect only, not in the clean fix count: 0 of 2 (insertion 0, alteration 0)`,
             );
             expect(seen.lines.some(function isKept(line,): boolean {
               return line.startsWith('kept 2 editor rows at ',);
@@ -809,8 +837,8 @@ await describe({
             },);
             expect(seen.failures,).toStrictEqual([],);
             expect(seen.lines,).toContain(
-              `EDITOR ${LOW_CARD}: fixed 0 of 2 (exact 0, equivalent 0, defect only 0), collateral 0, missed 0, refused 0, `
-                + 'unusable 2',
+              `EDITOR ${LOW_CARD}: clean fix 0 of 2 (exact 0, equivalent 0), defect only 0, collateral 0, missed 0, `
+                + 'refused 0, unusable 2',
             );
           },
         },),

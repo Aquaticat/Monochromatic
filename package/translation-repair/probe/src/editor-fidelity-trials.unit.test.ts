@@ -62,14 +62,27 @@ await describe({
     },),
 
     it({
-      name: 'FINDS THE INSERTED SENTENCE as the region: the sentence the clean text lacks, whole, with the separators '
-        + 'left out, and the accepted issue quotes exactly that text as a target span of the accuracy/addition '
-        + 'category, which the preservation gate needs to license the sentence disappearing',
+      name: 'FINDS THE INSERTED SENTENCE and quotes it WITH THE SENTENCE EITHER SIDE of it on its line, so deleting '
+        + 'the quoted region is not the fix, and the accepted issue quotes exactly that text as a target span of the '
+        + 'accuracy/addition category, which the preservation gate needs to license the sentence disappearing',
       fn: async () => {
-        expect(INSERTION.damagedText.slice(
+        /**
+         The text the issue quotes.
+         */
+        const quoted = INSERTION.damagedText.slice(
           INSERTION.region.startOffset,
           INSERTION.region.endOffset,
-        ),).toBe(REVIEW_DONOR,);
+        );
+        expect(quoted.startsWith('The well-lit corner',),).toBe(true,);
+        expect(quoted.includes(REVIEW_DONOR,),).toBe(true,);
+        expect(quoted.endsWith('remembered the patterns each friend liked.',),).toBe(true,);
+        expect(quoted.replace(
+          INSERTION.damagedDefect,
+          '',
+        ),).toBe(REVIEW_REFERENCE.slice(
+          INSERTION.region.startOffset,
+          INSERTION.region.endOffset - INSERTION.damagedDefect.length,
+        ),);
         expect(INSERTION.cleanDefect,).toBe('',);
         expect(INSERTION.damagedDefect.trim(),).toBe(REVIEW_DONOR,);
         expect(INSERTION.issues.length,).toBe(1,);
@@ -83,8 +96,42 @@ await describe({
           side: 'target',
           startOffset: INSERTION.region.startOffset,
           endOffset: INSERTION.region.endOffset,
-          quotedText: REVIEW_DONOR,
+          quotedText: quoted,
         },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES AN INSERTION ALONE ON ITS LINE, whose quoted region would be the sentence by itself: deleting '
+        + 'the region would then be the whole fix, and the trial could not tell an editor from a reply that deletes '
+        + 'what it is shown',
+      fn: async () => {
+        /**
+         The reference with the inserted sentence moved onto lines of its own.
+         */
+        const reference = inventedReference();
+        const aloneAt = reference.referenceText.indexOf('She carefully kept',);
+        expect(function asksLoneInsertion(): void {
+          editorFidelityTrials({
+            references: [
+              {
+                ...reference,
+                damages: reference.damages.map(function alone(damage,) {
+                  return (damage.damageKind === 'insertion')
+                    ? {
+                      ...damage,
+                      damagedText: `${reference.referenceText.slice(
+                        0,
+                        aloneAt,
+                      ).trimEnd()}\n\n${REVIEW_DONOR}\n\n${reference.referenceText.slice(aloneAt,)}`,
+                    }
+                    : damage;
+                },),
+              },
+            ],
+            damageKinds: ['insertion',],
+          },);
+        },).toThrow(FidelityReferenceError,);
       },
     },),
 

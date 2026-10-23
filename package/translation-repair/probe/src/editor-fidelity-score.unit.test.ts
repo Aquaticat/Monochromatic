@@ -20,7 +20,10 @@ import {
   editorFidelityTrials,
   scoreEditedText,
 } from '../dist/final/node/index.mjs';
-import { REVIEW_REFERENCE, } from './fidelity-reference.test-fixture.ts';
+import {
+  REVIEW_DONOR,
+  REVIEW_REFERENCE,
+} from './fidelity-reference.test-fixture.ts';
 import {
   inventedReference,
   regionOf,
@@ -79,6 +82,46 @@ function patchedWith(
     + trial.damagedText.slice(trial.region.endOffset,);
 }
 
+/**
+ A trial whose inserted sentence closes the section, as the last sentence of a reviewed reference can: the clean text
+ ends where the quoted region ends in the damaged text, so a perfect edit leaves the separator that preceded the
+ inserted sentence at the end of the patched text.
+
+ @returns The trial, built from the invented reference's clean text and donor sentence
+
+ @example
+ ```ts
+ const trial = endOfSectionTrial();
+ ```
+ */
+function endOfSectionTrial(): EditorFidelityTrial {
+  /**
+   Where the last sentence of the clean text begins.
+   */
+  const lastSentenceAt = REVIEW_REFERENCE.indexOf('She carefully kept',);
+  /**
+   The clean text with the donor sentence after one space.
+   */
+  const damagedText = `${REVIEW_REFERENCE} ${REVIEW_DONOR}`;
+  return {
+    ...INSERTION,
+    cleanText: REVIEW_REFERENCE,
+    damagedText,
+    defectStart: REVIEW_REFERENCE.length + 1,
+    damagedDefect: REVIEW_DONOR,
+    cleanDefect: '',
+    region: {
+      startOffset: lastSentenceAt,
+      endOffset: damagedText.length,
+    },
+  };
+}
+
+/**
+ The end-of-section trial.
+ */
+const SECTION_END: EditorFidelityTrial = endOfSectionTrial();
+
 await describe({
   name: scoreEditedText.name,
   children: [
@@ -98,32 +141,94 @@ await describe({
           },
         },),
         it({
-          name: 'READS THE SENTENCE REMOVED as a fix equivalent up to whitespace, because the apply gate leaves the '
-            + 'separator on both sides of the removed sentence and so the patched text carries one space more than '
-            + 'the clean text, and nothing else differs',
+          name: 'READS THE SENTENCE REMOVED, its neighbours kept, as an exact fix: the quoted region is the sentence '
+            + 'with the one either side of it, so the separator on both sides of the removed sentence is inside the '
+            + 'region and the patched text is the clean text',
           fn: async () => {
             /**
-             The patch an editor that blanks the region produces.
+             The patch an editor that removes the sentence and copies the rest produces.
              */
             const patchedText = patchedWith({
               trial: INSERTION,
-              replacement: '',
+              replacement: regionOf({ trial: INSERTION, },)
+                .replace(
+                INSERTION.damagedDefect,
+                '',
+                ),
             },);
-            expect(patchedText,).not.toBe(REVIEW_REFERENCE,);
+            expect(patchedText,).toBe(REVIEW_REFERENCE,);
             expect(scoreEditedText({
               trial: INSERTION,
               patchedText,
             },),).toStrictEqual({
-              fixed: 'equivalent',
+              fixed: 'exact',
               collateral: false,
             },);
+          },
+        },),
+        it({
+          name: 'READS THE SENTENCE REMOVED WITH THE SPACE BETWEEN WORDS CHANGED as an equivalent fix',
+          fn: async () => {
             expect(scoreEditedText({
               trial: INSERTION,
               patchedText: patchedWith({
                 trial: INSERTION,
-                replacement: '  ',
+                replacement: regionOf({ trial: INSERTION, },)
+                  .replace(
+                  INSERTION.damagedDefect,
+                  '',
+                  )
+                  .replace(
+                  'The well-lit',
+                  'The  well-lit',
+                  ),
               },),
-            },).fixed,).toBe('equivalent',);
+            },),).toStrictEqual({
+              fixed: 'equivalent',
+              collateral: false,
+            },);
+          },
+        },),
+        it({
+          name: 'READS THE QUOTED REGION DELETED OR BLANKED as defect-only with collateral, not as a fix: the '
+            + 'sentence is gone but so are the two beside it, which a reply that does nothing but delete the '
+            + 'quoted text always does',
+          fn: async () => {
+            for (const replacement of ['', ' ', '\n',]) {
+              expect(scoreEditedText({
+                trial: INSERTION,
+                patchedText: patchedWith({
+                  trial: INSERTION,
+                  replacement,
+                },),
+              },),).toStrictEqual({
+                fixed: 'defect-only',
+                collateral: true,
+              },);
+            }
+          },
+        },),
+        it({
+          name: 'READS THE SENTENCE REMOVED AND A NEIGHBOUR REWORDED as defect-only with collateral',
+          fn: async () => {
+            expect(scoreEditedText({
+              trial: INSERTION,
+              patchedText: patchedWith({
+                trial: INSERTION,
+                replacement: regionOf({ trial: INSERTION, },)
+                  .replace(
+                  INSERTION.damagedDefect,
+                  '',
+                  )
+                  .replace(
+                  'discussed',
+                  'talked about',
+                  ),
+              },),
+            },),).toStrictEqual({
+              fixed: 'defect-only',
+              collateral: true,
+            },);
           },
         },),
         it({
@@ -134,7 +239,11 @@ await describe({
               trial: INSERTION,
               patchedText: patchedWith({
                 trial: INSERTION,
-                replacement: 'She travelled to a village.',
+                replacement: regionOf({ trial: INSERTION, },)
+                  .replace(
+                  INSERTION.damagedDefect,
+                  'She travelled to a distant village. ',
+                  ),
               },),
             },),).toStrictEqual({
               fixed: 'none',
@@ -152,6 +261,66 @@ await describe({
               fixed: 'none',
               collateral: false,
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'the inserted sentence that closes a section',
+      children: [
+        it({
+          name: 'READS THE LAST SENTENCE KEPT as an exact fix: the separator before the removed sentence is inside '
+            + 'the quoted region',
+          fn: async () => {
+            expect(scoreEditedText({
+              trial: SECTION_END,
+              patchedText: REVIEW_REFERENCE,
+            },),).toStrictEqual({
+              fixed: 'exact',
+              collateral: false,
+            },);
+          },
+        },),
+        it({
+          name: 'READS A FIX THAT LEAVES WHITESPACE AT THE END OF THE SECTION as equivalent with nothing else '
+            + 'touched: the apply gate joins nothing, so a separator at the end of the text is not the editor\'s '
+            + 'change to the words',
+          fn: async () => {
+            for (const ending of [' ', '\n', '\n\n',]) {
+              expect(scoreEditedText({
+                trial: SECTION_END,
+                patchedText: `${REVIEW_REFERENCE}${ending}`,
+              },),).toStrictEqual({
+                fixed: 'equivalent',
+                collateral: false,
+              },);
+            }
+          },
+        },),
+        it({
+          name: 'READS THE QUOTED REGION DELETED AT THE END OF A SECTION as defect-only with collateral, as it does '
+            + 'in the middle of one',
+          fn: async () => {
+            expect(scoreEditedText({
+              trial: SECTION_END,
+              patchedText: SECTION_END.damagedText.slice(
+                0,
+                SECTION_END.region.startOffset,
+              ),
+            },),).toStrictEqual({
+              fixed: 'defect-only',
+              collateral: true,
+            },);
+          },
+        },),
+        it({
+          name: 'READS A WORD CHANGED NEXT TO TRAILING WHITESPACE as not equivalent: only the whitespace is ignored',
+          fn: async () => {
+            expect(scoreEditedText({
+              trial: SECTION_END,
+              patchedText: `${REVIEW_REFERENCE.replace('liked', 'loved')} `,
+            },).fixed,).not.toBe('equivalent',);
           },
         },),
       ],

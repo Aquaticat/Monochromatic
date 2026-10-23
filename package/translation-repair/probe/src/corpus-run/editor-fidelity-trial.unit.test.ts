@@ -7,7 +7,7 @@
  @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
@@ -15,11 +15,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
-} from '@monochromatic-dev/translation-repair-provider';
 import { buildEditorMessages, } from '@monochromatic-dev/translation-repair-repair';
 import {
   EDITOR_DAMAGE_KINDS,
@@ -27,18 +22,15 @@ import {
   editorFidelityTrials,
   runEditorTrial,
 } from '../../dist/final/node/index.mjs';
-import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
-import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-stage/ts/stage-settings.test-fixture.ts';
 import {
   inventedReference,
   LOW_CARD,
   regionOf,
 } from '../editor-fidelity.test-fixture.ts';
-
-/**
- Logger for the trials under test.
- */
-const l = tagged({ tag: 'editor-fidelity-trial-test', },);
+import {
+  noAsks,
+  readingFor,
+} from './editor-fidelity-scripted-client.test-fixture.ts';
 
 /**
  The invented reference's trials.
@@ -62,135 +54,45 @@ const ALTERATION: EditorFidelityTrial = nonNullishOrThrow(TRIALS.find(function i
   return trial.damageKind === 'alteration';
 },),);
 
-/**
- What a scripted client was asked.
- */
-type Asked = {
-  /**
-   Model ids asked, in order.
-   */
-  readonly modelIds: string[];
-
-  /**
-   Message lists sent, in order.
-   */
-  readonly sheets: (ChatJsonRequest<unknown>['messages'])[];
-};
-
-/**
- Client answering every ask with one scripted report.
-
- @param report - what each ask returns
-
- @param asked - record the asks are appended to
-
- @returns The client the trial asks through
-
- @example
- ```ts
- const client = scriptedClient({ report: { edits: [], }, asked, },);
- ```
- */
-function scriptedClient(
-  {
-    report,
-    asked,
-  }: {
-    readonly report: unknown;
-    readonly asked: Asked;
-  },
-): ModelClient {
-  return {
-    chatText: async () => {
-      throw new Error('chatText unused',);
-    },
-    chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
-      asked.modelIds.push(request.modelId,);
-      asked.sheets.push(request.messages,);
-      if (!request.validate(report,)) {
-        return {
-          kind: 'schema-mismatch',
-          rawText: JSON.stringify(report,),
-          detail: 'scripted report failed the editor guard',
-        };
-      }
-      return {
-        kind: 'ok',
-        value: report,
-        rawText: JSON.stringify(report,),
-      };
-    },
-    quotas: async () => {
-      throw new Error('quotas unused',);
-    },
-  };
-}
-
-/**
- Runs one trial against a client answering with the report.
-
- @param trial - trial under test
-
- @param report - what the editor says
-
- @param asked - record of the asks
-
- @returns The reading
-
- @example
- ```ts
- const reading = await readingFor({ trial: INSERTION, report: { edits: [], }, asked, },);
- ```
- */
-function readingFor(
-  {
-    trial,
-    report,
-    asked,
-  }: {
-    readonly trial: EditorFidelityTrial;
-    readonly report: unknown;
-    readonly asked: Asked;
-  },
-): ReturnType<typeof runEditorTrial> {
-  return runEditorTrial({
-    client: scriptedClient({
-      report,
-      asked,
-    },),
-    cardId: LOW_CARD,
-    trial,
-    signal: new AbortController().signal,
-    perCallTimeoutMs: HANG_STOP_MS,
-    l,
-    stageSettings: SCRIPTED_STAGE_SETTINGS,
-  },);
-}
-
-/**
- A fresh record of asks.
-
- @returns Empty record
-
- @example
- ```ts
- const asked = noAsks();
- ```
- */
-function noAsks(): Asked {
-  return {
-    modelIds: [],
-    sheets: [],
-  };
-}
-
 await describe({
   name: runEditorTrial.name,
   children: [
     it({
-      name: 'READS THE SENTENCE REMOVED as fixed up to whitespace, which is the case the preservation gate could '
-        + 'wrongly refuse: removing an addition is licensed only by the quote the accepted issue carries, and the '
-        + 'trial\'s issue quotes the sentence byte for byte',
+      name: 'READS THE SENTENCE REMOVED, its neighbours kept, as an exact fix, which is the case the preservation gate '
+        + 'could wrongly refuse: removing an addition is licensed only by the quote the accepted issue carries, and '
+        + 'the trial\'s issue quotes the region byte for byte',
+      fn: async () => {
+        const reading = await readingFor({
+          trial: INSERTION,
+          report: {
+            edits: [
+              {
+                region: 1,
+                newText: regionOf({ trial: INSERTION, },)
+                  .replace(
+                  INSERTION.damagedDefect,
+                  '',
+                  ),
+              },
+            ],
+          },
+          asked: noAsks(),
+        },);
+        expect(reading.kind,).toBe('answered',);
+        if (reading.kind === 'answered') {
+          expect(reading.score,).toStrictEqual({
+            fixed: 'exact',
+            collateral: false,
+          },);
+          expect(reading.applied,).toBe(1,);
+          expect(reading.rejected,).toBe(0,);
+        }
+      },
+    },),
+
+    it({
+      name: 'READS THE QUOTED REGION DELETED as a fix of the defect that also took its neighbours: not a clean fix, '
+        + 'because the sentence either side of the inserted one went with it',
       fn: async () => {
         const reading = await readingFor({
           trial: INSERTION,
@@ -204,15 +106,10 @@ await describe({
           },
           asked: noAsks(),
         },);
-        expect(reading.kind,).toBe('answered',);
-        if (reading.kind === 'answered') {
-          expect(reading.score,).toStrictEqual({
-            fixed: 'equivalent',
-            collateral: false,
-          },);
-          expect(reading.applied,).toBe(1,);
-          expect(reading.rejected,).toBe(0,);
-        }
+        expect((reading.kind === 'answered') && reading.score,).toStrictEqual({
+          fixed: 'defect-only',
+          collateral: true,
+        },);
       },
     },),
 

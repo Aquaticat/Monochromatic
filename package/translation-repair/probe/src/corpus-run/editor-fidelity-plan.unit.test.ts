@@ -12,7 +12,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  editorDecisionRuleLine,
+  editorDefectOnlyLine,
   editorKeptLine,
+  editorKindLines,
   editorPreflightLine,
   type EditorFidelityRow,
   editorTallyLine,
@@ -41,17 +44,19 @@ function rowOf(
   {
     cardId,
     reading,
+    damageKind = 'insertion',
   }: {
     readonly cardId: string;
     readonly reading: EditorFidelityRow['reading'];
+    readonly damageKind?: EditorFidelityRow['damageKind'];
   },
 ): EditorFidelityRow {
   return {
     cardId,
-    trialId: 'tabby-reference/insertion',
+    trialId: `tabby-reference/${damageKind}`,
     referenceId: 'tabby-reference',
     entryId: 'tabby',
-    damageKind: 'insertion',
+    damageKind,
     changedChars: 12,
     damageDetail: 'inserted a borrowed sentence of 12 characters',
     reading,
@@ -77,6 +82,7 @@ const ROWS: readonly EditorFidelityRow[] = [
   },),
   rowOf({
     cardId: LOW_CARD,
+    damageKind: 'alteration',
     reading: {
       kind: 'answered',
       score: {
@@ -103,6 +109,7 @@ const ROWS: readonly EditorFidelityRow[] = [
   },),
   rowOf({
     cardId: LOW_CARD,
+    damageKind: 'alteration',
     reading: {
       kind: 'answered',
       score: {
@@ -129,6 +136,7 @@ const ROWS: readonly EditorFidelityRow[] = [
   },),
   rowOf({
     cardId: LOW_CARD,
+    damageKind: 'alteration',
     reading: {
       kind: 'refused',
       findings: [],
@@ -159,8 +167,9 @@ await describe({
       name: editorTallyOf.name,
       children: [
         it({
-          name: 'COUNTS EACH WAY A TRIAL READS APART, for the card alone: fixed with its three kinds, collateral on any '
-            + 'answered trial, missed, refused and unusable, out of the card\'s trials, and the parts add up to the whole',
+          name: 'COUNTS EACH WAY A TRIAL READS APART, for the card alone and for each kind of defect: the clean fix is exact '
+            + 'plus equivalent and leaves out defect-only, collateral counts any answered trial, and missed, refused and '
+            + 'unusable are out of the card\'s trials',
           fn: async () => {
             expect(editorTallyOf({
               cardId: LOW_CARD,
@@ -168,7 +177,7 @@ await describe({
             },),).toStrictEqual({
               cardId: LOW_CARD,
               trials: 7,
-              fixed: 3,
+              fixed: 2,
               exact: 1,
               equivalent: 1,
               defectOnly: 1,
@@ -176,6 +185,28 @@ await describe({
               missed: 2,
               refused: 1,
               unusable: 1,
+              byKind: {
+                insertion: {
+                  trials: 4,
+                  exact: 1,
+                  equivalent: 0,
+                  defectOnly: 1,
+                  collateral: 1,
+                  missed: 1,
+                  refused: 0,
+                  unusable: 1,
+                },
+                alteration: {
+                  trials: 3,
+                  exact: 0,
+                  equivalent: 1,
+                  defectOnly: 0,
+                  collateral: 1,
+                  missed: 1,
+                  refused: 1,
+                  unusable: 0,
+                },
+              },
             },);
             expect(editorTallyOf({
               cardId: HIGH_CARD,
@@ -191,6 +222,28 @@ await describe({
               missed: 0,
               refused: 1,
               unusable: 0,
+              byKind: {
+                insertion: {
+                  trials: 1,
+                  exact: 0,
+                  equivalent: 0,
+                  defectOnly: 0,
+                  collateral: 0,
+                  missed: 0,
+                  refused: 1,
+                  unusable: 0,
+                },
+                alteration: {
+                  trials: 0,
+                  exact: 0,
+                  equivalent: 0,
+                  defectOnly: 0,
+                  collateral: 0,
+                  missed: 0,
+                  refused: 0,
+                  unusable: 0,
+                },
+              },
             },);
           },
         },),
@@ -211,7 +264,8 @@ await describe({
       name: editorTallyLine.name,
       children: [
         it({
-          name: 'SAYS EVERY COUNT and what it is out of, in one line a log search finds',
+          name: 'SAYS EVERY COUNT and what it is out of, in one line a log search finds, with the clean fix first and '
+            + 'defect-only apart from it',
           fn: async () => {
             expect(editorTallyLine({
               tally: editorTallyOf({
@@ -219,8 +273,67 @@ await describe({
                 rows: ROWS,
               },),
             },),).toBe(
-              `EDITOR ${LOW_CARD}: fixed 3 of 7 (exact 1, equivalent 1, defect only 1), collateral 2, missed 2, refused 1, `
-                + 'unusable 1',
+              `EDITOR ${LOW_CARD}: clean fix 2 of 7 (exact 1, equivalent 1), defect only 1, collateral 2, missed 2, `
+                + 'refused 1, unusable 1',
+            );
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: editorKindLines.name,
+      children: [
+        it({
+          name: 'SAYS THE SAME COUNTS FOR EACH KIND OF DEFECT in its own line, insertion first, so an arm that '
+            + 'solves one kind and not the other is seen',
+          fn: async () => {
+            expect(editorKindLines({
+              tally: editorTallyOf({
+                cardId: LOW_CARD,
+                rows: ROWS,
+              },),
+            },),).toStrictEqual([
+              `EDITOR ${LOW_CARD} insertion: clean fix 1 of 4 (exact 1, equivalent 0), defect only 1, collateral 1, `
+                + 'missed 1, refused 0, unusable 1',
+              `EDITOR ${LOW_CARD} alteration: clean fix 1 of 3 (exact 0, equivalent 1), defect only 0, collateral 1, `
+                + 'missed 1, refused 1, unusable 0',
+            ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: editorDefectOnlyLine.name,
+      children: [
+        it({
+          name: 'SAYS THE DEFECT-ONLY COUNT ON A LINE OF ITS OWN, as not part of the clean fix count, with its kinds',
+          fn: async () => {
+            expect(editorDefectOnlyLine({
+              tally: editorTallyOf({
+                cardId: LOW_CARD,
+                rows: ROWS,
+              },),
+            },),).toBe(
+              `EDITOR ${LOW_CARD} defect only, not in the clean fix count: 1 of 7 (insertion 1, alteration 0)`,
+            );
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: editorDecisionRuleLine.name,
+      children: [
+        it({
+          name: 'STATES WHICH COUNTS ARE COMPARED, WHAT DIFFERENCE COUNTS AND WHAT A TIE KEEPS, in one line',
+          fn: async () => {
+            expect(editorDecisionRuleLine(),).toBe(
+              'RULE clean fix is exact plus equivalent, read pooled and per kind of defect; an effort differs from the '
+                + 'default (medium) only when its pooled clean fix count is further from the mean of the two medium '
+                + 'arms than the larger of 3 and the two medium arms\' own difference, and neither kind moves against '
+                + 'it; any other difference, and any tie, keeps the default effort',
             );
           },
         },),
