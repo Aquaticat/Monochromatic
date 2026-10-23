@@ -636,6 +636,40 @@ await describe({
         },),
 
         it({
+          name: 'STATES THE WEEKLY RETURN when the weekly budget is spent, and only then, so a dry reading names when it ends',
+          fn: async () => {
+            expect(syntheticMeterLevel({
+              quota: {
+                weekly: {
+                  percentRemaining: 0,
+                  nextRegenAt: '2026-10-23T05:03:47.000Z',
+                  nextRegenPercent: 2,
+                },
+              },
+            },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=none',
+              'syntheticThrottled=none',
+              'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
+            ],);
+            expect(syntheticMeterLevel({
+              quota: {
+                ...roomyQuota,
+                weekly: {
+                  percentRemaining: 0,
+                  nextRegenAt: '2026-08-25T00:12:58.000Z',
+                },
+              },
+            },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=750/750',
+              'syntheticThrottled=no',
+              'syntheticWeeklyReturn=2026-08-25T00:12:58.000Z',
+            ],);
+          },
+        },),
+
+        it({
           name: 'separates active throttling from an emptied budget, which route the same way',
           fn: async () => {
             /**

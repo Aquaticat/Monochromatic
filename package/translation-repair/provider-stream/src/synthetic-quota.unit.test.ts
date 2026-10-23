@@ -69,6 +69,17 @@ const FIVE_HOUR_TEXT = '{"remaining":613.4,"max":640,"limited":false,"nextTickAt
 const WEEKLY_TEXT = '{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}';
 
 /**
+ Body of the live reading of 2026-10-23 at 03:28:16 UTC (HTTP 200, 269 characters): the weekly block is named
+ `planWeeklyLimit` and carries `nextRegenPercent`, there is no `weeklyTokenLimit`, no `freeToolCalls` and no five-hour
+ block. The values of `planWeeklyLimit` are the measured ones; the other blocks hold the measured key types with invented numbers.
+ */
+const RENAMED_WEEKLY_SHAPE = JSON.stringify({
+  subscription: { limit: 640, requests: 3, renewsAt: '2026-10-24T03:00:00.000Z', },
+  search: { hourly: { limit: 200, requests: 0, renewsAt: '2026-10-23T04:00:00.000Z', }, },
+  planWeeklyLimit: { nextRegenAt: '2026-10-23T05:03:47.000Z', percentRemaining: 0, nextRegenPercent: 2, },
+},);
+
+/**
  Message a body is refused with.
 
  @param bodyText - raw body handed to the parser
@@ -107,6 +118,100 @@ await describe({
           snapshot,
           'fiveHour',
         ),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS THE WEEKLY BLOCK FROM `planWeeklyLimit`, the name of the live reading of 2026-10-23, and keeps its '
+        + '`nextRegenPercent`',
+      fn: async () => {
+        /**
+         Snapshot read from the measured body.
+         */
+        const snapshot = parseQuotaSnapshot({ bodyText: RENAMED_WEEKLY_SHAPE, },);
+        expect(snapshot,).toEqual({
+          weekly: {
+            percentRemaining: 0,
+            nextRegenAt: '2026-10-23T05:03:47.000Z',
+            nextRegenPercent: 2,
+          },
+        },);
+        expect(Object.hasOwn(
+          snapshot,
+          'fiveHour',
+        ),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS `nextRegenPercent` from a `weeklyTokenLimit` block that carries it, and leaves the property absent where '
+        + 'the block does not',
+      fn: async () => {
+        /**
+         Snapshot of a body whose older-named block carries the percent.
+         */
+        const carrying = parseQuotaSnapshot({
+          bodyText: '{"weeklyTokenLimit":{"percentRemaining":50,"nextRegenAt":"2026-10-23T05:03:47.000Z","nextRegenPercent":2}}',
+        },);
+        expect(carrying.weekly,).toEqual({
+          percentRemaining: 50,
+          nextRegenAt: '2026-10-23T05:03:47.000Z',
+          nextRegenPercent: 2,
+        },);
+        expect(Object.hasOwn(
+          parseQuotaSnapshot({ bodyText: `{"weeklyTokenLimit":${WEEKLY_TEXT}}`, },).weekly,
+          'nextRegenPercent',
+        ),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS BOTH WEEKLY NAMES when the two blocks read the same, and REFUSES them when they differ, naming both blocks\' '
+        + 'keys and no value',
+      fn: async () => {
+        expect(parseQuotaSnapshot({
+          bodyText: `{"weeklyTokenLimit":${WEEKLY_TEXT},"planWeeklyLimit":${WEEKLY_TEXT}}`,
+        },).weekly,).toEqual({
+          percentRemaining: 87.5,
+          nextRegenAt: '2026-07-17T00:10:00.000Z',
+        },);
+        expect(refusalOf({
+          bodyText: '{"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"},'
+            + '"planWeeklyLimit":{"percentRemaining":0,"nextRegenAt":"2026-10-23T05:03:47.000Z","nextRegenPercent":2}}',
+        },),).toBe(
+          'Synthetic /quotas body violated expectations: weeklyTokenLimit and planWeeklyLimit are both present and read '
+            + 'differently; received weeklyTokenLimit:object, planWeeklyLimit:object; weeklyTokenLimit holds '
+            + 'percentRemaining:number, nextRegenAt:string; planWeeklyLimit holds '
+            + 'percentRemaining:number, nextRegenAt:string, nextRegenPercent:number',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES A BODY WITH NEITHER WEEKLY NAME, naming both candidates and the keys the body held',
+      fn: async () => {
+        expect(refusalOf({ bodyText: '{"subscription":{"limit":1},"search":{"hourly":{}}}', },),).toBe(
+          'Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received '
+            + 'subscription:object, search:object',
+        );
+      },
+    },),
+
+    it({
+      name: 'NAMES `planWeeklyLimit` AND ITS OWN KEYS when a field inside that block is refused, and refuses a mistyped '
+        + '`nextRegenPercent`',
+      fn: async () => {
+        expect([
+          refusalOf({ bodyText: '{"planWeeklyLimit":{"percentRemaining":"0","nextRegenAt":"x"}}', },),
+          refusalOf({ bodyText: '{"planWeeklyLimit":{"percentRemaining":0,"nextRegenAt":"x","nextRegenPercent":"2"}}', },),
+          refusalOf({ bodyText: '{"planWeeklyLimit":"nope"}', },),
+        ],).toEqual([
+          'Synthetic /quotas body violated expectations: planWeeklyLimit.percentRemaining is not a number; received '
+            + 'planWeeklyLimit:object; planWeeklyLimit holds percentRemaining:string, nextRegenAt:string',
+          'Synthetic /quotas body violated expectations: planWeeklyLimit.nextRegenPercent is not a number; received '
+            + 'planWeeklyLimit:object; planWeeklyLimit holds percentRemaining:number, nextRegenAt:string, nextRegenPercent:string',
+          'Synthetic /quotas body violated expectations: planWeeklyLimit is not an object; received planWeeklyLimit:string',
+        ],);
       },
     },),
 
@@ -157,10 +262,10 @@ await describe({
       name: 'REFUSES a body without the weekly block even when it carries a five-hour block, since the weekly budget always decides',
       fn: async () => {
         expect(refusalOf({ bodyText: `{"rollingFiveHourLimit":${FIVE_HOUR_TEXT}}`, },),).toBe(
-          'Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received rollingFiveHourLimit:object',
+          'Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received rollingFiveHourLimit:object',
         );
         expect(refusalOf({ bodyText: '{"subscription":{"limit":1}}', },),).toBe(
-          'Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received subscription:object',
+          'Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received subscription:object',
         );
       },
     },),
@@ -374,7 +479,7 @@ await describe({
           refusalOf({ bodyText: '{"weeklyTokenLimit":{"percentRemaining":87}}', },),
           refusalOf({ bodyText: '<html>maintenance</html>', },),
         ],).toEqual([
-          'Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received {}',
+          'Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received {}',
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
             + 'rollingFiveHourLimit:string, weeklyTokenLimit:number, search:null, x:array, y:boolean',
           'Synthetic /quotas body violated expectations: body is not a JSON object; received array',
@@ -443,7 +548,7 @@ await describe({
         for (let at = 0; at < 20; at += 1)
           wide[`k${String(at,)}`] = at;
         expect(refusalOf({ bodyText: JSON.stringify(wide,), },),).toBe(
-          `Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received ${'a'.repeat(40,)}:number, `
+          `Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received ${'a'.repeat(40,)}:number, `
             + '??:string, k0:number, k1:number, k2:number, k3:number, k4:number, k5:number, k6:number, k7:number, k8:number, k9:number, '
             + 'k10:number, k11:number, k12:number, k13:number, k14:number, k15:number, k16:number, k17:number, and 2 more',
         );

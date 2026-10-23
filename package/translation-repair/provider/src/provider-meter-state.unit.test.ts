@@ -21,8 +21,12 @@ import {
   parseQuotaSnapshot,
   ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream';
+import { recordedTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts/recorded-transport.test-fixture.ts';
 import {
+  createProviderBudgets,
+  createSyntheticClient,
   meterRecordOf,
+  readEveryMeter,
   routesAsDry,
 } from '../dist/final/node/index.mjs';
 import { warnLinesDuring, } from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
@@ -34,6 +38,17 @@ import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixtur
 class MeterUnreachableError extends Error {
   public override readonly name = 'MeterUnreachableError';
 }
+
+/**
+ Body of the live reading of 2026-10-23 at 03:28:16 UTC (HTTP 200, 269 characters): the weekly block is named
+ `planWeeklyLimit`, spent to 0 %, and the body holds no `weeklyTokenLimit`. The values of `planWeeklyLimit` are the measured
+ ones; the other blocks hold the measured key types with invented numbers.
+ */
+const SPENT_RENAMED_WEEKLY_BODY = JSON.stringify({
+  subscription: { limit: 640, requests: 3, renewsAt: '2026-10-24T03:00:00.000Z', },
+  search: { hourly: { limit: 200, requests: 0, renewsAt: '2026-10-23T04:00:00.000Z', }, },
+  planWeeklyLimit: { nextRegenAt: '2026-10-23T05:03:47.000Z', percentRemaining: 0, nextRegenPercent: 2, },
+},);
 
 await describe({
   name: '',
@@ -226,11 +241,11 @@ await describe({
             expect(lines,).toEqual([
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
-                  + 'violated expectations: weeklyTokenLimit is not an object; received {})',
+                  + 'violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received {})',
               ],
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
-                  + 'violated expectations: weeklyTokenLimit is not an object; received subscription:object, freeToolCalls:object)',
+                  + 'violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received subscription:object, freeToolCalls:object)',
               ],
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
@@ -282,6 +297,45 @@ await describe({
               state: 'unreadable',
               fields: [],
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'the Synthetic meter on the body that renamed the weekly block',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS DRY, NOT UNREADABLE, from a real client on the measured body, and STATES the return the body names',
+          fn: async () => {
+            const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText: SPENT_RENAMED_WEEKLY_BODY, },], },);
+            const meters = await readEveryMeter({
+              synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+            },);
+
+            expect(meters.synthetic,).toEqual({
+              state: 'dry',
+              fields: [
+                'syntheticWeekly=0%',
+                'syntheticFiveHour=none',
+                'syntheticThrottled=none',
+                'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
+              ],
+            },);
+          },
+        },),
+
+        it({
+          name: 'ROUTES SYNTHETIC AS DRY and reports the dry state to the seat reader, from the budget layer over a real client',
+          fn: async () => {
+            const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText: SPENT_RENAMED_WEEKLY_BODY, },], },);
+            const budgets = createProviderBudgets({ synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },), },);
+            const signal = AbortSignal.timeout(HANG_STOP_MS,);
+
+            expect((await budgets.read({ signal, },)).synthetic,).toBe(true,);
+            expect((await budgets.readStates({ signal, },)).synthetic,).toBe('dry',);
           },
         },),
       ],
