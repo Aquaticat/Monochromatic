@@ -30,6 +30,7 @@ const SEATABLE_IDS = 'seatable ids';
  */
 export type EditorFidelityCommandLines = {
   readonly 'editor-fidelity-pool-draw': CommandLineSpec<'seed' | 'want' | 'out', never, 'check'>;
+  readonly 'editor-fidelity-read': CommandLineSpec<never, never, never>;
   readonly 'editor-fidelity-probe': CommandLineSpec<
     'only' | 'cap' | 'damage' | 'candidates' | 'max-usd' | 'bench-spent-usd',
     never,
@@ -58,6 +59,16 @@ export const EDITOR_FIDELITY_COMMAND_LINES: EditorFidelityCommandLines = {
       names: [],
       least: 0,
       rest: false,
+    },
+  },
+  'editor-fidelity-read': {
+    valued: {},
+    repeatable: {},
+    switches: {},
+    positionals: {
+      names: ['arm log',],
+      least: 1,
+      rest: true,
     },
   },
   'editor-fidelity-probe': {

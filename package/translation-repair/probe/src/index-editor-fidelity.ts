@@ -50,6 +50,35 @@ export {
   scoreableVerdict,
 } from './corpus-run/editor-fidelity-pool-verdict.ts';
 export {
+  type Answer,
+  ceilingAnswer,
+  editorAnswer,
+  errorAnswer,
+  exitAnswer,
+  guardAnswer,
+  manifestAnswer,
+  poolAnswer,
+  rowAnswer,
+  seatAnswer,
+  spendAnswer,
+} from './corpus-run/editor-fidelity-arm-answers.ts';
+export {
+  type ArmCheckReport,
+  checkEditorArms,
+} from './corpus-run/editor-fidelity-arm-check.ts';
+export {
+  type ArmFacts,
+  type ArmLog,
+  bodyOf,
+  countWithNoun,
+  type ExitRecord,
+  factsOf,
+  firstStarting,
+  numberAfter,
+  usdSaid,
+  wordAfter,
+} from './corpus-run/editor-fidelity-arm-facts.ts';
+export {
   type EditorCardTally,
   editorDecisionRuleLine,
   editorDefectOnlyLine,

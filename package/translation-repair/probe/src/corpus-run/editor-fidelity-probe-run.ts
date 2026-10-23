@@ -9,6 +9,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
@@ -217,6 +218,13 @@ export async function runEditorFidelityProbe(
     references,
     damageKinds,
   },);
+  log.info(`manifest: ${String(specs.length,)} ${
+    wordForCount({
+      count: specs.length,
+      one: 'specification',
+      many: 'specifications',
+    },)
+  }, digest ${hashContent({ content: JSON.stringify(specs,), },)}`,);
   log.info(poolLine({ trials, },),);
   /**
    Leading trials within the cap, counted in attempts for each card.

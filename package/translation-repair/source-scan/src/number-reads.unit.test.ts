@@ -120,6 +120,14 @@ const HELD_READS: Readonly<Record<string, {
   readonly calls: number;
   readonly why: string;
 }>> = {
+  'probe/corpus-run/editor-fidelity-arm-facts.ts#numberAfter: Number': {
+    calls: 1,
+    why: 'reads only text isUnsignedNumberText took, the digits and the point a probe writer printed after a marker',
+  },
+  'probe/corpus-run/editor-fidelity-read.ts#exitRecordBeside: Number': {
+    calls: 1,
+    why: WHOLE_NUMBER,
+  },
   'provider/retry-after-header.ts#retryAfterHeaderMsOf: Number': {
     calls: 1,
     why: 'reads the seconds figure Anthropic writes in retry-after, and a value that is not finite and positive reads '

@@ -109,6 +109,12 @@ depends = ["build"]
 env.TRANSLATION_REPAIR_STARTED_BY = "editor-fidelity-probe"
 run = "node dist/final/node/editor-fidelity-probe.mjs"
 
+[tasks."editor-fidelity-read"]
+description = "Check the logs of the editor fidelity arms before any figure of them is read, one PASS or FAIL line for each check, and refuse when any fails; spends nothing (pass the arm logs after --, each beside an arm.exit file holding the status its launch returned)"
+depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "editor-fidelity-read"
+run = "node dist/final/node/editor-fidelity-read.mjs"
+
 [tasks."editor-fidelity-pool-draw"]
 description = "Draw the editor fidelity pool from the pinned corpus clone by a seeded rule, keyless: writes only ids, offsets and hashes (pass --seed text, --want trials, --out directory, --check to compare the files in --out with a fresh draw and replay the committed pool against the clone, after --)"
 depends = ["build"]

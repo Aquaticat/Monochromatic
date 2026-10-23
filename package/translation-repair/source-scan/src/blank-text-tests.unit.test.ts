@@ -1211,6 +1211,34 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SETTING,
   },
+  'probe/corpus-run/editor-fidelity-arm-answers.ts#ceilingAnswer': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-arm-answers.ts#editorAnswer': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-arm-answers.ts#manifestAnswer': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-arm-answers.ts#poolAnswer': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-arm-answers.ts#seatAnswer': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-arm-check.ts#hasDigest': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-arm-check.ts#lineOfCheck': {
+    tests: 1,
+    why: SENTINEL,
+  },
   'probe/corpus-run/editor-fidelity-pool-draw-entry.ts#checkedAttempt': {
     tests: 1,
     why: SENTINEL,

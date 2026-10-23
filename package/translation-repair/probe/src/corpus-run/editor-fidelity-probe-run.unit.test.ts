@@ -625,9 +625,13 @@ await describe({
               return line.startsWith('pool: ',);
             },);
             expect(poolAt,).toBeGreaterThan(0,);
+            /**
+             The specifications the run asked the reader for.
+             */
+            const asked = nonNullishOrThrow(seen.readFor[0],);
             expect(seen.lines[poolAt - 1],).toBe(
-              `manifest: ${String(EDITOR_FIDELITY_POOL.length,)} specifications, digest ${
-                hashContent({ content: JSON.stringify(EDITOR_FIDELITY_POOL,), },)
+              `manifest: ${String(asked.length,)} ${asked.length === 1 ? 'specification' : 'specifications'}, digest ${
+                hashContent({ content: JSON.stringify(asked,), },)
               }`,
             );
           },

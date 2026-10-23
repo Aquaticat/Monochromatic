@@ -54,7 +54,8 @@ type BuiltRun = {
 
  @example
  ```ts
- const lines = linesOf({ text: 'a\nb\n', },); // ['a', 'b']
+ // yields ['a', 'b']
+ const lines = linesOf({ text: 'a\nb\n', },);
  ```
  */
 function linesOf({ text, }: { readonly text: string; },): readonly string[] {
