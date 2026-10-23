@@ -355,7 +355,7 @@ await describe({
             const { transport, } = recordedTransport({
               replies: [{
                 status: 200,
-                bodyText: SPENT_RENAMED_WEEKLY_BODY.replace('2026-10-23T05:03:47.000Z', 'a synthetic=wet\\nINJECT',),
+                bodyText: SPENT_RENAMED_WEEKLY_BODY.replace('2026-10-23T05:03:47.000Z', String.raw`a synthetic=wet\nINJECT`,),
               },],
             },);
             const { result: meters, } = await warnLinesDuring({
