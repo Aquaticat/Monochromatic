@@ -4,6 +4,10 @@
 
 export { nodeEntries, } from './build-entries.ts';
 export { consolidateDocument, } from './consolidate-driver.ts';
+export {
+  CLAUDE_SCHEMA_PRODUCERS,
+  type SchemaProducer,
+} from './claude-schema-producers.ts';
 export { assertPassResumable, } from './corpus-run/corpus-pass-guards.ts';
 export { type CorpusPassInput, } from './corpus-run/corpus-pass-input.ts';
 export {
@@ -27,8 +31,13 @@ export { runPassQueue, } from './corpus-run/corpus-pass-queue.ts';
 export {
   createPassDryStop,
   type PassDryStop,
+  recordOnPark,
 } from './corpus-run/pass-dry-stop.ts';
 export { runCorpusPassOver, } from './corpus-run/corpus-pass-run.ts';
+export {
+  assertSchemasSendable,
+  UnsendableSchemasError,
+} from './corpus-run/pass-schema-check.ts';
 export { selectPendingEntries, } from './corpus-run/corpus-pass-select.ts';
 export {
   passArchiveText,
@@ -47,8 +56,9 @@ export {
   contestHooksFor,
 } from './corpus-run/pass-contest-reseat.ts';
 export { runPassContest, } from './corpus-run/pass-contest.ts';
+export { withEntryBound, } from './corpus-run/pass-entry-bound.ts';
 export { persistSettledEntry, } from './corpus-run/pass-entry-persist.ts';
-export { settleEntry, } from './corpus-run/pass-entry.ts';
+export { settleEntry, } from './corpus-run/pass-entry-settle.ts';
 export {
   relabelArchiveFootnotes,
   type RelabelledArchive,

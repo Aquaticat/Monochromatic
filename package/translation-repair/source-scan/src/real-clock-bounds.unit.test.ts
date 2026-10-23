@@ -278,6 +278,34 @@ const SCRIPTED_CLOCK = 'a window on the case\'s own injected clock, which the ca
   + 'back; no timer is armed with it';
 
 /**
+ Why a hold the reseat file names keeps its value: the production budgets cut it to the file's short window, on a
+ clock that stands still, and the seat reading waits that window out once on the real clock.
+ */
+const CUT_TO_SHORT_WINDOW = 'a hold the production budgets cut to the file\'s short window (40 ms), placed on a clock '
+  + 'that stands still; the seat reading waits that window out once, so no case waits for the named value';
+
+/**
+ Why a wait stated to the pure cut keeps its value: the cut returns the figure it cuts to and sleeps nothing, so no
+ case waits for the stated value.
+ */
+const PURE_WAIT_CUT = 'a wait handed to the pure cut of a stated wait, which returns the figure it cuts to and sleeps '
+  + 'nothing; no case waits for the stated value';
+
+/**
+ Why a hold the reseat rig registers keeps its value: the rig reports every hold cut to the file's short window
+ (`endingHolds`), except in the one case that sets the cap to the hold and waits it out on a fake clock.
+ */
+const RIG_REPORTS_SHORT_WINDOW = 'a hold the file\'s rig reports cut to its short window (40 ms), or, in the one case '
+  + 'that sets the cap to the hold, waited out on a fake clock; no case waits for the named value on the real clock';
+
+/**
+ Why a deadline handed to a client keeps its value: the client arms a timer with it, the case reads the delay back
+ from the timer and clears it, and the scripted transport answers at once, so no case waits for it.
+ */
+const ARMED_DEADLINE_READ_BACK = 'a deadline the client arms a timer with, whose delay the case reads back; the '
+  + 'scripted transport answers at once and the client clears the timer, so nothing waits for it';
+
+/**
  Why a launch value keeps its value: the case reads it back in a printed line.
  */
 const PRINTED = 'a value the case reads back in a printed line, as given; no timer is armed with it';
@@ -359,6 +387,27 @@ const CHUNK_PACING = 'the pause between two chunks of a scripted body, so a stre
   + 'load only lengthens it';
 
 /**
+ The two-minute nap of the fake clock walk's own cases, which a walk on the fake clock ticks past: no real time passes,
+ and a nap that were on the real clock would fail the case by not ending.
+ */
+const FAKE_NAP = 'a nap of two fake minutes that the walk ticks past on the fake clock; no real time passes, and a nap '
+  + 'left on the real clock is the failure the case reads';
+
+/**
+ Why a hold of the reason cases keeps its value: the pure reason reader is handed a record of holds and names the
+ shortest, and it sleeps nothing.
+ */
+const HOLD_REASON_INPUT = 'a hold handed to the pure reader of the reason a wait is taken for, which names the shortest and '
+  + 'sleeps nothing';
+
+/**
+ Why the cache window of the NeuralWatt return budget cases keeps its value: the window is on the case\'s own scripted
+ clock, which the case moves by hand.
+ */
+const RETURN_CACHE_WINDOW = 'the cache window of budgets read on the case\'s own scripted wall clock and monotonic clock, '
+  + 'which the case moves by hand';
+
+/**
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
@@ -372,6 +421,85 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 2,
     bound: 'read back',
     reason: 'a record `shortestHold` is asked the shortest of, which only reads the numbers and sleeps nothing',
+  },
+  'provider/budget-hold-wait.unit.test.ts#<module>: hold hyper: 1_000_000': {
+    count: 1,
+    bound: 'other',
+    reason: 'a hold that outlasts the case: the wait polls every millisecond and the case\'s own abort ends it, so no '
+      + 'bound on the clock decides the verdict',
+  },
+  'provider/budget-hold-wait.unit.test.ts#<module>: setTimeout 30': {
+    count: 1,
+    bound: 'reached',
+    reason: 'the caller abort, armed before a wait on a hold of a million milliseconds, so it fires first on any '
+      + 'machine and the case asserts its own reason',
+  },
+  'provider/hold-reason.unit.test.ts#<module>: hold hyper: 5_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold hyper: 900_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold neuralwatt: 60_000': {
+    count: 1,
+    bound: 'read back',
+    reason: HOLD_REASON_INPUT,
+  },
+  'provider/hold-reason.unit.test.ts#<module>: hold neuralwatt: 48_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold openrouter: 9_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold synthetic: 5_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/provider-budget-neuralwatt-return.unit.test.ts#budgetsBefore: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: RETURN_CACHE_WINDOW, },
+  'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: freshForMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: RETURN_CACHE_WINDOW,
+  },
+  'provider/provider-budget-neuralwatt-return.unit.test.ts#budgetsBefore: cooldownMs: hyperCooldownMs': {
+    count: 1,
+    bound: 'reached',
+    reason: 'how long a refusal holds a dry Hyper meter out for a case that waits that hold out for real, handed in by '
+      + 'the case (40 ms), so the wait cannot end before it on any machine',
+  },
+  'provider/neuralwatt-return-fit.unit.test.ts#<module>: boundMs: 600_000': {
+    count: 2,
+    bound: 'other',
+    reason: 'a bound handed to a pure comparison of two numbers; no timer is armed and nothing sleeps',
+  },
+  'provider/neuralwatt-return-fit.unit.test.ts#<module>: boundMs: 0': {
+    count: 1,
+    bound: 'other',
+    reason: 'a bound handed to a pure comparison of two numbers; no timer is armed and nothing sleeps',
+  },
+  'provider/neuralwatt-return-fit.unit.test.ts#<module>: boundMs: -5': {
+    count: 1,
+    bound: 'other',
+    reason: 'a bound handed to a pure comparison of two numbers; no timer is armed and nothing sleeps',
+  },
+  'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 7 * HOUR_MS': {
+    count: 2,
+    bound: 'other',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and '
+      + 'no timer is armed',
+  },
+  'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 1_000': {
+    count: 1,
+    bound: 'other',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and '
+      + 'no timer is armed',
+  },
+  'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: cooldownMs: 40': {
+    count: 1,
+    bound: 'reached',
+    reason: 'how long a refusal holds a dry Hyper meter out, which the router\'s wait sleeps out for real before it '
+      + 'refuses with the NeuralWatt distance, so the refusal cannot come before it on any machine',
+  },
+  'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: freshForMs: 600_000': {
+    count: 1,
+    bound: 'other',
+    reason: 'the cache window of a budget reading, longer than the case runs so the one reading stands; the '
+      + 'case moves no clock',
+  },
+  'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: statedWaitMs: 120_000': {
+    count: 1,
+    bound: 'read back',
+    reason: 'a refusal\'s stated wait handed to the budget layer on the case\'s own scripted clock, '
+      + 'which sleeps nothing',
   },
   'run/corpus-run/run-seats-read.unit.test.ts#<module>: hold openrouter: 60_000': {
     count: 1,
@@ -388,6 +516,27 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
+  },
+  'provider/claude-call-deadline.unit.test.ts#<module>: exchangeTimeoutMs: LONGER_DEADLINE_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: ARMED_DEADLINE_READ_BACK,
+  },
+  'provider/claude-call-deadline.unit.test.ts#<module>: exchangeTimeoutMs: RUN_DEADLINE_MS': {
+    count: 3,
+    bound: 'read back',
+    reason: ARMED_DEADLINE_READ_BACK,
+  },
+  'provider/claude-call-deadline.unit.test.ts#armedForClaude: exchangeTimeoutMs: exchangeTimeoutMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
+  'provider/claude-client.unit.test.ts#<module>: freshForMs: 1_000': { count: 2, bound: 'other', reason: SCRIPTED_CLOCK, },
+  'provider/claude-client.unit.test.ts#<module>: statedWaitMs: statedWaitMsOf({ error: failure, },)': {
+    count: 2,
+    bound: 'read back',
+    reason: 'the wait a refusal states, read back in what the budgets hold',
   },
   'provider/deepseek-client.unit.test.ts#<module>: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: SCRIPTED_CLOCK, },
   'provider/provider-budget-xiaomi-hold.unit.test.ts#xiaomiBudgets: freshForMs: FRESH_MS': {
@@ -407,6 +556,36 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   },
   'provider/provider-budget-held-meters.unit.test.ts#holdThenLapse: statedWaitMs: 10 * FRESH_MS': {
     count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-defaults.unit.test.ts#cut: statedWaitMs: STATED_MS': {
+    count: 1,
+    bound: 'other',
+    reason: PURE_WAIT_CUT,
+  },
+  'provider/provider-budget-defaults.unit.test.ts#cut: statedWaitMs: statedWaitMs': {
+    count: 1,
+    bound: 'other',
+    reason: PURE_WAIT_CUT,
+  },
+  'provider/provider-budget-hold-cap.unit.test.ts#cappedBudgets: rateLimitBackoffMs: 1_000': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-hold-cap.unit.test.ts#refuseForPayment: statedWaitMs: STATED_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-hold-cap.unit.test.ts#refuseShort: statedWaitMs: 3_000': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-hold-cap.unit.test.ts#refuseTwice: statedWaitMs: STATED_MS': {
+    count: 2,
     bound: 'other',
     reason: SCRIPTED_CLOCK,
   },
@@ -583,7 +762,16 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: 'production\'s built-in cap of 420 minutes, read back in the launch lines',
   },
-  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 450_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 400_000': {
+    count: 1,
+    bound: 'read back',
+    reason: PRINTED,
+  },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 510_000': {
+    count: 1,
+    bound: 'read back',
+    reason: PRINTED,
+  },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 600_000': { count: 1, bound: 'read back', reason: PRINTED, },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 60_000': { count: 1, bound: 'read back', reason: PRINTED, },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 90_000': { count: 1, bound: 'read back', reason: PRINTED, },
@@ -634,14 +822,97 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: 'the deadline the probe hands its call, read back off the request the client saw',
   },
+  'bench/corpus-run/model-health-probe.unit.test.ts#askOnce: timeoutMs: RUN_PER_CALL_MS': {
+    count: 1,
+    bound: 'other',
+    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at '
+      + 'it is the finding',
+  },
+  'bench/corpus-run/translate-probe-run.unit.test.ts#probeClaudeLandingAfter: perCallTimeoutMs: RUN_PER_CALL_MS': {
+    count: 1,
+    bound: 'other',
+    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at '
+      + 'it is the finding',
+  },
+  'bench/corpus-run/translate-probe-run.unit.test.ts#walkOnce: perCallTimeoutMs: perCallTimeoutMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
+  'provider/delayed-transport.test-fixture.ts#landing: setTimeout landMs': {
+    count: 1,
+    bound: 'other',
+    reason: 'the delay a scripted reply lands after, on whichever timer function is global; a case that sets it fakes '
+      + 'the timers and ticks the clock, so no real time passes',
+  },
+  'test-fixture/fake-clock-walk.test-fixture.ts#timeoutOnFakeClock: setTimeout ms': {
+    count: 1,
+    bound: 'other',
+    reason: 'the figure a signal factory call was handed, put on the fake clock so the signal aborts at it in fake '
+      + 'time',
+  },
+  'test-fixture/fake-clock-walk.test-fixture.ts#waitOnFakeClock: setTimeout ms': {
+    count: 1,
+    bound: 'other',
+    reason: 'the figure a wait on node:timers/promises was handed, put on the fake clock so the wait ends at it '
+      + 'in fake time',
+  },
+  'test-fixture/fake-clock-walk.unit.test.ts#napping: setTimeout NAP_MS': {
+    count: 1,
+    bound: 'other',
+    reason: FAKE_NAP,
+  },
+  'test-fixture/fake-clock-walk.unit.test.ts#<module>: sleepFor of node:timers/promises NAP_MS': {
+    count: 3,
+    bound: 'other',
+    reason: FAKE_NAP,
+  },
+  'test-fixture/fake-clock-walk.unit.test.ts#sleepsAfterTheRelease: sleepFor of node:timers/promises NAP_MS': {
+    count: 1,
+    bound: 'other',
+    reason: FAKE_NAP,
+  },
   'corpus-pass/corpus-run/pass-entry.unit.test.ts#entryClient: wait of module-async-time 10': {
     count: 1,
     bound: 'other',
     reason: SAME_TURN_METER,
   },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#<module>: holds.synthetic = DRY_HOLD_MS': {
+    count: 6,
+    bound: 'other',
+    reason: RIG_REPORTS_SHORT_WINDOW,
+  },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#<module>: statedWaitMs: DRY_HOLD_MS': {
+    count: 2,
+    bound: 'other',
+    reason: CUT_TO_SHORT_WINDOW,
+  },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#budgetsClient: cooldownMs: SHORT_HOLD_MS': {
+    count: 1,
+    bound: 'other',
+    reason: CUT_TO_SHORT_WINDOW,
+  },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#budgetsClient: rateLimitBackoffMs: SHORT_HOLD_MS': {
+    count: 1,
+    bound: 'other',
+    reason: CUT_TO_SHORT_WINDOW,
+  },
   'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 360_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
-  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamFirstContentMs: 120_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
-  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamIdleMs: 90_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 900_000': {
+    count: 1,
+    bound: 'other',
+    reason: PURE_BOUND_CHECK,
+  },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamFirstContentMs: 120_000': {
+    count: 3,
+    bound: 'other',
+    reason: PURE_BOUND_CHECK,
+  },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamIdleMs: 90_000': {
+    count: 3,
+    bound: 'other',
+    reason: PURE_BOUND_CHECK,
+  },
   'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: perCallTimeoutMs: 360_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
   'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: streamFirstContentMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
   'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: streamIdleMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
@@ -756,8 +1027,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'markup/monotonic-clock.unit.test.ts#<module>: wait of module-async-time 5': {
     count: 1,
     bound: 'other',
-    reason: 'a real wait the case crosses, after which it asserts only that the reading has not gone back, which '
-      + 'load cannot break',
+    reason: 'a real wait the case crosses, after which it asserts only that the reading has not gone back, which load '
+      + 'cannot break',
   },
   'provider/neuralwatt-routing.unit.test.ts#<module>: freshForMs: 0': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
   'provider/openrouter-abandoned-spend.unit.test.ts#<module>: firstByteMs: 500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
@@ -951,8 +1222,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'provider/stream-bound.unit.test.ts#<module>: wait of module-async-time SHORT_BOUND_MS * 2': {
     count: 1,
     bound: 'reached',
-    reason: 'the wait that must outlast a bound armed before it and half its length, so the bound fires first on '
-      + 'any machine',
+    reason: 'the wait that must outlast a bound armed before it and half its length, so the bound fires first on any '
+      + 'machine',
   },
   'provider-stream/stream-cut.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/stream-cut.unit.test.ts#<module>: firstContentMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },

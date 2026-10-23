@@ -313,10 +313,30 @@ and with it whether the wide seats keep Qwen.
 ## B826: the writing-bench floor stopped an entry for want of a named return, though NeuralWatt's return was 48 s away
 
 Status:
-open,
+fixed on 2026-10-23 (UTC),
 found by the lead's read of `XingZ6019` on 2026-10-22 (UTC) (the brief's E2).
-A fix is in progress in the briefs the lead labelled D4 and E2 and has not landed;
-this entry records no design for it.
+The fix landed on main in `9eea0009d1`,
+the merge of the work the lead labelled D4 and E2 with its fix rounds 1 to 9;
+fix rounds 10 and 11 follow it on the branch that took that merge
+(round 10 ends at `e9d79e6f0d`).
+The design that landed
+(the decision doc `doc/decision/translation-repair-direct-providers.md` states it,
+open to the owner's veto):
+the seat reader waits for a hold only if it would cure a short bench,
+and no longer than the smaller of what the pass has left and what the entry's hard cap has left.
+A NeuralWatt return inside what the pass has left but past what the entry has left parks the pass between entries:
+the gate records a park instead of tripping,
+the queue puts the entry back at the front,
+and the gate waits for the return and resumes.
+The writing bench error carries the return,
+and so parks the pass,
+only when the return would lift the bench to its floor.
+The entry's `TALLY` line says `PARKED`,
+with `returnsInMs=` and `returnsAt=` taken from the park,
+which `parkedFor` answers for the failure the entry ended with,
+and never from that failure's own fields.
+When the budget ends the pass after the wait,
+the queue prints `NOT RESUMED <id>` for the entry the park cut short.
 The D4 of those briefs is the model-level dryness work of B822,
 not the D4 candidate of the `XingZ6018` read.
 
@@ -369,14 +389,124 @@ which are not among its ancestors,
 and the source was read at the branch tip `b18a4f7a40`,
 which holds them.
 
-What is left:
-the fix,
-its red case (a writing bench below the floor with NeuralWatt dry and its return known waits for the return),
-and the prevention rule,
-which are owed when the fix lands.
+The red cases:
+`67513d8de3` (`run-seats-neuralwatt-return.unit.test.ts`:
+a NeuralWatt return 301 away with 600 left waits,
+one 700 away with 600 left refuses at once),
+`a17a70dc00` (the bench error names the return,
+so a return past the entry's cap but inside the pass parks the pass instead of stopping the entry),
+`0309ef74b1` (the park waits for an instant on the gate's clock,
+and a refusal for a day start already waited out trips the gate),
+and `02cb04bfb4` (two held providers that each cure the bench alone are waited for).
+
+Prevention rules
+(recorded in `mistake-prevention-sheets-quorums-and-outcome-rules.md` where they concern test fleets):
+a bound names the deadline that forces it and applies only where that deadline applies,
+so a wait longer than a call deadline belongs between calls;
+when a brief names a bound,
+the code implements that bound,
+since "bounded by the abort" is not "bounded by what the pass has left";
+a refusal field that a later stage reads is set from the final reading,
+never from the path that reached it;
+a wait that may start later than the reading it came from stores an instant,
+not a duration;
+and a test fleet models every provider shape of the live roster:
+a provider dry,
+held,
+wet,
+absent,
+or the only one serving a seat,
+and two holds that each cure a bench alone.
+
 Cache versions:
-not known until the fix lands.
+none moved.
+`git log --extended-regexp -G '_CACHE_VERSION = [0-9]+'` over `495341919a^..263312b539`
+(the D4 and E2 commits)
+and over `263312b539..581597e62d`
+(the fix rounds and the main they merged)
+lists no commit,
+and the same search over `c265e8df95~1..c265e8df95` lists that commit
+(it set `SLICE_CACHE_VERSION = 44`),
+so the search can find a bump.
+The work decides when the seat reader waits,
+when the pass parks and what the `TALLY` line prints;
+no commit of it touches a cache key,
+store or version file.
 
 Recurrence:
 the thirteenth and fifteenth classes of the defect-class history (the hold wait and the writing-bench floor),
 and B819 (a NeuralWatt time the router knew and a text did not state).
+
+## B860: the seat reader judged the lane contest and four other phases against a bench their stage does not seat
+
+Status:
+fixed on 2026-10-23 (UTC),
+found by the re-check of fix round 9 of the Claude route (its finding on the lane contest row).
+The id is the lead's allocation for fix round 10 and may be renumbered at merge time.
+The design that landed is open to the owner's veto.
+
+The defect:
+the phase table in `run/src/corpus-run/run-seats-wait.ts` named,
+for each phase,
+the benches the seat reader holds to a quorum.
+Five rows named a bench the phase's stage does not seat.
+The lane contest judges with `seats.lateJudges` (`pass-contest.ts`) but its row read the wide bench,
+on the premise that the late bench holds every seat of the wide bench and one more.
+That is false:
+the wide bench is the roster less the two GLM-5.3 models that hold `wide-seat-dropped`,
+the late bench is the roster less GLM-5.3-Flash,
+Qwen3.8-27B and Haiku 5.5,
+which hold `late-judge-dropped`,
+and Haiku is a wide seat served by the Claude key alone.
+With NeuralWatt and Bedrock wet and the rest dry the Claude key back takes the wide bench from 3 of 8 to 4 of 8
+and leaves the late bench at 3 of 7 against a quorum of 4,
+so the reader waited out a Claude hold for a quorum the contest never gained.
+The same mismatch stood in the page consistency pass and the consolidation gate (late bench read as wide),
+and in the preparation and the insertion admission
+(the whole roster,
+`seats.roster`,
+read as the wide bench).
+
+The fix:
+`BenchName` gains `late` and `roster`,
+the names the `JUDGE SEATS` line prints,
+`benchesOf` returns them,
+and the table reads the late bench for the lane contest,
+the slate and the late bench for the consolidation,
+the late bench and the translators for the page consistency pass,
+and the roster for the preparation and the insertion admission.
+The lanes row stays on the wide bench:
+the lanes also seat the select judges,
+and across all 256 dryness views the select judges are short only where the wide bench is,
+which `run-seats-phase-bench.unit.test.ts` checks.
+The table leaves the consolidation's writers,
+polish refiners and polish judges,
+and the lanes' checkers,
+unread by design,
+which the TSDoc of the table says.
+
+The red cases:
+`602c813204` and `74ffa8bb48` (a Claude hold in the lane contest and the page consistency pass is waited out,
+the preparation and the insertion admission name no roster shortfall,
+the consolidation and the page consistency warnings name no late bench,
+and the phase table names the wide bench for five phases).
+The first of them expected a roster quorum of 6 and a select shortfall.
+The quorum is the rounded-up half (5),
+and no view shows a select shortfall,
+so the second corrected both.
+The control that the same hold still waits where the wide bench is the one short is the lanes phase,
+and the pictures phase holds the case where another hold cures the readers and the Claude key adds no reader.
+
+Prevention rule:
+a table of benches per phase is checked against the call that seats each phase,
+and the relation between two lists of seats is measured from the lists
+(`RUN_WIDE_SEATS`,
+`RUN_LATE_JUDGES`),
+never assumed.
+
+Cache versions:
+none moved.
+The reader decides when a phase waits and holds no cached record.
+
+Recurrence:
+the thirteenth class of the defect-class history (the hold wait).

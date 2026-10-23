@@ -120,6 +120,11 @@ const HELD_READS: Readonly<Record<string, {
   readonly calls: number;
   readonly why: string;
 }>> = {
+  'provider/retry-after-header.ts#retryAfterHeaderMsOf: Number': {
+    calls: 1,
+    why: 'reads the seconds figure Anthropic writes in retry-after, and a value that is not finite and positive reads '
+      + 'as no wait, so a spelled or signed form asks for nothing',
+  },
   'provider/deepseek-balance.ts#readBalanceText: Number': {
     calls: 1,
     why: 'reads only an amount isUnsignedNumberText took, so a signed, spelled or exponent form is refused before it',
@@ -263,6 +268,15 @@ const HELD_READS: Readonly<Record<string, {
   'reference/reference-line-head.ts#numbered: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
+  },
+  'provider/neuralwatt-return-words.ts#keyUnblockTextOf: new Date': {
+    calls: 1,
+    why: EPOCH_MILLISECONDS,
+  },
+  'provider/neuralwatt-return-words.ts#keyUnblockTextOf: Date.parse': {
+    calls: 1,
+    why: 'reads the instant a quota reply gives for a blocked key so the refusal spells it in UTC, and a text that is '
+      + 'no instant is not echoed',
   },
   'provider/neuralwatt-ledger-config.ts#neuralWattDailyWhFrom: Number': {
     calls: 1,

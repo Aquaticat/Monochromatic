@@ -7,6 +7,7 @@ import type { DeepSeekClient, } from './deepseek-client.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { NeuralWattClient, } from './neuralwatt-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
+import type { ClaudeClient, } from './claude-client.ts';
 import type { XiaomiClient, } from './xiaomi-client.ts';
 import {
   otherProviders,
@@ -18,10 +19,27 @@ import {
 import type { ModelClient, } from './chat-contract.ts';
 import type { NeuralWattReturn, } from './budget-routing.ts';
 import {
+  NEURALWATT_RETURN_MARGIN_MS,
+  type NeuralWattCause,
+} from './neuralwatt-return-hold.ts';
+import { createNeuralWattReturnMark, } from './neuralwatt-return-mark.ts';
+import {
   type MeterState,
   readEveryMeter,
   routesAsDry,
 } from './provider-meters.ts';
+import {
+  createWaitCap,
+  HoldBoundError,
+  holdEndsNever,
+  noLevelBeforeReading,
+  notHeldOut,
+  type PaymentMark,
+  spendableBeforeReading,
+  systemClock,
+  unmarkedPayment,
+  unreadBeforeReading,
+} from './provider-budget-defaults.ts';
 
 //region Provider budget
 // ASKS FOR METERS, NOT CLIENTS. Every parameter is narrowed to the one method
@@ -146,7 +164,7 @@ type MeterReading = {
 
  @example
  ```ts
- const budgets: ProviderBudgets = createProviderBudgets({ synthetic, hyper, openrouter, },);
+ const budgets: ProviderBudgets = createProviderBudgets({ synthetic, hyper, openrouter, maxHoldMs: 25_200_000, },);
  ```
  */
 export type ProviderBudgets = {
@@ -185,7 +203,7 @@ export type ProviderBudgets = {
    not, so a caller facing only held providers can wait out the shortest
    hold rather than declare the run over.
    */
-  readonly holds: () => ProviderRecord<number>;
+  readonly holds: (args?: { readonly returnBoundMs?: number; },) => ProviderRecord<number>;
 
   /**
    What the run knows of NeuralWatt's day, which the refusal that ends the run states when the free energy returns
@@ -193,6 +211,18 @@ export type ProviderBudgets = {
    off. ABSENT ON A VIEW THAT KNOWS NOTHING OF NEURALWATT, which the refusal then words as "not decided".
    */
   readonly neuralwattReturn?: () => NeuralWattReturn;
+
+  /**
+   Why NeuralWatt reads dry as the last reading found it (`ProviderBudgetsWithStates`); ABSENT ON A VIEW THAT KNOWS
+   NOTHING OF NEURALWATT, whose refusal then states no cause.
+   */
+  readonly neuralwattDryness?: NeuralWattCause['neuralwattDryness'];
+
+  /**
+   Whether the hold that keeps NeuralWatt out is its day start and not a refusal's; absent on a view that knows nothing
+   of NeuralWatt, which then names the day start as before.
+   */
+  readonly neuralwattHeldByReturn?: NeuralWattCause['neuralwattHeldByReturn'];
 };
 
 /**
@@ -203,10 +233,15 @@ export type ProviderBudgets = {
 
  @example
  ```ts
- const budgets: ProviderBudgetsWithStates = createProviderBudgets({ synthetic, hyper, openrouter, },);
+ const budgets: ProviderBudgetsWithStates = createProviderBudgets({
+   synthetic,
+   hyper,
+   openrouter,
+   maxHoldMs: 25_200_000,
+ },);
  ```
  */
-export type ProviderBudgetsWithStates = ProviderBudgets & {
+export type ProviderBudgetsWithStates = ProviderBudgets & NeuralWattCause & {
   /**
    What each meter said in the reading `read` decides on, re-reading the
    meters when the cached one has aged out: `wet` and `dry` for a meter that
@@ -227,93 +262,6 @@ export type ProviderBudgetsWithStates = ProviderBudgets & {
 };
 
 /**
- The reading before any meter has answered: nothing is dry.
-
- @returns Spendable
-
- @example
- ```ts
- const view = providerRecord({ of: spendableBeforeReading, },);
- ```
- */
-function spendableBeforeReading(): boolean {
-  return false;
-}
-
-/**
- The level before any meter has answered: no number at all.
-
- @returns Empty
-
- @example
- ```ts
- const levels = providerRecord({ of: noLevelBeforeReading, },);
- ```
- */
-function noLevelBeforeReading(): string {
-  return '';
-}
-
-/**
- Whether a provider last refused us for payment, and the meter level it
- read then.
-
- @example
- ```ts
- const mark: PaymentMark = { marked: true, level: 'openrouterUsd=0.01', };
- ```
- */
-type PaymentMark = {
-  marked: boolean;
-  level: string;
-};
-
-/**
- The mark before any provider has refused us for payment: none.
-
- @returns Unmarked
-
- @example
- ```ts
- const marks = providerRecord({ of: unmarkedPayment, },);
- ```
- */
-function unmarkedPayment(): PaymentMark {
-  return {
-    marked: false,
-    level: '',
-  };
-}
-
-/**
- The state before any meter has answered: nothing was read.
-
- @returns Unreadable
-
- @example
- ```ts
- const states = providerRecord({ of: unreadBeforeReading, },);
- ```
- */
-function unreadBeforeReading(): MeterState {
-  return 'unreadable';
-}
-
-/**
- The hold of a run that holds no provider out for a reason its meter cannot show.
-
- @returns Not held
-
- @example
- ```ts
- const held = notHeldOut();
- ```
- */
-function notHeldOut(): boolean {
-  return false;
-}
-
-/**
  Builds the cached budget view every provider is routed by.
 
  @param neuralwatt - first provider's energy meter, which is all this reads
@@ -328,6 +276,8 @@ function notHeldOut(): boolean {
 
  @param xiaomi - Xiaomi's spend meter, which is all this reads
 
+ @param anthropic - the Claude key's spend meter, which is all this reads
+
  @param openrouter - fourth provider's credits meter, which is all this reads
 
  @param freshForMs - how long one reading is trusted
@@ -337,6 +287,12 @@ function notHeldOut(): boolean {
  @param rateLimitBackoffMs - how long a refusal on a wet meter holds a
  provider out while another provider can take the traffic
 
+ @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out, which a run sets to its hard
+ cap or, where its command has none, to a named bound with a reason (REQUIRED, with no unbounded default: a provider
+ whose `Retry-After` states 99,999,999,999 seconds held that provider out for about 3,170 years): a hold past it can
+ never be waited out, so a longer stated wait is cut to it and logged once for each provider with the
+ value the provider stated
+
  @param heldOut - whether the run holds a provider out for a reason its meter cannot show, such as a refused
  credential; the `METERS` line prints such a provider as dry. It changes only the printed word, never the routed view
  or the states the budgets report (default: no provider is held out)
@@ -345,11 +301,19 @@ function notHeldOut(): boolean {
  default, since a hold read on the system clock lasted an hour longer when
  it was set back (ledger B78)
 
+ @param wallNow - wall clock, read only for the time of day a spent NeuralWatt day starts again, since that day
+ starts at a time of day in UTC and not after a duration; the system clock by default
+
+ @param returnMarginMs - milliseconds added to a NeuralWatt return so the meter is read after the day has started
+ (`NEURALWATT_RETURN_MARGIN_MS`)
+
  @returns Budget view plus the correction a refused call feeds back, and the states the meters gave
+
+ @throws {@link HoldBoundError} when `maxHoldMs` is not a finite whole number of milliseconds greater than zero
 
  @example
  ```ts
- const budgets = createProviderBudgets({ neuralwatt, synthetic, hyper, bedrock, openrouter, },);
+ const budgets = createProviderBudgets({ neuralwatt, synthetic, hyper, bedrock, openrouter, maxHoldMs: 25_200_000, },);
  ```
  */
 export function createProviderBudgets(
@@ -360,12 +324,16 @@ export function createProviderBudgets(
     bedrock,
     deepseek,
     xiaomi,
+    anthropic,
     openrouter,
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
+    maxHoldMs,
     heldOut = notHeldOut,
     now = monotonicMs,
+    wallNow = systemClock,
+    returnMarginMs = NEURALWATT_RETURN_MARGIN_MS,
   }: {
     readonly neuralwatt?: Pick<NeuralWattClient, 'energy'> & { readonly dayAnchor?: NeuralWattClient['dayAnchor']; };
     readonly synthetic?: Pick<ModelClient, 'quotas'>;
@@ -373,14 +341,22 @@ export function createProviderBudgets(
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
     readonly deepseek?: Pick<DeepSeekClient, 'credits'>;
     readonly xiaomi?: Pick<XiaomiClient, 'spend'>;
+    readonly anthropic?: Pick<ClaudeClient, 'spend'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
     readonly rateLimitBackoffMs?: number;
+    readonly maxHoldMs: number;
     readonly heldOut?: (provider: ProviderName,) => boolean;
     readonly now?: () => number;
+    readonly wallNow?: () => Date;
+    readonly returnMarginMs?: number;
   },
 ): ProviderBudgetsWithStates {
+  // `isInteger` is false for NaN and both infinities, so one test covers every value that is not a whole number.
+  if ((!Number.isInteger(maxHoldMs,)) || (maxHoldMs <= 0))
+    throw new HoldBoundError({ maxHoldMs, },);
+
   /**
    Last meter reading and when it was taken, stamped infinitely long ago until
    the first.
@@ -472,15 +448,12 @@ export function createProviderBudgets(
   /**
    Until when each provider is held out by a refusal, zero for never.
    */
-  const heldUntil: Record<ProviderName, number> = {
-    neuralwatt: 0,
-    synthetic: 0,
-    hyper: 0,
-    bedrock: 0,
-    deepseek: 0,
-    xiaomi: 0,
-    openrouter: 0,
-  };
+  const heldUntil: Record<ProviderName, number> = providerRecord({ of: holdEndsNever, },);
+
+  /**
+   When NeuralWatt's spent day starts again, as the last meter reading named it.
+   */
+  const returns = createNeuralWattReturnMark({ now, },);
 
   /**
    How much longer a provider's refusal holds it out, zero when it does not.
@@ -527,6 +500,11 @@ export function createProviderBudgets(
   }
 
   /**
+   Cuts a wait a refusal states for itself to the longest hold the run can use, logging the first cut of each provider.
+   */
+  const cappedWait = createWaitCap({ maxHoldMs, },);
+
+  /**
    Reads every meter once, for everyone waiting on this reading.
 
    THE FIRST CALLER'S SIGNAL GOVERNS, which is a real consequence worth
@@ -565,9 +543,21 @@ export function createProviderBudgets(
       ...((bedrock === undefined) ? {} : { bedrock, }),
       ...((deepseek === undefined) ? {} : { deepseek, }),
       ...((xiaomi === undefined) ? {} : { xiaomi, }),
+      ...((anthropic === undefined) ? {} : { anthropic, }),
       ...((openrouter === undefined) ? {} : { openrouter, }),
+      wall: {
+        now: wallNow,
+        marginMs: returnMarginMs,
+      },
       signal,
     },);
+
+    // NEURALWATT'S SPENT DAY NAMES ITS RETURN (XingZ6019, 2026-10-22: dry 48 s before its day started, the entry stopped
+    // short of its bench floor). The return is a hold the waits already wait out (`holds`), and the cached reading is
+    // read again at it (`currentReading`), whatever its age, because it says dry and the day is no longer the one it read.
+    returns.replace({ dryness: meters.neuralwatt
+      .dryness
+      ?? { kind: 'wet', }, },);
 
     // INFO RATHER THAN DEBUG, because this line is the only record that a
     // provider was AVAILABLE at a given moment, and a run does not record debug.
@@ -715,6 +705,22 @@ export function createProviderBudgets(
   }
 
   /**
+   Whether NeuralWatt's day has started again since the reading that named its return, which the cached reading does not
+   know.
+
+   @returns Whether the return has passed
+
+   @example
+   ```ts
+   if (neuralwattHasReturned())
+     await readNow({ signal, },);
+   ```
+   */
+  function neuralwattHasReturned(): boolean {
+    return returns.passed();
+  }
+
+  /**
    The meter reading the cache holds, taken afresh when it has aged out.
 
    @param signal - abort signal of the call asking
@@ -733,7 +739,7 @@ export function createProviderBudgets(
     // says when this reading BEGAN, so a call arriving while it is still in
     // flight sees a fresh stamp and waits on the same promise instead of
     // starting a second read of every meter.
-    if ((now() - cache.startedAt) >= freshForMs)
+    if (((now() - cache.startedAt) >= freshForMs) || neuralwattHasReturned())
       await readNow({ signal, },);
 
     return await cache.reading;
@@ -790,7 +796,7 @@ export function createProviderBudgets(
     markRefused: async function markRefused({
       provider,
       signal,
-      statedWaitMs = 0,
+      statedWaitMs: statedByProvider = 0,
       paymentRequired = false,
     },): Promise<void> {
       /**
@@ -799,6 +805,14 @@ export function createProviderBudgets(
       const rl = tagged({
         tag: markRefused.name,
         l,
+      },);
+
+      /**
+       Wait the refusal stated, cut to the longest hold the run can use.
+       */
+      const statedWaitMs = cappedWait({
+        provider,
+        statedWaitMs: statedByProvider,
       },);
 
       // THE METER IS ASKED AT ONCE, freshness window or not. A refusal from a
@@ -891,8 +905,30 @@ export function createProviderBudgets(
       );
     },
 
-    holds: function holds(): ProviderRecord<number> {
-      return providerRecord({ of: holdLeftOn, },);
+    // The refusal hold, and for NeuralWatt also the time until its spent day starts again, which the cached reading
+    // does not know and which only a return within the caller's bound counts for.
+    holds: function holds({ returnBoundMs = Number.POSITIVE_INFINITY, }: { readonly returnBoundMs?: number; } = {},
+    ): ProviderRecord<number> {
+      return providerRecord({
+        of: function holdOrReturn(provider: ProviderName,): number {
+          return Math.max(
+            holdLeft({ provider, },),
+            (provider === 'neuralwatt') ? returns.leftWithinMs({ boundMs: returnBoundMs, },) : 0,
+          );
+        },
+      },);
+    },
+
+    neuralwattDryness: returns.dryness,
+
+    neuralwattHeldByReturn: function neuralwattHeldByReturn(
+      { returnBoundMs = Number.POSITIVE_INFINITY, }: { readonly returnBoundMs?: number; } = {},
+    ): boolean {
+      /**
+       The day start's hold, and the longest hold on NeuralWatt of either kind.
+       */
+      const byReturn = returns.leftWithinMs({ boundMs: returnBoundMs, },);
+      return (byReturn > 0) && (byReturn >= holdLeft({ provider: 'neuralwatt', },));
     },
   };
 }

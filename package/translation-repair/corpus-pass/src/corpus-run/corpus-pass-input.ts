@@ -5,7 +5,8 @@ import type {
   RunClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { settleEntry, } from './pass-entry.ts';
+import type { SchemaProducer, } from '../claude-schema-producers.ts';
+import type { settleEntry, } from './pass-entry-settle.ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PassPictureSources, } from './pass-visual-evidence.ts';
 import type { OverlapSetting, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
@@ -83,9 +84,14 @@ export type CorpusPassInput = {
   readonly transport: ModelTransport;
 
   /**
-   Builds the one client the run asks models through, given where its prompt payloads are kept.
+   Builds the one client the run asks models through, given where its prompt payloads are kept and how much the pass has
+   left, which bounds the seat reader's wait for NeuralWatt's return.
    */
-  readonly newClient: (input: { readonly promptPayloadDir: string; },) => RunClient;
+  readonly newClient: (input: {
+    readonly promptPayloadDir: string;
+    readonly maxHoldMs: number;
+    readonly passLeftMs: () => number;
+  },) => RunClient;
 
   /**
    Settles one entry; the pass's whole per-entry procedure.
@@ -117,6 +123,12 @@ export type CorpusPassInput = {
    Straggler windows and contest ledger every stage of the pass runs under.
    */
   readonly stageSettings: StageSettings;
+
+  /**
+   Files that declare answer schemas, each with every schema it can build, which the pass checks before it asks any
+   provider; the family's own list where absent, and a case of its own to hand a schema the Claude route refuses.
+   */
+  readonly schemaProducers?: readonly SchemaProducer[];
 };
 
 //endregion Corpus pass input

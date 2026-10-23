@@ -81,6 +81,17 @@ await describe({
   name: repairSliceKey.name,
   children: [
     it({
+      name: 'IS AT VERSION 46: the reader of a model\'s reply takes a value that differs from a listed enum or const '
+        + 'value only in capitalization as the listed value (the move to 45 on the Claude route), and the number is '
+        + '46 and not 45 because main moved the settlement a cache may hold, with `silentStages`, to 44 on a line of '
+        + 'its own, so a merge that kept either number would serve a record the other line wrote; the key hashes the '
+        + 'version, the shape of the run and the texts, not the reader, so only this number retires a record written '
+        + 'under the reader before',
+      fn: async () => {
+        expect(SLICE_CACHE_VERSION,).toBe(46,);
+      },
+    },),
+    it({
       name:
         'produces a KNOWN hash for known inputs, which is the only thing standing between a change '
           + 'to this derivation and every settled slice in the corpus silently missing the cache. '
@@ -88,7 +99,7 @@ await describe({
           + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
           + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(44,);
+        expect(SLICE_CACHE_VERSION,).toBe(46,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -177,8 +188,17 @@ await describe({
         // VERSION 44 ON 2026-10-22 (the outcome carries `silentStages`, and the cache refuses a settlement that names a
         // silent stage; XingZ6018 slice 85, a panel that heard nobody cached as examined): moved the same way, for the record
         // and the rule that stores it.
+        //
+        // VERSION 44 ON 2026-10-22 ON THE CLAUDE ROUTE (the fence length left the system text of the candidate
+        // selection, R4 of the third review of the Claude route): moved the same way.
+        //
+        // VERSION 45 ON 2026-10-23 ON THE CLAUDE ROUTE (the reader takes a value that differs from a listed enum or
+        // const value only in capitalization as the listed value): moved the same way.
+        //
+        // VERSION 46 ON 2026-10-23 (the merge of the silent-stage move of main with the fence-length and case-fold
+        // moves of the Claude route, which no line held as one number): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('167c783587bbd2b6ee64b8a8c7591cd45b26df54224bdca9470b167adb24a0d5',);
+          .toBe('cd4085ca1b4c02ea7b32420cf1a97c487718385a9dc6b0f44c765a59872a112f',);
       },
     },),
     it({

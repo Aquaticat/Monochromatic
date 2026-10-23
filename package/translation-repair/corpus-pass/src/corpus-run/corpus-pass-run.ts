@@ -1,4 +1,5 @@
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
+import { CLAUDE_SCHEMA_PRODUCERS, } from '../claude-schema-producers.ts';
 import {
   declinedEntryIds,
   digestPipeline,
@@ -19,6 +20,7 @@ import {
   passStartLine,
 } from './corpus-pass-lines.ts';
 import { assertPassResumable, } from './corpus-pass-guards.ts';
+import { assertSchemasSendable, } from './pass-schema-check.ts';
 import { runPassQueue, } from './corpus-pass-queue.ts';
 import { createPassDryStop, } from './pass-dry-stop.ts';
 import { selectPendingEntries, } from './corpus-pass-select.ts';
@@ -35,6 +37,7 @@ import {
   prepareRunsLayout,
   PROVIDERS_LEFT_OFF,
   readRequiredProviders,
+  RUN_CALL_CONFIG,
   RUN_PER_CALL_TIMEOUT_MS,
 } from '@monochromatic-dev/translation-repair-run/ts';
 
@@ -66,6 +69,9 @@ const republishLog = contextRoot({ tag: 'republish', },);
  runs directory another pass holds, a required provider that is not ready, or a flag naming
  an entry the corpus does not hold
 
+ @throws {@link UnsendableSchemasError} when a stage schema carries what the Claude route cannot send, before the
+ lock is taken, anything is printed or any provider is asked
+
  @example
  ```ts
  await runCorpusPassOver({ ...input, },);
@@ -88,6 +94,12 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
    Corpus clone and commit this run reads.
    */
   const { pin, } = pinSetting;
+
+  // FIRST OF ALL, before the lock, the guards, the START line and every provider: a stage schema the Claude route
+  // cannot send is a fault in the code that no document causes, and each entry that reached its stage would otherwise
+  // record one `status=ERROR` after the paid calls of the stages before it. `--plan` is checked too, since it
+  // promises to verify setup at zero quota.
+  assertSchemasSendable({ producers: input.schemaProducers ?? CLAUDE_SCHEMA_PRODUCERS, },);
 
   // Taken before anything is read, and held for the whole pass. Two passes
   // sharing one directory overwrite each other attempt counts, delete each
@@ -175,6 +187,8 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
       done: done.size,
       softBudgetMs: SOFT_BUDGET_MS,
       hardCapMs,
+      perCallMs: RUN_PER_CALL_TIMEOUT_MS,
+      claudeCallMs: RUN_CALL_CONFIG.claudeCallTimeoutMs,
     },
   },),);
 
@@ -182,6 +196,7 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
     hardCapMs,
     builtInCapMinutes: HARD_CAP_MINUTES,
     perCallMs: RUN_PER_CALL_TIMEOUT_MS,
+    claudeCallMs: RUN_CALL_CONFIG.claudeCallTimeoutMs,
     spendCeilingUsd,
     graceNote: input.graceNote,
     writerNote: input.writerNote,
@@ -209,14 +224,40 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
     console.log(offLine,);
 
   /**
-   Gate ending the pass when the router finds every provider dry (`pass-dry-stop.ts`).
+   When the processing loop began, on the monotonic clock, set once the loop starts: a refusal cannot reach the gate
+   before it, and the gate counts the pass unbounded until then.
    */
-  const dryStop = createPassDryStop();
+  const loopClock: { began?: number; } = {};
+
+  /**
+   Milliseconds the pass has left before its soft budget or hard cap, whichever is shorter; unbounded before the loop
+   starts. The gate parks only for a return inside it, and the seat reader waits only for one inside it.
+
+   @returns Milliseconds left
+   */
+  function passLeftMs(): number {
+    return (loopClock.began === undefined)
+      ? Number.POSITIVE_INFINITY
+      : Math.min(
+        SOFT_BUDGET_MS - (now() - loopClock.began),
+        hardCapMs,
+      );
+  }
+
+  /**
+   Gate ending the pass when the router finds every provider dry, or parking it until NeuralWatt's energy returns when
+   that fits what the pass has left (`pass-dry-stop.ts`).
+   */
+  const dryStop = createPassDryStop({ passLeftMs, },);
 
   /**
    Shared client using measured production provider concurrency, guarded so a dry refusal stops the pass.
    */
-  const client = dryStop.guard({ client: input.newClient({ promptPayloadDir, },), },);
+  const client = dryStop.guard({ client: input.newClient({
+    promptPayloadDir,
+    maxHoldMs: hardCapMs,
+    passLeftMs,
+  },), },);
 
   if (line.switched('plan',)) {
     console.log(passPlanLine({
@@ -248,6 +289,7 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
    Start of the processing loop on the monotonic clock (ledger B78).
    */
   const start = now();
+  loopClock.began = start;
 
   await runPassQueue({
     pending,
@@ -280,6 +322,8 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
         stageSettings: input.stageSettings,
         // The refusal that ended an entry reaches the gate even where no guarded call carried it.
         endRun: dryStop.trip,
+        // Asked after the trip with the entry's own failure, so its TALLY line says parked and not failed.
+        parked: dryStop.parkedFor,
       },);
     },
   },);
