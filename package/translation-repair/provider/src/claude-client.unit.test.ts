@@ -721,7 +721,7 @@ await describe({
         const { logged, } = await infoLinesDuring({
           run: async () =>
             await warnLinesDuring({
-              run: async () => await askCat({ client, modelId: 'claude-sonnet-5-5', },),
+              run: async () => await askCat({ client, modelId: 'claude-sonnet-5-5-effort-low', },),
             },),
         },);
 
