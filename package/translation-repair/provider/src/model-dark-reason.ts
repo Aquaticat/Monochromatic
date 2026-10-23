@@ -109,6 +109,55 @@ export function modelDarkReason(
 }
 
 /**
+ How long a model that went dark is not warned about again: the budget layer's refusal cooldown, 300 s, since a dark model
+ stays dark at least that long and a fleet asked for it every round, repeating the same line hundreds of times.
+ */
+export const DARK_MODEL_WARN_COOLDOWN_MS = 300_000;
+
+/**
+ Decides, once per model per cooldown, whether the warn for a dark model is written.
+
+ @param now - clock the cooldown is read by, injectable for tests
+
+ @param cooldownMs - how long a model is not warned about again
+
+ @returns A check that is true the first time a model is asked about and again once the cooldown has passed
+
+ @example
+ ```ts
+ const due = createDarkWarnings({ now: monotonicMs, },);
+ due({ modelId: 'minimax-m3', },); // => true, then false until the cooldown has passed
+ ```
+ */
+export function createDarkWarnings(
+  {
+    now,
+    cooldownMs = DARK_MODEL_WARN_COOLDOWN_MS,
+  }: {
+    readonly now: () => number;
+    readonly cooldownMs?: number;
+  },
+): (args: { readonly modelId: string; },) => boolean {
+  /**
+   When each model was last warned about.
+   */
+  const warnedAt = new Map<string, number>();
+  return function isDue({ modelId, },): boolean {
+    /**
+     The instant of the last warn for this model.
+     */
+    const last = warnedAt.get(modelId,);
+    if ((last !== undefined) && ((now() - last) < cooldownMs))
+      return false;
+    warnedAt.set(
+      modelId,
+      now(),
+    );
+    return true;
+  };
+}
+
+/**
  Refuses a call whose model has no usable provider, saying in the log which model went dark and how each provider read,
  so a read of the run can tell a lost seat from the stop that ends the run.
 
@@ -117,6 +166,8 @@ export function modelDarkReason(
  @param reason - what {@link modelDarkReason} gave for it
 
  @param l - logger the line goes to
+
+ @param warn - whether the line is written; the refusal is thrown either way (default: it is)
 
  @throws {@link NoProviderForModelError} always, which the stage layers read as one seat's lost voice
 
@@ -130,10 +181,12 @@ export function refuseDarkModel(
     modelId,
     reason,
     l,
+    warn = true,
   }: {
     readonly modelId: string;
     readonly reason: string;
     readonly l: Logger;
+    readonly warn?: boolean;
   },
 ): never {
   /**
@@ -143,7 +196,8 @@ export function refuseDarkModel(
     tag: refuseDarkModel.name,
     l,
   },);
-  rl.warn(`${modelId} went dark: ${reason}`,);
+  if (warn)
+    rl.warn(`${modelId} went dark: ${reason}`,);
   throw new NoProviderForModelError({
     modelId,
     reason,

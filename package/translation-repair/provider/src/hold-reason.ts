@@ -1,8 +1,11 @@
 import {
+  neuralWattDayStartOfInstant,
   neuralWattTimeOfDayShort,
 } from './neuralwatt-day.ts';
 import type { NeuralWattReturn, } from './budget-routing.ts';
-import { NEURALWATT_RETURN_WAIT_BOUND_MS, } from './neuralwatt-return-hold.ts';
+import { durationWordsOf, } from './duration-words.ts';
+import type { NeuralWattDryness, } from './neuralwatt-return-hold.ts';
+import { keyUnblockTextOf, } from './neuralwatt-return-words.ts';
 import {
   PROVIDER_ORDER,
   type ProviderRecord,
@@ -10,12 +13,7 @@ import {
 
 //region Hold reason
 // THE WORDS A WAIT AND A REFUSAL GIVE FOR A HOLD, so a read of the run can tell a refusal's hold from NeuralWatt's day
-// starting again, and a refusal past the bound states when NeuralWatt returns.
-
-/**
- Milliseconds in a second, for the bound as the sentence states it.
- */
-const MS_PER_SECOND = 1_000;
+// starting again, and a refusal states why NeuralWatt reads dry and nothing it does not know.
 
 /**
  Names the providers whose hold is the shortest, with NeuralWatt's day start where NeuralWatt is one of them.
@@ -25,6 +23,9 @@ const MS_PER_SECOND = 1_000;
  @param shortest - the shortest running hold, as `shortestHold` read it
 
  @param neuralwatt - what the run knows of NeuralWatt's day
+
+ @param neuralwattHeldByReturn - whether NeuralWatt's hold is its day start and not a refusal's, since a refusal that
+ holds it longer is the hold that won and the day start is not its reason (default: it is)
 
  @returns The providers in spending order, or `no provider` where nothing is held
 
@@ -39,10 +40,12 @@ export function holdReasonOf(
     holds,
     shortest,
     neuralwatt,
+    neuralwattHeldByReturn = true,
   }: {
     readonly holds: ProviderRecord<number>;
     readonly shortest: number;
     readonly neuralwatt: NeuralWattReturn;
+    readonly neuralwattHeldByReturn?: boolean;
   },
 ): string {
   /**
@@ -54,7 +57,8 @@ export function holdReasonOf(
   if (holders.length === 0)
     return 'no provider';
   return holders.map(function nameOf(provider,): string {
-    return ((provider === 'neuralwatt') && (neuralwatt.kind === 'at'))
+    return ((provider === 'neuralwatt') && neuralwattHeldByReturn
+      && (neuralwatt.kind === 'at'))
       ? `neuralwatt, whose day starts again at ${neuralWattTimeOfDayShort({ msOfDay: neuralwatt.msOfDay, },)} UTC`
       : provider;
   },)
@@ -62,25 +66,41 @@ export function holdReasonOf(
 }
 
 /**
- The clause a refusal adds when NeuralWatt reads dry and its day starts again, which no wait took because it is past the
- bound.
+ The clause a refusal adds for why NeuralWatt reads dry, only the true cause: a blocked key states its own time, energy
+ held by calls in flight says so, a day the account still shows spent past its start says that, and a run that learned no
+ day start says that. A spent day whose return is named states the time and the distance.
 
- @param neuralwatt - what the run knows of NeuralWatt's day
+ @param dryness - why NeuralWatt reads dry as the last reading found it
 
- @returns One sentence stating the time of day and the bound, or no sentence where the run decided no day start
+ @returns One sentence, or none where NeuralWatt is not dry
 
  @example
  ```ts
- beyondBoundClausesOf({ neuralwatt: { kind: 'at', msOfDay: 69_308_000, }, },);
+ dryCauseClausesOf({ dryness: { kind: 'key-blocked', until: '2026-10-23T05:00:00.000Z', }, },);
  ```
  */
-export function beyondBoundClausesOf({ neuralwatt, }: { readonly neuralwatt: NeuralWattReturn; },): readonly string[] {
-  if (neuralwatt.kind !== 'at')
+export function dryCauseClausesOf({ dryness, }: { readonly dryness: NeuralWattDryness; },): readonly string[] {
+  if (dryness.kind === 'wet')
     return [];
+  if (dryness.kind === 'key-blocked')
+    return [`NeuralWatt reads dry because its key allowance is blocked until ${keyUnblockTextOf({ until: dryness.until, },)}`,];
+  if (dryness.kind === 'reserved')
+    return ['NeuralWatt reads dry because calls in flight hold the energy the settled calls leave',];
+  if (dryness.kind === 'no-day-start')
+    return ['NeuralWatt reads dry because this run learned no day start for it',];
+
+  /**
+   The time of day the day starts again, when the reading's day start parses.
+   */
+  const { msOfDay, } = neuralWattDayStartOfInstant({ instant: dryness.dayStart, },);
+  /**
+   The day start as the sentence states it.
+   */
+  const at = (msOfDay === undefined) ? 'its day start' : `${neuralWattTimeOfDayShort({ msOfDay, },)} UTC`;
+  if (dryness.returnsInMs === undefined)
+    return [`NeuralWatt reads dry because its account still shows the day spent past the day start at ${at}`,];
   return [
-    `NeuralWatt reads dry and its day starts again at ${
-      neuralWattTimeOfDayShort({ msOfDay: neuralwatt.msOfDay, },)
-    } UTC, which is past the ${String(NEURALWATT_RETURN_WAIT_BOUND_MS / MS_PER_SECOND,)} s this run waits for it`,
+    `NeuralWatt reads dry and its day starts again at ${at} (in ${durationWordsOf({ ms: dryness.returnsInMs, },)})`,
   ];
 }
 

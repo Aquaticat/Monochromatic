@@ -2,11 +2,14 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
+  durationWordsOf,
   EveryProviderDryError,
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
+import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { refusalText, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 
@@ -29,6 +32,18 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 // the refusal reached some other way (the seat reading finds every provider dry before any chat call is made, or a
 // layer re-raises it past the signal) hands it over at the entry's own catch (`trip`), so the pass stops however the
 // refusal arrived. Either way the gate logs one line when it trips and hands out its stop note once.
+//
+// A REFUSAL THAT NAMES A RETURN THE PASS CAN USE PARKS THE PASS INSTEAD OF STOPPING IT (the review of 2026-10-22, M2,
+// open to the owner's veto). The router bounds its own wait at 300 s because a call carries a 360 s deadline, so a
+// NeuralWatt day starting again 301 s away ended the call with a refusal that states the distance
+// (`neuralwattReturnsInMs`). When that return lies inside what the pass has left, ending the run would throw away the
+// energy that is about to come back, so the gate parks: the shared signal aborts so the entry in flight ends, the queue
+// puts that entry back at the front with no verdict (`runAttemptQueue`'s `interrupted`), waits out the return before
+// asking whether the pass goes on (`beforeNext`, which is `awaitPark`), and the attempt that follows starts on a live
+// signal. The wait sits between entries, outside every exchange, so no call deadline cuts it. A refusal that names no
+// return, or one past what the pass has left, trips as before and states the time. A refusal that arrives within a
+// minute of a park's end trips, since the account has then not shown the energy it should: parking again would wait a
+// day in a loop.
 
 /**
  Logger root for the gate, naming the entry whose call tripped it.
@@ -36,7 +51,41 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 const passDryStopLog = contextRoot({ tag: 'pass-dry-stop', },);
 
 /**
- Gate that turns the first every-provider-dry refusal into a stop of the whole pass.
+ What a pass has left when it bounds nothing: no limit.
+
+ @returns Infinity
+
+ @example
+ ```ts
+ const left = unboundedPass();
+ ```
+ */
+function unboundedPass(): number {
+  return Number.POSITIVE_INFINITY;
+}
+
+/**
+ Waits out a park.
+
+ @param ms - milliseconds to wait
+
+ @example
+ ```ts
+ await waitOutPark({ ms: 301_000, },);
+ ```
+ */
+async function waitOutPark({ ms, }: { readonly ms: number; },): Promise<void> {
+  await wait(ms,);
+}
+
+/**
+ How long after a park ends a dry refusal trips the gate instead of parking again: the budgets' freshness window
+ (`BUDGET_FRESH_MS`, 60 s in the provider package), within which a reading can still be the one taken before the return.
+ */
+export const PARK_SETTLE_MS = 60_000;
+
+/**
+ Gate that turns the first every-provider-dry refusal into a stop of the whole pass, or a park until the energy returns.
 
  @example
  ```ts
@@ -45,7 +94,8 @@ const passDryStopLog = contextRoot({ tag: 'pass-dry-stop', },);
  */
 export type PassDryStop = {
   /**
-   Aborted with the first refusal as its reason, which every entry's call deadline forwards.
+   Aborted with the first refusal as its reason, which every entry's call deadline forwards; a fresh signal once a park
+   has ended, so read it when an entry starts and not before.
    */
   readonly signal: AbortSignal;
 
@@ -55,15 +105,27 @@ export type PassDryStop = {
   readonly guard: <ClientT extends ModelClient,>(args: { readonly client: ClientT; },) => ClientT;
 
   /**
-   Hands the gate a failure that ended an entry, which trips it when the failure is the dry refusal and does nothing
-   for any other; for a refusal that reached the entry without passing a guarded call.
+   Hands the gate a failure that ended an entry, which trips it (or parks it) when the failure is the dry refusal and
+   does nothing for any other; for a refusal that reached the entry without passing a guarded call.
    */
   readonly trip: (args: { readonly error: unknown; },) => void;
 
   /**
-   Whether the dry router has been met, so the pass starts no further entry.
+   Whether the dry router has been met and the pass stops, so it starts no further entry.
    */
   readonly tripped: () => boolean;
+
+  /**
+   Whether a dry refusal parked the pass and the park has not been waited out, so the entry in flight was cut short and
+   goes back to the front of the queue.
+   */
+  readonly parked: () => boolean;
+
+  /**
+   Waits until the return the park is for, logging the end, and gives the gate a live signal again; nothing where the
+   pass is not parked.
+   */
+  readonly awaitPark: () => Promise<void>;
 
   /**
    The one line saying why the pass starts no further entry, the first time it is asked after the trip; none before
@@ -73,9 +135,29 @@ export type PassDryStop = {
 };
 
 /**
- What the gate remembers of its trip.
+ The return a park waits for.
+ */
+type DryPark = {
+  /**
+   Milliseconds to wait, the distance the refusal named.
+   */
+  readonly returnsInMs: number;
+
+  /**
+   The time of day the return falls at, with its zone.
+   */
+  readonly returnsAt: string;
+};
+
+/**
+ What the gate remembers of its trip and its parks.
  */
 type DryStopState = {
+  /**
+   Owner of the abort every entry's calls forward, replaced once a park has ended.
+   */
+  controller: AbortController;
+
   /**
    The first refusal that tripped the gate, whose cause stays the reason.
    */
@@ -85,6 +167,21 @@ type DryStopState = {
    Whether the stop note has been handed out.
    */
   noted: boolean;
+
+  /**
+   The sentence stating the return time that the stop note adds, empty where the refusal named none.
+   */
+  stopNote: string;
+
+  /**
+   The park in force: empty, or the one return the pass waits for.
+   */
+  readonly parks: DryPark[];
+
+  /**
+   When the last park ended on the gate's clock, absent before the first.
+   */
+  parkEndedAt?: number;
 };
 
 /**
@@ -122,53 +219,135 @@ async function tripping<ResultT,>(
 }
 
 /**
- Trips the gate on a dry refusal, once, and logs the trip.
+ States the return time of NeuralWatt's energy and why the pass did not wait for it, for the stop line.
 
- @param error - what a guarded call raised, or what ended an entry
+ @param returnsInMs - milliseconds until the return, absent where the refusal named none
 
- @param state - what the gate remembers of its trip
+ @param returnsAt - the time of day the return falls at, with its zone
 
- @param controller - owner of the abort every entry's calls forward
+ @param passLeftMs - milliseconds the pass has left
 
- @param l - logger the trip is written on
-
- @mutates state - holds the refusal, the first time only
-
- @mutates controller - aborts with the refusal as the reason, the first time only
+ @returns A sentence, empty where the refusal named no return
 
  @example
  ```ts
- tripOn({ error, state, controller, l, },);
+ const note = returnNoteOf({ returnsInMs: 301_000, returnsAt: '19:15:08 UTC', passLeftMs: 300_000, },);
  ```
  */
-function tripOn(
+function returnNoteOf(
+  {
+    returnsInMs,
+    returnsAt,
+    passLeftMs,
+  }: {
+    readonly returnsInMs?: number;
+    readonly returnsAt?: string;
+    readonly passLeftMs: number;
+  },
+): string {
+  if ((returnsInMs === undefined) || (returnsAt === undefined))
+    return '';
+  return ` NeuralWatt's energy returns at ${returnsAt}, in ${durationWordsOf({ ms: returnsInMs, },)}, which is past the ${
+    durationWordsOf({ ms: passLeftMs, },)
+  } this pass has left.`;
+}
+
+/**
+ Parks the pass for the return a refusal names, or trips the gate on it.
+
+ @param error - what a guarded call raised, or what ended an entry
+
+ @param state - what the gate remembers of its trip and its parks
+
+ @param l - logger the line is written on
+
+ @param passLeftMs - milliseconds the pass has left before its soft budget or hard cap
+
+ @param now - the gate's clock
+
+ @mutates state - holds the cause, or the park, and aborts the controller, the first time only
+
+ @example
+ ```ts
+ refuseOn({ error, state, l, passLeftMs, now, },);
+ ```
+ */
+function refuseOn(
   {
     error,
     state,
-    controller,
     l,
+    passLeftMs,
+    now,
   }: {
     readonly error: unknown;
     readonly state: DryStopState;
-    readonly controller: AbortController;
     readonly l: Logger;
+    readonly passLeftMs: () => number;
+    readonly now: () => number;
   },
 ): void {
-  if ((error instanceof EveryProviderDryError) && (state.cause === undefined)) {
-    state.cause = error;
-    tagged({
-      tag: tripOn.name,
-      l,
-    },)
-      .error(`every provider is out of budget, so the pass stops starting entries (cause: ${refusalText({ error, },)})`,);
-    controller.abort(error,);
+  // A PARK OR A TRIP IS MADE ONCE: calls of the same entry that meet the dry router after the first are the same event.
+  if ((!(error instanceof EveryProviderDryError)) || (state.cause !== undefined)
+    || (state.parks
+      .length
+      > 0))
+    return;
+
+  /**
+   Milliseconds the pass has left.
+   */
+  const left = passLeftMs();
+  /**
+   Whether the refusal names a return the pass can wait for, and no park ended just before it.
+   */
+  const parkable = (error.neuralwattReturnsInMs !== undefined) && (error.neuralwattReturnsAt !== undefined)
+    && (error.neuralwattReturnsInMs <= left)
+    && ((state.parkEndedAt === undefined) || ((now() - state.parkEndedAt) >= PARK_SETTLE_MS));
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: refuseOn.name,
+    l,
+  },);
+  if (parkable) {
+    state.parks
+      .push({
+        returnsInMs: nonNullishOrThrow(error.neuralwattReturnsInMs,),
+        returnsAt: nonNullishOrThrow(error.neuralwattReturnsAt,),
+      },);
+    rl.warn(
+      'every provider is out of budget, so the pass is parked until NeuralWatt\'s energy returns at '
+        + `${nonNullishOrThrow(error.neuralwattReturnsAt,)} (in ${durationWordsOf({ ms: nonNullishOrThrow(error.neuralwattReturnsInMs,), },)}); `
+        + `the entry in flight is left resumable and the pass resumes then (cause: ${refusalText({ error, },)})`,
+    );
+    state.controller
+      .abort(error,);
+    return;
   }
+  state.cause = error;
+  state.stopNote = returnNoteOf({
+    ...((error.neuralwattReturnsInMs === undefined) ? {} : { returnsInMs: error.neuralwattReturnsInMs, }),
+    ...((error.neuralwattReturnsAt === undefined) ? {} : { returnsAt: error.neuralwattReturnsAt, }),
+    passLeftMs: left,
+  },);
+  rl.error(`every provider is out of budget, so the pass stops starting entries (cause: ${refusalText({ error, },)})`,);
+  state.controller
+    .abort(error,);
 }
 
 /**
  Builds the gate one pass shares across its entries.
 
  @param l - logger the trip is written on; the gate's own, naming the entry in flight, when absent
+
+ @param passLeftMs - milliseconds the pass has left before its soft budget or hard cap, which a park must fit inside;
+ unbounded when absent
+
+ @param waitMs - waits out a park, injectable so a test does not wait; `wait` by default
+
+ @param now - the gate's clock, on which a refusal right after a park is told from a later one; `monotonicMs` by default
 
  @returns Gate whose signal aborts on the first every-provider-dry refusal a guarded client meets
 
@@ -179,17 +358,27 @@ function tripOn(
  ```
  */
 export function createPassDryStop(
-  { l = passDryStopLog, }: { readonly l?: Logger; } = {},
+  {
+    l = passDryStopLog,
+    passLeftMs = unboundedPass,
+    waitMs = waitOutPark,
+    now = monotonicMs,
+  }: {
+    readonly l?: Logger;
+    readonly passLeftMs?: () => number;
+    readonly waitMs?: (args: { readonly ms: number; },) => Promise<void>;
+    readonly now?: () => number;
+  } = {},
 ): PassDryStop {
   /**
-   Owns the abort every entry's calls forward.
+   What the gate remembers of its trip and its parks.
    */
-  const controller = new AbortController();
-
-  /**
-   What the gate remembers of its trip.
-   */
-  const state: DryStopState = { noted: false, };
+  const state: DryStopState = {
+    controller: new AbortController(),
+    noted: false,
+    stopNote: '',
+    parks: [],
+  };
 
   /**
    Hands a failure of a guarded call to the gate.
@@ -197,16 +386,23 @@ export function createPassDryStop(
    @param error - what the call raised
    */
   function trip({ error, }: { readonly error: unknown; },): void {
-    tripOn({
+    refuseOn({
       error,
       state,
-      controller,
       l,
+      passLeftMs,
+      now,
     },);
   }
 
   return {
-    signal: controller.signal,
+    /**
+     The live signal, which a park replaces.
+     */
+    get signal(): AbortSignal {
+      return state.controller
+        .signal;
+    },
 
     trip,
 
@@ -261,6 +457,31 @@ export function createPassDryStop(
       return state.cause !== undefined;
     },
 
+    parked: function parked(): boolean {
+      return state.parks
+        .length
+        > 0;
+    },
+
+    awaitPark: async function awaitPark(): Promise<void> {
+      /**
+       The return the park waits for, none where the pass is not parked.
+       */
+      const [park,] = state.parks;
+      if (park === undefined)
+        return;
+      await waitMs({ ms: park.returnsInMs, },);
+      state.parks
+        .splice(0,);
+      state.parkEndedAt = now();
+      state.controller = new AbortController();
+      tagged({
+        tag: createPassDryStop.name,
+        l,
+      },)
+        .info(`the pass resumes: NeuralWatt's energy was due at ${park.returnsAt} and the park of ${durationWordsOf({ ms: park.returnsInMs, },)} has ended`,);
+    },
+
     takeStopNotes: function takeStopNotes(): readonly string[] {
       if ((state.cause === undefined) || state.noted)
         return [];
@@ -268,7 +489,7 @@ export function createPassDryStop(
       return [
         'STOP every provider is out of budget, so no further entry starts; the entries already settled keep '
           + `their pages and the entry in flight is left resumable. Cause: ${state.cause
-            .message}`,
+            .message}${state.stopNote}`,
       ];
     },
   };

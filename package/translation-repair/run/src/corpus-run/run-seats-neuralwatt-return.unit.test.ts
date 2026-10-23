@@ -2,8 +2,8 @@
  Tests the seat reader against the XingZ6019 shape: NeuralWatt dry because the day's energy was spent, its day starting
  again 48 s after the entry stopped, and a writing bench short of its floor without it.
 
- The reader waits for a return the budgets name when it is near enough, and then seats the NeuralWatt writers; past the
- bound it refuses and the refusal states the time. The budgets are the real ones over stub meters and a stub wall
+ The reader waits for a return the budgets name, at any distance, and then seats the NeuralWatt writers; where no return
+ is named it refuses and the refusal states only the true cause. The budgets are the real ones over stub meters and a stub wall
  clock, so the return reaches the reader the way a run's does (a hold), and the times are scaled to milliseconds.
 
  Fixtures are cat-themed invention; every meter is a stub and no HTTP is made.
@@ -17,7 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { createProviderBudgets, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  createProviderBudgets,
+  type NeuralWattEnergy,EveryProviderDryError
+} from '@monochromatic-dev/translation-repair-provider';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import {
@@ -67,11 +70,11 @@ const FRESH_DAY = {
 
  @param msBeforeReturn - how long before NeuralWatt's day starts again the wall clock reads
 
- @param returnWaitBoundMs - the bound the budgets put on a return they name as a hold, which the seat reader does not have
-
  @param spent - the first NeuralWatt reading, the spent day unless the case says otherwise
 
  @param syntheticWet - whether Synthetic, the only other configured provider, has budget
+
+ @param lagging - whether the account still reads the spent day after the return (default: the new day shows)
 
  @returns The client the reader takes, and the energy reads counted
 
@@ -83,14 +86,14 @@ const FRESH_DAY = {
 function clientBefore(
   {
     msBeforeReturn,
-    returnWaitBoundMs = 300_000,
     spent = SPENT_DAY,
     syntheticWet = true,
+    lagging = false,
   }: {
     readonly msBeforeReturn: number;
-    readonly returnWaitBoundMs?: number;
-    readonly spent?: Readonly<Record<string, unknown>>;
+    readonly spent?: NeuralWattEnergy;
     readonly syntheticWet?: boolean;
+    readonly lagging?: boolean;
   },
 ) {
   const reads = { count: 0, };
@@ -98,7 +101,7 @@ function clientBefore(
     neuralwatt: {
       energy: async () => {
         reads.count += 1;
-        return (reads.count === 1) ? spent : FRESH_DAY;
+        return ((reads.count === 1) || lagging) ? spent : FRESH_DAY;
       },
       dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
     },
@@ -117,7 +120,6 @@ function clientBefore(
       DAY_START_MS_OF_DAY - msBeforeReturn,
     ),),
     returnMarginMs: 0,
-    returnWaitBoundMs,
   },);
   return {
     reads,
@@ -168,11 +170,11 @@ await describe({
 
     it({
       name: 'WAITS FOR A RETURN PAST THE 300 s A ROUTER CALL WAITS, since the seat reader sits outside every exchange and '
-        + 'is bounded by what the pass has left, the way Hyper\'s stated holds are: a return 80 ms away under a 60 ms '
-        + 'bound is waited for and the NeuralWatt writers are seated',
+        + 'is bounded by the entry\'s abort, the way Hyper\'s stated holds are: the budgets name the return as a hold at '
+        + 'any distance for a caller that names no bound, and the NeuralWatt writers are seated once it has passed',
       fn: async () => {
         const lines: string[] = [];
-        const { client, reads, } = clientBefore({ msBeforeReturn: 80, returnWaitBoundMs: 60, },);
+        const { client, reads, } = clientBefore({ msBeforeReturn: 80, },);
         const { unreachableWriters, } = await readPhaseSeats({
           client,
           phase: 'lanes',
@@ -235,14 +237,11 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES WITH THE STATED RETURN TIME when NeuralWatt\'s day starts again past the bound, naming the time of '
-        + 'day and the bound in the error and in the error line, without waiting',
+      name: 'STATES THAT THE ACCOUNT STILL SHOWS THE DAY SPENT when the reader waited for the return and the account has '
+        + 'not yet shown the new day, instead of waiting a whole day more for a return that has passed',
       fn: async () => {
         const lines: string[] = [];
-        const { client, reads, } = clientBefore({ msBeforeReturn: 82_800_000, },);
-        /**
-         What the seat reading stopped with.
-         */
+        const { client, reads, } = clientBefore({ msBeforeReturn: 60, syntheticWet: false, lagging: true, },);
         const refusal = await rejectionOf({
           promise: readPhaseSeats({
             client,
@@ -252,15 +251,10 @@ await describe({
             pollMs: 5,
           },),
         },);
-        expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
-        expect((refusal as WritingBenchUnreachableError).message,).toContain(
-          'NeuralWatt reads dry and its day starts again at 19:15:08 UTC, which is past the 300 s this run waits for it',
-        );
-        expect(lines.some(function errorLine(line,): boolean {
-          return line.startsWith('error JUDGE SEATS phase=lanes writing bench unreachable',)
-            && line.includes('its day starts again at 19:15:08 UTC',);
-        },),).toBe(true,);
-        expect(reads.count,).toBe(1,);
+        expect(reads.count,).toBe(2,);
+        expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
+        expect((refusal as EveryProviderDryError).message,).toContain('still reads the day spent',);
+        expect((refusal as EveryProviderDryError).neuralwattReturnsInMs,).toBeUndefined();
       },
     },),
   ],

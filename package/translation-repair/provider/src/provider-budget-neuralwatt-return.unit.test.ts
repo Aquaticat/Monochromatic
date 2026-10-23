@@ -90,8 +90,6 @@ const FRESH_DAY: Reading = {
 
  @param spent - the first reading, the spent day unless the case says otherwise
 
- @param returnWaitBoundMs - bound on a return the budgets name as a hold
-
  @param withXiaomi - whether the fleet carries a Xiaomi client, whose meter reads wet always, as the live roster's does
 
  @param marginMs - milliseconds the budgets add to a return (none unless the case moves it)
@@ -109,7 +107,6 @@ function budgetsBefore(
     clock,
     reads,
     spent = SPENT_DAY,
-    returnWaitBoundMs = 300_000,
     withXiaomi = false,
     marginMs = 0,
   }: {
@@ -117,7 +114,6 @@ function budgetsBefore(
     readonly clock?: { now: number; };
     readonly reads: { count: number; };
     readonly spent?: Reading;
-    readonly returnWaitBoundMs?: number;
     readonly withXiaomi?: boolean;
     readonly marginMs?: number;
   },
@@ -145,12 +141,11 @@ function budgetsBefore(
       DAY_START_MS_OF_DAY - msBeforeReturn,
     ),),
     returnMarginMs: marginMs,
-    returnWaitBoundMs,
   },);
 }
 
 /**
- The hold NeuralWatt carries after one reading of its spent day, under a bound of a minute.
+ The hold NeuralWatt carries after one reading of its spent day, for a caller that waits at most a minute.
 
  @param msBeforeReturn - how long before its day starts again the wall clock reads
 
@@ -166,10 +161,32 @@ async function heldFor({ msBeforeReturn, }: { readonly msBeforeReturn: number; }
     msBeforeReturn,
     clock: { now: 1_000, },
     reads: { count: 0, },
-    returnWaitBoundMs: 60_000,
   },);
   await budgets.read({ signal: SIGNAL, },);
-  return budgets.holds().neuralwatt;
+  return budgets.holds({ returnBoundMs: 60_000, },).neuralwatt;
+}
+
+/**
+ The hold a router call would wait out at a distance, with the production margin of a second.
+
+ @param msBeforeReturn - how long before its day starts again the wall clock reads
+
+ @returns Milliseconds NeuralWatt is held out for under the router's bound
+
+ @example
+ ```ts
+ const held = await heldWithin({ msBeforeReturn: 300_000, },);
+ ```
+ */
+async function heldWithin({ msBeforeReturn, }: { readonly msBeforeReturn: number; },): Promise<number> {
+  const budgets = budgetsBefore({
+    msBeforeReturn,
+    clock: { now: 1_000, },
+    reads: { count: 0, },
+    marginMs: 1_000,
+  },);
+  await budgets.read({ signal: SIGNAL, },);
+  return budgets.holds({ returnBoundMs: 300_000, },).neuralwatt;
 }
 
 await describe({
@@ -197,10 +214,9 @@ await describe({
           msBeforeReturn: 82_800_000,
           clock: { now: 1_000, },
           reads,
-          returnWaitBoundMs: 300_000,
         },);
         expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
-        expect(budgets.holds().neuralwatt,).toBe(0,);
+        expect(budgets.holds({ returnBoundMs: 300_000, },).neuralwatt,).toBe(0,);
       },
     },),
 
@@ -222,22 +238,9 @@ await describe({
         await far.read({ signal: SIGNAL, },);
         expect(far.holds().neuralwatt,).toBe(82_800_000,);
         expect(far.holds({ returnBoundMs: 300_000, },).neuralwatt,).toBe(0,);
-        /**
-         The hold a router call would wait out at a distance, with the production margin of a second.
-         */
-        const heldAt = async function heldAt({ msBeforeReturn, }: { readonly msBeforeReturn: number; },): Promise<number> {
-          const budgets = budgetsBefore({
-            msBeforeReturn,
-            clock: { now: 1_000, },
-            reads: { count: 0, },
-            marginMs: 1_000,
-          },);
-          await budgets.read({ signal: SIGNAL, },);
-          return budgets.holds({ returnBoundMs: 300_000, },).neuralwatt;
-        };
         expect([
-          await heldAt({ msBeforeReturn: 300_000, }),
-          await heldAt({ msBeforeReturn: 300_001, }),
+          await heldWithin({ msBeforeReturn: 300_000, }),
+          await heldWithin({ msBeforeReturn: 300_001, }),
         ],).toEqual([301_000, 0,],);
       },
     },),
@@ -269,7 +272,7 @@ await describe({
           msBeforeReturn: 48_000,
           clock: { now: 1_000, },
           reads: { count: 0, },
-          spent: { ...SPENT_DAY, spentWh: 100, reservedWh: 449.99, remainingWh: 0.01, },
+          spent: { ...SPENT_DAY, spentWh: 100, reservedWh: 449.9995, remainingWh: 0.0005, },
         },);
         expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
         expect(budgets.holds().neuralwatt,).toBe(0,);
@@ -354,10 +357,10 @@ await describe({
         const clock = { now: 1_000, };
         const budgets = budgetsBefore({ msBeforeReturn: 48_000, clock, reads, },);
         expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
-        clock.now += 47_999;
+        clock.now += 47_997;
         expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
         expect(reads.count,).toBe(1,);
-        clock.now += 1;
+        clock.now += 3;
         expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(false,);
         expect(reads.count,).toBe(2,);
         expect(budgets.holds().neuralwatt,).toBe(0,);
@@ -384,7 +387,7 @@ await describe({
       fn: async () => {
         const reads = { count: 0, };
         // THE REAL MONOTONIC CLOCK, since real time passes during the wait and the return is read against it.
-        const budgets = budgetsBefore({ msBeforeReturn: 50, reads, withXiaomi: true, },);
+        const budgets = budgetsBefore({ msBeforeReturn: 50, reads, withXiaomi: true, marginMs: 20, },);
         /**
          What the router's read comes to once the wait has ended, over the live roster's shape: a funded Xiaomi that
          serves a checker seat and nothing that writes, and every other provider unconfigured and so dry.

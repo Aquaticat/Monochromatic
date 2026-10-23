@@ -11,9 +11,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  beyondBoundClausesOf,
+  dryCauseClausesOf,
   holdReasonOf,
-  NEURALWATT_RETURN_WAIT_BOUND_MS,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -89,25 +88,44 @@ await describe({
     },),
 
     describe({
-      name: beyondBoundClausesOf.name,
+      name: dryCauseClausesOf.name,
       concurrency: 1,
       children: [
         it({
-          name: 'STATES THE DAY START AND THE BOUND for a run that decided one, so a refusal names when NeuralWatt '
-            + 'returns and why it was not waited for',
+          name: 'STATES THE KEY\'S OWN TIME for a blocked key, the calls in flight for held energy, and the learned '
+            + 'day start for an unanchored run: only the true cause',
           fn: async () => {
-            expect(beyondBoundClausesOf({ neuralwatt: XINGZ_DAY, },),).toEqual([
-              'NeuralWatt reads dry and its day starts again at 19:15:08 UTC, which is past the '
-                + `${String(NEURALWATT_RETURN_WAIT_BOUND_MS / 1_000,)} s this run waits for it`,
+            expect(dryCauseClausesOf({
+              dryness: { kind: 'key-blocked', until: '2026-10-23T05:00:00.000Z', },
+            },),).toEqual(['NeuralWatt reads dry because its key allowance is blocked until 2026-10-23T05:00:00.000Z',],);
+            expect(dryCauseClausesOf({ dryness: { kind: 'reserved', }, },),).toEqual([
+              'NeuralWatt reads dry because calls in flight hold the energy the settled calls leave',
+            ],);
+            expect(dryCauseClausesOf({ dryness: { kind: 'no-day-start', }, },),).toEqual([
+              'NeuralWatt reads dry because this run learned no day start for it',
             ],);
           },
         },),
 
         it({
-          name: 'SAYS NOTHING where the run decided no day start or NeuralWatt is off',
+          name: 'STATES THE DAY START AND THE DISTANCE for a spent day with a return, and that the account still shows '
+            + 'the day spent for one without',
           fn: async () => {
-            expect(beyondBoundClausesOf({ neuralwatt: { kind: 'unanchored', }, },),).toEqual([],);
-            expect(beyondBoundClausesOf({ neuralwatt: { kind: 'off', }, },),).toEqual([],);
+            expect(dryCauseClausesOf({
+              dryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 301_000, },
+            },),).toEqual(['NeuralWatt reads dry and its day starts again at 19:15:08 UTC (in 5 min 1 s)',],);
+            expect(dryCauseClausesOf({
+              dryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', },
+            },),).toEqual([
+              'NeuralWatt reads dry because its account still shows the day spent past the day start at 19:15:08 UTC',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'SAYS NOTHING where NeuralWatt is not dry',
+          fn: async () => {
+            expect(dryCauseClausesOf({ dryness: { kind: 'wet', }, },),).toEqual([],);
           },
         },),
       ],

@@ -12,6 +12,10 @@ import {
   type WritingReach,
 } from './budget-routing.ts';
 import { holdReasonOf, } from './hold-reason.ts';
+import {
+  NEURALWATT_RETURN_WAIT_BOUND_MS,
+  type NeuralWattDryness,
+} from './neuralwatt-return-hold.ts';
 import type {
   BudgetView,
   ProviderBudgets,
@@ -186,6 +190,51 @@ function measuredAt(
 }
 
 /**
+ What NeuralWatt's dryness adds to the refusal that ends the call: the cause the last reading found, and for a refusal
+ made before any wait the distance to a spent day's return, which the pass reads to park until it.
+
+ @param budgets - shared budget view, whose NeuralWatt cause is read when it reports one
+
+ @param waited - whether the call waited for a hold before this refusal
+
+ @returns The options to spread into the refusal, none for a view that knows nothing of NeuralWatt
+
+ @example
+ ```ts
+ new EveryProviderDryError({ measured, ...dryCauseOf({ budgets, waited: false, },), },);
+ ```
+ */
+function dryCauseOf(
+  {
+    budgets,
+    waited,
+  }: {
+    readonly budgets: ProviderBudgets;
+    readonly waited: boolean;
+  },
+): {
+  readonly neuralwattDryness?: NeuralWattDryness;
+  readonly neuralwattReturnsInMs?: number;
+  readonly afterWaiting?: boolean;
+} {
+  /**
+   Why NeuralWatt reads dry in the reading the refusal is made on.
+   */
+  const dryness = budgets.neuralwattDryness?.();
+  if (dryness === undefined)
+    return waited ? { afterWaiting: true, } : {};
+  return {
+    neuralwattDryness: dryness,
+    // The distance is named only before a wait: a refusal after one has been through the return already.
+    ...(((!waited) && (dryness.kind === 'spent-day')
+      && (dryness.returnsInMs !== undefined))
+      ? { neuralwattReturnsInMs: dryness.returnsInMs, }
+      : {}),
+    ...(waited ? { afterWaiting: true, } : {}),
+  };
+}
+
+/**
  Waits out the shortest running hold, reads the budgets again, and waits again while every provider still reads dry and
  some hold still runs.
 
@@ -203,6 +252,8 @@ function measuredAt(
 
  @param holds - the holds as the caller read them, with at least one running
 
+ @param returnBoundMs - the longest NeuralWatt return a wait takes
+
  @param writing - the providers whose wet reading keeps the run going
 
  @returns The first reading in which some provider that keeps the run going no longer reads dry
@@ -211,7 +262,9 @@ function measuredAt(
 
  @example
  ```ts
- const view = await readAfterHolds({ budgets, modelId, signal, pollMs: HOLD_POLL_MS, holds: budgets.holds(), },);
+ const view = await readAfterHolds({
+   budgets, modelId, signal, pollMs: HOLD_POLL_MS, holds: budgets.holds(), returnBoundMs: 300_000, writing,
+ },);
  ```
  */
 async function readAfterHolds(
@@ -221,6 +274,7 @@ async function readAfterHolds(
     signal,
     pollMs,
     holds,
+    returnBoundMs,
     writing,
   }: {
     readonly budgets: ProviderBudgets;
@@ -228,6 +282,7 @@ async function readAfterHolds(
     readonly signal: AbortSignal;
     readonly pollMs: number;
     readonly holds: ProviderRecord<number>;
+    readonly returnBoundMs: number;
     readonly writing: WritingReach;
   },
 ): Promise<BudgetView> {
@@ -263,6 +318,7 @@ async function readAfterHolds(
       holds: next.holds,
       shortest: next.shortest,
       neuralwatt: budgets.neuralwattReturn?.() ?? UNKNOWN_DAY,
+      neuralwattHeldByReturn: budgets.neuralwattHeldByReturn?.({ returnBoundMs, }) ?? true,
     },);
     rl.warn(
       `${modelId}: every provider is out for now (${held.join(', ',)}); `
@@ -292,7 +348,7 @@ async function readAfterHolds(
     },))
       return again;
 
-    next.holds = budgets.holds();
+    next.holds = budgets.holds({ returnBoundMs, },);
     next.shortest = shortestHold({ holds: next.holds, },);
     if (next.shortest === 0) {
       /**
@@ -312,6 +368,10 @@ async function readAfterHolds(
         idle: idleWetProviders({
           view: again,
           writing,
+        },),
+        ...dryCauseOf({
+          budgets,
+          waited: true,
         },),
         // Conditional spread keeps the day absent on budgets that report none.
         ...(neuralwatt === undefined ? {} : { neuralwatt, }),
@@ -340,6 +400,9 @@ async function readAfterHolds(
  @param writing - the providers whose wet reading keeps the run going, because they serve a model seated in a writing
  bench (`WritingReach`); every provider where the caller knows no roster
 
+ @param returnBoundMs - the longest NeuralWatt return this call waits for; the router's own bound by default, since a
+ call carries a deadline that cuts anything longer (`NEURALWATT_RETURN_WAIT_BOUND_MS`)
+
  @returns Every provider's dryness, holds waited out
 
  @throws {@link EveryProviderDryError} when every provider reads dry with no
@@ -358,6 +421,7 @@ export async function readBudgetsPastHolds(
     refused,
     pollMs,
     writing = EVERY_PROVIDER_COUNTS,
+    returnBoundMs = NEURALWATT_RETURN_WAIT_BOUND_MS,
   }: {
     readonly budgets: ProviderBudgets;
     readonly modelId: RosterModelId;
@@ -365,6 +429,7 @@ export async function readBudgetsPastHolds(
     readonly refused: ProviderName | typeof NOBODY_REFUSED;
     readonly pollMs: number;
     readonly writing?: WritingReach;
+    readonly returnBoundMs?: number;
   },
 ): Promise<BudgetView> {
   /**
@@ -396,7 +461,7 @@ export async function readBudgetsPastHolds(
   /**
    How long each provider's refusal still holds it out.
    */
-  const holds = budgets.holds();
+  const holds = budgets.holds({ returnBoundMs, },);
 
   // A REFUSAL THE BUDGETS GAVE NO HOLD HAS ALREADY ENDED (ledger B124).
   // `markRefused` holds a refuser whose meter reads wet only when another
@@ -442,6 +507,10 @@ export async function readBudgetsPastHolds(
         view: first,
         writing,
       },),
+      ...dryCauseOf({
+        budgets,
+        waited: false,
+      },),
       // Conditional spread keeps the day absent on budgets that report none.
       ...(neuralwatt === undefined ? {} : { neuralwatt, }),
     },);
@@ -453,6 +522,7 @@ export async function readBudgetsPastHolds(
     signal,
     pollMs,
     holds,
+    returnBoundMs,
     writing,
   },);
 }

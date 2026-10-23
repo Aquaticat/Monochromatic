@@ -2,6 +2,7 @@ import type {
   BudgetView,
   MeterState,
   ModelClient,
+  NeuralWattCause,
   NeuralWattReturn,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -59,8 +60,11 @@ export type RunClient = ModelClient & {
    below two of them (`doc/decision/translation-repair-short-bench-share.md`,
    ledger B27).
    `pass-reseat-hook.ts` reads it too, to re-seat only while a hold runs.
+
+   A NEURALWATT RETURN IS A HOLD AT ANY DISTANCE unless the caller names a bound (`returnBoundMs`): the seat reader sits
+   outside every exchange and waits for it, bounded by the entry's abort.
    */
-  readonly providerHolds: () => ProviderRecord<number>;
+  readonly providerHolds: (args?: { readonly returnBoundMs?: number; },) => ProviderRecord<number>;
 
   /**
    What the run knows of when NeuralWatt's free energy returns, read by the seat reader when it ends the run on every
@@ -68,6 +72,18 @@ export type RunClient = ModelClient & {
    budgets that report none, which the refusal then words as an undecided day.
    */
   readonly neuralwattReturn?: () => NeuralWattReturn;
+
+  /**
+   Why NeuralWatt reads dry in the last reading, so the seat reader's refusal states only the true cause, and whether the
+   hold that keeps it out is its day start (`NeuralWattCause`). Absent on a client built over budgets that report none.
+   */
+  readonly neuralwattDryness?: NeuralWattCause['neuralwattDryness'];
+
+  /**
+   Whether NeuralWatt's hold is its day start and not a refusal's; absent where the budgets report none, which the wait
+   words as the day start.
+   */
+  readonly neuralwattHeldByReturn?: NeuralWattCause['neuralwattHeldByReturn'];
 
   /**
    The providers whose wet reading keeps the run going, because they serve a model seated in a writing bench. The

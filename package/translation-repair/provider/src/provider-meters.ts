@@ -22,8 +22,10 @@ import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-p
 import type { HyperClient, } from './hyper-client.ts';
 import type { XiaomiClient, } from './xiaomi-client.ts';
 import type { NeuralWattClient, } from './neuralwatt-client.ts';
-import type { NeuralWattEnergy, } from './neuralwatt-energy.ts';
-import type { NeuralWattReturnWait, } from './neuralwatt-return-hold.ts';
+import {
+  neuralWattDrynessOf,
+  type NeuralWattDryness,
+} from './neuralwatt-return-hold.ts';
 import {
   neuralWattIsDry,
   neuralWattMeterLevel,
@@ -108,10 +110,10 @@ export type MeterLevel = {
   readonly fields: readonly string[];
 
   /**
-   How long until a dry reading is over, when the meter knows and the wait is worth taking: NeuralWatt's spent day
-   starting again within the bound (`neuralWattReturnWaitMs`). Absent for every other reading.
+   Why a dry reading is dry, and for NeuralWatt's spent day when it is over (`neuralWattDrynessOf`). Absent for every
+   other provider's reading.
    */
-  readonly returnsInMs?: number;
+  readonly dryness?: NeuralWattDryness;
 };
 
 /**
@@ -135,9 +137,9 @@ export type MeterRecord = {
   readonly fields: readonly string[];
 
   /**
-   How long until a dry reading is over, when the meter said so (`MeterLevel.returnsInMs`).
+   Why a dry reading is dry, when the meter said so (`MeterLevel.dryness`).
    */
-  readonly returnsInMs?: number;
+  readonly dryness?: NeuralWattDryness;
 };
 
 /**
@@ -191,8 +193,8 @@ export async function meterRecordOf(
         ? 'dry'
         : 'wet',
       fields: level.fields,
-      // Conditional spread keeps an absent return absent instead of undefined.
-      ...((level.returnsInMs === undefined) ? {} : { returnsInMs: level.returnsInMs, }),
+      // Conditional spread keeps an absent cause absent instead of undefined.
+      ...((level.dryness === undefined) ? {} : { dryness: level.dryness, }),
     };
   } catch (error) {
     // A monitoring failure must not become an outage: the router's failover
@@ -225,11 +227,6 @@ export async function meterRecordOf(
 }
 
 /**
- The wait of a meter whose reader names no return.
- */
-const NO_RETURN: NeuralWattReturnWait = { kind: 'none', };
-
-/**
  Meter of a provider that was never configured: dry, with nothing to report.
 
  DRY RATHER THAN UNREADABLE, because absence is known rather than failed: the
@@ -260,7 +257,7 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @param openrouter - fourth provider's credits reader, absent when unconfigured
 
- @param returnWaitMsOf - how long a spent NeuralWatt day waits for its return, absent where no return is named
+ @param wall - the wall clock and the margin a spent NeuralWatt day's return carries, absent where the cause is not asked for
 
  @param signal - abort signal of whichever call started this reading
 
@@ -280,7 +277,7 @@ export async function readEveryMeter(
     deepseek,
     xiaomi,
     openrouter,
-    returnWaitMsOf,
+    wall,
     signal,
   }: {
     readonly neuralwatt?: Pick<NeuralWattClient, 'energy'>;
@@ -290,7 +287,10 @@ export async function readEveryMeter(
     readonly deepseek?: Pick<DeepSeekClient, 'credits'>;
     readonly xiaomi?: Pick<XiaomiClient, 'spend'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;
-    readonly returnWaitMsOf?: (args: { readonly energy: NeuralWattEnergy; },) => NeuralWattReturnWait;
+    readonly wall?: {
+      readonly now: () => Date;
+      readonly marginMs: number
+    };
     readonly signal: AbortSignal;
   },
 ): Promise<ProviderRecord<MeterRecord>> {
@@ -318,15 +318,21 @@ export async function readEveryMeter(
            */
           const energy = await neuralwatt.energy({ signal, },);
           /**
-           How long until the spent day starts again, when that is worth waiting for.
+           Why the reading is dry, and for a spent day how long until it starts again.
            */
-          const wait = returnWaitMsOf?.({ energy, }) ?? NO_RETURN;
+          const dryness = (wall === undefined)
+            ? undefined
+            : neuralWattDrynessOf({
+              energy,
+              now: wall.now(),
+              marginMs: wall.marginMs,
+            },);
 
           return {
             dry: neuralWattIsDry({ energy, },),
             fields: neuralWattMeterLevel({ energy, },),
-            // Conditional spread keeps an absent return absent instead of undefined.
-            ...((wait.kind === 'wait') ? { returnsInMs: wait.ms, } : {}),
+            // Conditional spread keeps an absent cause absent instead of undefined.
+            ...((dryness === undefined) ? {} : { dryness, }),
           };
         },
       },),

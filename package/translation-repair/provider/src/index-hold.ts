@@ -19,8 +19,16 @@ export {
   idleWetProviders,
   type WritingReach,
 } from './budget-routing.ts';
+export { durationWordsOf, } from './duration-words.ts';
 export {
-  beyondBoundClausesOf,
+  keyUnblockTextOf,
+  namedDrynessOf,
+  openingClauseOf,
+  returnClauseOf,
+  returnTimeOf,
+} from './neuralwatt-return-words.ts';
+export {
+  dryCauseClausesOf,
   holdReasonOf,
 } from './hold-reason.ts';
 export {

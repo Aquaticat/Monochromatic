@@ -209,9 +209,25 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
     console.log(offLine,);
 
   /**
-   Gate ending the pass when the router finds every provider dry (`pass-dry-stop.ts`).
+   When the processing loop began, on the monotonic clock, set once the loop starts: a refusal cannot reach the gate
+   before it, and the gate counts the pass unbounded until then.
    */
-  const dryStop = createPassDryStop();
+  const loopClock: { began?: number; } = {};
+
+  /**
+   Gate ending the pass when the router finds every provider dry, or parking it until NeuralWatt's energy returns when
+   that fits what the pass has left (`pass-dry-stop.ts`).
+   */
+  const dryStop = createPassDryStop({
+    passLeftMs: function passLeftMs(): number {
+      return (loopClock.began === undefined)
+        ? Number.POSITIVE_INFINITY
+        : Math.min(
+          SOFT_BUDGET_MS - (now() - loopClock.began),
+          hardCapMs,
+        );
+    },
+  },);
 
   /**
    Shared client using measured production provider concurrency, guarded so a dry refusal stops the pass.
@@ -248,6 +264,7 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
    Start of the processing loop on the monotonic clock (ledger B78).
    */
   const start = now();
+  loopClock.began = start;
 
   await runPassQueue({
     pending,

@@ -101,6 +101,38 @@ function clockReading({ instants, }: { readonly instants: readonly number[]; },)
 }
 
 /**
+ Makes one chat call through a guarded client and returns the failure it raises.
+
+ @param client - the guarded client
+
+ @param signal - the call's abort handle
+
+ @returns The failure the call raised
+
+ @example
+ ```ts
+ const failure = await dryCallOf({ client: dryClient, signal: dryStop.signal, },);
+ ```
+ */
+async function dryCallOf(
+  {
+    client,
+    signal,
+  }: {
+    readonly client: ModelClient;
+    readonly signal: AbortSignal;
+  },
+): Promise<unknown> {
+  return await rejectionOf(async function dryCall(): Promise<unknown> {
+    return await client.chatText({
+      modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+      messages: [],
+      signal,
+    },);
+  },);
+}
+
+/**
  Chat call whose router finds every provider dry.
 
  @returns Never
@@ -513,13 +545,7 @@ await describe({
           now: clockReading({ instants: [0,], },),
           settle: async function settle({ entry, },) {
             made.push(entry.id,);
-            await rejectionOf(async function dryCall(): Promise<unknown> {
-              return await dryClient.chatText({
-                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                messages: [],
-                signal: dryStop.signal,
-              },);
-            },);
+            await dryCallOf({ client: dryClient, signal: dryStop.signal, },);
             return { kind: 'stopped', };
           },
         },);
@@ -548,7 +574,7 @@ await describe({
          */
         const waits: number[] = [];
         const dryStop = createPassDryStop({
-          passLeftMs: () => HANG_STOP_MS,
+          passLeftMs: () => 3_600_000,
           waitMs: async function waitMs({ ms, },): Promise<void> {
             waits.push(ms,);
           },
@@ -563,7 +589,7 @@ await describe({
             neuralwattReturnsInMs: 301_000,
           },);
         }
-        const dryClient = dryStop.guard({
+        const dryClient = dryStop.guard<ModelClient>({
           client: {
             chatText: refuseDryNamingReturn,
             chatJson: refuseDryNamingReturn,
@@ -596,13 +622,7 @@ await describe({
           settle: async function settle({ entry, },) {
             made.push(entry.id,);
             if (made.length === 1) {
-              await rejectionOf(async function dryCall(): Promise<unknown> {
-                return await dryClient.chatText({
-                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                  messages: [],
-                  signal: dryStop.signal,
-                },);
-              },);
+              await dryCallOf({ client: dryClient, signal: dryStop.signal, },);
               return { kind: 'stopped', };
             }
             return { kind: 'settled', };

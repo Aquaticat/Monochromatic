@@ -1332,6 +1332,8 @@ export function runClientFrom(
     providerMeterStates: budgets.readStates,
     providerHolds: budgets.holds,
     neuralwattReturn: budgets.neuralwattReturn,
+    neuralwattDryness: budgets.neuralwattDryness,
+    neuralwattHeldByReturn: budgets.neuralwattHeldByReturn,
     writingProviders: RUN_WRITING_PROVIDERS,
   };
 }

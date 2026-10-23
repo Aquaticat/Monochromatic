@@ -27,7 +27,10 @@ import {
   createCredentialHolds,
   reachPastCredentialHolds,
 } from './credential-hold.ts';
-import { refuseDarkModel, } from './model-dark-reason.ts';
+import {
+  createDarkWarnings,
+  refuseDarkModel,
+} from './model-dark-reason.ts';
 import { routedDecide, } from './provider-router-decide.ts';
 import {
   reachOfRequest,
@@ -208,6 +211,11 @@ export function createRoutingClient(
   },);
 
   /**
+   Whether the warn for a dark model is due, once per model per cooldown.
+   */
+  const darkWarnDue = createDarkWarnings({ now, },);
+
+  /**
    Providers held out for one model after a call there ran past the card's
    stream bound (class one hundred forty-eight), for the same backoff.
    */
@@ -362,6 +370,7 @@ export function createRoutingClient(
         modelId: request.modelId,
         reason: choice.reason,
         l,
+        warn: darkWarnDue({ modelId: request.modelId, },),
       },);
     }
 

@@ -20,13 +20,13 @@ await describe({
       name: 'NAMES NO RETURN UNTIL A READING NAMES ONE, and counts the wait down on the clock it is given',
       fn: async () => {
         const clock = { now: 1_000, };
-        const mark = createNeuralWattReturnMark({ now: () => clock.now, boundMs: 300_000, },);
+        const mark = createNeuralWattReturnMark({ now: () => clock.now, },);
         expect([mark.passed(), mark.leftMs(),],).toEqual([false, 0,],);
-        mark.replace({ returnsInMs: 48_000, },);
+        mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 48_000, }, },);
         expect([mark.passed(), mark.leftMs(),],).toEqual([false, 48_000,],);
-        clock.now += 47_999;
-        expect([mark.passed(), mark.leftMs(),],).toEqual([false, 1,],);
-        clock.now += 1;
+        clock.now += 47_997;
+        expect([mark.passed(), mark.leftMs(),],).toEqual([false, 3,],);
+        clock.now += 3;
         expect([mark.passed(), mark.leftMs(),],).toEqual([true, 0,],);
       },
     },),
@@ -64,10 +64,40 @@ await describe({
     it({
       name: 'FORGETS THE RETURN WHEN THE NEXT READING NAMES NONE, so a return never outlives the reading that named it',
       fn: async () => {
-        const mark = createNeuralWattReturnMark({ now: () => 1_000, boundMs: 300_000, },);
-        mark.replace({ returnsInMs: 48_000, },);
-        mark.replace({},);
+        const mark = createNeuralWattReturnMark({ now: () => 1_000, },);
+        mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 48_000, }, },);
+        mark.replace({ dryness: { kind: 'wet', }, },);
         expect([mark.passed(), mark.leftMs(),],).toEqual([false, 0,],);
+        expect(mark.dryness(),).toEqual({ kind: 'wet', },);
+      },
+    },),
+
+    it({
+      name: 'COUNTS THE DISTANCE DOWN in the cause it reports, and keeps the other causes as the reading gave them',
+      fn: async () => {
+        const clock = { now: 1_000, };
+        const mark = createNeuralWattReturnMark({ now: () => clock.now, },);
+        mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 48_000, }, },);
+        clock.now += 8_000;
+        expect(mark.dryness(),).toEqual({ kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 40_000, },);
+        mark.replace({ dryness: { kind: 'key-blocked', until: '2026-10-24T05:00:00.000Z', }, },);
+        expect([mark.dryness(), mark.leftMs(),],).toEqual([{ kind: 'key-blocked', until: '2026-10-24T05:00:00.000Z', }, 0,],);
+        mark.replace({ dryness: { kind: 'reserved', }, },);
+        expect(mark.dryness(),).toEqual({ kind: 'reserved', },);
+      },
+    },),
+
+    it({
+      name: 'NAMES NO RETURN FOR A SPENT DAY THE ACCOUNT STILL SHOWS AFTER ITS RETURN PASSED: the same day start read '
+        + 'again past its return is the account lagging, not a new day, so no 24 h wait follows',
+      fn: async () => {
+        const clock = { now: 1_000, };
+        const mark = createNeuralWattReturnMark({ now: () => clock.now, },);
+        mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 48_000, }, },);
+        clock.now += 48_000;
+        mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 86_400_000, }, },);
+        expect([mark.passed(), mark.leftMs(),],).toEqual([false, 0,],);
+        expect(mark.dryness(),).toEqual({ kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', },);
       },
     },),
   ],

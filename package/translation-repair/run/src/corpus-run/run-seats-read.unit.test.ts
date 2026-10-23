@@ -1012,7 +1012,7 @@ await describe({
             const xiaomiWet: BudgetView = { ...ALL_DRY, xiaomi: false, };
             // THE ROSTER PIN: the seats a Xiaomi-only fleet reaches, among the roster and the checkers. The case
             // means "a fleet with one wet provider that serves one checker seat", and this line says which seat that
-            // is today; the refusal below follows the roster's writing benches and not this seat.
+            // is today; the refusal that follows reads the roster's writing benches and not this seat.
             const { seats, } = await readPhaseSeats({
               client: viewClient({ providerDryness: scriptedViews({ views: [xiaomiWet,], },).read, },),
               phase: 'page consistency',

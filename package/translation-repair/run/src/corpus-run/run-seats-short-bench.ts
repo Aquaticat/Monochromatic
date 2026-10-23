@@ -45,7 +45,13 @@ import {
  */
 export type SeatReadingClient = Pick<
   RunClient,
-  'neuralwattReturn' | 'providerDryness' | 'providerHolds' | 'providerMeterStates' | 'writingProviders'
+  'neuralwattDryness'
+    | 'neuralwattHeldByReturn'
+    | 'neuralwattReturn'
+    | 'providerDryness'
+    | 'providerHolds'
+    | 'providerMeterStates'
+    | 'writingProviders'
   >;
 
 /**
@@ -180,8 +186,7 @@ export async function readDrynessPastShortBench(
   }
   if (shortest === 0) {
     /**
-     The unreachable benches with the return of a NeuralWatt that reads dry beyond the wait bound, so a refusal states
-     when the energy comes back and why it was not waited for.
+     The unreachable benches with why NeuralWatt reads dry, so a refusal states the true cause.
      */
     const stated = withNeuralWattReturn({
       clauses: unreachable,
@@ -273,6 +278,7 @@ export async function readDrynessPastShortBench(
       holds: waiting.holds,
       shortest: waiting.shortest,
       neuralwatt: neuralwattOf({ client, },),
+      neuralwattHeldByReturn: client.neuralwattHeldByReturn?.() ?? true,
     },);
     l.warn(
       `JUDGE SEATS phase=${phase} short of quorum: ${waiting.short
@@ -289,9 +295,7 @@ export async function readDrynessPastShortBench(
     },);
     waiting.waitedMs += waiting.shortest;
     l.info(`JUDGE SEATS phase=${phase} waited ${String(waiting.shortest,)}ms for ${reason}; the benches are read again`,);
-    /**
-     Dryness after the wait.
-     */
+    // Dryness after the wait.
     waiting.dry = await readDryness();
     /* oxlint-enable no-await-in-loop */
     /**
@@ -331,7 +335,7 @@ export async function readDrynessPastShortBench(
     dry: waiting.dry,
   },);
   /**
-   The same benches with the return of a NeuralWatt that still reads dry beyond the wait bound.
+   The same benches with why NeuralWatt still reads dry.
    */
   const statedAfter = withNeuralWattReturn({
     clauses: stillUnreachable,

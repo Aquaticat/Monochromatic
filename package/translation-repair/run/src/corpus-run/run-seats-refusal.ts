@@ -1,9 +1,10 @@
 import {
-  beyondBoundClausesOf,
   type BudgetView,
+  dryCauseClausesOf,
   everyWritingProviderDry,
   EveryProviderDryError,
   idleWetProviders,
+  type NeuralWattDryness,
   type NeuralWattReturn,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { markFailureWritten, } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -23,7 +24,10 @@ import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 /**
  What the refusal reads off the run client: how long each provider is held, and what the run knows of NeuralWatt's day.
  */
-export type RefusalClient = Pick<RunClient, 'neuralwattReturn' | 'providerHolds' | 'writingProviders'>;
+export type RefusalClient = Pick<
+  RunClient,
+  'neuralwattDryness' | 'neuralwattReturn' | 'providerHolds' | 'writingProviders'
+  >;
 
 /**
  What the run knows of NeuralWatt's day, for the words of a wait or a refusal.
@@ -60,8 +64,9 @@ export function writingProvidersOfClient(
 }
 
 /**
- The clauses of an unreachable writing bench with the return of a NeuralWatt that reads dry, which no wait took because it
- is past the bound, so the refusal states when the energy comes back.
+ The clauses of an unreachable writing bench with why NeuralWatt reads dry, only the true cause: a blocked key states its
+ own time, energy held by calls in flight says so, a day the account still shows spent says that, and a spent day with a
+ return states the time and the distance.
 
  @param clauses - one clause per writing bench below its floor
 
@@ -69,7 +74,7 @@ export function writingProvidersOfClient(
 
  @param client - run client, whose NeuralWatt day is read when it reports one
 
- @returns The clauses, with the return clause last where NeuralWatt reads dry and its day start is decided
+ @returns The clauses, with the cause last where NeuralWatt reads dry and the client reports one
 
  @example
  ```ts
@@ -84,18 +89,18 @@ export function withNeuralWattReturn(
   }: {
     readonly clauses: readonly string[];
     readonly dry: BudgetView;
-    readonly client: Pick<RunClient, 'neuralwattReturn' | 'writingProviders'>;
+    readonly client: Pick<RunClient, 'neuralwattDryness' | 'writingProviders'>;
   },
 ): readonly string[] {
   /**
-   The sentence about NeuralWatt's return, empty where NeuralWatt is not dry, its day start is not decided, or every
+   The sentence about why NeuralWatt reads dry, empty where NeuralWatt is not dry, the client reports no cause, or every
    provider that keeps the run going is dry, which the run-ending refusal states itself.
    */
   const beyond = (dry.neuralwatt && (!everyWritingProviderDry({
     view: dry,
     writing: writingProvidersOfClient({ client, },),
   },)))
-    ? beyondBoundClausesOf({ neuralwatt: neuralwattOf({ client, },), },)
+    ? dryCauseClausesOf({ dryness: client.neuralwattDryness?.() ?? { kind: 'wet', }, },)
     : [];
   return [
     ...clauses,
@@ -111,6 +116,8 @@ export function withNeuralWattReturn(
  @param holds - how long each provider's refusal still holds it out
 
  @param neuralwatt - what the run knows of NeuralWatt's day, left out where the client reports none
+
+ @param neuralwattDryness - why NeuralWatt reads dry, left out where the client reports none
 
  @param dry - the dryness view the reading stopped on, whose wet providers the refusal names with their reason
 
@@ -128,12 +135,14 @@ function everyProviderDryRefusal(
     phase,
     holds,
     neuralwatt,
+    neuralwattDryness,
     dry,
     writing,
   }: {
     readonly phase: JudgeSeatPhase;
     readonly holds: ProviderRecord<number>;
     readonly neuralwatt?: NeuralWattReturn;
+    readonly neuralwattDryness?: NeuralWattDryness;
     readonly dry: BudgetView;
     readonly writing: ProviderRecord<boolean>;
   },
@@ -160,6 +169,7 @@ function everyProviderDryRefusal(
     },),
     // Conditional spread keeps the day absent on a client that reports none.
     ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
+    ...((neuralwattDryness === undefined) ? {} : { neuralwattDryness, }),
   },);
 }
 
@@ -226,6 +236,7 @@ export function writtenRefusal(
       dry,
       writing,
       ...((client.neuralwattReturn === undefined) ? {} : { neuralwatt: client.neuralwattReturn(), }),
+      ...((client.neuralwattDryness === undefined) ? {} : { neuralwattDryness: client.neuralwattDryness(), }),
     },)
     : new WritingBenchUnreachableError({
       phase,

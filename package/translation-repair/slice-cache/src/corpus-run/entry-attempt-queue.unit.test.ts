@@ -26,6 +26,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 import { runAttemptQueue, } from '../../dist/final/node/index.mjs';
 
 /**
@@ -309,7 +310,7 @@ await describe({
     it({
       name: 'RESUMES AN ENTRY A WAIT INTERRUPTED at the front of the queue after the wait, reading no verdict for the '
         + 'interrupted attempt: no REATTEMPT, no STALLED, no INCOMPLETE line, and the entries behind it keep their order',
-      fn: async () => {
+      fn: async (ctx,) => {
         /**
          What happened, in order: attempts by id, and the waits taken before an attempt.
          */
@@ -318,41 +319,30 @@ await describe({
          Whether a wait is pending after the first attempt.
          */
         const pending = { wait: false, };
-        /**
-         Lines the queue printed.
-         */
-        const printed: string[] = [];
-        const original = console.log;
-        console.log = function capture(line: string,): void {
-          printed.push(line,);
-        };
-        try {
-          await runAttemptQueue({
-            pending: [{ id: 'tabby', }, { id: 'mainecoon', },],
-            cachedCountFor: async () => 0,
-            stopBeforeNext: () => false,
-            beforeNext: async function beforeNext(): Promise<void> {
-              if (pending.wait) {
-                events.push('wait',);
-                pending.wait = false;
-              }
-            },
-            interrupted: function interrupted(): boolean {
-              return pending.wait;
-            },
-            attempt: async function attempt({ entry, },): Promise<AttemptOutcome> {
-              events.push(entry.id,);
-              // The first attempt is cut by a wait the caller takes before the next one.
-              if (events.length === 1)
-                pending.wait = true;
-              return { kind: 'settled', };
-            },
-          },);
-        } finally {
-          console.log = original;
-        }
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        await runAttemptQueue({
+          pending: [{ id: 'tabby', }, { id: 'mainecoon', },],
+          cachedCountFor: async () => 0,
+          stopBeforeNext: () => false,
+          beforeNext: async function beforeNext(): Promise<void> {
+            if (pending.wait) {
+              events.push('wait',);
+              pending.wait = false;
+            }
+          },
+          interrupted: function interrupted(): boolean {
+            return pending.wait;
+          },
+          attempt: async function attempt({ entry, },): Promise<AttemptOutcome> {
+            events.push(entry.id,);
+            // The first attempt is cut by a wait the caller takes before the next one.
+            if (events.length === 1)
+              pending.wait = true;
+            return { kind: 'settled', };
+          },
+        },);
         expect(events,).toEqual(['tabby', 'wait', 'tabby', 'mainecoon',],);
-        expect(printed,).toEqual([],);
+        expect(printed.lines,).toEqual([],);
       },
     },),
 

@@ -10,7 +10,16 @@ import {
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { XiaomiSpend, } from './xiaomi-spend.ts';
 import { modelDarkReason, } from './model-dark-reason.ts';
-import { neuralWattTimeOfDayShort, } from './neuralwatt-day.ts';
+import {
+  namedDrynessOf,
+  type NeuralWattReturn,
+  openingClauseOf,
+  returnClauseOf,
+  returnTimeOf,
+} from './neuralwatt-return-words.ts';
+import type { NeuralWattDryness, } from './neuralwatt-return-hold.ts';
+
+export type { NeuralWattReturn, } from './neuralwatt-return-words.ts';
 
 //region Budget routing
 // WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
@@ -50,91 +59,6 @@ import { neuralWattTimeOfDayShort, } from './neuralwatt-day.ts';
 // owner's veto). A WET PROVIDER COUNTS AGAINST "EVERY PROVIDER DRY" ONLY IF IT SERVES A MODEL SEATED IN A WRITING BENCH
 // (`WritingReach`): Xiaomi's wet meter, whose one seat is a checker, no longer hid a fleet that could write nothing
 // (the lead's ruling of 2026-10-22 on the review's M3, open to the owner's veto).
-
-/**
- What the run knows of when NeuralWatt's free energy returns, for the refusal that ends the run to state.
-
- THREE CASES, because the answers differ: a run with no NeuralWatt client has no energy to return, a run whose client
- never learned its day start (no usable quota reading and no day-start setting) can name no time, and a run that
- decided the day start at launch states it. THE OWNER'S RULING OF 2026-10-20: the day is "not 00:00 UTC".
-
- @example
- ```ts
- const day: NeuralWattReturn = { kind: 'at', msOfDay: 69_308_000, };
- ```
- */
-export type NeuralWattReturn =
-  | {
-    /**
-     The day start was decided: it recurs at this time of day in UTC.
-     */
-    readonly kind: 'at';
-
-    /**
-     Milliseconds after 00:00 UTC the day starts at.
-     */
-    readonly msOfDay: number;
-  }
-    | {
-    /**
-     NeuralWatt is configured, but the run learned no day start.
-     */
-      readonly kind: 'unanchored';
-    }
-    | {
-    /**
-     NeuralWatt is off for this run: it has no client.
-     */
-      readonly kind: 'off';
-    };
-
-/**
- The opening clause about NeuralWatt, which says only what the run knows of it: spent when a day start is decided, refused
- until one is learned when none is, and absent when NeuralWatt is off and so has no energy to be out of.
-
- @param day - what the run knows of NeuralWatt's day
-
- @returns A clause ending in a comma and a space, or nothing for an off provider
-
- @example
- ```ts
- openingClauseOf({ day: { kind: 'off', }, },); // => ''
- ```
- */
-function openingClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string {
-  if (day.kind === 'off')
-    return '';
-  if (day.kind === 'unanchored')
-    return 'NeuralWatt is refused until its day start is learned, ';
-  return 'NeuralWatt has no free daily energy left, ';
-}
-
-/**
- The clause saying when NeuralWatt's free energy returns, one of three fixed sentences with at most a time of day.
-
- @param day - what the run knows of NeuralWatt's day
-
- @returns A clause ending in a semicolon and a space
-
- @example
- ```ts
- returnClauseOf({ day: { kind: 'at', msOfDay: 69_308_000, }, },);
- // => 'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run decided or learned; '
- ```
- */
-function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string {
-  if (day.kind === 'off')
-    return 'NeuralWatt is off for this run, so it returns no energy; ';
-  if (day.kind === 'unanchored')
-    return 'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return; ';
-
-  /**
-   The time of day, whole seconds where the day starts on one.
-   */
-  const timeOfDay = neuralWattTimeOfDayShort({ msOfDay: day.msOfDay, },);
-  return `NeuralWatt's free energy returns when its day starts again, at ${timeOfDay} UTC, the day start this run `
-    + 'decided or learned; ';
-}
 
 /**
  Which providers keep the run going while they read wet: those that serve a model seated in a writing bench, so a
@@ -354,6 +278,14 @@ export class EveryProviderDryError extends Error {
    @param idle - providers that read wet but serve no seat that writes, which the refusal names in place of an
    exhaustion they do not have; none where every provider reads dry
 
+   @param neuralwattDryness - why NeuralWatt reads dry as the reading found it, so the refusal states only that cause;
+   absent where the caller knows none
+
+   @param neuralwattReturnsInMs - milliseconds until NeuralWatt's day starts again, set ONLY BY A REFUSAL MADE BEFORE
+   ANY WAIT: the pass reads it to park until the return instead of ending the run, and a refusal after a wait names none
+
+   @param afterWaiting - whether the call waited for a hold before this refusal
+
    @example
    ```ts
    new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
@@ -364,25 +296,79 @@ export class EveryProviderDryError extends Error {
       measured = 'no reading cited',
       neuralwatt = { kind: 'unanchored', },
       idle = [],
+      neuralwattDryness,
+      neuralwattReturnsInMs,
+      afterWaiting = false,
     }: {
       readonly measured?: string;
       readonly neuralwatt?: NeuralWattReturn;
       readonly idle?: readonly ProviderName[];
+      readonly neuralwattDryness?: NeuralWattDryness;
+      readonly neuralwattReturnsInMs?: number;
+      readonly afterWaiting?: boolean;
     } = {},
   ) {
+    /**
+     Why NeuralWatt reads dry, as the refusal states it.
+     */
+    const named = namedDrynessOf({
+      ...((neuralwattDryness === undefined) ? {} : { neuralwattDryness, }),
+      ...((neuralwattReturnsInMs === undefined) ? {} : { neuralwattReturnsInMs, }),
+    },);
     super(
-      `Every provider is out of budget at once: ${openingClauseOf({ day: neuralwatt, },)}`
+      `Every provider is out of budget at once: ${
+        openingClauseOf({
+          day: neuralwatt,
+          ...named,
+        },)
+      }`
         + `${providerClausesOf({ idle, },)}. `
         + `${(idle.length === 0) ? 'Nothing further can be bought' : 'Nothing further that writes a page can be bought'}, `
         + 'so this run ends. '
-        + `${returnClauseOf({ day: neuralwatt, },)}Synthetic regenerates on its own schedule; Hyper, `
+        + `${
+          returnClauseOf({
+            day: neuralwatt,
+            ...named,
+            afterWaiting,
+          },)
+        }Synthetic regenerates on its own schedule; Hyper, `
         + 'DeepSeek and OpenRouter refill on purchase; Xiaomi, once refused for payment, is read again only after one '
         + 'of its calls settles, so a top-up is seen on the next launch; '
         + 'Bedrock\'s credit is never topped up. '
         + `Measured at the decision: ${measured}.`,
     );
     this.name = 'EveryProviderDryError';
+    if (neuralwattDryness !== undefined)
+      this.neuralwattDryness = neuralwattDryness;
+    if (neuralwattReturnsInMs !== undefined) {
+      this.neuralwattReturnsInMs = neuralwattReturnsInMs;
+      /**
+       The time of day the return falls at, for the line that parks the pass.
+       */
+      const { text, } = returnTimeOf({
+        day: neuralwatt,
+        ...named,
+      },);
+      if (text !== undefined)
+        this.neuralwattReturnsAt = text;
+    }
   }
+
+  /**
+   Why NeuralWatt read dry in the reading the refusal was made on, absent where the caller named none.
+   */
+  readonly neuralwattDryness?: NeuralWattDryness;
+
+  /**
+   Milliseconds until NeuralWatt's spent day starts again, margin included, present ONLY ON A REFUSAL MADE BEFORE ANY
+   WAIT: the pass parks for it when it has the time, and a refusal after a wait names none.
+   */
+  readonly neuralwattReturnsInMs?: number;
+
+  /**
+   The time of day the return falls at, with its zone, present with the distance.
+   */
+  readonly neuralwattReturnsAt?: string;
 }
 
 /**
