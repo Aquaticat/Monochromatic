@@ -114,6 +114,7 @@ await describe({
           syntheticWet: false,
           now: FROZEN,
         },);
+        const before = monotonicMs();
         const refusal = await rejectionOf({
           promise: readPhaseSeats({
             client,
@@ -123,7 +124,13 @@ await describe({
             pollMs: 5,
           },),
         },);
+        const after = monotonicMs();
         expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
+        // THE READ THAT NAMED THE RETURN IS STAMPED ON THE REFUSAL TOO, so its park waits from the read as the bench
+        // error's does.
+        const readAt = (refusal as EveryProviderDryError).neuralwattReadAtMs;
+        expect(readAt,).toBeGreaterThanOrEqual(before,);
+        expect(readAt,).toBeLessThanOrEqual(after,);
         expect((refusal as EveryProviderDryError).neuralwattReturnsInMs,).toBe(700,);
         expect((refusal as EveryProviderDryError).message,).toContain('19:15:08 UTC',);
         expect((refusal as EveryProviderDryError).message,).toContain('this pass has left',);

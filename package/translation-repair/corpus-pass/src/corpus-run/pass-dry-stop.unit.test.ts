@@ -92,6 +92,8 @@ const DAY_TWO = '2026-10-23T19:15:08.000Z';
 
  @param dayStart - day start the reading named
 
+ @param readAtMs - instant on the gate's clock of the seat reading that made the refusal, absent for the router's own
+
  @returns The refusal, carrying the distance, the time of day and the dryness that tells one spent day from the next
 
  @example
@@ -99,12 +101,21 @@ const DAY_TWO = '2026-10-23T19:15:08.000Z';
  const refusal = spentDayRefusal({ dayStart: DAY_ONE, },);
  ```
  */
-function spentDayRefusal({ dayStart, }: { readonly dayStart: string; },): EveryProviderDryError {
+function spentDayRefusal(
+  {
+    dayStart,
+    readAtMs,
+  }: {
+    readonly dayStart: string;
+    readonly readAtMs?: number;
+  },
+): EveryProviderDryError {
   return new EveryProviderDryError({
     measured: 'seat reading',
     neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
     neuralwattDryness: { kind: 'spent-day', dayStart, returnsInMs: 301_000, },
     neuralwattReturnsInMs: 301_000,
+    ...((readAtMs === undefined) ? {} : { neuralwattReadAtMs: readAtMs, }),
   },);
 }
 
@@ -550,9 +561,9 @@ await describe({
     },),
 
     it({
-      name: 'WAITS FROM THE READ THAT NAMED THE RETURN, NOT FROM THE TRIP: a bench error stamped with the instant the seat '
-        + 'reader read the distance is parked for the return less the 100 s the in-flight slices took to unwind, and '
-        + 'an error with no stamp is waited for from the trip',
+      name: 'WAITS FROM THE READ THAT NAMED THE RETURN, NOT FROM THE TRIP: a bench error or an all-dry refusal stamped '
+        + 'with the instant the seat reader read the distance is parked for the return less the 100 s the in-flight '
+        + 'slices took to unwind, and an error with no stamp is waited for from the trip',
       fn: async () => {
         /**
          Milliseconds each park waited for.
@@ -582,6 +593,18 @@ await describe({
         unstamped.trip({ error: benchErrorBefore({ returnsInMs: 301_000, }), },);
         await unstamped.awaitPark();
         expect(waits,).toEqual([201_000, 301_000,],);
+
+        // The seat reader's all-dry refusal carries the stamp as the bench error does.
+        const refused = createPassDryStop({
+          passLeftMs: () => 90_000_000,
+          now: () => 101_000,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        refused.trip({ error: spentDayRefusal({ dayStart: DAY_ONE, readAtMs: 1_000, }), },);
+        await refused.awaitPark();
+        expect(waits,).toEqual([201_000, 301_000, 201_000,],);
       },
     },),
 

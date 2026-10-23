@@ -469,5 +469,18 @@ await describe({
         expect((thrown as EveryProviderDryError).neuralwattReturnsInMs,).toBeLessThanOrEqual(600_000,);
       },
     },),
+
+    it({
+      name: 'CARRIES THE INSTANT OF THE READ THAT NAMED THE RETURN when the caller gives it, and none when it does '
+        + 'not, so a park counts the wait from the read and the router\'s own refusal counts it from its arrival',
+      fn: async () => {
+        /**
+         The refusal a seat reader makes, stamped.
+         */
+        const stamped = new EveryProviderDryError({ neuralwattReturnsInMs: 301_000, neuralwattReadAtMs: 1_000, },);
+        expect(stamped.neuralwattReadAtMs,).toBe(1_000,);
+        expect(new EveryProviderDryError({ neuralwattReturnsInMs: 301_000, },).neuralwattReadAtMs,).toBeUndefined();
+      },
+    },),
   ],
 },);
