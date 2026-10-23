@@ -134,7 +134,7 @@ export class HoldBoundError extends Error {
 /**
  The system clock, the wall clock outside a test.
 
- @returns The current instant
+ @returns Current instant
 
  @example
  ```ts

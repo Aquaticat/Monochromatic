@@ -651,7 +651,8 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  names the field. (The sentence as main wrote it also gave a reason about artifacts that was false, corrected on
  2026-10-23: the scheduler counts every `*.json` as settled, so settled entries are not run again; see the artifact
  generation paragraph of `provider/src/enum-case-fold.ts`.) The every-provider-dry stop of the same day
- (`bae1bb310e`) moves no version: it changes whether the next entry starts, not what a settlement may be cached as. No record has been written at 44, which this change sets first.
+ (`bae1bb310e`) moves no version: it changes whether the next entry starts, not what a settlement may be cached
+ as. No record has been written at 44, which this change sets first.
 
  The system text and answer schemas (first set as 44 on the Claude route): the system text of 2026-10-22 (R4 of the
  third review of the Claude route), where the sentence naming the

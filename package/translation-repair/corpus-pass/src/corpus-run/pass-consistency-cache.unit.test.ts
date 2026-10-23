@@ -223,11 +223,12 @@ await describe({
           },
         },),
         it({
-          name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version eight names '
-            + 'a run whose sheets list the labels a reply may use, whose replies may write a label in another form of it, whose '
-            + 'choice among candidates is run off when it splits, whose house rule protects readers only from the account of '
-            + 'how a death or an attempt happened, whose rounds close under the last-seat grace of 2026-10-22 (ledger B816), '
-            + 'and whose reader takes a label that differs from a listed one only in its capital as the listed label',
+          name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version '
+            + 'eight names a run whose sheets list the labels a reply may use, whose replies may write a label in '
+            + 'another form of it, whose choice among candidates is run off when it splits, whose house rule '
+            + 'protects readers only from the account of how a death or an attempt happened, whose rounds close '
+            + 'under the last-seat grace of 2026-10-22 (ledger B816), and whose reader takes a label that differs '
+            + 'from a listed one only in its capital as the listed label',
           fn: async () => {
             expect({
               version: CONSISTENCY_CACHE_VERSION,

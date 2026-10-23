@@ -124,8 +124,8 @@ const DRY_HOLD_MS = 300_000;
 
 /**
  A hold short enough for a case to wait it out. A case here needs a hold only to be running, so a case that does not
- report its hold through the cap names this one, and a case whose bench stays short can also end every hold at a named
- read (`holdEndsAtRead`).
+ report its hold through the cap names this one, and a case whose bench stays short can also end every hold at a
+ named read (`holdEndsAtRead`).
  */
 const SHORT_HOLD_MS = 40;
 

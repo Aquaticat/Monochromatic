@@ -440,7 +440,10 @@ await describe({
           name: 'ROUTES SYNTHETIC AS DRY and reports the dry state to the seat reader, from the budget layer over a real client',
           fn: async () => {
             const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText: SPENT_RENAMED_WEEKLY_BODY, },], },);
-            const budgets = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },), },);
+            const budgets = createProviderBudgets({
+              maxHoldMs: TEST_MAX_HOLD_MS,
+              synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
+            },);
             const signal = AbortSignal.timeout(HANG_STOP_MS,);
 
             expect((await budgets.read({ signal, },)).synthetic,).toBe(true,);

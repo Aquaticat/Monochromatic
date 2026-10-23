@@ -178,14 +178,14 @@ await describe({
         // silent stage; XingZ6018 slice 85, a panel that heard nobody cached as examined): moved the same way, for the record
         // and the rule that stores it.
         //
-        // VERSION 44 ON 2026-10-22 ON THE CLAUDE ROUTE (the fence length left the system text of the candidate selection, R4 of
-        // the third review of the Claude route): moved the same way.
+        // VERSION 44 ON 2026-10-22 ON THE CLAUDE ROUTE (the fence length left the system text of the candidate
+        // selection, R4 of the third review of the Claude route): moved the same way.
         //
-        // VERSION 45 ON 2026-10-23 ON THE CLAUDE ROUTE (the reader takes a value that differs from a listed enum or const value
-        // only in capitalization as the listed value): moved the same way.
+        // VERSION 45 ON 2026-10-23 ON THE CLAUDE ROUTE (the reader takes a value that differs from a listed enum or
+        // const value only in capitalization as the listed value): moved the same way.
         //
-        // VERSION 46 ON 2026-10-23 (the merge of the silent-stage move of main with the fence-length and case-fold moves of
-        // the Claude route, which no line held as one number): moved the same way.
+        // VERSION 46 ON 2026-10-23 (the merge of the silent-stage move of main with the fence-length and case-fold
+        // moves of the Claude route, which no line held as one number): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
           .toBe('cd4085ca1b4c02ea7b32420cf1a97c487718385a9dc6b0f44c765a59872a112f',);
       },

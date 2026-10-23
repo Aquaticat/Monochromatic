@@ -15,7 +15,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { warnLinesDuring, } from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
+import {
+  warnLinesDuring,
+} from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
 import {
   createWaitCap,
   HoldBoundError,
@@ -47,8 +49,8 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'READ AS NOTHING KNOWN: spendable, no level, no payment refusal, unreadable, not held out and no '
-            + 'hold end',
+          name: 'READ AS NOTHING KNOWN: spendable, no level, no payment refusal, unreadable, not held out '
+            + 'and no hold end',
           fn: async () => {
             expect({
               dry: spendableBeforeReading(),
@@ -131,8 +133,8 @@ await describe({
         },),
 
         it({
-          name: 'CUTS A WAIT PAST THE BOUND TO IT and writes the stated value once for each provider, not on every '
-            + 'repeat',
+          name: 'CUTS A WAIT PAST THE BOUND TO IT and writes the stated value once for each provider, '
+            + 'not on every repeat',
           fn: async () => {
             /**
              Cut over the case's bound.

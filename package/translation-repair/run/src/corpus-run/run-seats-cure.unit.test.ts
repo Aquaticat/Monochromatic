@@ -234,9 +234,9 @@ await describe({
     },),
 
     it({
-      name: 'WAITS WHEN THREE HOLDS EACH LEAVE THE OTHERS ENOUGH: NeuralWatt wet leaves the wide bench three seats short, Hyper '
-        + 'cures it alone and Synthetic with Bedrock cure it together, so with all three held none is necessary '
-        + 'and every one adds a seat',
+      name: 'WAITS WHEN THREE HOLDS EACH LEAVE THE OTHERS ENOUGH: NeuralWatt wet leaves the wide bench three seats '
+        + 'short, Hyper cures it alone and Synthetic with Bedrock cure it together, so with all three held none is '
+        + 'necessary and every one adds a seat',
       fn: async () => {
         expect(
           await readsUnderHolds({

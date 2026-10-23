@@ -76,7 +76,8 @@ await describe({
               dry: { ...NOBODY_SERVES, hyper: true, openrouter: true, xiaomi: true, },
             },),).toBe(
               'every provider serving this model is out of budget (hyper dry, openrouter dry); the providers that do '
-                + 'not serve it read neuralwatt wet, synthetic wet, bedrock wet, deepseek wet, xiaomi dry, anthropic wet',
+                + 'not serve it read neuralwatt wet, synthetic wet, bedrock wet, deepseek wet, '
+                + 'xiaomi dry, anthropic wet',
             );
           },
         },),

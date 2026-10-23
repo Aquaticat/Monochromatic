@@ -619,7 +619,8 @@ await describe({
             },),).toEqual({
               kind: 'unreachable',
               reason: 'every provider serving this model is out of budget (synthetic dry); the providers that do not '
-                + 'serve it read neuralwatt wet, bedrock wet, deepseek wet, xiaomi wet, anthropic wet, hyper wet, openrouter wet',
+                + 'serve it read neuralwatt wet, bedrock wet, deepseek wet, xiaomi wet, '
+                + 'anthropic wet, hyper wet, openrouter wet',
             },);
           },
         },),
@@ -662,7 +663,8 @@ await describe({
             },),).toEqual({
               kind: 'unreachable',
               reason: 'every provider serving this model is out of budget (deepseek dry, hyper dry, openrouter dry); '
-                + 'the providers that do not serve it read neuralwatt wet, synthetic wet, bedrock wet, xiaomi wet, anthropic wet',
+                + 'the providers that do not serve it read neuralwatt wet, synthetic wet, '
+                + 'bedrock wet, xiaomi wet, anthropic wet',
             },);
           },
         },),

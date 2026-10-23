@@ -93,8 +93,8 @@ await describe({
         it({
           name: 'IS AT VERSION 16: the reader of a model\'s reply takes a value that differs from a listed enum or '
             + 'const value only in capitalization as the listed value, and the key hashes the version, the shape of '
-            + 'the run and the texts, not the reader, so only this number retires a record written under the reader '
-            + 'before',
+            + 'the run and the texts, not the reader, so only this number retires a record written under the '
+            + 'reader before',
           fn: async () => {
             expect(REFINE_CACHE_VERSION,).toBe(16,);
           },
