@@ -25,9 +25,6 @@
  @module
  */
 
-import { glob, readFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
-
 import {
   describe,
   expect,
@@ -42,6 +39,11 @@ import {
   type JsonSchemaResponseFormat,
 } from '@monochromatic-dev/translation-repair-provider';
 import { CLAUDE_SCHEMA_PRODUCERS, } from '../dist/final/node/index.mjs';
+import {
+  declaringFilesOf,
+  familySources,
+  type SourceFile,
+} from './claude-schema-sources.test-fixture.ts';
 
 //region Not stage schemas
 // Files that are listed beside the producers without being one.
@@ -376,9 +378,50 @@ function schemasOf(): readonly {
 }
 
 /**
- Repository-relative root of the family, where the producers' paths start.
+ Files no family source has: a stage that builds its answer schema through a builder another stage shares, a builder
+ of its own that a second file calls, and a file that only mentions a builder in its documentation.
  */
-const FAMILY_ROOT = join(import.meta.dirname, '..', '..',);
+const IMAGINARY_SOURCES: readonly SourceFile[] = [
+  {
+    file: 'imaginary/src/cat-gate-stage.ts',
+    text: [
+      'export const CAT_GATE_RESPONSE_FORMAT = contestResponseFormat({',
+      '  schemaName: \'cat_gate\',',
+      '  verdicts: [\'purrs\', \'hisses\',],',
+      '  asksArchive: false,',
+      '},);',
+    ].join('\n',),
+  },
+  {
+    file: 'imaginary/src/dog-wire.ts',
+    text: [
+      'export function dogResponseFormat({ moods, }: { readonly moods: readonly string[]; },) {',
+      '  return {',
+      '    type: \'json_schema\',',
+      '    json_schema: {',
+      '      name: \'dog_mood\',',
+      '      schema: { type: \'object\', properties: { mood: { enum: moods, }, }, },',
+      '    },',
+      '  };',
+      '}',
+    ].join('\n',),
+  },
+  {
+    file: 'imaginary/src/dog-gate-stage.ts',
+    text: 'export const DOG_GATE_RESPONSE_FORMAT = dogResponseFormat({ moods: [\'wags\',], },);\n',
+  },
+  {
+    file: 'imaginary/src/mention.ts',
+    text: [
+      '/**',
+      ' Builds the question. The schema comes from the contest builder:',
+      '',
+      ' const format = contestResponseFormat({ schemaName: \'x\', verdicts: [], asksArchive: false, },);',
+      ' */',
+      'export const NOTHING = 1;',
+    ].join('\n',),
+  },
+];
 
 await describe({
   name: 'the answer schemas the Claude route sends',
@@ -392,19 +435,33 @@ await describe({
         /**
          Files of the family's source that write a `json_schema` response format.
          */
-        const declaring: string[] = [];
-        for await (const file of glob('*/src/**/*.ts', { cwd: FAMILY_ROOT, },)) {
-          if (file.includes('node_modules',) || file.includes('.test',))
-            continue;
-          if ((await readFile(join(FAMILY_ROOT, file,), 'utf8',)).includes('type: \'json_schema\'',))
-            declaring.push(file,);
-        }
+        const declaring = declaringFilesOf({ sources: await familySources(), },);
         expect(declaring.toSorted(),).toEqual([
           ...CLAUDE_SCHEMA_PRODUCERS.map(function fileOf({ file, },): string {
             return file;
           },),
           ...NOT_STAGE_SCHEMAS,
         ].toSorted(),);
+      },
+    },),
+
+    it({
+      name: 'FINDS A STAGE THAT BUILDS ITS ANSWER SCHEMA THROUGH A BUILDER OTHER STAGES SHARE, which the search '
+        + 'for the text json_schema alone misses: a file that calls the contest builder, a file that calls a '
+        + 'builder of its own kind that a second file calls, and not a file that only shows the builder in its '
+        + 'documentation',
+      fn: async () => {
+        /**
+         Files found over the family's source with the imaginary files beside it.
+         */
+        const declaring = declaringFilesOf({ sources: [...await familySources(), ...IMAGINARY_SOURCES,], },);
+        expect(declaring.filter(function isImaginary(file,): boolean {
+          return file.startsWith('imaginary/',);
+        },).toSorted(),).toEqual([
+          'imaginary/src/cat-gate-stage.ts',
+          'imaginary/src/dog-gate-stage.ts',
+          'imaginary/src/dog-wire.ts',
+        ],);
       },
     },),
 
