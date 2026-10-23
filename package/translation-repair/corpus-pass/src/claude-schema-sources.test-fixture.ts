@@ -198,7 +198,7 @@ function parseSources({ sources, }: { readonly sources: readonly SourceFile[]; }
 
  @param declared - function and the file that declares it
 
- @returns The builder
+ @returns Builder with the three fields and no other
 
  @example
  ```ts

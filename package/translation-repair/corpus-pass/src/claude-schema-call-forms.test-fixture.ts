@@ -36,7 +36,7 @@ export type FormCase = {
 
  @param lines - lines of the file
 
- @returns The lines, each ended by a newline
+ @returns Lines, each ended by a newline
 
  @example
  ```ts
