@@ -133,6 +133,43 @@ async function unitState(unit: string,): Promise<string> {
 }
 
 /**
+ Saves Auto-play on select off in the scratch configuration unless a session file is already there, so a launch whose
+ checks click a row sees it only select, and a second launch over the same configuration keeps what the first saved.
+ 
+ @param xdg - scratch XDG root of the session
+ 
+ @example
+ ```ts
+ await seedAutoPlayOff(xdg,);
+ ```
+ */
+async function seedAutoPlayOff(xdg: string,): Promise<void> {
+  /**
+   Directory the app reads its settings from under the scratch configuration home.
+   */
+  const directory = join(
+    xdg,
+    'config',
+    'musicplayer',
+  );
+
+  /**
+   The session file the app reads.
+   */
+  const file = join(
+    directory,
+    'session.json',
+  );
+  if (await pathExists(file,))
+    return;
+  await ensureDirectory(directory,);
+  await writeFile(
+    file,
+    '{"auto_play_on_select":false}',
+  );
+}
+
+/**
  Starts a session: scratch directories, then the compositor with the app inside a transient unit.
  
  @param options - window and appearance
@@ -246,6 +283,8 @@ export async function startSession(
     logPath,
     '',
   );
+  if (options.keepSettingsDefaults !== true)
+    await seedAutoPlayOff(xdg,);
 
   /**
    Reader of the session log.

@@ -1787,6 +1787,23 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     accepted in baseline, removed and restored ("Source guard controls passed ... 4 of 168 guards", 236 s), so the
     converted `.ts` script runs end to end. 164 of 168 guards remain unrun since the stacking and minimap landings;
     a full sweep is still a candidate real job. Conversion agent worktree and branches removed.
+    Guard sweep, owner chose "Run the sweep (Recommended)" (2026-10-23): per-guard driver `~/temp/agent/sweep-each.ts`
+    in unit `sweep-each` (one guard at a time, continues after a failing guard; results in
+    `~/temp/agent/sweep-each/summary.txt`, artifact dirs `~/temp/agent/ide-source-guard-*`, built tree
+    `~/temp/agent/land-sweep`). At the 89 of 153 mark: 84 PASS, 5 FAIL. Findings:
+    - `clip-rounding`: the test did not bite (still passed with the guard removed); strengthened in
+      `src/native/wrap_clip_tests.rs` (clip height assertion plus a band as tall as the cap), proven to fail with the
+      guard removed. UNCOMMITTED in the main checkout until the sweep ends.
+    - `tall-window-edge`: stale. Stacking raised `tile_cap`, so windows of 10,000 to 14,000 px no longer reach
+      `room` below 0.25 view heights in `recenter_edge`; removed run passes. Needs a test at a height where the stack
+      bound binds.
+    - `rewrap-view-past-cap`: stale. The test `a_view_taller_than_the_clip_cap_is_left_to_the_worker` passes with the
+      three removed checks (cause not yet found; read `begin` in `src/native/rewrap.rs` for which later defer fires).
+    - `tile-stamp-names-its-clip`, `frame-fit`, `refused-tile-keeps-image`: baseline exit 127, "Cannot create
+      temporary file in /tmp/" in the container link step while three guards ran in parallel; environment, to be
+      re-run alone and sequentially.
+    Next: when the sweep ends, re-run those three, repair the stale guards, prove each (baseline, removed, restored),
+    gate, commit explicit paths, push.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides

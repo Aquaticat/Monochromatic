@@ -50,6 +50,11 @@ export type SessionOptions = {
   readonly appArgs?: readonly string[];
   readonly extraEnv?: Readonly<Record<string, string>>;
   readonly height: number;
+  /**
+   True when the launch finds no saved settings at all, so Auto-play on select reads its default, on (D133). Every other
+   launch starts with the setting saved off, because most checks click a row and expect it to only select (D124).
+   */
+  readonly keepSettingsDefaults?: boolean;
   readonly label: string;
   readonly library: string;
   readonly scheme: 'dark' | 'light';

@@ -303,8 +303,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   (the Source Root,
    the selected track path,
    the position,
-   the playback mode, the two template texts, the Auto-play on select flag, `auto_play_on_select`, which is off
-   when the field is missing, and the four text sizes, `text_size_pane_title_px`, `text_size_group_heading_px`,
+   the playback mode, the two template texts, the Auto-play on select flag, `auto_play_on_select`, which is on
+   when the field is missing (D133), and the four text sizes, `text_size_pane_title_px`, `text_size_group_heading_px`,
    `text_size_folder_name_px` and `text_size_track_title_px`, each at its default when its field is missing or wrong;
    it keeps no queue,
    so nothing is pruned or remapped: the launch rescan rebuilds the queue).

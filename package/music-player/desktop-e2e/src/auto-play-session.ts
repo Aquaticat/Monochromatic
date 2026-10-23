@@ -1,8 +1,8 @@
 /**
- The auto-play session: the Auto-play on select setting (D129) in two launches of the app over the same scratch
- configuration. The first launch checks that a click only selects while the setting is off (D124), turns the setting on in
- Settings with the keyboard, and checks that a click then selects and plays at once; the second launch checks that the
- setting survived Ctrl+Q and a restart and still plays on a click.
+ The auto-play session: the Auto-play on select setting (D129, D133) in two launches of the app over the same scratch
+ configuration. The first launch checks that the setting is on in a fresh configuration and a click selects and plays at
+ once, turns the setting off in Settings with the keyboard, and checks that a click then only selects (D124); the second
+ launch checks that the off setting survived Ctrl+Q and a restart and a click still only selects.
 
  @example
  ```ts
@@ -167,6 +167,7 @@ async function launch(context: RunContext,): Promise<Session> {
       accent: '3B82F6',
       library: context.library,
       label: LABEL,
+      keepSettingsDefaults: true,
     },
   },);
   await session.waitState({
@@ -247,8 +248,8 @@ async function quitApp(session: Session,): Promise<void> {
 }
 
 /**
- Records the checks of the first launch: the setting is off at first, a click only selects, the switch in Settings turns it
- on, and a click then selects and plays; the app quits at the end.
+ Records the checks of the first launch: the setting is on at first and a click plays at once, the switch in Settings
+ turns it off, and a click then only selects; the app quits at the end.
 
  @param context - the run's context
 
@@ -280,66 +281,59 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
     b: NO_INDEX,
   };
   await recorder.check({
-    id: 'auto-play/off-by-default-click-selects-paused',
-    title: 'with no saved setting Auto-play on select is off, and a click on another row selects it paused (D124, D129)',
-    body: async function offByDefault(): Promise<string> {
+    id: 'auto-play/on-click-selects-and-plays',
+    title: 'with no saved setting Auto-play on select is on, and a click on another row selects it and starts it at once; '
+      + 'the selected row still toggles (D133)',
+    body: async function onByDefault(): Promise<string> {
       expect({
-        condition: !(await session.last()).auto_play_on_select,
-        message: 'the setting is on in a fresh configuration',
+        condition: (await session.last()).auto_play_on_select,
+        message: 'the setting is off in a fresh configuration',
       },);
-      await press({
-        session,
-        act: clickAt(ROW_A,),
-        until: function rowASelected(state: UiState,): boolean {
-          return state.current_index !== NO_INDEX;
-        },
-        what: 'a click on row A selecting it',
-      },);
-      if ((await session.last()).playing)
-        await press({
-          session,
-          act: clickAt(ROW_A,),
-          until: isPaused,
-          what: 'row A paused by a second click',
-        },);
-      rows.a = (await session.last()).current_index;
-      await press({
-        session,
-        act: clickAt(ROW_A,),
-        until: function rowAPlays(state: UiState,): boolean {
-          return (state.current_index === rows.a) && state.playing;
-        },
-        what: 'a click on the selected row A playing it',
-      },);
-
-      // Row B is another row while row A plays: with the setting off the click selects it and stops row A.
       /**
-       The state after the click on row B.
+       The state after the click on row A with the setting on.
        */
-      const selectedB = await press({
+      const playingA = await press({
+        session,
+        act: clickAt(ROW_A,),
+        until: function rowAPlaysAtOnce(state: UiState,): boolean {
+          return (state.current_index !== NO_INDEX) && state.playing;
+        },
+        what: 'a click on row A selecting it and playing it at once',
+      },);
+      rows.a = playingA.current_index;
+      await session.shot('auto-play-on-row-a-playing',);
+      /**
+       The state after the click on row B with the setting on.
+       */
+      const playingB = await press({
         session,
         act: clickAt(ROW_B,),
-        until: function rowBSelectedPaused(state: UiState,): boolean {
-          return (state.current_index !== rows.a) && (state.current_index !== NO_INDEX)
-            && (!state.playing);
+        until: function rowBPlaysAtOnce(state: UiState,): boolean {
+          return (state.current_index !== rows.a) && (state.current_index !== NO_INDEX) && state.playing;
         },
-        what: 'a click on row B selecting it paused and stopping row A',
+        what: 'a click on row B selecting it and playing it at once',
       },);
-      rows.b = selectedB.current_index;
-      await session.shot('auto-play-off-row-b-selected',);
-      await wait(STAYS_PAUSED_MS,);
-      expect({
-        condition: (!(await session.last()).playing) && ((await session.last()).current_index === rows.b),
-        message: 'row B started playing by itself with the setting off',
+      rows.b = playingB.current_index;
+      /**
+       The state after the click on the playing row B.
+       */
+      const pausedB = await press({
+        session,
+        act: clickAt(ROW_B,),
+        until: function rowBPaused(state: UiState,): boolean {
+          return (state.current_index === rows.b) && (!state.playing);
+        },
+        what: 'a click on the playing row B pausing it',
       },);
-      return `row A ${rows.a} played; the click on row B ${rows.b} left it paused with the setting off`;
+      return `row A ${rows.a} played at once, row B ${rows.b} played at once (${playingB.playing}) `
+        + `and the next click paused it (${!pausedB.playing})`;
     },
   },);
 
   await recorder.check({
-    id: 'auto-play/switch-turns-it-on',
-    title: 'End, Up and Space on the Auto-play on select row of Settings turn the setting on and leave Settings open (D129)',
-    body: async function switchTurnsItOn(): Promise<string> {
+    id: 'auto-play/switch-turns-it-off',
+    title: 'End, Up and Space on the Auto-play on select row of Settings turn the setting off and leave Settings open (D129)',
+    body: async function switchTurnsItOff(): Promise<string> {
       await press({
         session,
         act: chordKeys({
@@ -363,82 +357,84 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
         await wait(MOVE_SETTLE_MS,);
       }
       expect({
-        condition: isSettingsPage(await session.last(),) && !(await session.last()).auto_play_on_select,
+        condition: isSettingsPage(await session.last(),) && (await session.last()).auto_play_on_select,
         message: 'moving the keyboard position toggled the setting or left Settings',
       },);
       /**
        The state after Space on the switch row.
        */
-      const turnedOn = await press({
+      const turnedOff = await press({
         session,
         act: tapKey('space',),
-        until: function settingOn(state: UiState,): boolean {
-          return state.auto_play_on_select;
+        until: function settingOff(state: UiState,): boolean {
+          return !state.auto_play_on_select;
         },
-        what: 'Space turning Auto-play on select on',
+        what: 'Space turning Auto-play on select off',
       },);
       expect({
-        condition: isSettingsPage(turnedOn,),
-        message: `toggling the setting left Settings (route ${turnedOn.route})`,
+        condition: isSettingsPage(turnedOff,),
+        message: `toggling the setting left Settings (route ${turnedOff.route})`,
       },);
-      await session.shot('auto-play-switch-on',);
+      await session.shot('auto-play-switch-off',);
       await press({
         session,
         act: tapKey('escape',),
         until: isPlayerRoute,
         what: 'the player page after Escape',
       },);
-      return 'the switch row turned the setting on in place';
+      return 'the switch row turned the setting off in place';
     },
   },);
 
   await recorder.check({
-    id: 'auto-play/on-click-selects-and-plays',
-    title: 'with the setting on, a click on another row selects it and starts it at once; the selected row still toggles (D129)',
-    body: async function onClickPlays(): Promise<string> {
-      /**
-       The state after the click on row A with the setting on.
-       */
-      const playingA = await press({
+    id: 'auto-play/off-click-selects-paused',
+    title: 'with the setting off, a click on another row selects it paused and stops the playing row (D124, D129)',
+    body: async function offClickSelects(): Promise<string> {
+      // Row B is selected and paused from the first check; with the setting off a click on row A only selects it, and a
+      // second click on the selected row plays it.
+      await press({
         session,
         act: clickAt(ROW_A,),
-        until: function rowAPlaysAtOnce(state: UiState,): boolean {
+        until: function rowASelectedPaused(state: UiState,): boolean {
+          return (state.current_index === rows.a) && (!state.playing);
+        },
+        what: 'a click on row A selecting it paused',
+      },);
+      await press({
+        session,
+        act: clickAt(ROW_A,),
+        until: function rowAPlays(state: UiState,): boolean {
           return (state.current_index === rows.a) && state.playing;
         },
-        what: 'a click on row A selecting it and playing it at once',
+        what: 'a click on the selected row A playing it',
       },);
-      await session.shot('auto-play-on-row-a-playing',);
+
+      // Row B is another row while row A plays: with the setting off the click selects it and stops row A.
       /**
-       The state after the click on row B with the setting on.
+       The state after the click on row B.
        */
-      const playingB = await press({
+      const selectedB = await press({
         session,
         act: clickAt(ROW_B,),
-        until: function rowBPlaysAtOnce(state: UiState,): boolean {
-          return (state.current_index === rows.b) && state.playing;
-        },
-        what: 'a click on row B selecting it and playing it at once',
-      },);
-      /**
-       The state after the click on the playing row B.
-       */
-      const pausedB = await press({
-        session,
-        act: clickAt(ROW_B,),
-        until: function rowBPaused(state: UiState,): boolean {
+        until: function rowBSelectedPaused(state: UiState,): boolean {
           return (state.current_index === rows.b) && (!state.playing);
         },
-        what: 'a click on the playing row B pausing it',
+        what: 'a click on row B selecting it paused and stopping row A',
       },);
-      return `row A ${rows.a} played at once (${playingA.playing}), row B ${rows.b} played at once (${playingB.playing}) `
-        + `and the next click paused it (${!pausedB.playing})`;
+      await session.shot('auto-play-off-row-b-selected',);
+      await wait(STAYS_PAUSED_MS,);
+      expect({
+        condition: (!(await session.last()).playing) && ((await session.last()).current_index === rows.b),
+        message: 'row B started playing by itself with the setting off',
+      },);
+      return `row A ${rows.a} played; the click on row B ${selectedB.current_index} left it paused with the setting off`;
     },
   },);
   await quitApp(session,);
 }
 
 /**
- Records the check of the second launch: the setting saved in the first launch is still on, and a click plays.
+ Records the check of the second launch: the setting saved off in the first launch is still off, and a click only selects.
 
  @param context - the run's context
 
@@ -461,11 +457,11 @@ async function runSecondLaunch(context: RunContext,): Promise<void> {
   await using session = await launch(context,);
   await recorder.check({
     id: 'auto-play/setting-survives-restart',
-    title: 'the setting is still on after Ctrl+Q and a restart, and a click on a row plays it at once (D129)',
+    title: 'the setting is still off after Ctrl+Q and a restart, and a click on a row only selects it (D129)',
     body: async function settingSurvives(): Promise<string> {
       expect({
-        condition: (await session.last()).auto_play_on_select,
-        message: 'the setting was off again after the restart',
+        condition: !(await session.last()).auto_play_on_select,
+        message: 'the setting was on again after the restart',
       },);
       await keepTrackFromMovingOn(session,);
       /**
@@ -474,19 +470,18 @@ async function runSecondLaunch(context: RunContext,): Promise<void> {
       const state = await press({
         session,
         act: clickAt(ROW_B,),
-        until: function rowPlaysAtOnce(candidate: UiState,): boolean {
-          return (candidate.current_index !== NO_INDEX) && candidate.playing;
+        until: function rowSelectedPaused(candidate: UiState,): boolean {
+          return (candidate.current_index !== NO_INDEX) && (!candidate.playing);
         },
-        what: 'a click on row B selecting it and playing it at once after the restart',
+        what: 'a click on row B selecting it paused after the restart',
       },);
-      await session.shot('auto-play-after-restart-playing',);
-      await press({
-        session,
-        act: clickAt(ROW_B,),
-        until: isPaused,
-        what: 'a click on the playing row pausing it',
+      await session.shot('auto-play-after-restart-selected',);
+      await wait(STAYS_PAUSED_MS,);
+      expect({
+        condition: !(await session.last()).playing,
+        message: 'row B started playing by itself after the restart with the setting off',
       },);
-      return `the setting stayed on; the click on row ${state.current_index} played at once`;
+      return `the setting stayed off; the click on row ${state.current_index} left it paused`;
     },
   },);
 }
