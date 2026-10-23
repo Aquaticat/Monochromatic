@@ -104,6 +104,9 @@ import {
  @param endRun - told of the failure that ended the entry when it ends the run (`tallyCaughtEntry` says when), so the
  pass stops however the failure reached the entry
 
+ @param parked - asked after `endRun`: whether the pass is now parked for the failure, which the TALLY line prints as
+ `PARKED`
+
  @returns Whether an artifact was written
 
  @example
@@ -130,6 +133,7 @@ export async function runEntryPipeline(
     visualEvidenceReader,
     stageSettings,
     endRun,
+    parked,
   }: {
     readonly client: RunClient;
     readonly entry: CorpusPair;
@@ -148,6 +152,7 @@ export async function runEntryPipeline(
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly stageSettings: StageSettings;
     readonly endRun?: (args: { readonly error: unknown; },) => void;
+    readonly parked?: () => boolean;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -522,6 +527,7 @@ export async function runEntryPipeline(
       aborted: deadline.callSignal
         .aborted,
       ...((endRun === undefined) ? {} : { endRun, }),
+      ...((parked === undefined) ? {} : { parked, }),
     },);
   }
 }

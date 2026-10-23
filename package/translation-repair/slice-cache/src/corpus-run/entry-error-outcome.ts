@@ -115,6 +115,13 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
  Prints the TALLY line for an entry that raised out of its pipeline, and
  returns the scheduler's disposition for it.
 
+ THE STATUSES THIS LINE PRINTS, one per class of failure (a settled entry prints `SETTLED` and a declined one
+ `DECLINED`, from their own lines):
+ `ERROR` for a failure a whole-entry retry may resume, `INCOMPLETE` for stage-local work or a run-ending refusal that
+ no retry would change, and `PARKED` for an entry the pass put back at the front of its queue to wait for NeuralWatt's
+ energy to return, which earns no verdict and is attempted again after the wait. The `error=` text of a `PARKED` line
+ is the reason: the failure that named the return, with the time of day it falls at.
+
  @param entryId - entry that failed
 
  @param error - what it raised
@@ -127,6 +134,9 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
  @param endRun - told of the failure when it ends the run or carries a NeuralWatt return the pass may park for, before
  the entry is filed, so the pass stops starting entries (or parks) however the failure reached the entry: a guarded call
  carries it by the shared abort, the seat reading and a layer that re-raises it reach here without one
+
+ @param parked - asked after `endRun` has been told: true when the pass is now parked for the failure, so the entry
+ goes back to the front of its queue and the line prints `PARKED` and not the status the failure would have had
 
  @returns Scheduling disposition, never a settlement
 
@@ -142,12 +152,14 @@ export function tallyCaughtEntry(
     durationMs,
     aborted,
     endRun,
+    parked,
   }: {
     readonly entryId: string;
     readonly error: unknown;
     readonly durationMs: number;
     readonly aborted: boolean;
     readonly endRun?: (args: { readonly error: unknown; },) => void;
+    readonly parked?: () => boolean;
   },
 ): EntryErrorOutcome['outcome'] {
   /**
@@ -169,8 +181,12 @@ export function tallyCaughtEntry(
     for (const finding of error.findings)
       console.log(`INTERRUPTED ${entryId}: ${finding}`,);
   }
+  /**
+   Status the line prints: the entry's own, or `PARKED` where the pass is parked for it and will attempt it again.
+   */
+  const status = (parked?.() === true) ? 'PARKED' : classified.status;
   console.log(
-    `TALLY ${entryId} status=${classified.status} ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,
+    `TALLY ${entryId} status=${status} ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,
   );
   return classified.outcome;
 }

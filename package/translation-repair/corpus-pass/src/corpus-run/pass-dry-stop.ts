@@ -44,7 +44,9 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 // puts that entry back at the front with no verdict (`runAttemptQueue`'s `interrupted`), waits out the return before
 // asking whether the pass goes on (`beforeNext`, which is `awaitPark`), and the attempt that follows starts on a live
 // signal. The wait sits between entries, outside every exchange, so no call deadline cuts it, and it is for what is
-// left of the return when the queue asks (the return is stored as an instant on the gate's clock). A refusal that names
+// left of the return when the queue asks (the return is stored as an instant on the gate's clock, counted from the read
+// that named it where the error carries the stamp, so a slice that unwinds late does not push the wait past the
+// return). A refusal that names
 // no return, or one past what the pass has left, trips as before and states the time. A refusal for the day start of a
 // park that has ended trips, since the account has then not rolled to the new day it should have: parking again would
 // wait a day in a loop.
@@ -363,10 +365,18 @@ function refuseOn(
     l,
   },);
   if (parkable) {
+    /**
+     The instant the distance was read at: the seat reader's stamp on a bench error, whose slices in flight finish
+     before it reaches the gate, and the moment of the refusal for the router's own, which names the distance as it
+     is raised.
+     */
+    const readAtMs = (refusal instanceof WritingBenchUnreachableError)
+      ? (refusal.neuralwattReadAtMs ?? now())
+      : now();
     state.parks
       .push({
         returnsInMs: nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
-        atMs: now() + nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
+        atMs: readAtMs + nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
         returnsAt: nonNullishOrThrow(refusal.neuralwattReturnsAt,),
         ...((dayStart === undefined) ? {} : { dayStart, }),
       },);

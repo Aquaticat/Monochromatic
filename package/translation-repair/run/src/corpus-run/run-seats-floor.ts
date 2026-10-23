@@ -89,6 +89,12 @@ export class WritingBenchUnreachableError extends Error {
   readonly neuralwattDryness?: NeuralWattDryness;
 
   /**
+   The instant of the seat reading that named the return, on the monotonic clock (`monotonicMs`), present with the
+   distance so a park waits from the read and not from the moment the entry's failure reaches the gate.
+   */
+  readonly neuralwattReadAtMs?: number;
+
+  /**
    Names the phase that could not write and each bench below the floor.
 
    @param phase - phase the reading was taken for
@@ -101,6 +107,8 @@ export class WritingBenchUnreachableError extends Error {
    @param neuralwattReturnsAt - the time of day the return falls at, with its zone
 
    @param neuralwattDryness - why NeuralWatt read dry
+
+   @param neuralwattReadAtMs - the instant of the reading that named the return, on `monotonicMs`
    */
   public constructor(
     {
@@ -109,12 +117,14 @@ export class WritingBenchUnreachableError extends Error {
       neuralwattReturnsInMs,
       neuralwattReturnsAt,
       neuralwattDryness,
+      neuralwattReadAtMs,
     }: {
       readonly phase: string;
       readonly clauses: readonly string[];
       readonly neuralwattReturnsInMs?: number;
       readonly neuralwattReturnsAt?: string;
       readonly neuralwattDryness?: NeuralWattDryness;
+      readonly neuralwattReadAtMs?: number;
     },
   ) {
     /**
@@ -124,7 +134,8 @@ export class WritingBenchUnreachableError extends Error {
     const returnSentence = (neuralwattReturnsInMs === undefined)
       ? 'no provider has named a return the pass can wait for, so the entry stops for a pass that has the bench'
       : `NeuralWatt's energy returns at ${neuralwattReturnsAt ?? 'its day start'}, which would reach the floor, `
-        + 'so the entry stops and the pass parks for it when it has the time';
+        + 'so the entry stops; the pass may park for it where the return fits what the pass has left, and otherwise the '
+        + 'entry ends as a failure a later pass resumes';
     super(`writing bench unreachable at ${phase}: ${clauses.join('; ',)}; ${returnSentence}`,);
     this.name = 'WritingBenchUnreachableError';
     this.clauses = clauses;
@@ -134,6 +145,8 @@ export class WritingBenchUnreachableError extends Error {
       this.neuralwattReturnsAt = neuralwattReturnsAt;
     if (neuralwattDryness !== undefined)
       this.neuralwattDryness = neuralwattDryness;
+    if (neuralwattReadAtMs !== undefined)
+      this.neuralwattReadAtMs = neuralwattReadAtMs;
   }
 }
 

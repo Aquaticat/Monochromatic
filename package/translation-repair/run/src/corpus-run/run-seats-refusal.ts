@@ -9,6 +9,7 @@ import {
   pastPassWordsOf,
   returnTimeOf,
 } from '@monochromatic-dev/translation-repair-provider/ts';
+import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { markFailureWritten, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   PROVIDER_ORDER,
@@ -213,7 +214,8 @@ function everyProviderDryRefusal(
 
  @param day - what the run knows of NeuralWatt's day
 
- @returns The fields, the time of day left out where neither the reading nor the run names one
+ @returns The fields, with the instant of the read, the time of day left out where neither the reading nor the run
+ names one
 
  @example
  ```ts
@@ -234,6 +236,7 @@ function returnCarriedBy(
   readonly neuralwattReturnsInMs: number;
   readonly neuralwattReturnsAt?: string;
   readonly neuralwattDryness?: NeuralWattDryness;
+  readonly neuralwattReadAtMs: number;
 } {
   /**
    The time of day the return falls at.
@@ -244,6 +247,8 @@ function returnCarriedBy(
   },);
   return {
     neuralwattReturnsInMs: returnsInMs,
+    // The instant the distance was read at: the gate measures the park from it.
+    neuralwattReadAtMs: monotonicMs(),
     ...((text === undefined) ? {} : { neuralwattReturnsAt: text, }),
     ...((dryness === undefined) ? {} : { neuralwattDryness: dryness, }),
   };

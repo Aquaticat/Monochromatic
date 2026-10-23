@@ -85,6 +85,9 @@ import type {
 
  @param endRun - told of the failure that ended this entry when it ends the run, so the pass stops starting entries
 
+ @param parked - asked after `endRun`: whether the pass is now parked for the failure, which the TALLY line prints as
+ `PARKED`
+
  @returns Settlement, resumable operational failure, or stopped incomplete work
 
  @example
@@ -114,6 +117,7 @@ export async function settleEntry(
     overlap,
     stageSettings,
     endRun,
+    parked,
   }: {
     readonly client: RunClient;
     readonly entry: CorpusPair;
@@ -132,6 +136,7 @@ export async function settleEntry(
     readonly overlap: OverlapSetting;
     readonly stageSettings: StageSettings;
     readonly endRun?: (args: { readonly error: unknown; },) => void;
+    readonly parked?: () => boolean;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -184,6 +189,7 @@ export async function settleEntry(
     stageSettings,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
     ...((endRun === undefined) ? {} : { endRun, }),
+    ...((parked === undefined) ? {} : { parked, }),
   },);
   if (outcome.kind !== 'settled') {
     // The cache is what makes operational resume cheaper. Stopped quality work
