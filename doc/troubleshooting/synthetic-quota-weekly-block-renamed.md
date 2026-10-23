@@ -20,7 +20,9 @@ so the count grows.
 The `METERS` line then printed `synthetic=unreadable`,
 the seat reader printed `synthetic=unreadable-treated-as-spendable`,
 and the router sent Synthetic calls as if it had budget.
-The provider's weekly credit was in fact spent: the reading in the Root cause section says 0 percent remaining.
+By the keyed reading of 03:28:16 UTC on 2026-10-23 the weekly credit was spent (0 percent remaining).
+The last credit the log shows is 34.3 percent at 22:20:54 UTC, before the first refusal,
+so when the credit fell to 0 is unknown, and so is how long a dry provider was routed as spendable.
 
 ## Root cause
 
@@ -96,7 +98,7 @@ export function routesAsDry(
 }
 ```
 
-So the refusal hid a provider that was dry.
+So the refusal would hide a dry provider, as it did by 2026-10-23 03:28:16 UTC at the latest.
 `syntheticIsDry` (`package/translation-repair/provider/src/budget-routing.ts:369-378`) is true at zero,
 and `provider-meters.ts:315` feeds it the snapshot, so a body that had been read would have been `dry`:
 
@@ -132,6 +134,7 @@ git show 2376d5eb37:package/translation-repair/provider-stream/src/synthetic-quo
   > "$D/synthetic-quota.unit.test.ts"
 ln --symbolic "$PWD/package/translation-repair/provider-stream/node_modules" "$D/node_modules"
 env --ignore-environment PATH="$PATH" HOME="$HOME" node "$D/synthetic-quota.unit.test.ts"
+rm --recursive --force -- "$D"
 ```
 
 Output at `0fa4950b88`: exit 1, `[FAIL]` 9 (eight cases and the suite line).
@@ -153,6 +156,11 @@ Bodies that read cleanly:
   (with `syntheticWeeklyReturn=2026-10-23T05:03:47.000Z`) and as `wet` with budget left (no return field),
 - a deprecated key kept as `null` beside a valid block under the other name, in either direction,
 - a block carrying `nextRegenPercent` of any type, which is ignored,
+- both names present with the same `percentRemaining` and a different `nextRegenAt` (two instants, or an instant and a
+  value that is none): the window keeps `percentRemaining`, carries no `nextRegenAt`, the meter prints
+  `syntheticWeeklyReturn=unreadable` for a spent block, and one warning names both blocks and the field
+  (`Synthetic /quotas weeklyTokenLimit and planWeeklyLimit agree on percentRemaining and differ in nextRegenAt;
+  the return reads unreadable`), never a value,
 - a block whose `nextRegenAt` is missing, not a string, or a string that is no instant spelled the way
   `Date.prototype.toISOString` writes one (a value with a space and a newline, an empty one, a date-time with no zone,
   and one with no milliseconds): the window keeps `percentRemaining`, so a spent block still reads `dry`,
@@ -166,7 +174,7 @@ Bodies that are refused, each naming the field and the block's own keys and neve
 - no weekly key under either name, or only `null` ones,
 - a weekly key that holds neither `null` nor an object,
 - a `percentRemaining` that is missing or not a number,
-- both names present with blocks that read differently.
+- both names present with a different `percentRemaining`.
 
 ## Verified workarounds
 
@@ -211,8 +219,9 @@ Tradeoffs:
   and the warning names the block and the field, so the next reading shows it.
   The first ruling of that day refused the whole body, which read `unreadable` and routed as spendable,
   the failure this document is about, for a field whose only use is a log line.
-- Two blocks of one body that differ only in the spelling of `nextRegenAt` read differently
-  (one window has the instant, the other none) and are refused. No body is known to carry both.
+- Two blocks of one body that agree on `percentRemaining` and differ in `nextRegenAt` lose only the stated return,
+  because which instant is right is unknowable; two that differ in `percentRemaining` are refused,
+  since the decision field itself is then in doubt. No body is known to carry both names.
 - The stated return is a field of the `METERS` line only.
   The router and the seat reader still decide on the dry bit and on refusal holds;
   a dry meter does not create a hold, so the seat reader says `no provider has named its return` for Synthetic.
