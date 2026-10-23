@@ -25,12 +25,16 @@ export {
 export { poolLine, } from './corpus-run/editor-fidelity-pool-line.ts';
 export {
   type EditorCardTally,
+  editorDecisionRuleLine,
+  editorDefectOnlyLine,
   type EditorFidelityPlan,
   editorFidelityPlan,
   type EditorFidelityRow,
   editorFidelityRow,
   editorKeptLine,
   editorKeptRun,
+  editorKindLines,
+  type EditorKindTally,
   type EditorPair,
   type EditorPlannedRow,
   editorPreflightLine,
@@ -59,6 +63,7 @@ export {
   runEditorTrial,
 } from './corpus-run/editor-fidelity-trial.ts';
 export { EDITOR_FIDELITY_POOL, } from './editor-fidelity-pool-manifest.ts';
+export { insertionRegionWithNeighbours, } from './editor-fidelity-region.ts';
 export {
   type EditorFidelityScore,
   type EditorFixKind,

@@ -107,28 +107,18 @@ export function editorFidelityRow(
 }
 
 /**
- How one card's trials read, counted.
+ How a set of trials read, counted: the counts the card's tally keeps pooled and for each kind of defect.
 
  @example
  ```ts
- const tally: EditorCardTally = editorTallyOf({ cardId, rows, },);
+ const counts: EditorKindTally = { trials: 4, exact: 1, equivalent: 0, defectOnly: 1, collateral: 1, missed: 1, refused: 0, unusable: 1, };
  ```
  */
-export type EditorCardTally = {
+export type EditorKindTally = {
   /**
-   Card counted.
-   */
-  readonly cardId: RosterModelId;
-
-  /**
-   Trials the card was seated on.
+   Trials counted.
    */
   readonly trials: number;
-
-  /**
-   Trials whose defect was fixed, by any kind.
-   */
-  readonly fixed: number;
 
   /**
    Fixes that left the patched text equal to the reference.
@@ -141,7 +131,8 @@ export type EditorCardTally = {
   readonly equivalent: number;
 
   /**
-   Fixes that mended the defect and changed something else too.
+   Replies that removed the defect from the region and changed something else too. They are not a clean fix and are
+   not counted in the headline.
    */
   readonly defectOnly: number;
 
@@ -167,9 +158,34 @@ export type EditorCardTally = {
 };
 
 /**
+ How one card's trials read, counted, pooled and for each kind of defect.
+
+ @example
+ ```ts
+ const tally: EditorCardTally = editorTallyOf({ cardId, rows, },);
+ ```
+ */
+export type EditorCardTally = EditorKindTally & {
+  /**
+   Card counted.
+   */
+  readonly cardId: RosterModelId;
+
+  /**
+   The headline: trials whose defect was fixed cleanly, exact plus equivalent. Defect-only replies are not in it.
+   */
+  readonly fixed: number;
+
+  /**
+   The same counts for the trials of each kind of defect.
+   */
+  readonly byKind: Readonly<Record<EditorDamageKind, EditorKindTally>>;
+};
+
+/**
  How many of the rows had one fix kind, among the rows of one card.
 
- @param rows - the card's rows
+ @param rows - the rows counted
 
  @param fixed - fix kind counted
 
@@ -198,6 +214,61 @@ function countFixed(
         === fixed);
   },)
     .length;
+}
+
+/**
+ Counts each way a set of trials read.
+
+ @param rows - the rows counted, all of one card
+
+ @returns The counts; zero trials for no rows
+
+ @example
+ ```ts
+ const counts = kindTallyOf({ rows, },);
+ ```
+ */
+function kindTallyOf({ rows, }: { readonly rows: readonly EditorFidelityRow[]; },): EditorKindTally {
+  return {
+    trials: rows.length,
+    exact: countFixed({
+      rows,
+      fixed: 'exact',
+    },),
+    equivalent: countFixed({
+      rows,
+      fixed: 'equivalent',
+    },),
+    defectOnly: countFixed({
+      rows,
+      fixed: 'defect-only',
+    },),
+    collateral: rows.filter(function touched(row,): boolean {
+      return (row.reading
+        .kind
+        === 'answered')
+        && row.reading
+          .score
+          .collateral;
+    },)
+      .length,
+    missed: countFixed({
+      rows,
+      fixed: 'none',
+    },),
+    refused: rows.filter(function isRefused(row,): boolean {
+      return row.reading
+        .kind
+        === 'refused';
+    },)
+      .length,
+    unusable: rows.filter(function isUnusable(row,): boolean {
+      return row.reading
+        .kind
+        === 'unusable';
+    },)
+      .length,
+  };
 }
 
 /**
@@ -230,64 +301,50 @@ export function editorTallyOf(
     return row.cardId === cardId;
   },);
   /**
-   Fixes by kind.
+   The card's counts over every kind of defect.
    */
-  const exact = countFixed({
-    rows: own,
-    fixed: 'exact',
-  },);
-  /**
-   Fixes that matched the reference only after whitespace was collapsed.
-   */
-  const equivalent = countFixed({
-    rows: own,
-    fixed: 'equivalent',
-  },);
-  /**
-   Fixes that removed the defect but touched the rest of the region.
-   */
-  const defectOnly = countFixed({
-    rows: own,
-    fixed: 'defect-only',
-  },);
+  const pooled = kindTallyOf({ rows: own, },);
   return {
     cardId,
-    trials: own.length,
-    fixed: exact + equivalent
-      + defectOnly,
-    exact,
-    equivalent,
-    defectOnly,
-    collateral: own.filter(function touched(row,): boolean {
-      return (row.reading
-        .kind
-        === 'answered')
-        && row.reading
-          .score
-          .collateral;
-    },)
-      .length,
-    missed: countFixed({
-      rows: own,
-      fixed: 'none',
-    },),
-    refused: own.filter(function isRefused(row,): boolean {
-      return row.reading
-        .kind
-        === 'refused';
-    },)
-      .length,
-    unusable: own.filter(function isUnusable(row,): boolean {
-      return row.reading
-        .kind
-        === 'unusable';
-    },)
-      .length,
+    ...pooled,
+    fixed: pooled.exact + pooled.equivalent,
+    byKind: {
+      insertion: kindTallyOf({
+        rows: own.filter(function isInsertion(row,): boolean {
+          return row.damageKind === 'insertion';
+        },),
+      },),
+      alteration: kindTallyOf({
+        rows: own.filter(function isAlteration(row,): boolean {
+          return row.damageKind === 'alteration';
+        },),
+      },),
+    },
   };
 }
 
 /**
- The line that reports a card's tally.
+ Says one set of counts, the clean fix first and the defect-only count outside it.
+
+ @param counts - the counts said
+
+ @returns The counts as the lines write them
+
+ @example
+ ```ts
+ const said = countsSaid({ counts, },);
+ ```
+ */
+function countsSaid({ counts, }: { readonly counts: EditorKindTally; },): string {
+  return `clean fix ${String(counts.exact + counts.equivalent,)} of ${String(counts.trials,)} (exact ${
+    String(counts.exact,)
+  }, equivalent ${String(counts.equivalent,)}), defect only ${String(counts.defectOnly,)}, collateral ${
+    String(counts.collateral,)
+  }, missed ${String(counts.missed,)}, refused ${String(counts.refused,)}, unusable ${String(counts.unusable,)}`;
+}
+
+/**
+ The line that reports a card's tally, pooled over every kind of defect.
 
  @param tally - the card's tally
 
@@ -299,11 +356,84 @@ export function editorTallyOf(
  ```
  */
 export function editorTallyLine({ tally, }: { readonly tally: EditorCardTally; },): string {
-  return `EDITOR ${tally.cardId}: fixed ${String(tally.fixed,)} of ${String(tally.trials,)} (exact ${
-    String(tally.exact,)
-  }, equivalent ${String(tally.equivalent,)}, defect only ${String(tally.defectOnly,)}), collateral ${
-    String(tally.collateral,)
-  }, missed ${String(tally.missed,)}, refused ${String(tally.refused,)}, unusable ${String(tally.unusable,)}`;
+  return `EDITOR ${tally.cardId}: ${countsSaid({ counts: tally, },)}`;
+}
+
+/**
+ The lines that report a card's tally for each kind of defect, insertion first.
+
+ @param tally - the card's tally
+
+ @returns One line for each kind, without newlines
+
+ @example
+ ```ts
+ for (const said of editorKindLines({ tally, },))
+   log.info(said,);
+ ```
+ */
+export function editorKindLines({ tally, }: { readonly tally: EditorCardTally; },): readonly string[] {
+  /**
+   The counts of each kind.
+   */
+  const {
+    insertion,
+    alteration,
+  } = tally.byKind;
+  return [
+    `EDITOR ${tally.cardId} insertion: ${countsSaid({ counts: insertion, },)}`,
+    `EDITOR ${tally.cardId} alteration: ${countsSaid({ counts: alteration, },)}`,
+  ];
+}
+
+/**
+ The line that reports the replies that removed the defect and changed something else, which the headline leaves out.
+
+ @param tally - the card's tally
+
+ @returns The line, without a newline
+
+ @example
+ ```ts
+ log.info(editorDefectOnlyLine({ tally, },),);
+ ```
+ */
+export function editorDefectOnlyLine({ tally, }: { readonly tally: EditorCardTally; },): string {
+  /**
+   The counts of each kind.
+   */
+  const {
+    insertion,
+    alteration,
+  } = tally.byKind;
+  return `EDITOR ${tally.cardId} defect only, not in the clean fix count: ${String(tally.defectOnly,)} of ${
+    String(tally.trials,)
+  } (insertion ${String(insertion.defectOnly,)}, alteration ${String(alteration.defectOnly,)})`;
+}
+
+/**
+ The rule the arms are read by, stated before any arm asks: which counts are compared, what difference counts, and
+ what a tie keeps.
+
+ THE NOISE IS MEASURED, NOT ASSUMED. The two medium arms are one card run twice, so their own difference is the spread
+ a repeat shows. It is floored at 3 trials, about one standard deviation of a count out of forty (the square root of
+ forty quarters is 3.2), because two runs that happen to agree show no spread and a floor of zero would call any
+ difference real. A difference counts only when the pooled count is further from the mean of the two medium arms than
+ that, and neither kind of defect moves the other way: an effort that gains on alterations and loses on insertions
+ has not separated.
+
+ @returns The line, without a newline
+
+ @example
+ ```ts
+ log.info(editorDecisionRuleLine(),);
+ ```
+ */
+export function editorDecisionRuleLine(): string {
+  return 'RULE clean fix is exact plus equivalent, read pooled and per kind of defect; an effort differs from the '
+    + 'default (medium) only when its pooled clean fix count is further from the mean of the two medium arms than '
+    + 'the larger of 3 and the two medium arms\' own difference, and neither kind moves against it; any other '
+    + 'difference, and any tie, keeps the default effort';
 }
 
 /**

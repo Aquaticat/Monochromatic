@@ -29,11 +29,14 @@ import {
 } from './editor-fidelity-ceiling.ts';
 import {
   type EditorCardTally,
+  editorDecisionRuleLine,
+  editorDefectOnlyLine,
   editorFidelityPlan,
   type EditorFidelityRow,
   editorFidelityRow,
   editorKeptLine,
   editorKeptRun,
+  editorKindLines,
   type EditorPair,
   editorPreflightLine,
   editorTallyLine,
@@ -240,6 +243,7 @@ export async function runEditorFidelityProbe(
   for (const ceiling of ceilings)
     log.info(ceilingLine({ ceiling, },),);
   log.info(guardLine({ maxUsd, },),);
+  log.info(editorDecisionRuleLine(),);
 
   /**
    Operator-selected output root; calibration callers use a disposable directory.
@@ -396,8 +400,12 @@ export async function runEditorFidelityProbe(
       rows,
     },);
   },);
-  for (const tally of tallies)
+  for (const tally of tallies) {
     log.info(editorTallyLine({ tally, },),);
+    for (const said of editorKindLines({ tally, },))
+      log.info(said,);
+    log.info(editorDefectOnlyLine({ tally, },),);
+  }
   /**
    Full reviewed provenance accompanies model outcomes without corpus passages in standard output.
    */

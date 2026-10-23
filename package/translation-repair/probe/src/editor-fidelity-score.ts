@@ -5,19 +5,34 @@ import type { EditorFidelityTrial, } from './editor-fidelity-trials.ts';
 // strings the trial already holds.
 //
 // FIXED has three kinds, tried in order. EXACT: the patched text is the reference, byte for byte. EQUIVALENT: it
-// differs from the reference only in how much whitespace separates words. DEFECT-ONLY: the text at the defect is the
-// reference's but something else changed too, which is also collateral.
+// differs from the reference only in how much whitespace separates words, or follows the last word. DEFECT-ONLY: the
+// defect is gone from the quoted region but something else changed too, which is also collateral. Only EXACT and
+// EQUIVALENT are a clean fix; the probe's headline counts nothing else, because a reply that destroys the sentence
+// around a number, or deletes the region it was shown, reads as defect-only.
 //
-// WHY WHITESPACE IS THE ONE EQUIVALENCE. The apply gate replaces the region and joins nothing: an editor that removes
-// an inserted sentence leaves the separator on both sides of it, so the patched text carries one space or line break
-// more than the reference, and nothing else differs. Counting that as a miss would score the gate and not the
-// editor, and the repository's own splice (`spliceOutSentence`) draws the same line when it removes a sentence and
-// keeps one of the two separators. Runs of whitespace collapse to one space; no other normalization is applied, so
-// a changed word, number or punctuation mark never passes as equivalent.
+// WHY WHITESPACE IS THE ONE EQUIVALENCE. The apply gate replaces the region and joins nothing: an editor whose
+// replacement keeps a separator the reference lacks leaves the patched text with one space or line break more than the
+// reference, and nothing else differs. Counting that as a miss would score the gate and not the editor, and the
+// repository's own splice (`spliceOutSentence`) draws the same line when it removes a sentence and keeps one of the
+// two separators. Runs of whitespace collapse to one space, and whitespace at the very end of the text is ignored,
+// because a reviewed reference can end where its section ends and a perfect edit there leaves the separator that
+// preceded the removed sentence at the end; no other normalization is applied, so a changed word, number or
+// punctuation mark never passes as equivalent.
+//
+// WHEN THE DEFECT IS GONE FROM AN INSERTION. The inserted sentence is gone when the replacement shares no run of
+// `SHARED_RUN_CHARS` characters with it, case and spacing aside: a softened sentence still says what the original does
+// not, and the rule is that an addition is removed.
 //
 // COLLATERAL is any change outside the defect. The gate lets an edit land only inside the envelope, so a change
 // outside the region would be a finding about the gate and is reported as collateral, with the defect not isolated.
 // Inside the region, collateral is a change to the words around the defect.
+
+/**
+ Characters of the inserted sentence that a replacement may not repeat, in a row, if the sentence is to count as
+ removed. Long enough that two English sentences do not share a run by chance, short enough that a softened or
+ shortened copy of the sentence still does.
+ */
+const SHARED_RUN_CHARS = 16;
 
 /**
  How a fix read.
@@ -69,7 +84,8 @@ function isBlank({ character, }: { readonly character: string; },): boolean {
 
  @example
  ```ts
- const flat = collapseWhitespace({ text: 'a  b\n\nc', },); // 'a b c'
+ // flat is 'a b c'
+ const flat = collapseWhitespace({ text: 'a  b\n\nc', },);
  ```
  */
 function collapseWhitespace({ text, }: { readonly text: string; },): string {
@@ -98,13 +114,68 @@ function collapseWhitespace({ text, }: { readonly text: string; },): string {
 }
 
 /**
+ Whether a replacement repeats a run of the inserted sentence, however it is cased or spaced.
+
+ @param replacement - what the region became
+
+ @param sentence - the inserted sentence, separators included
+
+ @returns Whether some run of `SHARED_RUN_CHARS` characters of the sentence (the whole sentence when it is shorter)
+ appears in the replacement
+
+ @example
+ ```ts
+ const repeats = repeatsRun({ replacement: 'She travelled to a distant village.', sentence, },);
+ ```
+ */
+function repeatsRun(
+  {
+    replacement,
+    sentence,
+  }: {
+    readonly replacement: string;
+    readonly sentence: string;
+  },
+): boolean {
+  /**
+   The replacement without case or spacing.
+   */
+  const flatReplacement = collapseWhitespace({ text: replacement, },)
+    .toLowerCase();
+  /**
+   The sentence without case, spacing or its separators.
+   */
+  const flatSentence = collapseWhitespace({ text: sentence, },)
+    .trim()
+    .toLowerCase();
+  /**
+   Width of the run tested.
+   */
+  const width = Math.min(
+    SHARED_RUN_CHARS,
+    flatSentence.length,
+  );
+  if (width === 0)
+    return false;
+  for (let at = 0; at <= (flatSentence.length - width); at += 1) {
+    if (flatReplacement.includes(flatSentence.slice(
+      at,
+      at + width,
+    ),))
+      return true;
+  }
+  return false;
+}
+
+/**
  Whether the region of the edited text fixes the defect, by the family's own test.
 
  @param trial - trial read
 
  @param replacement - what the region became
 
- @returns Whether the defect is gone from the region and its clean content is back
+ @returns Whether the defect is gone from the region: the inserted sentence repeated nowhere in it, or the clean number
+ back and the altered one gone
 
  @example
  ```ts
@@ -120,8 +191,12 @@ function fixesDefect(
     readonly replacement: string;
   },
 ): boolean {
-  if (trial.damageKind === 'insertion')
-    return replacement.trim() === '';
+  if (trial.damageKind === 'insertion') {
+    return !repeatsRun({
+      replacement,
+      sentence: trial.damagedDefect,
+    },);
+  }
   return replacement.includes(trial.cleanDefect,) && (!replacement.includes(trial.damagedDefect,));
 }
 
@@ -155,9 +230,12 @@ export function scoreEditedText(
     };
   }
   /**
-   Whether the patched text is the reference once whitespace runs count as one.
+   Whether the patched text is the reference once whitespace runs count as one and whitespace at the end is ignored.
    */
-  const equivalent = collapseWhitespace({ text: patchedText, },) === collapseWhitespace({ text: trial.cleanText, },);
+  const equivalent = collapseWhitespace({ text: patchedText, },)
+    .trimEnd()
+    === collapseWhitespace({ text: trial.cleanText, },)
+      .trimEnd();
 
   /**
    Text the region held before the edit, kept in front of and behind it.

@@ -12,6 +12,7 @@ import {
   type EditableEnvelope,
   type IssueClaim,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { insertionRegionWithNeighbours, } from './editor-fidelity-region.ts';
 import { FidelityReferenceError, } from './fidelity-reference-error.ts';
 import type {
   FidelityReferenceSpec,
@@ -33,9 +34,11 @@ import type {
 // because a judge sees a ballot; an editor is handed the damaged text and the issue, so those arrangements would ask
 // the same question four times.
 //
-// THE REGION IS WHAT A CRITIC WOULD QUOTE: the whole sentence the defect sits in. For the insertion that is the
-// inserted sentence itself; for the alteration it is the sentence holding the number, so an editor may rewrite the
-// sentence and the score can see what else it touched.
+// THE REGION IS THE SENTENCE A CRITIC WOULD QUOTE, WIDENED FOR THE INSERTION. For the alteration it is the sentence
+// holding the number, so an editor may rewrite the sentence and the score can see what else it touched. For the
+// insertion it is the inserted sentence with the sentence either side of it on its line (`editor-fidelity-region.ts`),
+// so that deleting the quoted text, which needs no reading of the original, is not a clean fix. An insertion with no
+// neighbour on its line is refused: its region would be the sentence alone.
 
 /**
  Defect families the probe builds, in the manifest's order of difficulty: the removal of a sentence, then the
@@ -127,7 +130,8 @@ export type EditorFidelityTrial = {
   readonly cleanDefect: string;
 
   /**
-   The sentences the defect sits in, in the damaged text: the region the accepted issue quotes.
+   The region the accepted issue quotes, in the damaged text: the sentence the defect sits in, and for an insertion
+   the sentence either side of it on its line as well.
    */
   readonly region: SentenceRegion;
 
@@ -471,7 +475,8 @@ function issueFor(
  @returns One trial per reference and requested family, in reference and manifest order
 
  @throws {@link FidelityReferenceError} when no family is requested, one is repeated, one is not built by this probe
- (a deletion has no deterministic fix) or one is carried by no reference
+ (a deletion has no deterministic fix), one is carried by no reference or an inserted sentence has no neighbour on its
+ line to quote it with
 
  @example
  ```ts
@@ -548,11 +553,33 @@ export function editorFidelityTrials(
         /**
          The sentences the defect sits in.
          */
-        const region = sentenceRegionAround({
+        const sentences = sentenceRegionAround({
           text: damage.damagedText,
           startOffset: whole.start,
           endOffset: damagedEnd,
         },);
+        /**
+         The region quoted: the sentences, widened by their neighbours when the defect is an inserted sentence.
+         */
+        const {
+          region,
+          neighbours,
+        } = (damage.damageKind === 'insertion')
+          ? insertionRegionWithNeighbours({
+            text: damage.damagedText,
+            region: sentences,
+          },)
+          : {
+            region: sentences,
+            neighbours: 1,
+          };
+        if (neighbours === 0) {
+          throw new FidelityReferenceError({
+            referenceId: reference.spec
+              .id,
+            operation: 'damage',
+          },);
+        }
         return [
           {
             trialId: `${reference.spec

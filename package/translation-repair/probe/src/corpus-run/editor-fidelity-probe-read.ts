@@ -117,7 +117,8 @@ export function pairName({ item, }: { readonly item: EditorPair; },): string {
 
  @example
  ```ts
- readingWord({ reading, },); // 'fixed exact, nothing else touched'
+ // says 'clean fix exact, nothing else touched'
+ readingWord({ reading, },);
  ```
  */
 export function readingWord({ reading, }: { readonly reading: EditorTrialReading; },): string {
@@ -125,13 +126,23 @@ export function readingWord({ reading, }: { readonly reading: EditorTrialReading
     return 'refused, no edit proposed';
   if (reading.kind === 'unusable')
     return `unusable (${reading.cause})`;
-  return `${reading.score
+  /**
+   Whether something outside the defect changed.
+   */
+  const touched = reading.score
+    .collateral
+    ? 'collateral'
+    : 'nothing else touched';
+  if (reading.score
     .fixed
-    === 'none' ? 'not fixed' : `fixed ${reading.score
-      .fixed}`}, ${
-    reading.score
-      .collateral ? 'collateral' : 'nothing else touched'
-  }`;
+    === 'none')
+    return `not fixed, ${touched}`;
+  if (reading.score
+    .fixed
+    === 'defect-only')
+    return `defect only, not a clean fix, ${touched}`;
+  return `clean fix ${reading.score
+    .fixed}, ${touched}`;
 }
 
 //endregion Editor fidelity probe readers
