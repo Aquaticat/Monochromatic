@@ -252,8 +252,8 @@ each bounded by what can cut it.
   back,
   would help cure a bench that stands short:
   the held providers are judged together,
-  and a held provider counts when the benches they cure between them include one to which its own return adds a
-  reachable seat
+  and a held provider counts when the benches they cure between them include one
+  to which its own return adds a reachable seat
   (the seats are derived again with the held providers back,
   from the roster through `reachOf`,
   `run-seats-hold-need.ts`).
@@ -280,8 +280,14 @@ each bounded by what can cut it.
   so the hook cannot skip the read on "no running hold would cure",
   which is also the state of a hold with no short bench),
   and takes the same rule for its waiting through the reader.
-  It lets a warning through once per running hold,
+  It writes the no-wait warning once per state,
+  where a state is the set of held providers and the names of the benches that stand short.
+  The time a hold has left,
+  the distance to a NeuralWatt return and the figure past what the pass has left shrink between slices
+  and never make a new line,
   so a hold of hours over hundreds of slices writes one line and not hundreds.
+  A change of the held set or of the short benches writes one more,
+  and so does a hold that ends and comes back.
   **This seat-reader bound is the lead's ruling after the first fix waited at any distance,
   its entry-scoped form the lead's ruling of fix round 4,
   the would-help rule,
@@ -304,7 +310,9 @@ each bounded by what can cut it.
   and the gate applies the same checks and the same requeue.
   A bench error that carries no return,
   or one the pass cannot wait for,
-  ends its entry as before and never stops the run.
+  ends its entry as before and never stops the run;
+  its message says the pass may park and names that other outcome,
+  since the gate parks only where the return fits what the pass has left.
   **The park on the bench error is the lead's ruling of fix round 5 and open to the owner's veto.**
 
 The park works at the seam between entries,
@@ -320,7 +328,10 @@ because the wait must sit outside any exchange:
    `STALLED` and `INCOMPLETE` is printed,
    and calls the gate's wait before asking the budget whether the pass goes on.
 3. The gate waits for what is left of the return,
-   stored as an instant on its monotonic clock when the refusal arrived,
+   stored as an instant on its monotonic clock,
+   counted from the read that named the return where the error carries that stamp
+   (the bench error does, as `neuralwattReadAtMs`, so slices that unwind late do not push the wait past the return)
+   and from the moment the refusal arrived otherwise,
    logs the end,
    and gives the pass a fresh signal.
 4. A refusal for the day start of a park that has ended trips instead of parking again,
@@ -331,7 +342,9 @@ because the wait must sit outside any exchange:
 
 Known costs of the park:
 the attempt it interrupts is already counted in the attempt map,
-and its `TALLY` line says `INCOMPLETE`.
+and its `TALLY` line says `PARKED`,
+with the failure that named the return as the reason,
+and not `ERROR` or `INCOMPLETE`.
 A long NeuralWatt hold also makes the per-slice re-seating (`pass-reseat-hook.ts`) read the seats on every slice
 while it runs,
 as it does for any hold.
