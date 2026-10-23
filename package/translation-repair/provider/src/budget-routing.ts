@@ -287,6 +287,10 @@ export class EveryProviderDryError extends Error {
    STILL LIES AHEAD, whether or not the call waited out another hold first: the pass reads it to park until the return
    instead of ending the run, and a return that has passed (the account lagging) names none
 
+   @param neuralwattReadAtMs - the instant of the reading that named the return, on the monotonic clock, given by a
+   caller that makes the refusal some time before it reaches the pass (the seat reader), so a park counts its wait from
+   the read; absent for the router's own refusal, which names the distance as it is raised
+
    @param afterWaiting - whether the call waited for a hold before this refusal
 
    @example
@@ -301,6 +305,7 @@ export class EveryProviderDryError extends Error {
       idle = [],
       neuralwattDryness,
       neuralwattReturnsInMs,
+      neuralwattReadAtMs,
       afterWaiting = false,
     }: {
       readonly measured?: string;
@@ -308,6 +313,7 @@ export class EveryProviderDryError extends Error {
       readonly idle?: readonly ProviderName[];
       readonly neuralwattDryness?: NeuralWattDryness;
       readonly neuralwattReturnsInMs?: number;
+      readonly neuralwattReadAtMs?: number;
       readonly afterWaiting?: boolean;
     } = {},
   ) {
@@ -347,6 +353,8 @@ export class EveryProviderDryError extends Error {
     this.name = 'EveryProviderDryError';
     if (neuralwattDryness !== undefined)
       this.neuralwattDryness = neuralwattDryness;
+    if (neuralwattReadAtMs !== undefined)
+      this.neuralwattReadAtMs = neuralwattReadAtMs;
     if (neuralwattReturnsInMs !== undefined) {
       this.neuralwattReturnsInMs = neuralwattReturnsInMs;
       /**
@@ -376,6 +384,12 @@ export class EveryProviderDryError extends Error {
    The time of day the return falls at, with its zone, present with the distance.
    */
   readonly neuralwattReturnsAt?: string;
+
+  /**
+   The instant of the reading that named the return, on the monotonic clock, present where the seat reader made the
+   refusal.
+   */
+  readonly neuralwattReadAtMs?: number;
 }
 
 /**

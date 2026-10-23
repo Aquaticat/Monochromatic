@@ -139,6 +139,8 @@ export function withNeuralWattReturn(
  @param neuralwattReturnsInMs - milliseconds until NeuralWatt's spent day starts again while the return lies ahead,
  which the pass reads to park for it when it has the time; left out where no return lies ahead
 
+ @param neuralwattReadAtMs - the instant of the reading that named the return, which the pass counts its wait from
+
  @param pastPass - the words saying that return is past what the pass has left, none where it fits or none is named
 
  @param dry - the dryness view the reading stopped on, whose wet providers the refusal names with their reason
@@ -159,6 +161,7 @@ function everyProviderDryRefusal(
     neuralwatt,
     neuralwattDryness,
     neuralwattReturnsInMs,
+    neuralwattReadAtMs,
     pastPass,
     dry,
     writing,
@@ -168,6 +171,7 @@ function everyProviderDryRefusal(
     readonly neuralwatt?: NeuralWattReturn;
     readonly neuralwattDryness?: NeuralWattDryness;
     readonly neuralwattReturnsInMs?: number;
+    readonly neuralwattReadAtMs?: number;
     readonly pastPass: readonly string[];
     readonly dry: BudgetView;
     readonly writing: ProviderRecord<boolean>;
@@ -202,6 +206,7 @@ function everyProviderDryRefusal(
     ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     ...((neuralwattDryness === undefined) ? {} : { neuralwattDryness, }),
     ...((neuralwattReturnsInMs === undefined) ? {} : { neuralwattReturnsInMs, }),
+    ...((neuralwattReadAtMs === undefined) ? {} : { neuralwattReadAtMs, }),
   },);
 }
 
@@ -209,6 +214,8 @@ function everyProviderDryRefusal(
  What a bench error carries of NeuralWatt's return: the distance, the time of day and the spent day.
 
  @param returnsInMs - milliseconds until the spent day starts again
+
+ @param readAtMs - the instant of the reading that named it, on `monotonicMs`
 
  @param dryness - why NeuralWatt reads dry, where the client reports it
 
@@ -219,16 +226,22 @@ function everyProviderDryRefusal(
 
  @example
  ```ts
- const carried = returnCarriedBy({ returnsInMs: 301_000, day: { kind: 'at', msOfDay: 69_308_000, }, },);
+ const carried = returnCarriedBy({
+   returnsInMs: 301_000,
+   readAtMs: 1_000,
+   day: { kind: 'at', msOfDay: 69_308_000, },
+ },);
  ```
  */
 function returnCarriedBy(
   {
     returnsInMs,
+    readAtMs,
     dryness,
     day,
   }: {
     readonly returnsInMs: number;
+    readonly readAtMs: number;
     readonly dryness?: NeuralWattDryness;
     readonly day: NeuralWattReturn;
   },
@@ -247,8 +260,7 @@ function returnCarriedBy(
   },);
   return {
     neuralwattReturnsInMs: returnsInMs,
-    // The instant the distance was read at: the gate measures the park from it.
-    neuralwattReadAtMs: monotonicMs(),
+    neuralwattReadAtMs: readAtMs,
     ...((text === undefined) ? {} : { neuralwattReturnsAt: text, }),
     ...((dryness === undefined) ? {} : { neuralwattDryness: dryness, }),
   };
@@ -310,6 +322,10 @@ export function writtenRefusal(
    */
   const dryness = client.neuralwattDryness?.();
   /**
+   The instant of that reading, which the pass counts a park's wait from.
+   */
+  const readAtMs = monotonicMs();
+  /**
    Milliseconds until the spent day starts again while that return lies ahead, which the pass reads to park for it.
    */
   const returnsInMs = ((dryness?.kind === 'spent-day') && (dryness.returnsInMs !== undefined)
@@ -336,7 +352,12 @@ export function writtenRefusal(
           ...((client.passLeftMs === undefined) ? {} : { passLeftMs: client.passLeftMs(), }),
           ...((client.passBoundOwner === undefined) ? {} : { boundOwner: client.passBoundOwner(), }),
         },),
-      ...((returnsInMs === undefined) ? {} : { neuralwattReturnsInMs: returnsInMs, }),
+      ...((returnsInMs === undefined)
+        ? {}
+        : {
+          neuralwattReturnsInMs: returnsInMs,
+          neuralwattReadAtMs: readAtMs,
+        }),
       ...((client.neuralwattReturn === undefined) ? {} : { neuralwatt: client.neuralwattReturn(), }),
       ...((client.neuralwattDryness === undefined) ? {} : { neuralwattDryness: client.neuralwattDryness(), }),
     },)
@@ -353,6 +374,7 @@ export function writtenRefusal(
         },))
         ? returnCarriedBy({
           returnsInMs,
+          readAtMs,
           ...((dryness === undefined) ? {} : { dryness, }),
           day: neuralwattOf({ client, },),
         },)

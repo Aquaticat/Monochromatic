@@ -366,13 +366,11 @@ function refuseOn(
   },);
   if (parkable) {
     /**
-     The instant the distance was read at: the seat reader's stamp on a bench error, whose slices in flight finish
-     before it reaches the gate, and the moment of the refusal for the router's own, which names the distance as it is
-     raised.
+     The instant the distance was read at: the seat reader's stamp, on its bench error and on its all-dry refusal
+     alike, whose slices in flight finish before the failure reaches the gate, and the moment of the refusal for the
+     router's own, which names the distance as it is raised.
      */
-    const readAtMs = (refusal instanceof WritingBenchUnreachableError)
-      ? (refusal.neuralwattReadAtMs ?? now())
-      : now();
+    const readAtMs = refusal.neuralwattReadAtMs ?? now();
     state.parks
       .push({
         returnsInMs: nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
