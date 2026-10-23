@@ -11,7 +11,8 @@ and several sections point there instead of repeating it.
 
 ## What a release is
 
-One release holds four files:
+A release holds four files
+(`ide-v0.1.0` predates the ARM64 archive and holds the other three):
 
 - `ide-<version>-linux-x64.tar.gz` (Linux x86_64) and `ide-<version>-linux-arm64.tar.gz` (Linux ARM64,
   aarch64):
@@ -141,7 +142,8 @@ Read these steps of each `build` leg:
   The `rustc` line goes into the release notes.
 - "Smoke test the executable (--version)" prints `monochromatic-ide <version>`.
 - "Check the shared libraries and the glibc floor" prints the `needed` libraries and the newest glibc symbol version.
-  The dynamic loader is `ld-linux-x86-64.so.2` on x64 and `ld-linux-aarch64.so.1` on arm64.
+  On x64 the list includes the dynamic loader `ld-linux-x86-64.so.2`;
+  on arm64 it is `libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6` with no loader.
 - "Check that no software renderer is linked" ends with a line that starts
   `Slint software renderer is not linked into any build of this package`,
   names both targets (`x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu`),
@@ -206,11 +208,12 @@ Failures that belong to this workflow:
   do not weaken the check.
 - The arm64 leg fails and the x64 leg passes (or the other way round):
   read the failing step of that leg.
-  The steps that differ by architecture are the loader name in "Check the shared libraries and the glibc floor",
+  The steps that differ by architecture are the expected library list (`matrix.needed`) in
+  "Check the shared libraries and the glibc floor",
   the image builds (the base image downloads an architecture-specific Zig and `cargo-nextest`),
   and the compile itself.
   A new library,
-  a new loader name or a newer glibc symbol on one architecture only means the promise in
+  a missing or additional loader or a newer glibc symbol on one architecture only means the promise in
   `INSTALL.txt` is wrong for it;
   the entry "Check the shared libraries and the glibc floor" in this list says what to do.
 - The `checksums` job fails with "The arm64 executable prints other license notices than the x64 executable":
@@ -243,7 +246,8 @@ Failures that belong to this workflow:
   the executable now needs a library or a glibc version that `INSTALL.txt`,
   the README section "What the host provides" and the release notes do not name.
   Decide whether that is intended,
-  then update those texts and the `expected` list (the loader name comes from `matrix.loader`)
+  then update those texts and the expected list (`matrix.needed`,
+  one per architecture)
   or `GLIBC_FLOOR` in the step.
   The floor is one value for both architectures;
   if only one needs a newer glibc,

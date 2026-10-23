@@ -6207,8 +6207,9 @@ and `inspect:bundle` with the checks `inventory`,
 and `crate-licenses`,
 which need no window.
 It also requires that `--version` prints `monochromatic-ide <version>`,
-that the dynamic section of the executable lists only the loader
-(`ld-linux-x86-64.so.2` or `ld-linux-aarch64.so.1`),
+that the dynamic section of the executable lists only the libraries it was measured to need
+(on x86_64 the loader `ld-linux-x86-64.so.2` too,
+on aarch64 no loader),
 `libc`,
 `libm`,
 `libgcc_s`,
