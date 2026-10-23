@@ -35,8 +35,16 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // derivability and restoration checks, whose output no slice record holds). So the repair slice, refine, consolidate,
 // lane-contest, translate slice and consistency versions move for the fold. The block and section pairing schemas and
 // the page title schema list no `enum` or `const`, so the fold reads nothing in them and the pairing and page title
-// versions stay. The picture reading cache keeps text read from a picture under no schema and stays. An artifact is a
-// record of a finished pass and not a cache a run resumes.
+// versions stay. The picture reading cache keeps text read from a picture under no schema and stays.
+//
+// THE ARTIFACT GENERATION STAYS WHERE IT IS, by the owner's ruling of 2026-10-23 (open to veto). The scheduler counts
+// every `*.json` in a pass's artifacts directory as settled (`slice-cache/src/corpus-run/pass-schema-guard.ts:41-45`),
+// so an entry settled before the fold is not run again after it and keeps the outcome the old reader gave it, a voice
+// lost to a capital included. The fold only lets the reader accept replies it used to refuse, and a settled artifact
+// holds an outcome that shipped. Moving the generation would run every settled entry of the corpus again, which that
+// file names as money and therefore the operator's call (`pass-schema-guard.ts:58-60`). The way to run them again, if
+// the owner wants it, is the one the quorum rule of B816 took: move the artifact generation, as
+// `repair/src/repair-slice-key.ts:616` records for version 43 of `SLICE_CACHE_VERSION`.
 
 /**
  One value taken back to the schema's spelling.

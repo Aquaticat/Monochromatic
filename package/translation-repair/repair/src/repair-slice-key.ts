@@ -635,8 +635,9 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  with its 12 needs-human issues was cached as examined. The key hashes the version, the shape of the run and the texts,
  not the rule that decides what may be stored, so a record written before would be served after: records stand at 43,
  and the change cannot ride inside it, so the number moves. The reader also refuses a record that lacks the field, so
- a record written at 43 is not resumed even by a run that kept the old number. The refine version stays at 14: its
- key and its question are unchanged, and a refinement record embeds the outcome, so the same reader refuses one
+ a record written at 43 is not resumed even by a run that kept the old number. The refine version stays at 14 (main's
+ number then; the branch's number is in `REFINE_CACHE_VERSION`): its key and its question are unchanged, and a
+ refinement record embeds the outcome, so the same reader refuses one
  that lacks the field; the refine write gate asks the same question as that reader (`refinementIsResumable`), so it
  writes nothing the reader would discard.
 
@@ -646,10 +647,11 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  or how it decides: a slice the repair lane redoes under 44 reaches them as a changed key when its text changes and as
  the same answer when it does not. The translate slice version (25) stays because the translate lane never reads
  `silentStages` and its own gate is unchanged. The pairing version (3) stays by its own account of 2026-10-18
- (`slice-reading/src/pairing-cache-version.ts`). The artifact schema stays because an artifact is a record of a
- finished pass and not a cache a run resumes, and no source under `artifact/src` names the field. The
- every-provider-dry stop of the same day (`bae1bb310e`) moves no version: it changes whether the next entry starts, not
- what a settlement may be cached as. No record has been written at 44, which this change sets first.
+ (`slice-reading/src/pairing-cache-version.ts`). The artifact schema stays because no source under `artifact/src`
+ names the field. (The sentence as main wrote it also gave a reason about artifacts that was false, corrected on
+ 2026-10-23: the scheduler counts every `*.json` as settled, so settled entries are not run again; see the artifact
+ generation paragraph of `provider/src/enum-case-fold.ts`.) The every-provider-dry stop of the same day
+ (`bae1bb310e`) moves no version: it changes whether the next entry starts, not what a settlement may be cached as. No record has been written at 44, which this change sets first.
 
  The system text and answer schemas (first set as 44 on the Claude route): the system text of 2026-10-22 (R4 of the
  third review of the Claude route), where the sentence naming the

@@ -60,7 +60,7 @@ and sent a baseline for each accepted control,
 the same ask with the keyword removed.
 Its result is in `doc/decision/translation-repair-direct-providers.md`,
 in the addendum on the keyed Claude probes.
-Each keyword changed the reply,
+In this sample each keyword changed the reply (one reply for each arm),
 and the probe cannot tell the compiled grammar from the model reading the schema text.
 
 ### Structured outputs page
