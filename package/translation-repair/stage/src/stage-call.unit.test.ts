@@ -24,13 +24,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  ClaudeModelNotServedError,
+  ClaudePrefillError,
+  ClaudeSchemaKeywordError,
+  EmptyConversationError,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { attemptStageCall, } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { quotingFailure, } from '@monochromatic-dev/translation-repair-test-fixture/ts/quoting-failure.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import {
@@ -161,6 +166,50 @@ await describe({
 
         expect(voice.heard,).toBe(true,);
         expect(voice.heard ? voice.value.purr : '',).toBe('loud',);
+      },
+    },),
+
+    it({
+      name: 'RETHROWS A REQUEST THE ROUTE REFUSED AS MALFORMED, unlogged as a lost voice (F5 of the re-check of the '
+        + 'second fix round): a schema keyword the Claude route cannot send, a conversation that ends on an assistant '
+        + 'turn or holds no turn to answer, and a seat that is no Claude card are faults of our own stage code, which a '
+        + 'lost voice would hide behind one warn line for every call of the stage',
+      fn: async () => {
+        /**
+         Faults the route raises before any exchange, one of each class.
+         */
+        const faults: readonly Error[] = [
+          new ClaudeSchemaKeywordError({ refusedKeyword: 'oneOf', schemaPath: 'root.pick', },),
+          new ClaudePrefillError(),
+          new EmptyConversationError({ detail: 'no message outside the system prompt', },),
+          new ClaudeModelNotServedError({ modelId: 'claude-cat-5-5', },),
+        ];
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
+
+        /**
+         What each call rejected with, in the order of the faults.
+         */
+        const refusals = await Promise.all(faults.map(async function refusalOf(thrown,): Promise<unknown> {
+          return await rejectionOf(async function asked(): Promise<unknown> {
+            return await callWith({
+              client: scriptedClient({ thrown, },),
+              signal: new AbortController().signal,
+              logger,
+            },);
+          },);
+        },),);
+
+        expect(refusals,).toEqual(faults,);
+        expect(refusals.map(function nameOf(refusal,): string {
+          return (refusal as Error).name;
+        },),).toEqual([
+          'ClaudeSchemaKeywordError',
+          'ClaudePrefillError',
+          'EmptyConversationError',
+          'ClaudeModelNotServedError',
+        ],);
+        expect(warnings,).toEqual([],);
       },
     },),
 
