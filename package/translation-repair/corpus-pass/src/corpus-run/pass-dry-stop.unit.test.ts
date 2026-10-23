@@ -24,7 +24,6 @@ import {
 import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run';
 import {
   createPassDryStop,
-  type DryPark,
   recordOnPark,
 } from '../../dist/final/node/index.mjs';
 import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
@@ -764,7 +763,7 @@ await describe({
         /**
          The park in force, as the gate builds it.
          */
-        const park: DryPark = {
+        const park: Parameters<typeof recordOnPark>[0]['park'] = {
           refusal,
           seen: [],
           returnsInMs: 301_000,
