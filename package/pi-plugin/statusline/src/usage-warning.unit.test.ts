@@ -223,6 +223,127 @@ await describe({
           },
         },),
         it({
+          name: 'reads the weekly block under planWeeklyLimit as measured on 2026-10-23 03:28:16 UTC',
+          fn: async function testSyntheticRenamedWeeklyBlock() {
+            // The body shape of the keyed `GET /v2/quotas` of 2026-10-23: no `weeklyTokenLimit`, no `freeToolCalls`.
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                subscription: {
+                  limit: 100,
+                  requests: 0,
+                  renewsAt: '2026-11-01T00:00:00.000Z',
+                },
+                search: { hourly: {}, },
+                planWeeklyLimit: {
+                  nextRegenAt: '2026-10-23T05:03:47.000Z',
+                  percentRemaining: 0,
+                  nextRegenPercent: 2,
+                },
+              },),
+              nowMs: Date.parse('2026-10-23T03:28:16Z',),
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.key,).toBe('synthetic:week',);
+            expect(snapshots[0]?.usedPercent,).toBe(100,);
+            expect(snapshots[0]?.resetAtMs,).toBe(Date.parse('2026-10-23T05:03:47.000Z',),);
+          },
+        },),
+        it({
+          name: 'still reads the weekly block under weeklyTokenLimit',
+          fn: async function testSyntheticOldWeeklyBlock() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                weeklyTokenLimit: {
+                  nextRegenAt: resetAt(20 * HOUR_MS,),
+                  percentRemaining: 80,
+                },
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.key,).toBe('synthetic:week',);
+            expect(snapshots[0]?.usedPercent,).toBe(20,);
+          },
+        },),
+        it({
+          name: 'reads a body carrying both weekly names when the two read the same',
+          fn: async function testSyntheticBothWeeklyNamesEqual() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                weeklyTokenLimit: {
+                  nextRegenAt: resetAt(20 * HOUR_MS,),
+                  percentRemaining: 80,
+                },
+                planWeeklyLimit: {
+                  nextRegenAt: resetAt(20 * HOUR_MS,),
+                  percentRemaining: 80,
+                  nextRegenPercent: 2,
+                },
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.usedPercent,).toBe(20,);
+          },
+        },),
+        it({
+          name: 'refuses a body carrying both weekly names when the two differ',
+          fn: async function testSyntheticBothWeeklyNamesDiffer() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                weeklyTokenLimit: {
+                  nextRegenAt: resetAt(20 * HOUR_MS,),
+                  percentRemaining: 80,
+                },
+                planWeeklyLimit: {
+                  nextRegenAt: resetAt(20 * HOUR_MS,),
+                  percentRemaining: 0,
+                },
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'refuses a body carrying one weekly name that is no object beside a readable other',
+          fn: async function testSyntheticWeeklyNameNotObject() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                weeklyTokenLimit: {
+                  nextRegenAt: resetAt(20 * HOUR_MS,),
+                  percentRemaining: 80,
+                },
+                planWeeklyLimit: 'spent',
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'refuses a body carrying neither weekly name',
+          fn: async function testSyntheticNoWeeklyName() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                subscription: {
+                  limit: 100,
+                  requests: 0,
+                  renewsAt: resetAt(DAY_MS,),
+                },
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
           name: 'ignores incomplete or invalid header groups',
           fn: async function testInvalidHeaders() {
             const snapshots = parseRateLimitSnapshots({
