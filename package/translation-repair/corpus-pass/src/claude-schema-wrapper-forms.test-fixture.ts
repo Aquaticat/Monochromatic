@@ -118,6 +118,59 @@ export const WRAPPER_FORM_CASES: readonly FormCase[] = [
     ],
     builders: ['parenthesisedResponseFormat',],
   },
+  {
+    name: 'FOLLOWS A WRAPPER WRITTEN AS AN ASYNC ARROW FUNCTION THAT AWAITS THE CALL, and the file that calls '
+      + 'the wrapper',
+    files: [
+      {
+        file: 'imaginary/src/arrow-awaited-wire.ts',
+        text: textOf([
+          'export const arrowAwaitedResponseFormat = async (schemaName: string,) =>',
+          '  await contestResponseFormat({ schemaName, verdicts: [], asksArchive: false, },);',
+        ],),
+      },
+      {
+        file: 'imaginary/src/arrow-awaited-gate-stage.ts',
+        text: textOf([
+          'export const ARROW_AWAITED_GATE_RESPONSE_FORMAT = await arrowAwaitedResponseFormat(',
+          '  \'arrow_awaited_gate\',',
+          ');',
+        ],),
+      },
+    ],
+    found: [
+      'imaginary/src/arrow-awaited-gate-stage.ts',
+      'imaginary/src/arrow-awaited-wire.ts',
+    ],
+    builders: ['arrowAwaitedResponseFormat',],
+  },
+  {
+    name: 'FOLLOWS A WRAPPER WRITTEN AS AN ARROW FUNCTION WHOSE BODY IS A PARENTHESISED CALL, and the file that '
+      + 'calls it',
+    files: [
+      {
+        file: 'imaginary/src/arrow-parenthesised-wire.ts',
+        text: textOf([
+          'export const arrowParenthesisedResponseFormat = (schemaName: string,) => (',
+          '  contestResponseFormat({ schemaName, verdicts: [], asksArchive: false, },)',
+          ');',
+        ],),
+      },
+      {
+        file: 'imaginary/src/arrow-parenthesised-gate-stage.ts',
+        text: textOf([
+          'export const ARROW_PARENTHESISED_GATE_RESPONSE_FORMAT = arrowParenthesisedResponseFormat(',
+          '  \'parenthesised\',',
+          ');',
+        ],),
+      },
+    ],
+    found: [
+      'imaginary/src/arrow-parenthesised-gate-stage.ts',
+      'imaginary/src/arrow-parenthesised-wire.ts',
+    ],
+    builders: ['arrowParenthesisedResponseFormat',],
+  },
 ];
 
 /**
