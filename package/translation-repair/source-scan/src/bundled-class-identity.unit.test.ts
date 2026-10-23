@@ -16,8 +16,8 @@
  passes. A structural guard function that the owning package exports (`isDryRefusal`) is a call and not a site.
 
  THE FIXTURE CASES COME FIRST, so the package-wide case is read against a scan shown able to find each form (ledger
- M21), and the package-wide case must reach at least the sites the census found (QIV), so an empty result cannot come
- from a wrong glob or an unparsed file. Fixtures are cat-themed.
+ M21). The package-wide case must then reach a floor of sites and packages and a few named sites (QIV), so an empty
+ result cannot come from a wrong glob or an unparsed file. Fixtures are cat-themed.
 
  @module
  */
@@ -308,14 +308,31 @@ async function readManifests(): Promise<Manifests> {
 //endregion Bundled class identity
 
 /**
- The sites the census found at the head (round 7), which the package-wide case must reach.
+ The fewest sites the package-wide case accepts. The census found 48 at the head (round 7), and the floor keeps margin
+ below it: the remedy the scan's own message gives, testing the class through a guard its owner exports, removes a site,
+ so a floor at the count would fail the next fix for a reason that reads as a defect in that fix. A fix through an
+ owner's guard may lower the floor in the same commit, with the reason in the message.
  */
-const CENSUS_SITES = 48;
+const SITE_FLOOR = 40;
 
 /**
- The packages those sites sit in.
+ The fewest packages those sites sit in. The census found 11 at the head (round 7); the lowering rule of the site floor
+ applies to this floor too.
  */
-const CENSUS_PACKAGES = 11;
+const PACKAGE_FLOOR = 8;
+
+/**
+ Sites the package-wide case must find by name, as `path#Class` with the path as `readPackageSource` gives it (the
+ package directory, then the path under `src`): one in each of three packages, each a class from another family
+ package. A floor on the count alone would pass with these gone, so a scan that stopped reading one whole package
+ would go unseen. A site that a fix through an owner's guard removes leaves this list in the same commit, with the
+ reason.
+ */
+const ANCHORED_SITES = [
+  'slice-cache/corpus-run/entry-error-outcome.ts#WritingBenchUnreachableError',
+  'provider/provider-budget-refusal.ts#ProviderHttpError',
+  'stage/stage-run-end.ts#EveryProviderDryError',
+] as const;
 
 /**
  One file importing a class from the family package `b` and testing it.
@@ -451,7 +468,7 @@ await describe({
 
     it({
       name: 'TESTS A CLASS IMPORTED FROM A WORKSPACE PACKAGE ONLY WHERE THE IMPORTER KEEPS THAT PACKAGE EXTERNAL, '
-        + 'across the family, and reaches the sites the census found',
+        + 'across the family, and reaches the floor of sites and packages and the named sites',
       fn: async () => {
         /**
          Every package file, tests among them.
@@ -466,10 +483,12 @@ await describe({
         },);
         expectNoFindings({ findings: reading.findings, },);
         // REACH: a wrong glob or an unparsed file would leave this short, and an empty finding list would pass.
-        expect(reading.sites.length,).toBeGreaterThanOrEqual(CENSUS_SITES,);
+        expect(reading.sites.length,).toBeGreaterThanOrEqual(SITE_FLOOR,);
         expect(new Set(reading.sites.map(function packageOf(site,): string {
           return site.split('/',)[0] ?? '';
-        },),).size,).toBeGreaterThanOrEqual(CENSUS_PACKAGES,);
+        },),).size,).toBeGreaterThanOrEqual(PACKAGE_FLOOR,);
+        for (const anchored of ANCHORED_SITES)
+          expect(reading.sites,).toContain(anchored,);
       },
     },),
   ],
