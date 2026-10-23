@@ -342,7 +342,7 @@ await describe({
 
         expect(printed.lines,).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
           ...OFF_LINES,
           'DONE processed=1 of pending=1; artifacts=1/1 declined=0 unpairedArtifacts=0 elapsed=42ms',
         ],);
@@ -414,7 +414,7 @@ await describe({
             + 'people/mittens/page.en.md (missing-object); the commit has no such path: check the path, or pin a '
             + 'commit that has it.)',
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=2 done=1 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
           ...OFF_LINES,
           'DONE processed=2 of pending=2; artifacts=2/2 declined=1 unpairedArtifacts=0 elapsed=42ms',
         ],);
@@ -471,7 +471,7 @@ await describe({
           return line.startsWith('START ',) || line.startsWith('DONE ',);
         },),).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=1 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
           'DONE processed=1 of pending=1; artifacts=1/1 declined=0 unpairedArtifacts=1 elapsed=42ms',
         ],);
       },
@@ -532,7 +532,7 @@ await describe({
           return line.startsWith('START ',) || line.startsWith('DONE ',);
         },),).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=1 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
           'DONE processed=1 of pending=1; artifacts=1/1 declined=0 unpairedArtifacts=1 elapsed=42ms',
         ],);
       },
@@ -574,7 +574,7 @@ await describe({
             + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
             + 'entry never enters a pool later draws treat as natural accumulation)',
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
           ...OFF_LINES,
           'DONE processed=1 of pending=1; artifacts=1/1 declined=0 (pairs counted over the entries --only named, '
             + 'not every pair at the pin) elapsed=42ms',
@@ -613,7 +613,7 @@ await describe({
 
         expect(printed.lines,).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=0 done=0 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
           'a straggler note',
           'a writer note',
           'REQUIRED-PROVIDERS hyper status=wet',
@@ -649,7 +649,7 @@ await describe({
 
         expect(printed.lines,).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
           ...OFF_LINES,
           `PLAN ok tip=${TIP} pipeline=${built.digest} client=constructed pending=1 first=tabby`,
         ],);
@@ -719,7 +719,7 @@ await describe({
         expect(watched.atFirstSettle.stalePageThere,).toBe(false,);
         expect(printed.lines[0],).toBe(
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=1 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
         );
       },
     },),
@@ -815,7 +815,7 @@ await describe({
         },),).rejects.toThrow('required provider hyper is not ready: key missing',);
         expect(printed.lines,).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=0 done=0 `
-            + 'soft=259200000ms hard=25200000ms',
+            + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
         ],);
         expect(watched.clients,).toEqual([],);
       },
