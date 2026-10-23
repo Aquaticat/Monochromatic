@@ -1,4 +1,5 @@
-import { setTimeout as realWait, } from 'node:timers/promises';
+import { syncBuiltinESMExports, } from 'node:module';
+import timersPromises, { setTimeout as pause, } from 'node:timers/promises';
 
 import type { DisposableSandbox, } from '@monochromatic-dev/module-test/ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
@@ -12,8 +13,100 @@ import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 // first and ticking through that would spend the scripted minutes before anything had been asked. The clock is then
 // ticked by the steps the case hands, and the case reads how many exchanges the transport had cut after each.
 //
+// `node:timers/promises` IS ON THE CLOCK TOO (R9 of the re-check of fix round 5). A cut written with `import {
+// setTimeout } from 'node:timers/promises'` was on the real clock: the sinon clock reaches that built-in only where
+// its own module can `require` it, which the bundled test harness cannot (measured: the walk of a two-minute wait of
+// that form did not end on a tick past it), and a named import is bound once besides. The walk stubs the built-in's
+// `setTimeout` with a wait on the fake global one, and `syncBuiltinESMExports` copies the module's current properties
+// into its named exports, once after the stub and once when the walk ends, so a cut on either form is on the fake
+// clock for the walk and on the real one again after it. FAKED RATHER THAN REFUSED BY A SOURCE SCAN: a scan has to
+// list every spelling of the import and can be written around, while this puts the one wait every spelling reaches on
+// the clock the case owns. `setImmediate`, `setInterval` and `scheduler.wait` of that module stay real; no cut in the
+// family is written with them. `fake-clock-walk.unit.test.ts` walks both forms.
+//
 // TEST SUPPORT, NOT PACKAGE SOURCE. The delayed transport this drives is `delayed-transport.test-fixture.ts` of the
 // provider package; this file knows it only through the promise and the release it is handed.
+
+/**
+ The real wait, taken when this module is evaluated, before any walk has put the fake one in the named export. The hang
+ stop races it, so it must stay real while a walk ticks.
+ */
+const realWait = pause;
+
+/**
+ Waits on the fake global clock the way `node:timers/promises` `setTimeout` waits on the real one.
+
+ @param ms - fake milliseconds to wait
+
+ @param value - what the wait settles with
+
+ @param signal - abort signal that ends the wait early, rejecting it with an `AbortError`
+
+ @returns Settles with the value once the fake clock has advanced by the figure
+
+ @example
+ ```ts
+ await waitOnFakeClock({ ms: 120_000, value: undefined, signal, },);
+ ```
+ */
+function waitOnFakeClock(
+  {
+    ms,
+    value,
+    signal,
+  }: {
+    readonly ms: number;
+    readonly value: unknown;
+    readonly signal: AbortSignal;
+  },
+): Promise<unknown> {
+  /**
+   Promise the wait settles, and the two ends that settle it.
+   */
+  const {
+    promise,
+    resolve,
+    reject,
+  } = Promise.withResolvers<unknown>();
+  if (signal.aborted) {
+    reject(new DOMException(
+      'The operation was aborted',
+      'AbortError',
+    ),);
+    return promise;
+  }
+
+  /**
+   Ends the wait early by rejecting it and dropping the fake timer.
+   */
+  function abort(): void {
+    clearTimeout(timer,);
+    reject(new DOMException(
+      'The operation was aborted',
+      'AbortError',
+    ),);
+  }
+
+  /**
+   Fake timer that settles the wait at its figure.
+   */
+  const timer = setTimeout(
+    function elapsed(): void {
+      signal.removeEventListener(
+        'abort',
+        abort,
+      );
+      resolve(value,);
+    },
+    ms,
+  );
+  signal.addEventListener(
+    'abort',
+    abort,
+    { once: true, },
+  );
+  return promise;
+}
 
 /**
  What the walk did on the fake clock.
@@ -94,6 +187,40 @@ export async function walkOnFakeClock(
     'setTimeout',
     'clearTimeout',
   ], },);
+
+  /**
+   The built-in's `setTimeout`, replaced by a wait on the fake clock.
+   */
+  const fakedWait = sinon.stub(
+    timersPromises,
+    'setTimeout',
+  )
+    .callsFake(function sleepOnFakeClock(
+      ms,
+      value,
+      options,
+    ) {
+      // The built-in's own defaults: one millisecond, and no signal to end the wait early.
+      return waitOnFakeClock({
+        ms: ms ?? 1,
+        value,
+        signal: options?.signal ?? new AbortController().signal,
+      },);
+    },);
+
+  // The module's property is replaced; its named exports follow only when they are told to.
+  syncBuiltinESMExports();
+
+  /**
+   Puts the real wait back in the named export when the walk ends, however it ends, since the sandbox restores the
+   module's property only when the case ends, after which nothing would copy it into the export.
+   */
+  using _restored = {
+    [Symbol.dispose](): void {
+      fakedWait.restore();
+      syncBuiltinESMExports();
+    },
+  };
   sinon.stub(
     AbortSignal,
     'timeout',

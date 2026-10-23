@@ -132,7 +132,7 @@ await describe({
 
     it({
       name: 'LEAVES A node:timers/promises WAIT UNENDED BEFORE ITS FIGURE (R9 control arm): the rig advances that clock '
-        + 'and no further, so the walk below ending above is the clock\'s doing and not the release\'s',
+        + 'and no further, so the end of a nap on the fake clock is the clock\'s doing and not the release\'s',
       fn: async ctx => {
         expect(await napWalk({
           sinon: ctx.sinon,
