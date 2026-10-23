@@ -19,7 +19,7 @@ use super::{
     State,
     tile::{TileBounds, requested},
     tile_build::PASS_GATE,
-    viewport::{holds as window_holds, place},
+    viewport::{holds as window_holds, place, wrap_width},
 };
 /// The open reader and the pixels of the shown image.
 use super::{
@@ -314,7 +314,7 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
     assert!(holdable_cases > 0, "no case had a view one raster can hold");
 }
 
-/// A window 10,000 px and taller over wrapped text:
+/// A window nearly as tall as the tallest stack of textures a tile may be, over wrapped text:
 /// the tile the worker builds is cut to the raster limit,
 /// the window accepts it as holding the view,
 /// and the measurement pass finishes.
@@ -322,12 +322,32 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
 /// so the window discarded every tile the worker built
 /// and asked for the same tile again,
 /// and the pass never finished (issue 1785).
+/// The heights come from `tile_cap` and not from fixed sizes:
+/// the cap grew when tiles became stacks of textures,
+/// and heights of 10,000 to 14,000 px then left more than a quarter view of room on each side,
+/// so the margin was never cut and the test passed with the cut removed.
+/// Each height is checked to leave less room than the margin asks for,
+/// and the text to be taller than the tile:
+/// a tile that reaches an end of the text is held on that side whatever the margin.
 #[test]
 fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
-    for height in [10_000.0_f32, 12_000.0, 14_000.0] {
-        let (_project, opened) = open(&long_text(400));
-        resize_without_frame(&opened, 1328.0, height);
+    let text_width = 1328.0_f32;
+    for share in [0.85_f32, 0.95] {
+        let (_project, opened) = open(&long_text(1500));
         let scale = opened.window.window().scale_factor();
+        let cap = tile_cap(wrap_width(text_width).expect("a width"), scale, 1.0e9);
+        let height = (cap * share).floor();
+        resize_without_frame(&opened, text_width, height);
+        {
+            // The margin the window asks for is a quarter of the view, and the cap leaves room for less.
+            let current = opened.source.borrow();
+            let view = opened.window.get_viewport_height();
+            let room = (tile_cap(current.width, current.scale, view) - view) / 2.0 - 2.0 * CODE_ROW;
+            assert!(
+                0.0 < room && room < 0.25 * view,
+                "height {height}: a view {view} px tall leaves {room} px of room, not under a quarter view: the test does not reach the guard"
+            );
+        }
         let mut waiting = Waiting::slow();
         while !measured(&opened.source, scale) {
             waiting.step(format_args!(
@@ -346,6 +366,11 @@ fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
             assert!(
                 stack_fits(u64::from(view.width), u64::from(view.height)),
                 "height {height}: the raster passes the limit"
+            );
+            assert!(
+                current.row_map.height() > cap,
+                "height {height}: the text is {} px tall, not past the cap of {cap} px: the test does not reach the guard",
+                current.row_map.height()
             );
         }
         opened.window.hide().expect("close wrap window");
