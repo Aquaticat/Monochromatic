@@ -15,10 +15,13 @@
  SEARCH IS HELD IN TURN BY ONE CASE PER FORM IT FOLLOWS, each with imaginary files: a call that names a type argument,
  a builder handed over by reference, a spread of its result, a call through a namespace import or an import alias, a
  builder written as an arrow function, a function expression, the default export, a method of an object, an argument
- of a call or an async arrow with one bare parameter, and a wrapper of any of them (returned at once, awaited, in
- parentheses, or through another wrapper). The fixtures `claude-schema-call-forms.test-fixture.ts`,
- `claude-schema-builder-forms.test-fixture.ts` and `claude-schema-wrapper-forms.test-fixture.ts` hold the files, and
- the header of `claude-schema-code.test-fixture.ts` lists the shapes the search does not read.
+ of a call, an async arrow with one bare parameter, a generic arrow or an async default export, and a wrapper of a
+ function, of a method of an object or of a default export (returned at once, awaited, in parentheses, with a type
+ argument, as an arrow function body, or through another wrapper). Wrappers of the other builder forms have no case
+ of their own. The fixtures `claude-schema-call-forms.test-fixture.ts`,
+ `claude-schema-builder-forms.test-fixture.ts`, `claude-schema-wrapper-forms.test-fixture.ts` and
+ `claude-schema-wrapped-builder-forms.test-fixture.ts` hold the files, and the header of
+ `claude-schema-code.test-fixture.ts` lists the shapes the search does not read.
 
  A FIFTH CASE HOLDS THE LIMIT OF THE ENUM CASE FOLD (`provider/src/enum-case-fold.ts`): the fold takes a reply value
  back to the spelling its schema lists only along `properties` and `items`, and leaves `anyOf`, `oneOf`, `allOf`,
@@ -57,6 +60,10 @@ import {
   type SchemaBuilder,
   type SourceFile,
 } from './claude-schema-sources.test-fixture.ts';
+import {
+  WRAPPED_BUILDER_CASES,
+  WRAPPER_OPENING_CASES,
+} from './claude-schema-wrapped-builder-forms.test-fixture.ts';
 import { NO_BUILDER_CASES, WRAPPER_FORM_CASES, } from './claude-schema-wrapper-forms.test-fixture.ts';
 
 //region Not stage schemas
@@ -577,6 +584,8 @@ await describe({
       ...CALL_FORM_CASES,
       ...BUILDER_FORM_CASES,
       ...WRAPPER_FORM_CASES,
+      ...WRAPPER_OPENING_CASES,
+      ...WRAPPED_BUILDER_CASES,
       ...NO_BUILDER_CASES,
     ].map(function caseOfForm(formCase: FormCase,) {
       return it({

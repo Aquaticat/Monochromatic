@@ -13,15 +13,19 @@ import {
 // a function. It reads the shapes the family's source is written in, not the whole language.
 //
 // Functions read. A function is one declared at the top level (`function`, `async function`, `export default
-// function`), one a top-level constant holds (an arrow function with or without parentheses around its parameter, a
-// function expression, or a call whose first argument is one, as `memoize((a) => ...)` writes it), or a member of an
-// object literal a top-level constant holds, one level in, that is a method or a property holding a function; that
-// member is named `object.member` (`claude-schema-member.test-fixture.ts`).
+// function`, `export default async function`), one a top-level constant holds (an arrow function with or without
+// parentheses around its parameter or type parameters before them, a function expression, or a call whose first
+// argument is one, as `memoize((a) => ...)` writes it), or a member of an object literal a top-level constant holds,
+// one level in, that is a method or a property holding a function; that member is named `object.member`
+// (`claude-schema-member.test-fixture.ts`).
 //
 // Uses read. A use of a function is a name that stands alone: a call, a call that names type arguments, the name handed
 // over by reference, and the name behind a spread (`...name(`). A name that is part of a longer name, a property of
-// some other object, inside a string, or after `typeof` is no use. The names a file knows a function by (an import
-// alias, a namespace import, a default import) are in `claude-schema-import.test-fixture.ts`.
+// some other object, standing against a quote (a string that holds only the name, or starts or ends with it), or
+// after `typeof` is no use. A name inside a longer string (`'call build() here'`) and a name in a comment that follows
+// code on its line are read as a use: the scan drops only the comments that start a line, so it over-reads there, which
+// a case holds. The names a file knows a function by (an import alias, a namespace import, a default import) are in
+// `claude-schema-import.test-fixture.ts`.
 //
 // Wrappers read. A wrapper returns the call at once: after `return`, after `return await`, or as the body of an arrow
 // function, with the call in parentheses or on the next line. The reading stops there on purpose: a function that
@@ -29,15 +33,21 @@ import {
 // builder, and reading every function that merely calls one would make the producer list demand every caller of every
 // stage function. The three functions that ask the page consistency questions (`pass-consistency-ask.ts`,
 // `pass-consistency-carry-ask.ts`, `pass-consistency-run-off.ts`) are such functions: they pass a builder's result to a
-// request and return something else.
+// request and return something else. A wrapper is found for a builder that is a function, a method of an object (called
+// as `object.member`) or a default export (called by the name the wrapper's file gives the import), and each has a
+// case. A wrapper of a builder written some other way (an arrow function, a function expression) goes through the same
+// rule and has no case of its own.
 //
 // Not read. A function declared inside another function or in a class; a wrapper that returns the call through a
 // local variable, a conditional expression, an object or array it builds, or a promise chain; an optional call
 // (`maybe?.build?.()`); a function assigned to a second name (`const make = build;`) or taken out of an object
 // (`const { build } = kit;`), whose second name is never followed; a function re-exported under another name
 // (`export { build as make } from`); an anonymous default export, or a default export written as `export default
-// build;`; a dynamic `import()` or `require`; an object member nested deeper than one level; and a getter or a
-// setter. A search of the family's non-test source on 2026-10-23 (`rg` for the names of the three shared builders)
+// build;`; a dynamic `import()` or `require`; a default import through a module whose file name is not the declaring
+// file's (`import make from './index.ts'` for the default export of `default-wire.ts`, as a barrel is imported), whose
+// local name is never followed; an object member nested deeper than one level, an accessor (a getter or a setter), a
+// member with a computed name, and a member on the line that opens the object (`claude-schema-member.test-fixture.ts`).
+// A search of the family's non-test source on 2026-10-23 (`rg` for the names of the three shared builders)
 // finds them only as plain calls by name, as entries of import and export lists, and in documentation, so none of
 // these shapes is in use for a shared builder today. A builder written one of these ways later would be missing from
 // the producer list without a case seeing it.
@@ -79,7 +89,7 @@ type ConstantDeclaration = {
 };
 
 /**
- The characters that open or close a string, so a name found between them is text and no use of the function.
+ The characters that open or close a string, so a name standing against one of them is text and no use of the function.
  */
 const QUOTE_CHARACTERS = '\'"`';
 
@@ -678,7 +688,7 @@ export function returnsCallOf(
 /**
  Whether code uses a function by its name: a call, a call that names type arguments, the function handed over by
  reference, or the name behind a spread. The name must stand alone, so a longer name that holds it, a property of the
- same name, a string and a `typeof` are no use.
+ same name, a name against a quote and a `typeof` are no use. A name inside a longer string is read as a use.
 
  @param code - lines of code
 
