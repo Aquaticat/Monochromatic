@@ -379,10 +379,12 @@ saved beside this doc because it exceeds inline size.
 
 All six constraints hold,
 so the draft below is fileable.
-It is not filed yet:
-opening an upstream issue is an external action that waits for authorization.
+It stays unfiled:
+the user chose to keep it as a record on 2026-10-23,
+and opening an
+upstream issue is an external action this repo takes only on request.
 
-### Draft (fileable; not filed yet)
+### Draft (fileable; kept unfiled by choice)
 
 ~~~md
 Title: types/sinon: `index.d.mts` drops the named export surface that the
