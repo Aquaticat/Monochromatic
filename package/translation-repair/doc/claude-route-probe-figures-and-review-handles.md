@@ -50,7 +50,10 @@ Round 4 added four controls to the probe script for the keyed run that followed:
 `minItems` 2 sent raw,
 a listed `format` and an unlisted `format` sent raw.
 
-That run,
+A first run with them,
+on 2026-10-23,
+made 30 calls for an estimated 0.00215 USD and sent no baseline.
+A second run,
 on 2026-10-23,
 made 34 calls for an estimated 0.0023 USD,
 and sent a baseline for each accepted control,

@@ -361,8 +361,13 @@ Code:
 ## Addendum: the keyed Claude probes (2026-10-23)
 
 The lead ran `probe3.ts` against the owner's Claude key with `claude-haiku-5-5`,
-twice,
-26 calls on 2026-10-22 and 34 calls on 2026-10-23 (estimated 0.0023 USD for the second).
+three times:
+26 calls on 2026-10-22,
+30 calls on 2026-10-23,
+which cost an estimated 0.00215 USD and sent no baseline,
+and 34 calls on 2026-10-23,
+which cost an estimated 0.0023 USD and sent a baseline for each accepted control.
+The figures of this section are those of the third run.
 The probe sits outside this repository,
 so this record holds what it measured.
 The route's source comments cite this section.
@@ -397,21 +402,32 @@ The ask told the model to break the keyword in both.
 - All 24 formats of the closed-vocabulary census answered HTTP 200.
   The probe's validator was a plain object check and not the stage guards.
 
-So a keyword changes the reply.
+So in this sample a keyword changes the reply.
+Each of the four contrasts rests on one reply with the keyword and one without,
+and the probe passes no sampling setting beyond the output limit of 512 tokens
+(no `temperature` appears in `probe3.ts`),
+so the API's default sampling applied.
+Four pairs are a pattern and not a measurement of how often a reply obeys.
 That is all the probe shows.
 
 ### What it cannot show
 
 The probe cannot tell a compiled grammar from the model reading the keyword.
 The input tokens of each control exceeded those of its baseline.
+The excess is our own measurement,
+control minus baseline with both arms structured,
+and the page does not account for it:
+the page says nothing about what a grammar costs in input tokens.
 The excess was 20 for `pattern`,
 261 for the 25-label `enum`,
 9 for `minItems` 1 and
 10 for `format`.
-A grammar adds no input tokens,
-so the schema text reaches the model,
-and the model reading it explains every reply in the list of results without any grammar.
-The reason text of the `enum` reply is the model quoting the schema.
+Our inference is that the keyword text reaches the model,
+because the excess grows with the keyword text (261 tokens for 25 labels).
+If it does,
+the model reading it explains every reply in the list of results without any grammar.
+The reason text of the `enum` reply reads as the model quoting the schema,
+which is consistent with that inference and does not prove it.
 The probe therefore does not show that the API enforces any keyword.
 A reply that obeys a keyword once is no guarantee for the next reply,
 and the stage guards remain the check.
@@ -430,11 +446,27 @@ Quoted:
   Claude automatically receives an additional system prompt explaining the expected output format."
   and "Your input token count is slightly higher."
   (section "Prompt modification and token costs").
-  This is the page's own account of the token excess.
+  The page gives this as the reason a structured request costs more input tokens than one without structured outputs.
+  It does not account for the excess measured in this section,
+  where both arms were structured.
 - "Although structured outputs guarantee schema compliance in most cases,
   there are scenarios where the output might not match your schema"
   (section "Invalid outputs"),
   which names refusals and the token limit.
+- "**API-enforced constraints** (sent in the schema):
+  `description`,
+  `format`,
+  `const`,
+  `itemClass`,
+  `minItems` (0 or 1 only)."
+  This sentence sits in the PHP tab of the page,
+  under the accordion "Constraints with the #[Constrained] attribute",
+  so it describes that SDK's attribute handling and not the API reference.
+  It is the sentence of the page that uses "enforced" of `format`,
+  `const` and `minItems`,
+  and it was fetched on 2026-10-23.
+  It names which constraints the PHP SDK sends in the schema,
+  and the probe cannot say whether the API then enforces them by grammar or by the model reading them.
 - "Structured outputs don't guarantee the capitalization of string `enum` and `const` values:
   Claude might return a value that differs from your schema only in capitalization,
   typically in the first letter of a word following a space."

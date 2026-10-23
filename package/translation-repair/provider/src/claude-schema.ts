@@ -32,10 +32,11 @@ import {
 // matching (`^...$`) and partial matching; Quantifiers: `*`, `+`, `?`, simple `{n,m}` cases; Character classes: `[]`,
 // `.`, `\d`, `\w`, `\s`; Groups: `(...)`" and "NOT supported: Backreferences to groups (for example, `\1`, `\2`);
 // Lookahead/lookbehind assertions (for example, `(?=...)`, `(?!...)`); Word boundaries: `\b`, `\B`; Complex `{n,m}`
-// quantifiers with large ranges". The keyed probes (26 calls on 2026-10-22 and 34 on 2026-10-23, both
-// claude-haiku-5-5) answered HTTP 200 to a `pattern` control, which agrees with the page. The reply obeyed the
-// pattern where the same ask without the keyword did not, which shows the keyword changes the reply; it does not
-// show whether the compiled grammar or the model reading the schema text did it
+// quantifiers with large ranges". The keyed probes (three runs of `probe3.ts`, of 26, 30 and 34 calls, the first on
+// 2026-10-22 and the others on 2026-10-23, all claude-haiku-5-5) answered HTTP 200 to a `pattern` control, which
+// agrees with the page. The reply obeyed the pattern where the same ask without the keyword did not (one reply for
+// each arm), which shows the keyword changes the reply in that sample; it does not show whether the compiled grammar
+// or the model reading the schema text did it
 // (`doc/decision/translation-repair-direct-providers.md`, "Addendum: the keyed Claude probes"). So a `pattern`
 // passes, except one that spells a construct the page names as unsupported, which fails here.
 // A LARGE `{n,m}` QUANTIFIER IS NOT CHECKED: the page says only "Complex `{n,m}` quantifiers with large ranges" and
