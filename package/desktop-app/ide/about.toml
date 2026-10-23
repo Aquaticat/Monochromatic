@@ -26,8 +26,11 @@ accepted = [
   "GPL-3.0-only",
 ]
 
-# The executable is built for this target only; crates that other targets would pull in are left out.
-targets = ["x86_64-unknown-linux-gnu"]
+# The executable is built for these two release targets only; crates that other targets would pull in are left out.
+# Both release builds (x86_64 and aarch64, .github/workflows/ide-release.yml) embed the same list, so the licenses of the
+# union are printed: on 2026-10-22 the aarch64 graph was a subset of the x86_64 one (449 crates, of which only
+# core_detect is absent on aarch64), so the list is the one the x86_64-only configuration printed.
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
 
 # Build scripts and tests run while building; they are not part of the executable.
 # Procedural-macro crates follow normal edges, so cargo-about keeps them and their dependencies.
