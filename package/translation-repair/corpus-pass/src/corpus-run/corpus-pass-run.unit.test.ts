@@ -641,8 +641,8 @@ await describe({
       },
     },),
     it({
-      name: 'HANDS THE CLIENT WHAT THE PASS HAS LEFT, unbounded before the loop starts and the hard cap or less once an '
-        + 'entry runs, so the seat reader waits for NeuralWatt\'s return only inside it',
+      name: 'HANDS THE CLIENT WHAT THE PASS HAS LEFT, unbounded before the loop starts and the hard cap or less once '
+        + 'an entry runs, so the seat reader waits for NeuralWatt\'s return only inside it',
       fn: async (ctx) => {
         using _printed = relayingConsoleLog({ sinon: ctx.sinon, },);
         await using clone = await makeCorpusPassClone({ entries: [
@@ -697,8 +697,8 @@ await describe({
     },),
     it({
       name: 'COUNTS THE SOFT BUDGET DOWN ON THE PASS\'S CLOCK in what the client is handed: the first entry reads the '
-        + '420 min hard cap (the soft budget is far longer), and once the pass\'s clock has run to 320 min short of the '
-        + 'soft budget the bound is exactly what the soft budget has left, falling with the clock',
+        + '420 min hard cap (the soft budget is far longer), and once the pass\'s clock has run to 320 min short of '
+        + 'the soft budget the bound is exactly what the soft budget has left, falling with the clock',
       fn: async (ctx) => {
         using _printed = relayingConsoleLog({ sinon: ctx.sinon, },);
         await using clone = await makeCorpusPassClone({ entries: [

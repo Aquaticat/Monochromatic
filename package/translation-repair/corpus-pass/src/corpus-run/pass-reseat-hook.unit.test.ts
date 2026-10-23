@@ -2,8 +2,8 @@
  Tests the per-slice re-seating hook against the bound its client carries.
 
  The hook reads the seats again while a hold runs, and a NeuralWatt return counts as a hold only when it lies inside
- what the pass has left: a return past it is not a hold, so the hook costs nothing and hands the slice the seating it had.
- The client here answers its holds the way the budgets do, by honouring the bound it is asked with.
+ what the pass has left: a return past it is not a hold, so the hook costs nothing and hands the slice the seating it
+ had. The client here answers its holds the way the budgets do, by honouring the bound it is asked with.
 
  Fixtures are cat-themed invention; every view is scripted and no HTTP is made.
 
@@ -100,8 +100,8 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'READS NOTHING FOR A RETURN PAST WHAT THE PASS HAS LEFT: 700 away with 600 left is no hold, so the slice keeps '
-        + 'the seating it had and no dryness is read',
+      name: 'READS NOTHING FOR A RETURN PAST WHAT THE PASS HAS LEFT: 700 away with 600 left is no hold, so the slice '
+        + 'keeps the seating it had and no dryness is read',
       fn: async () => {
         const { hook, reads, } = hookBefore({ returnInMs: 700, passLeftMs: 600, },);
         expect(await hook(),).toEqual(UNSEATED,);
@@ -110,8 +110,8 @@ await describe({
     },),
 
     it({
-      name: 'READS THE SEATS FOR A RETURN INSIDE WHAT THE PASS HAS LEFT: 500 away with 600 left is a hold, so the slice '
-        + 'takes the seating the reading gives',
+      name: 'READS THE SEATS FOR A RETURN INSIDE WHAT THE PASS HAS LEFT: 500 away with 600 left is a hold, so the '
+        + 'slice takes the seating the reading gives',
       fn: async () => {
         const { hook, reads, } = hookBefore({ returnInMs: 500, passLeftMs: 600, },);
         expect(await hook(),).toEqual(RESEATED,);
@@ -120,7 +120,8 @@ await describe({
     },),
 
     it({
-      name: 'READS NOTHING WHEN THE BOUND IS ZERO OR BELOW, the pass or the entry\'s cap spent, whatever return is named',
+      name: 'READS NOTHING WHEN THE BOUND IS ZERO OR BELOW, the pass or the entry\'s cap spent, whatever return is '
+        + 'named',
       fn: async () => {
         const { hook, reads, } = hookBefore({ returnInMs: 5, passLeftMs: -1, },);
         expect(await hook(),).toEqual(UNSEATED,);

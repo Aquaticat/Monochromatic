@@ -257,7 +257,8 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @param openrouter - fourth provider's credits reader, absent when unconfigured
 
- @param wall - the wall clock and the margin a spent NeuralWatt day's return carries, absent where the cause is not asked for
+ @param wall - the wall clock and the margin a spent NeuralWatt day's return carries, absent where the cause is not
+ asked for
 
  @param signal - abort signal of whichever call started this reading
 

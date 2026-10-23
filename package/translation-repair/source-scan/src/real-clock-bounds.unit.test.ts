@@ -396,17 +396,25 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'provider/budget-hold-wait.unit.test.ts#<module>: setTimeout 30': {
     count: 1,
     bound: 'reached',
-    reason: 'the caller abort, armed before a wait on a hold of a million milliseconds, so it fires first on any machine '
-      + 'and the case asserts its own reason',
+    reason: 'the caller abort, armed before a wait on a hold of a million milliseconds, so it fires first on any '
+      + 'machine and the case asserts its own reason',
   },
   'provider/hold-reason.unit.test.ts#<module>: hold hyper: 5_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
   'provider/hold-reason.unit.test.ts#<module>: hold hyper: 900_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
-  'provider/hold-reason.unit.test.ts#<module>: hold neuralwatt: 60_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold neuralwatt: 60_000': {
+    count: 1,
+    bound: 'read back',
+    reason: HOLD_REASON_INPUT,
+  },
   'provider/hold-reason.unit.test.ts#<module>: hold neuralwatt: 48_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
   'provider/hold-reason.unit.test.ts#<module>: hold openrouter: 9_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
   'provider/hold-reason.unit.test.ts#<module>: hold synthetic: 5_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
   'provider/provider-budget-neuralwatt-return.unit.test.ts#budgetsBefore: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: RETURN_CACHE_WINDOW, },
-  'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: RETURN_CACHE_WINDOW, },
+  'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: freshForMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: RETURN_CACHE_WINDOW,
+  },
   'provider/provider-budget-neuralwatt-return.unit.test.ts#budgetsBefore: cooldownMs: hyperCooldownMs': {
     count: 1,
     bound: 'reached',
@@ -431,12 +439,14 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 7 * HOUR_MS': {
     count: 2,
     bound: 'other',
-    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer is armed',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer '
+      + 'is armed',
   },
   'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 1_000': {
     count: 1,
     bound: 'other',
-    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer is armed',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer '
+      + 'is armed',
   },
   'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: cooldownMs: 40': {
     count: 1,
@@ -453,7 +463,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: statedWaitMs: 120_000': {
     count: 1,
     bound: 'read back',
-    reason: 'a refusal\'s stated wait handed to the budget layer on the case\'s own scripted clock, which sleeps nothing',
+    reason: 'a refusal\'s stated wait handed to the budget layer on the case\'s own scripted clock, which sleeps '
+      + 'nothing',
   },
   'run/corpus-run/run-seats-read.unit.test.ts#<module>: hold openrouter: 60_000': {
     count: 1,

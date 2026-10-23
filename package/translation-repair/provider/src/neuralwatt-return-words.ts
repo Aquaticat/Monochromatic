@@ -6,8 +6,8 @@ import {
 import type { NeuralWattDryness, } from './neuralwatt-return-hold.ts';
 
 //region NeuralWatt return words
-// THE WORDS THE REFUSAL THAT ENDS THE RUN GIVES FOR NEURALWATT: what the run knows of its day, why it reads dry, and when
-// its energy comes back, only the true cause of each.
+// THE WORDS THE REFUSAL THAT ENDS THE RUN GIVES FOR NEURALWATT: what the run knows of its day, why it reads dry, and
+// when its energy comes back, only the true cause of each.
 
 /**
  What the run knows of when NeuralWatt's free energy returns, for the refusal that ends the run to state.
@@ -47,8 +47,8 @@ export type NeuralWattReturn =
     };
 
 /**
- The time of day a spent NeuralWatt day starts again, as the refusal states it, from the reading's own day start where it
- has one and from the run's decided day otherwise.
+ The time of day a spent NeuralWatt day starts again, as the refusal states it, from the reading's own day start where
+ it has one and from the run's decided day otherwise.
 
  @param day - what the run knows of NeuralWatt's day
 
@@ -84,8 +84,8 @@ export function returnTimeOf(
 }
 
 /**
- The time a blocked key lets requests through again, as a refusal states it: the reading's own text read as an instant and
- spelled in UTC, never the reply's text itself.
+ The time a blocked key lets requests through again, as a refusal states it: the reading's own text read as an instant
+ and spelled in UTC, never the reply's text itself.
 
  @param until - the instant as the quota reply spelled it
 
@@ -142,8 +142,8 @@ export function namedDrynessOf(
 
 /**
  The opening clause about NeuralWatt, which says only what the run knows of it: why it reads dry when the caller knows,
- else spent when a day start is decided, refused until one is learned when none is, and absent when NeuralWatt is off and
- so has no energy to be out of.
+ else spent when a day start is decided, refused until one is learned when none is, and absent when NeuralWatt is off
+ and so has no energy to be out of.
 
  @param day - what the run knows of NeuralWatt's day
 
@@ -191,7 +191,8 @@ export function openingClauseOf(
  @example
  ```ts
  returnClauseOf({ day: { kind: 'at', msOfDay: 69_308_000, }, afterWaiting: false, });
- // => 'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run decided or learned; '
+ // => 'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run decided or
+ // learned; '
  ```
  */
 export function returnClauseOf(
@@ -208,7 +209,8 @@ export function returnClauseOf(
   if (day.kind === 'off')
     return 'NeuralWatt is off for this run, so it returns no energy; ';
   if (dryness?.kind === 'key-blocked')
-    return `NeuralWatt's key allowance stays blocked until ${keyUnblockTextOf({ until: dryness.until, },)} and is not tied to the day start; `;
+    return `NeuralWatt's key allowance stays blocked until ${keyUnblockTextOf({ until: dryness.until, },)} `
+      + 'and is not tied to the day start; ';
   if (dryness?.kind === 'reserved') {
     return 'NeuralWatt\'s remaining energy is held by calls in flight and comes back as they settle, not at the day '
       + 'start; ';

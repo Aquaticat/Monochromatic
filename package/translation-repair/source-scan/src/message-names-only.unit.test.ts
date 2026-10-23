@@ -350,15 +350,18 @@ const NAMED_PARTS: Record<string, string> = {
   'measured': 'meter states and hold durations, composed by the caller from two booleans and two numbers',
   'xiaomiCause': 'one of two fixed sentences, chosen by whether Xiaomi was counted dry for serving nothing here',
   'xiaomiRefill': 'a fixed sentence about Xiaomi\'s recovery, or nothing',
-  'openingClauseOf({ day: neuralwatt, ...named, },)': 'one of five fixed openers about NeuralWatt\'s energy, its key or its '
+  'openingClauseOf({ day: neuralwatt, ...named, },)': 'one of five fixed openers about NeuralWatt\'s energy, its key '
+    + 'or its '
     + 'day start, naming no figure, or nothing for an off provider',
   'providerClausesOf({ idle, },)': 'fixed sentences naming each provider and whether it is out of budget or reads wet '
     + 'but serves no seat that writes',
   '(idle.length === 0) ? \'Nothing further can be bought\' : \'Nothing further that writes a page can be bought\'':
     'one of two fixed sentences, chosen by whether a provider reads wet but serves no seat that writes',
-  'returnClauseOf({ day: neuralwatt, ...named, afterWaiting, },)': 'one fixed sentence about NeuralWatt\'s return, naming '
-    + 'at most the UTC time of day its day starts at, a distance composed from a number of milliseconds, and for a blocked '
-    + 'key the instant it lifts, read as an instant and spelled in UTC (keyUnblockTextOf), never the reply\'s own text',
+  'returnClauseOf({ day: neuralwatt, ...named, afterWaiting, },)': 'one fixed sentence about NeuralWatt\'s return, '
+    + 'naming '
+    + 'at most the UTC time of day its day starts at, a distance composed from a number of milliseconds, and for a '
+    + 'blocked key the instant it lifts, read as an instant and spelled in UTC (keyUnblockTextOf), never the reply\'s '
+    + 'own text',
   'dir': 'directory path',
   'endpoint': 'upstream display name as the gateway spelled it, the same field the SPEND line prints, or the word unnamed',
   'errorType': 'gateway failure kind read off its metadata, or the word unnamed; in StreamErrorEventError, a documented '

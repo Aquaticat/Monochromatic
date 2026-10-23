@@ -68,8 +68,8 @@ export function holdReasonOf(
 
 /**
  The clause a refusal adds for why NeuralWatt reads dry, only the true cause: a blocked key states its own time, energy
- held by calls in flight says so, a day the account still shows spent past its start says that, and a run that learned no
- day start says that. A spent day whose return is named states the time and the distance.
+ held by calls in flight says so, a day the account still shows spent past its start says that, and a run that learned
+ no day start says that. A spent day whose return is named states the time and the distance.
 
  @param dryness - why NeuralWatt reads dry as the last reading found it
 
@@ -95,7 +95,9 @@ export function dryCauseClausesOf(
   if (dryness.kind === 'wet')
     return [];
   if (dryness.kind === 'key-blocked')
-    return [`NeuralWatt reads dry because its key allowance is blocked until ${keyUnblockTextOf({ until: dryness.until, },)}`,];
+    return [
+      `NeuralWatt reads dry because its key allowance is blocked until ${keyUnblockTextOf({ until: dryness.until, },)}`,
+    ];
   if (dryness.kind === 'reserved')
     return ['NeuralWatt reads dry because calls in flight hold the energy the settled calls leave',];
   if (dryness.kind === 'no-day-start')
@@ -123,7 +125,8 @@ export function dryCauseClausesOf(
     },)
     .join('',);
   return [
-    `NeuralWatt reads dry and its day starts again at ${at} (in ${durationWordsOf({ ms: dryness.returnsInMs, },)})${pastPass}`,
+    `NeuralWatt reads dry and its day starts again at ${at} `
+      + `(in ${durationWordsOf({ ms: dryness.returnsInMs, },)})${pastPass}`,
   ];
 }
 

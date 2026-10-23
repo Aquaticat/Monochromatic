@@ -10,7 +10,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { createNeuralWattReturnMark, } from '../dist/final/node/index.mjs';
-import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
+import {
+  levelCapturingLogger,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 
 await describe({
   name: createNeuralWattReturnMark.name,
@@ -32,7 +34,8 @@ await describe({
     },),
 
     it({
-      name: 'COUNTS THE RETURN AS PASSED TWO MILLISECONDS EARLY, the slack for a timer that fires a hair before its time',
+      name: 'COUNTS THE RETURN AS PASSED TWO MILLISECONDS EARLY, the slack for a timer that fires a hair before its '
+        + 'time',
       fn: async () => {
         const clock = { now: 1_000, };
         const mark = createNeuralWattReturnMark({ now: () => clock.now, },);
@@ -56,7 +59,9 @@ await describe({
         mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 47_000, }, },);
         expect(lines.length,).toBe(1,);
         mark.replace({ dryness: { kind: 'wet', }, },);
-        mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-24T19:15:08.000Z', returnsInMs: 86_000_000, }, },);
+        mark.replace({
+          dryness: { kind: 'spent-day', dayStart: '2026-10-24T19:15:08.000Z', returnsInMs: 86_000_000, },
+        },);
         expect(lines.length,).toBe(2,);
       },
     },),
@@ -79,9 +84,16 @@ await describe({
         const mark = createNeuralWattReturnMark({ now: () => clock.now, },);
         mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 48_000, }, },);
         clock.now += 8_000;
-        expect(mark.dryness(),).toEqual({ kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 40_000, },);
+        expect(mark.dryness(),).toEqual({
+          kind: 'spent-day',
+          dayStart: '2026-10-23T19:15:08.000Z',
+          returnsInMs: 40_000,
+        },);
         mark.replace({ dryness: { kind: 'key-blocked', until: '2026-10-24T05:00:00.000Z', }, },);
-        expect([mark.dryness(), mark.leftMs(),],).toEqual([{ kind: 'key-blocked', until: '2026-10-24T05:00:00.000Z', }, 0,],);
+        expect([mark.dryness(), mark.leftMs(),],).toEqual([
+          { kind: 'key-blocked', until: '2026-10-24T05:00:00.000Z', },
+          0,
+        ],);
         mark.replace({ dryness: { kind: 'reserved', }, },);
         expect(mark.dryness(),).toEqual({ kind: 'reserved', },);
       },
@@ -95,7 +107,9 @@ await describe({
         const mark = createNeuralWattReturnMark({ now: () => clock.now, },);
         mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 48_000, }, },);
         clock.now += 48_000;
-        mark.replace({ dryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 86_400_000, }, },);
+        mark.replace({
+          dryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 86_400_000, },
+        },);
         expect([mark.passed(), mark.leftMs(),],).toEqual([false, 0,],);
         expect(mark.dryness(),).toEqual({ kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', },);
       },

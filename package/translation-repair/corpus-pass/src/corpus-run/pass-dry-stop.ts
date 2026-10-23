@@ -255,9 +255,8 @@ function returnNoteOf(
 ): string {
   if ((returnsInMs === undefined) || (returnsAt === undefined))
     return '';
-  return ` NeuralWatt's energy returns at ${returnsAt}, in ${durationWordsOf({ ms: returnsInMs, },)}, which is past the ${
-    durationWordsOf({ ms: passLeftMs, },)
-  } this pass has left.`;
+  return ` NeuralWatt's energy returns at ${returnsAt}, in ${durationWordsOf({ ms: returnsInMs, },)}, `
+    + `which is past the ${durationWordsOf({ ms: passLeftMs, },)} this pass has left.`;
 }
 
 /**
@@ -340,7 +339,8 @@ function refuseOn(
       },);
     rl.warn(
       'every provider is out of budget, so the pass is parked until NeuralWatt\'s energy returns at '
-        + `${nonNullishOrThrow(error.neuralwattReturnsAt,)} (in ${durationWordsOf({ ms: nonNullishOrThrow(error.neuralwattReturnsInMs,), },)}); `
+        + `${nonNullishOrThrow(error.neuralwattReturnsAt,)} `
+        + `(in ${durationWordsOf({ ms: nonNullishOrThrow(error.neuralwattReturnsInMs,), },)}); `
         + `the entry in flight is left resumable and the pass resumes then (cause: ${refusalText({ error, },)})`,
     );
     state.controller
@@ -507,7 +507,10 @@ export function createPassDryStop(
         tag: createPassDryStop.name,
         l,
       },)
-        .info(`the pass resumes: NeuralWatt's energy was due at ${park.returnsAt} and the park of ${durationWordsOf({ ms: park.returnsInMs, },)} has ended`,);
+        .info(
+        `the pass resumes: NeuralWatt's energy was due at ${park.returnsAt} `
+          + `and the park of ${durationWordsOf({ ms: park.returnsInMs, },)} has ended`,
+        );
     },
 
     takeStopNotes: function takeStopNotes(): readonly string[] {

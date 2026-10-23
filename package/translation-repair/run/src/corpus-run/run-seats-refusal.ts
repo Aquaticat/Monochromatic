@@ -66,8 +66,9 @@ export function writingProvidersOfClient(
 }
 
 /**
- The clauses of an unreachable writing bench with why NeuralWatt reads dry, only the true cause: a blocked key states its
- own time, energy held by calls in flight says so, a day the account still shows spent says that, and a spent day with a
+ The clauses of an unreachable writing bench with why NeuralWatt reads dry, only the true cause: a blocked key states
+ its own time, energy held by calls in flight says so, a day the account still shows spent says that, and a spent day
+ with a
  return states the time and the distance.
 
  @param clauses - one clause per writing bench below its floor
@@ -129,8 +130,8 @@ export function withNeuralWattReturn(
 
  @param neuralwattDryness - why NeuralWatt reads dry, left out where the client reports none
 
- @param neuralwattReturnsInMs - milliseconds until NeuralWatt's spent day starts again while the return lies ahead, which
- the pass reads to park for it when it has the time; left out where no return lies ahead
+ @param neuralwattReturnsInMs - milliseconds until NeuralWatt's spent day starts again while the return lies ahead,
+ which the pass reads to park for it when it has the time; left out where no return lies ahead
 
  @param pastPass - the words saying that return is past what the pass has left, none where it fits or none is named
 

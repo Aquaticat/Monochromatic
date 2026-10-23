@@ -95,7 +95,10 @@ export async function readMeterStates(
   try {
     return await client.providerMeterStates({ signal, },);
   } catch (error) {
-    l.warn(`judge seats: the meter states could not be read (${exchangeFailureLogText({ error, },)}); naming every meter unreadable`,);
+    l.warn(
+      `judge seats: the meter states could not be read (${exchangeFailureLogText({ error, },)}); `
+        + 'naming every meter unreadable',
+    );
     return providerRecord({ of: unreadableMeter, },);
   }
 }

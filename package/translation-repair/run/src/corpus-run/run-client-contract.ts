@@ -74,8 +74,9 @@ export type RunClient = ModelClient & {
   readonly neuralwattReturn?: () => NeuralWattReturn;
 
   /**
-   Why NeuralWatt reads dry in the last reading, so the seat reader's refusal states only the true cause, and whether the
-   hold that keeps it out is its day start (`NeuralWattCause`). Absent on a client built over budgets that report none.
+   Why NeuralWatt reads dry in the last reading, so the seat reader's refusal states only the true cause, and whether
+   the hold that keeps it out is its day start (`NeuralWattCause`). Absent on a client built over budgets that report
+   none.
    */
   readonly neuralwattDryness?: NeuralWattCause['neuralwattDryness'];
 
@@ -94,9 +95,11 @@ export type RunClient = ModelClient & {
   readonly writingProviders?: ProviderRecord<boolean>;
 
   /**
-   Milliseconds the pass has left before its soft budget or hard cap (the shorter), which bounds the seat reader's wait for
-   NeuralWatt's return: a return inside it is waited for, one past it is refused at once with its time stated, since the
-   pass would end first. Absent for a client built outside a pass, which bounds the wait by the entry's abort alone.
+   Milliseconds the seat reader may wait for NeuralWatt's return: the pass's soft budget left or its hard cap, whichever
+   is shorter, and inside an entry also what that entry's own cap has left (`pass-entry-bound.ts`), so a wait never
+   outlasts the entry's timer. A return inside it is waited for, one past it is refused at once with its time stated,
+   since the pass or the entry would end first. Absent for a client built outside a pass, which bounds the wait by the
+   entry's abort alone.
    */
   readonly passLeftMs?: () => number;
 };

@@ -161,7 +161,10 @@ await describe({
                 unreachableWriters: ['translators 1 of 8 reachable, floor 2', 'editors 0 of 3 reachable, floor 2',],
               },),
             ],).toEqual([
-              { kind: 'not-asked', why: 'translators 0 of 8 reachable, floor 2; no provider has named a return the pass can wait for', },
+              {
+                kind: 'not-asked',
+                why: 'translators 0 of 8 reachable, floor 2; no provider has named a return the pass can wait for',
+              },
               {
                 kind: 'not-asked',
                 why: 'translators 1 of 8 reachable, floor 2; editors 0 of 3 reachable, floor 2; '

@@ -4,9 +4,10 @@
 
  The reader waits for a return the budgets name when it lies inside the bound its client carries (what the pass has
  left), at any distance for a client that carries none, and then seats the NeuralWatt writers; where no return is named,
- or it lies past the bound, it refuses and the refusal states only the true cause. The budgets are the real ones over stub
- meters and a stub wall clock, so the return reaches the reader the way a run's does (a hold), and the times are scaled to
- milliseconds.
+ or it lies past the bound, it refuses and the refusal states only the true cause. The budgets are the real ones over
+ stub meters and a stub wall clock, so the return reaches the reader the way a run's does (a hold), and the times are
+ scaled
+ to milliseconds.
 
  Fixtures are cat-themed invention; every meter is a stub and no HTTP is made.
 
@@ -69,8 +70,8 @@ await describe({
 
     it({
       name: 'WAITS FOR A RETURN PAST THE 300 s A ROUTER CALL WAITS for a client that names no pass bound, the way '
-        + 'Hyper\'s stated holds are waited for: the budgets name the return as a hold at any distance for a caller that '
-        + 'names no bound, and the NeuralWatt writers are seated once it has passed',
+        + 'Hyper\'s stated holds are waited for: the budgets name the return as a hold at any distance for a caller '
+        + 'that names no bound, and the NeuralWatt writers are seated once it has passed',
       fn: async () => {
         const lines: string[] = [];
         const { client, reads, } = clientBefore({ msBeforeReturn: 80, },);
@@ -92,7 +93,8 @@ await describe({
 
     it({
       name: 'STATES THE KEY\'S OWN TIME FOR A BLOCKED KEY and not a day start: NeuralWatt dry because the key\'s '
-        + 'allowance is blocked comes back when the block lifts, so the refusal names that and no return it does not have',
+        + 'allowance is blocked comes back when the block lifts, so the refusal names that and no return it does not '
+        + 'have',
       fn: async () => {
         const lines: string[] = [];
         const { client, reads, } = clientBefore({
@@ -136,8 +138,8 @@ await describe({
     },),
 
     it({
-      name: 'STATES THAT THE ACCOUNT STILL SHOWS THE DAY SPENT when the reader waited for the return and the account has '
-        + 'not yet shown the new day, instead of waiting a whole day more for a return that has passed',
+      name: 'STATES THAT THE ACCOUNT STILL SHOWS THE DAY SPENT when the reader waited for the return and the account '
+        + 'has not yet shown the new day, instead of waiting a whole day more for a return that has passed',
       fn: async () => {
         const lines: string[] = [];
         const { client, reads, } = clientBefore({ msBeforeReturn: 60, syntheticWet: false, lagging: true, },);
@@ -159,7 +161,8 @@ await describe({
 
     it({
       name: 'WAITS FOR A RETURN INSIDE WHAT THE PASS HAS LEFT, past 300 s too: a return 301 away with 600 left (scaled '
-        + 'from seconds to milliseconds so the case sleeps for real) is waited for and the NeuralWatt writers are seated',
+        + 'from seconds to milliseconds so the case sleeps for real) is waited for and the NeuralWatt writers are '
+        + 'seated',
       fn: async () => {
         const { client, reads, } = clientBefore({ msBeforeReturn: 301, passLeftMs: 600, },);
         const { unreachableWriters, } = await readPhaseSeats({
@@ -175,9 +178,9 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES AT ONCE, STATING THE RETURN TIME, for a return past what the pass has left: 700 away with 600 left '
-        + '(scaled from seconds to milliseconds) is not waited for, since the pass would end first, and the refusal '
-        + 'names the time of day in UTC and says the pass has less left',
+      name: 'REFUSES AT ONCE, STATING THE RETURN TIME, for a return past what the pass has left: 700 away with 600 '
+        + 'left (scaled from seconds to milliseconds) is not waited for, since the pass would end first, and the '
+        + 'refusal names the time of day in UTC and says the pass has less left',
       fn: async () => {
         // A frozen monotonic clock: the distance stays 700 whatever the host does between the reading and the hold.
         const { client, reads, } = clientBefore({ msBeforeReturn: 700, passLeftMs: 600, now: () => 0, },);

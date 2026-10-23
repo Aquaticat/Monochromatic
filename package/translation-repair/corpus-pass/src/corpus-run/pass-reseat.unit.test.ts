@@ -120,8 +120,8 @@ const l = tagged({ tag: 'pass-reseat-test', },);
 
  @param view - dryness every read answers
 
- @param holdEndsAtRead - the read at which every running hold has ended, for a case whose bench stays short and whose wait
- would otherwise last as long as the hold does; a hold that never ends is not a hold
+ @param holdEndsAtRead - the read at which every running hold has ended, for a case whose bench stays short and whose
+ wait would otherwise last as long as the hold does; a hold that never ends is not a hold
 
  @returns Client beside its read counter and its hold setter
 

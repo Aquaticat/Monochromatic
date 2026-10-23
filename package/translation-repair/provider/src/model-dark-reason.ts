@@ -109,8 +109,8 @@ export function modelDarkReason(
 }
 
 /**
- How long a model that went dark is not warned about again: the budget layer's refusal cooldown, 300 s, since a dark model
- stays dark at least that long and a fleet asked for it every round, repeating the same line hundreds of times.
+ How long a model that went dark is not warned about again: the budget layer's refusal cooldown, 300 s, since a dark
+ model stays dark at least that long and a fleet asked for it every round, repeating the same line hundreds of times.
  */
 export const DARK_MODEL_WARN_COOLDOWN_MS = 300_000;
 

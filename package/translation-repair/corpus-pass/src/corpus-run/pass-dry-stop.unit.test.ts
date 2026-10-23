@@ -91,7 +91,8 @@ const DAY_TWO = '2026-10-23T19:15:08.000Z';
 
  @param dayStart - the day start the reading named
 
- @returns The refusal, carrying the distance, the time of day and the dryness the pass tells one spent day from the next by
+ @returns The refusal, carrying the distance, the time of day and the dryness the pass tells one spent day from the next
+ by
 
  @example
  ```ts
@@ -270,9 +271,9 @@ await describe({
     },),
 
     it({
-      name: 'PARKS INSTEAD OF STOPPING when every provider reads dry and NeuralWatt\'s return is 301 s away, inside what '
-        + 'the pass has left: the calls in flight end with the refusal, the pass is not tripped, and after the wait '
-        + 'until the return the signal is live again, with a line at the start naming the reason and the return '
+      name: 'PARKS INSTEAD OF STOPPING when every provider reads dry and NeuralWatt\'s return is 301 s away, inside '
+        + 'what the pass has left: the calls in flight end with the refusal, the pass is not tripped, and after the '
+        + 'wait until the return the signal is live again, with a line at the start naming the reason and the return '
         + 'time in UTC and one at the end',
       fn: async () => {
         /**
@@ -339,9 +340,9 @@ await describe({
     },),
 
     it({
-      name: 'WAITS ONLY FOR WHAT IS LEFT OF THE RETURN: the park stores the return as an instant on the gate\'s clock, so '
-        + 'the time the entry in flight took to end after the refusal comes off the wait, and a return that has passed '
-        + 'by then is waited for not at all',
+      name: 'WAITS ONLY FOR WHAT IS LEFT OF THE RETURN: the park stores the return as an instant on the gate\'s clock, '
+        + 'so the time the entry in flight took to end after the refusal comes off the wait, and a return that has '
+        + 'passed by then is waited for not at all',
       fn: async () => {
         /**
          Clock the gate reads, moved by the case.
@@ -421,9 +422,9 @@ await describe({
     },),
 
     it({
-      name: 'PARKS ON THE REFUSAL THE ROUTER MAKES AFTER WAITING OUT ANOTHER HOLD, over real budgets: Hyper held 40 ms and '
-        + 'NeuralWatt\'s spent day 600 s from starting again, past the router\'s own 300 s, so the call waits for Hyper '
-        + 'and the refusal still carries the return, which the pass has the time for',
+      name: 'PARKS ON THE REFUSAL THE ROUTER MAKES AFTER WAITING OUT ANOTHER HOLD, over real budgets: Hyper held 40 ms '
+        + 'and NeuralWatt\'s spent day 600 s from starting again, past the router\'s own 300 s, so the call waits for '
+        + 'Hyper and the refusal still carries the return, which the pass has the time for',
       fn: async () => {
         /**
          Milliseconds after 00:00 UTC the account's day starts at: 19:15:08 UTC.

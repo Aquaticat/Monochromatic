@@ -18,7 +18,10 @@ await describe({
     it({
       name: 'STATES 301 000 MS AS 5 min 1 s and 48 000 ms as 48 s',
       fn: async () => {
-        expect([durationWordsOf({ ms: 301_000, },), durationWordsOf({ ms: 48_000, },),],).toEqual(['5 min 1 s', '48 s',],);
+        expect([
+          durationWordsOf({ ms: 301_000, },),
+          durationWordsOf({ ms: 48_000, },),
+        ],).toEqual(['5 min 1 s', '48 s',],);
       },
     },),
 

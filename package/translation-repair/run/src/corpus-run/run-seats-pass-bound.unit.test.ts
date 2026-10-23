@@ -21,7 +21,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
-import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
+import {
+  rejectionOf,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
 import {
   levelCapturingLogger,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -101,9 +103,9 @@ await describe({
     },),
 
     it({
-      name: 'ENDS THE RUN WITH THE DISTANCE AND THE PASS SENTENCE when every provider is dry and the return lies past the '
-        + 'pass: the refusal carries the milliseconds to the return for the pass to read, states the time of day, says '
-        + 'the pass has less left, and prints no NeuralWatt hold it did not wait for',
+      name: 'ENDS THE RUN WITH THE DISTANCE AND THE PASS SENTENCE when every provider is dry and the return lies past '
+        + 'the pass: the refusal carries the milliseconds to the return for the pass to read, states the time of day, '
+        + 'says the pass has less left, and prints no NeuralWatt hold it did not wait for',
       fn: async () => {
         const { client, reads, } = clientBefore({
           msBeforeReturn: 700,

@@ -7,8 +7,9 @@ import {
 
 //region Writing providers
 // WHICH PROVIDERS KEEP A RUN GOING WHILE THEY READ WET: those that serve a model seated in a writing bench. The writing
-// benches (`WRITING_BENCHES` in `run-seats-floor.ts`: editors, refiners, translators) are held to a floor of two seats a
-// wet provider serves, because a bench below it writes nothing a judge can choose between. A provider that serves only
+// benches (`WRITING_BENCHES` in `run-seats-floor.ts`: editors, refiners, translators) are held to a floor of two seats
+// a wet provider serves, because a bench below it writes nothing a judge can choose between. A provider that serves
+// only
 // seats that judge or read cannot lift a writing bench to its floor, so its wet meter must not hide a fleet that can
 // write nothing. Xiaomi, whose one seat is a checker, is that provider in the roster of 2026-10-22.
 //

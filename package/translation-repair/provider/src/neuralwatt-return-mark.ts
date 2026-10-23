@@ -70,10 +70,11 @@ type ReturnMark =
  */
 export type NeuralWattReturnMark = {
   /**
-   Replaces the mark with what a meter reading found, logging the wait when it names a return that is not the last one's.
+   Replaces the mark with what a meter reading found, logging the wait when it names a return that is not the last
+   one's.
 
-   A SPENT DAY THAT THE LAST READING NAMED AND THAT STILL READS SPENT AFTER ITS RETURN HAS PASSED is the account lagging,
-   not a new day: it names no return, so the waits do not wait a day for energy the account has not yet shown.
+   A SPENT DAY THAT THE LAST READING NAMED AND THAT STILL READS SPENT AFTER ITS RETURN HAS PASSED is the account
+   lagging, not a new day: it names no return, so the waits do not wait a day for energy the account has not yet shown.
 
    @param dryness - why the reading is dry, or that it is not
    */

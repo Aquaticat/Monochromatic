@@ -72,7 +72,9 @@ export type { NeuralWattReturn, } from './neuralwatt-return-words.ts';
 
  @example
  ```ts
- const writing: WritingReach = { neuralwatt: true, synthetic: true, hyper: true, bedrock: true, deepseek: true, xiaomi: false, openrouter: true, };
+ const writing: WritingReach = {
+   neuralwatt: true, synthetic: true, hyper: true, bedrock: true, deepseek: true, xiaomi: false, openrouter: true,
+ };
  ```
  */
 export type WritingReach = ProviderRecord<boolean>;
@@ -324,7 +326,11 @@ export class EveryProviderDryError extends Error {
         },)
       }`
         + `${providerClausesOf({ idle, },)}. `
-        + `${(idle.length === 0) ? 'Nothing further can be bought' : 'Nothing further that writes a page can be bought'}, `
+        + `${
+          (idle.length === 0)
+            ? 'Nothing further can be bought'
+            : 'Nothing further that writes a page can be bought'
+        }, `
         + 'so this run ends. '
         + `${
           returnClauseOf({

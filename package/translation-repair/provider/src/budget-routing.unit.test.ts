@@ -993,7 +993,11 @@ await describe({
               neuralwattDryness,
             },).message;
 
-            const spent = messageFor({ kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 301_000, },);
+            const spent = messageFor({
+              kind: 'spent-day',
+              dayStart: '2026-10-23T19:15:08.000Z',
+              returnsInMs: 301_000,
+            },);
             expect(spent,).toContain('at 19:15:08 UTC (in 5 min 1 s)',);
 
             const blocked = messageFor({ kind: 'key-blocked', until: '2026-10-23T05:00:00.000Z', },);

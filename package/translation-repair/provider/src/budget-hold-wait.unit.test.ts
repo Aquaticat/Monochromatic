@@ -60,8 +60,8 @@ const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
  @param neuralwattAfter - the day the budgets report once this many reads have happened, in place of `neuralwatt`, for a
  day that changes while a hold is waited out
 
- @param neuralwattHoldIsReturn - whether a NeuralWatt hold stands for a spent day's return, which the budgets then report
- only when it lies inside the bound the ask names (`returnBoundMs`), as the real budgets do
+ @param neuralwattHoldIsReturn - whether a NeuralWatt hold stands for a spent day's return, which the budgets then
+ report only when it lies inside the bound the ask names (`returnBoundMs`), as the real budgets do
 
  @param dryness - why NeuralWatt reads dry, which the budgets report to a refusal that ends the run; none when absent
 
@@ -757,9 +757,10 @@ await describe({
         },),
 
         it({
-          name: 'BOUNDS THE SUM OF THE NEURALWATT WAITS, not each: another hold waited out for as long as the bound leaves '
-            + 'nothing for a return that lies inside it alone, so the call refuses at once with the distance instead of '
-            + 'waiting on (a 300 s hold then a return 250 s away, scaled to 25 ms and 15 ms under a 20 ms bound)',
+          name: 'BOUNDS THE SUM OF THE NEURALWATT WAITS, not each: another hold waited out for as long as the bound '
+            + 'leaves nothing for a return that lies inside it alone, so the call refuses at once with the distance '
+            + 'instead of waiting on (a 300 s hold then a return 250 s away, scaled to 25 ms and 15 ms under a 20 ms '
+            + 'bound)',
           fn: async () => {
             const { budgets, holdAsks, } = scriptedBudgets({
               views: [ALL_DRY,],

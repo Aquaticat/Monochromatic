@@ -2414,8 +2414,8 @@ await describe({
       },
     },),
     it({
-      name: 'BOUNDS THE SEAT READER INSIDE AN ENTRY BY THE ENTRY\'S OWN HARD CAP: a pass with hours left hands the entry '
-        + 'a bound no larger than the cap, so a wait for a return never outlasts the entry\'s timer',
+      name: 'BOUNDS THE SEAT READER INSIDE AN ENTRY BY THE ENTRY\'S OWN HARD CAP: a pass with hours left hands the '
+        + 'entry a bound no larger than the cap, so a wait for a return never outlasts the entry\'s timer',
       fn: async () => {
         await using dirs = await throwawayDirs();
         /**

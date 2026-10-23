@@ -96,7 +96,8 @@ const FRESH_DAY: Reading = {
 
  @param staysSpent - whether every later reading still shows the spent day (default: the new day shows from the second)
 
- @param hyperCooldownMs - when given, the fleet carries a Hyper meter that reads dry and a refusal holds it out this long
+ @param hyperCooldownMs - when given, the fleet carries a Hyper meter that reads dry and a refusal holds it out this
+ long
 
  @returns Budgets that trust a reading for {@link FRESH_MS} and add no margin to a return
 
@@ -275,9 +276,9 @@ await describe({
     },),
 
     it({
-      name: 'HOLDS THE RETURN AT ANY DISTANCE for a caller that names no bound, and none past the bound a caller names: '
-        + 'the router names 300 s, the seat reader names none, and the production margin counts inside the bound, the '
-        + 'way the refusal\'s clause and the pass\'s park count it',
+      name: 'HOLDS THE RETURN AT ANY DISTANCE for a caller that names no bound, and none past the bound a caller '
+        + 'names: the router names 300 s, the seat reader names none, and the production margin counts inside the '
+        + 'bound, the way the refusal\'s clause and the pass\'s park count it',
       fn: async () => {
         const far = budgetsBefore({ msBeforeReturn: 82_800_000, clock: { now: 1_000, }, reads: { count: 0, }, },);
         await far.read({ signal: SIGNAL, },);
@@ -291,9 +292,9 @@ await describe({
     },),
 
     it({
-      name: 'ENDS THE ROUTER\'S CALL AT THE BOUND AND STATES THE DISTANCE: every provider dry and NeuralWatt 301 s from '
-        + 'its day start throws the refusal with the milliseconds to the return on it, which the pass reads to park '
-        + 'instead of stopping, and the message states the time of day',
+      name: 'ENDS THE ROUTER\'S CALL AT THE BOUND AND STATES THE DISTANCE: every provider dry and NeuralWatt 301 s '
+        + 'from its day start throws the refusal with the milliseconds to the return on it, which the pass reads to '
+        + 'park instead of stopping, and the message states the time of day',
       fn: async () => {
         const budgets = budgetsBefore({ msBeforeReturn: 301_000, clock: { now: 1_000, }, reads: { count: 0, }, },);
         const thrown = await refusalAfterHolds({ budgets, pollMs: 1, },);
@@ -304,8 +305,8 @@ await describe({
     },),
 
     it({
-      name: 'NAMES NO RETURN FOR ENERGY HELD BY CALLS IN FLIGHT: a day whose settled spend leaves more than the smallest '
-        + 'call and whose reservations alone leave less releases them in seconds, not at the day start',
+      name: 'NAMES NO RETURN FOR ENERGY HELD BY CALLS IN FLIGHT: a day whose settled spend leaves more than the '
+        + 'smallest call and whose reservations alone leave less releases them in seconds, not at the day start',
       fn: async () => {
         const budgets = budgetsBefore({
           msBeforeReturn: 48_000,
@@ -320,8 +321,8 @@ await describe({
     },),
 
     it({
-      name: 'TELLS A REFUSAL HOLD FROM THE DAY START: a refusal that holds NeuralWatt longer than its return is the hold '
-        + 'that won, and the day start is not named for it',
+      name: 'TELLS A REFUSAL HOLD FROM THE DAY START: a refusal that holds NeuralWatt longer than its return is the '
+        + 'hold that won, and the day start is not named for it',
       fn: async () => {
         const reads = { count: 0, };
         const clock = { now: 1_000, };
@@ -335,8 +336,8 @@ await describe({
     },),
 
     it({
-      name: 'READS THE METER AGAIN WHEN A TIMER FIRES A MILLISECOND EARLY: the return counts as passed two milliseconds '
-        + 'before it, the slack Node\'s timers were measured to need',
+      name: 'READS THE METER AGAIN WHEN A TIMER FIRES A MILLISECOND EARLY: the return counts as passed two '
+        + 'milliseconds before it, the slack Node\'s timers were measured to need',
       fn: async () => {
         const reads = { count: 0, };
         const clock = { now: 1_000, };
@@ -349,8 +350,8 @@ await describe({
     },),
 
     it({
-      name: 'ENDS THE RUN WITH THE DAY START STATED when the account still reads the day spent after the return was waited '
-        + 'for, and offers no return to park for: the router waited for it already',
+      name: 'ENDS THE RUN WITH THE DAY START STATED when the account still reads the day spent after the return was '
+        + 'waited for, and offers no return to park for: the router waited for it already',
       fn: async () => {
         /**
          The monotonic instant the case began at, from which the wall clock stub moves with real time.
@@ -448,11 +449,16 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS THE DISTANCE ON THE REFUSAL AFTER WAITING OUT ANOTHER HOLD: every provider dry, Hyper held 40 ms and '
-        + 'NeuralWatt 600 s from its day start (past the router\'s 300 s), so the call waits out Hyper and the refusal '
-        + 'still carries the distance and the time of day, which the pass parks on',
+      name: 'KEEPS THE DISTANCE ON THE REFUSAL AFTER WAITING OUT ANOTHER HOLD: every provider dry, Hyper held 40 ms '
+        + 'and NeuralWatt 600 s from its day start (past the router\'s 300 s), so the call waits out Hyper and the '
+        + 'refusal still carries the distance and the time of day, which the pass parks on',
       fn: async () => {
-        const budgets = budgetsBefore({ msBeforeReturn: 600_000, reads: { count: 0, }, staysSpent: true, hyperCooldownMs: 40, },);
+        const budgets = budgetsBefore({
+          msBeforeReturn: 600_000,
+          reads: { count: 0, },
+          staysSpent: true,
+          hyperCooldownMs: 40,
+        },);
         await budgets.read({ signal: SIGNAL, },);
         await budgets.markRefused({ provider: 'hyper', signal: SIGNAL, },);
         const thrown = await refusalAfterHolds({ budgets, pollMs: 1, },);

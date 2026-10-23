@@ -200,8 +200,8 @@ export type ProviderBudgets = {
   readonly neuralwattReturn?: () => NeuralWattReturn;
 
   /**
-   Why NeuralWatt reads dry as the last reading found it (`ProviderBudgetsWithStates`); ABSENT ON A VIEW THAT KNOWS NOTHING
-   OF NEURALWATT, whose refusal then states no cause.
+   Why NeuralWatt reads dry as the last reading found it (`ProviderBudgetsWithStates`); ABSENT ON A VIEW THAT KNOWS
+   NOTHING OF NEURALWATT, whose refusal then states no cause.
    */
   readonly neuralwattDryness?: NeuralWattCause['neuralwattDryness'];
 

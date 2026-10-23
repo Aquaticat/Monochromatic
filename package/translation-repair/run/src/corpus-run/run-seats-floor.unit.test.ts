@@ -249,7 +249,8 @@ await describe({
             expect(error.clauses.length,).toBe(2,);
             expect(error.message,).toBe(
               'writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; translators 1 of 7 reachable, '
-                + 'floor 2; no provider has named a return the pass can wait for, so the entry stops for a pass that has the bench',
+                + 'floor 2; no provider has named a return the pass can wait for, so the entry stops for a pass that '
+                + 'has the bench',
             );
           },
         },),
