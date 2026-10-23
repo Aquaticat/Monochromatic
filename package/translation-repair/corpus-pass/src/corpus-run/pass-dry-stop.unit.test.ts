@@ -22,7 +22,11 @@ import {
   readBudgetsPastHolds,
 } from '@monochromatic-dev/translation-repair-provider';
 import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run';
-import { createPassDryStop, } from '../../dist/final/node/index.mjs';
+import {
+  createPassDryStop,
+  type DryPark,
+  recordOnPark,
+} from '../../dist/final/node/index.mjs';
 import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
@@ -675,6 +679,38 @@ await describe({
         expect(dryStop.parkedFor({ error: first, },),).toBe(false,);
         expect(dryStop.parkedFor({ error: second, },),).toBe(false,);
         expect(dryStop.parkedFor({ error: late, },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'RECORDS ONLY THE PARKING FAILURES OTHER THAN THE PARK\'S OWN REFUSAL, once each: the refusal that parked '
+        + 'the pass, handed in again by the entry\'s catch, leaves the list empty',
+      fn: async () => {
+        /**
+         The refusal that parks the pass.
+         */
+        const refusal = spentDayRefusal({ dayStart: DAY_ONE, },);
+        /**
+         A further parking failure of the same entry.
+         */
+        const other = benchErrorBefore({ returnsInMs: 301_000, },);
+        /**
+         The park in force, as the gate builds it.
+         */
+        const park: DryPark = {
+          refusal,
+          seen: [],
+          returnsInMs: 301_000,
+          atMs: 301_000,
+          returnsAt: '19:15:08 UTC',
+          dayStart: DAY_ONE,
+        };
+        recordOnPark({ park, error: refusal, },);
+        expect(park.seen,).toEqual([],);
+        recordOnPark({ park, error: other, },);
+        recordOnPark({ park, error: other, },);
+        recordOnPark({ park, error: refusal, },);
+        expect(park.seen,).toEqual([other,],);
       },
     },),
 
