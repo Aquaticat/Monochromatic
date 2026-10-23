@@ -1,3 +1,11 @@
+import { spawnSync, } from 'node:child_process';
+import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
 import {
   describe,
   expect,
@@ -84,6 +92,46 @@ function weeklyResetSnapshots(nextRegenAt: string,): readonly RateLimitSnapshot[
     },
   },);
 }
+
+/**
+ Text carried by the header the log case feeds in, which no log line may repeat.
+ */
+const HEADER_VALUE_MARKER = 'MARKER-NOT-FOR-LOGS';
+
+function unreadableFieldChildSource(): string {
+  return `
+    import { parseSyntheticRateLimitSnapshots, } from './src/synthetic-quota-headers.ts';
+    import { logger, } from '@monochromatic-dev/module-logger/ts';
+
+    parseSyntheticRateLimitSnapshots({
+      headers: { 'x-synthetic-quotas': ${JSON.stringify(JSON.stringify({
+    planWeeklyLimit: { percentRemaining: HEADER_VALUE_MARKER, nextRegenAt: HEADER_VALUE_MARKER, },
+  },),)}, },
+      nowMs: 0,
+    },);
+    await logger.flush();
+  `;
+}
+
+const REFUSED_RESET_TEXTS = [
+  { text: '2026', why: 'a year alone, which Date.parse reads', },
+  { text: 'Oct 23 2026 05:03', why: 'a month-name form, which Date.parse reads in local time', },
+  { text: '2026-10-23T05:03:47.000Z\n', why: 'a trailing newline', },
+  { text: '2026-10-23T05:03:47', why: 'no zone', },
+  { text: '2026-10-23T05:03:47+0000', why: 'an offset without its colon', },
+  { text: '2026-04-31T05:03:47Z', why: 'April has 30 days', },
+  { text: '2026-02-29T05:03:47Z', why: '2026 is no leap year', },
+  { text: '2026-02-30T05:03:47Z', why: 'February never has 30 days', },
+  { text: '2100-02-29T05:03:47Z', why: '2100 is divisible by 100 and not by 400', },
+  { text: '2026-10-23T24:00:00Z', why: 'hour 24 is an end-of-day spelling, not an instant', },
+] as const;
+
+const READ_RESET_TEXTS = [
+  { text: '2026-10-23T05:03:47.000Z', instant: '2026-10-23T05:03:47.000Z', },
+  { text: '2026-10-23T01:03:47-04:00', instant: '2026-10-23T05:03:47.000Z', },
+  { text: '2024-02-29T00:00:00Z', instant: '2024-02-29T00:00:00.000Z', },
+  { text: '2000-02-29T00:00:00Z', instant: '2000-02-29T00:00:00.000Z', },
+] as const;
 
 function firstSnapshot(headers: Readonly<Record<string, string>>,): RateLimitSnapshot {
   /**
@@ -479,32 +527,30 @@ await describe({
             },),).toEqual(['synthetic:search', 'synthetic:tools',],);
           },
         },),
-        it({
+        describe({
           name: 'refuses nextRegenAt that is not an ISO-8601 instant with a zone',
-          fn: async function testSyntheticResetInstantRefused() {
-            // Each text is readable by `Date.parse`: a year alone, a month-name form, a trailing newline, a local time
-            // without a zone, and an offset without its colon.
-            const refused = [
-              '2026',
-              'Oct 23 2026 05:03',
-              '2026-10-23T05:03:47.000Z\n',
-              '2026-10-23T05:03:47',
-              '2026-10-23T05:03:47+0000',
-            ];
-            expect(refused.map(function countFor(text,): number {
-              return weeklyResetSnapshots(text,).length;
-            },),).toEqual([0, 0, 0, 0, 0,],);
-          },
+          children: REFUSED_RESET_TEXTS.map(function refusalCase(refused,) {
+            return it({
+              name: `refuses ${JSON.stringify(refused.text,)}: ${refused.why}`,
+              fn: async function testSyntheticResetInstantRefused() {
+                expect(weeklyResetSnapshots(refused.text,).length,).toBe(0,);
+              },
+            },);
+          },),
         },),
-        it({
-          name: 'reads nextRegenAt spelled with Z or with an offset to the same instant',
-          fn: async function testSyntheticResetInstantAccepted() {
-            const zulu = weeklyResetSnapshots('2026-10-23T05:03:47.000Z',);
-            const offset = weeklyResetSnapshots('2026-10-23T01:03:47-04:00',);
+        describe({
+          name: 'reads nextRegenAt spelled as an ISO-8601 instant with a zone',
+          children: READ_RESET_TEXTS.map(function readCase(read,) {
+            return it({
+              name: `reads ${JSON.stringify(read.text,)} as ${read.instant}`,
+              fn: async function testSyntheticResetInstantRead() {
+                const snapshots = weeklyResetSnapshots(read.text,);
 
-            expect(zulu[0]?.resetAtMs,).toBe(Date.parse('2026-10-23T05:03:47.000Z',),);
-            expect(offset[0]?.resetAtMs,).toBe(Date.parse('2026-10-23T05:03:47.000Z',),);
-          },
+                expect(snapshots.length,).toBe(1,);
+                expect(snapshots[0]?.resetAtMs,).toBe(Date.parse(read.instant,),);
+              },
+            },);
+          },),
         },),
         it({
           name: 'applies the instant rule to the search and free-tool windows',
@@ -515,6 +561,46 @@ await describe({
             },);
 
             expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'logs an unreadable weekly field through the tagged debug logger and holds no value of the header',
+          fn: async function testSyntheticUnreadableFieldLog() {
+            const logDirectory = await mkdtemp(join(tmpdir(), 'statusline-log-',),);
+            try {
+              const child = spawnSync(
+                process.execPath,
+                [
+                  '--input-type=module-typescript',
+                  '--eval',
+                  unreadableFieldChildSource(),
+                ],
+                {
+                  cwd: join(import.meta.dirname, '..',),
+                  encoding: 'utf8',
+                  env: {
+                    PATH: process.env.PATH ?? '',
+                    HOME: process.env.HOME ?? '',
+                    MONOCHROMATIC_VERBOSE: 'true',
+                    MONOCHROMATIC_LOG_DIRECTORY: logDirectory,
+                  },
+                },
+              );
+              const lines = child.stderr.split('\n',).filter(function refusalLine(line,): boolean {
+                return line.includes('refusing quotas',);
+              },);
+
+              expect(child.status,).toBe(0,);
+              expect(lines.length,).toBe(1,);
+              expect(lines[0]?.startsWith('[debug] [',),).toBe(true,);
+              expect(lines[0]?.endsWith(
+                '[pi-statusline:synthetic-quota-headers] [readSyntheticWeeklyReading] '
+                  + 'refusing quotas whose planWeeklyLimit has an unreadable percentRemaining or nextRegenAt',
+              ),).toBe(true,);
+              expect((child.stdout + child.stderr).includes(HEADER_VALUE_MARKER,),).toBe(false,);
+            } finally {
+              await rm(logDirectory, { force: true, recursive: true, },);
+            }
           },
         },),
         it({
