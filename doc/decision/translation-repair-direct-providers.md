@@ -364,6 +364,10 @@ one token)
 before the reason,
 so the cap on the reason never cuts them,
 and not `ERROR` or `INCOMPLETE`.
+The only writer of the time gives it as `<time> UTC`,
+so the line keeps one rule for it,
+and a time in any other zone throws `ReturnTimeNotUtcError` naming the text,
+since stating it would need a conversion that nothing does.
 The status comes from the gate's answer for that entry's own failure (`parkedFor`):
 the gate keeps the failure it chose to park for,
 and every other parking failure it sees while the park lasts
