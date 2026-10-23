@@ -549,6 +549,25 @@ function weeklyWindowOf(
       nextRegenAt,
     };
 
+  return { percentRemaining, };
+}
+
+/**
+ Warns that one weekly block's `nextRegenAt` is missing or no instant as the logger writes one, naming the block and the field and
+ never the value.
+
+ The tag stays `weeklyWindowOf`, the reader whose window lacks the return, so a reader of the log finds it under that name.
+
+ @param blockName - the key of the block whose return reads unreadable
+
+ @example
+ ```ts
+ warnUnreadableReturn({ blockName: 'planWeeklyLimit', },);
+ ```
+ */
+function warnUnreadableReturn(
+  { blockName, }: { readonly blockName: WeeklyBlockName; },
+): void {
   tagged({
     tag: weeklyWindowOf.name,
     l,
@@ -557,8 +576,6 @@ function weeklyWindowOf(
     `Synthetic /quotas ${blockName}.nextRegenAt is missing or no ISO-8601 instant as the logger writes one; `
       + 'the return reads unreadable',
     );
-
-  return { percentRemaining, };
 }
 
 /**
@@ -580,6 +597,30 @@ type WeeklyReading = {
    */
   readonly weekly: QuotaSnapshot['weekly'];
 };
+
+/**
+ Warns once for each block of a body whose window carries no return, naming the block and the field.
+
+ Used where the blocks do not disagree on the return, so each such block is its own cause.
+
+ @param readings - the blocks of the body, each with the window read from it
+
+ @example
+ ```ts
+ warnUnreadableReturnsOf({ readings: [first,], },);
+ ```
+ */
+function warnUnreadableReturnsOf(
+  { readings, }: { readonly readings: readonly WeeklyReading[]; },
+): void {
+  for (const {
+    blockName,
+    weekly,
+  } of readings) {
+    if (weekly.nextRegenAt === undefined)
+      warnUnreadableReturn({ blockName, },);
+  }
+}
 
 /**
  Reads the weekly window from whichever key a body carries it under.
@@ -642,25 +683,35 @@ function weeklyWindowFromBody(
       detail: `neither ${WEEKLY_BLOCK_NAMES.join(' nor ',)} is an object`,
       parsed,
     },);
-  if (second === undefined)
-    return first.weekly;
-  if (first.weekly
-    .percentRemaining
-    !== second.weekly
-      .percentRemaining)
+  /**
+   The two windows, whose percents decide and whose returns only feed a log line.
+   */
+  const { weekly: firstWindow, } = first;
+  if (second === undefined) {
+    warnUnreadableReturnsOf({ readings: [first,], },);
+    return firstWindow;
+  }
+  /**
+   The second window, present only for a body that carries both names.
+   */
+  const { weekly: secondWindow, } = second;
+  if (firstWindow.percentRemaining !== secondWindow.percentRemaining)
     throw new QuotaShapeError({
       detail: `${first.blockName} and ${second.blockName} are both present and read differently`,
       received: `${receivedShapeOf({ parsed, },)}; ${first.blockName} holds ${describedKeysOf({ record: first.block, },)}; `
         + `${second.blockName} holds ${describedKeysOf({ record: second.block, },)}`,
     },);
-  if (first.weekly
-    .nextRegenAt
-    === second.weekly
-      .nextRegenAt)
-    return first.weekly;
+  if (firstWindow.nextRegenAt === secondWindow.nextRegenAt) {
+    warnUnreadableReturnsOf({ readings: [
+      first,
+      second,
+    ], },);
+    return firstWindow;
+  }
 
   // THE BLOCKS AGREE ON THE ONLY FIELD A DECISION READS, so the body is not refused for the log-only return: which instant is
-  // right is unknowable, and neither is carried.
+  // right is unknowable, and neither is carried. ONE CAUSE, ONE WARNING: a block whose own return is missing or unspelled is part of
+  // this disagreement and does not warn beside it.
   tagged({
     tag: weeklyWindowFromBody.name,
     l,
@@ -670,8 +721,7 @@ function weeklyWindowFromBody(
       + 'the return reads unreadable',
     );
 
-  return { percentRemaining: first.weekly
-    .percentRemaining, };
+  return { percentRemaining: firstWindow.percentRemaining, };
 }
 
 /**

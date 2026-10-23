@@ -38,6 +38,10 @@ Its top-level keys and their JSON types were:
 The values of `planWeeklyLimit` were
 `{"nextRegenAt":"2026-10-23T05:03:47.000Z","percentRemaining":0,"nextRegenPercent":2}`.
 The body held no `weeklyTokenLimit` and no `freeToolCalls`.
+The `x-synthetic-quotas` response header of a keyed chat call at 2026-10-23 05:06:33 UTC (HTTP 200) has the same shape:
+`subscription`, `search` and `planWeeklyLimit` with `nextRegenAt`, `percentRemaining` and `nextRegenPercent`,
+and no `weeklyTokenLimit`.
+This reader parses the `/v2/quotas` body only; a reader of the header meets the same name.
 The reading of 2026-10-19 at 14:35 UTC had `weeklyTokenLimit` and `freeToolCalls`
 (`doc/troubleshooting/translation-repair-provider-concurrency.md`, section on the removed limits).
 
