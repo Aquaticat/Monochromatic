@@ -271,7 +271,7 @@ await describe({
         it({
           name: 'KEEPS THE RETURN ON THE PARKED LINE WHATEVER THE REASON COSTS: the lanes with editors, refiners and '
             + 'translators all below their floor make a reason longer than the cap, and the status, the distance and '
-            + 'the time of day come before it so the cap trims only the reason',
+            + 'the time of day (one token, no space) come before it so the cap trims only the reason',
           fn: async (ctx) => {
             using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
             /**
@@ -304,7 +304,7 @@ await describe({
             const [line,] = printed.lines.filter(function tally(text,): boolean {
               return text.startsWith('TALLY ',);
             },);
-            expect(line,).toContain('TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08 UTC ms=5 ',);
+            expect(line,).toContain('TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08Z ms=5 ',);
             expect(line?.indexOf('returnsAt=',) ?? (-1),).toBeLessThan(line?.indexOf(' error=',) ?? (-1),);
             expect(line?.indexOf('returnsAt=',) ?? (-1),).toBeGreaterThan(-1,);
           },
@@ -345,7 +345,7 @@ await describe({
               },
             },),).toEqual({ kind: 'stopped', },);
             expect(printed.lines.some(function parkedLine(text,): boolean {
-              return text.startsWith('TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08 UTC ms=5 ',);
+              return text.startsWith('TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08Z ms=5 ',);
             },),).toBe(true,);
             expect(printed.lines.some(function incompleteLine(text,): boolean {
               return text.startsWith('TALLY Dog status=INCOMPLETE ms=5 ',);

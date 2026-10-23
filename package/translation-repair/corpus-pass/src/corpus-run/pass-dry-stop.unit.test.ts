@@ -609,8 +609,9 @@ await describe({
     },),
 
     it({
-      name: 'ANSWERS WHETHER IT PARKED FOR A GIVEN FAILURE, not whether it is parked: nothing before the trip, the '
-        + 'parking failure after it, and never an unrelated failure or a bench error with no return',
+      name: 'ANSWERS WHETHER IT PARKED FOR THIS VERY FAILURE, not whether it is parked or of a parking class: nothing '
+        + 'before the trip, the failure it parked for after it, and never an unrelated failure, a bench error with no '
+        + 'return, or another parking failure that is not the one the park is for',
       fn: async () => {
         const dryStop = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
         /**
@@ -621,7 +622,9 @@ await describe({
         dryStop.trip({ error: bench, },);
         expect(dryStop.parked(),).toBe(true,);
         expect(dryStop.parkedFor({ error: bench, },),).toBe(true,);
-        expect(dryStop.parkedFor({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },),).toBe(true,);
+        // Another entry's parking failure, with the same class and the same return, is not the park's own.
+        expect(dryStop.parkedFor({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: benchErrorBefore({ returnsInMs: 301_000, }), },),).toBe(false,);
         expect(dryStop.parkedFor({ error: new Error('connection reset',), },),).toBe(false,);
         expect(dryStop.parkedFor({ error: benchErrorBefore({}), },),).toBe(false,);
       },
