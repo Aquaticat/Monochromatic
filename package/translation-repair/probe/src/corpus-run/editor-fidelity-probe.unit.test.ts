@@ -1,0 +1,172 @@
+/**
+ Tests for the compiled `editor-fidelity-probe` command's zero-call paths: what it accepts and prints at a cap of zero,
+ and which requests it refuses before any corpus or provider access, with which exit status and stderr.
+
+ Each run is the built command in an owned empty directory with no provider key set, so no case can read a corpus or
+ spend. Fixtures are cat-themed invention.
+
+ @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
+import { LOW_CARD, } from '../editor-fidelity.test-fixture.ts';
+
+/**
+ Exit status the command gives a refusal it states in its own words.
+ */
+const REFUSED_AS_STATED = 6;
+
+/**
+ What a run left behind.
+ */
+type BuiltRun = {
+  /**
+   Exit status, zero for an accepted request.
+   */
+  readonly code: number;
+
+  /**
+   Standard output, one entry per line, each log line without its timestamp.
+   */
+  readonly stdout: readonly string[];
+
+  /**
+   Standard error, one entry per line.
+   */
+  readonly stderr: readonly string[];
+};
+
+/**
+ Drops the second bracketed group of a log line, which holds its timestamp.
+
+ @param line - output line read
+
+ @returns The line without its timestamp, any other line unchanged
+
+ @example
+ ```ts
+ const plain = withoutStamp({ line: '[info] [2026-01-01T00:00:00.000Z] [probe] purr', },); // '[info] [probe] purr'
+ ```
+ */
+function withoutStamp({ line, }: { readonly line: string; },): string {
+  if (!line.startsWith('[',))
+    return line;
+  /**
+   Where the level group closes.
+   */
+  const levelEnd = line.indexOf(']',);
+  /**
+   Where the timestamp group closes.
+   */
+  const stampEnd = line.indexOf(
+    ']',
+    levelEnd + 1,
+  );
+  if ([levelEnd, stampEnd,].includes(-1,))
+    return line;
+  return `${line.slice(
+    0,
+    levelEnd + 1,
+  )}${line.slice(stampEnd + 1,)}`;
+}
+
+/**
+ Runs the built command with the arguments given, in an owned empty directory that is also the corpus clone.
+
+ @param args - every argument after the script path
+
+ @returns Exit status and both output streams, one entry per line
+
+ @example
+ ```ts
+ const run = await runAsBuilt({ args: ['--cap', '0',], },);
+ ```
+ */
+async function runAsBuilt({ args, }: { readonly args: readonly string[]; },): Promise<BuiltRun> {
+  await using owned = await scratchDir({ prefix: 'editor-fidelity-as-built-', },);
+  /**
+   What the built command did, whatever its exit code; the fixture removes every provider key from its environment.
+   */
+  const run = await runBuiltCommand({
+    command: 'editor-fidelity-probe',
+    packageEntry: PROBE_ENTRY,
+    args,
+    cwd: owned.path,
+    env: {
+      TRANSLATION_REPAIR_RUNS_DIR: owned.path,
+      TRANSLATION_REPAIR_CORPUS_CLONE_DIR: owned.path,
+    },
+  },);
+  return {
+    code: run.code,
+    stdout: run.stdout.split('\n',)
+      .filter((line,) => line !== '',)
+      .map((line,) => withoutStamp({ line, },),),
+    stderr: run.stderr.split('\n',)
+      .filter((line,) => line !== '',),
+  };
+}
+
+await describe({
+  name: 'editor-fidelity-probe as built',
+  children: [
+    it({
+      name: 'ACCEPTS A CAP OF ZERO for one card alone, saying the card seated and the entries selected, with no key '
+        + 'set and no call made',
+      fn: async () => {
+        const run = await runAsBuilt({
+          args: ['--cap', '0', '--candidates', LOW_CARD, '--candidates-alone',],
+        },);
+        expect(run.code,).toBe(0,);
+        expect(run.stderr,).toStrictEqual([],);
+        expect(run.stdout.map(function plain(line,): string {
+          return line.replace('[editor-fidelity-probe] ', '',);
+        },),).toEqual([
+          `[info] editors: ${LOW_CARD}`,
+          `[info] preflight only: 3 reviewed reference specifications selected for ${LOW_CARD}; no corpus or model calls`,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A CARD THE ROSTER DOES NOT KNOW at exit six with one line, in the judge probe\'s wording',
+      fn: async () => {
+        const run = await runAsBuilt({
+          args: ['--cap', '0', '--candidates', 'nobody/such-model', '--candidates-alone',],
+        },);
+        expect(run.code,).toBe(REFUSED_AS_STATED,);
+        expect(run.stderr.length,).toBe(1,);
+        expect(run.stderr[0],).toContain(
+          'editor-fidelity-probe: --candidates names "nobody/such-model", which is not seatable; the roster knows ',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES A RUN THAT DOES NOT SAY ALONE, and a flag the judge probe reads and this one does not',
+      fn: async () => {
+        const unaccompanied = await runAsBuilt({
+          args: ['--cap', '0', '--candidates', LOW_CARD,],
+        },);
+        expect(unaccompanied.code,).toBe(REFUSED_AS_STATED,);
+        expect(unaccompanied.stderr,).toStrictEqual([
+          'editor-fidelity-probe: this probe seats only the cards --candidates names; write '
+            + '--candidates-alone to say so',
+        ],);
+        const withContext = await runAsBuilt({
+          args: ['--cap', '0', '--candidates', LOW_CARD, '--candidates-alone', '--context',],
+        },);
+        expect(withContext.code,).toBe(REFUSED_AS_STATED,);
+        expect(withContext.stderr[0],).toContain('editor-fidelity-probe: ',);
+      },
+    },),
+  ],
+},);
