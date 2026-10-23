@@ -66,6 +66,9 @@ export class ClaudePrefillError extends Error {
 
  @throws {@link EmptyConversationError} where the messages cannot form a conversation
 
+ @throws {@link ClaudeSchemaKeywordError} when the response format carries a keyword the structured-output feature
+ refuses, before any request is made
+
  @example
  ```ts
  const body = buildClaudeBody({ card, messages, maxTokens: 1_000, },);

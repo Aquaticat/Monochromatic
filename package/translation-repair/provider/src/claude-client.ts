@@ -482,6 +482,9 @@ export function createClaudeClient(
 
    @throws {@link EmptyConversationError} when the messages cannot form a conversation
 
+   @throws {@link ClaudeSchemaKeywordError} when the response format carries a keyword the structured-output feature
+   refuses, before any exchange is made
+
    @throws {@link ProviderHttpError} on non-success status
 
    @throws {@link StreamErrorEventError} on an error event under a success status, which stands for the refusal it

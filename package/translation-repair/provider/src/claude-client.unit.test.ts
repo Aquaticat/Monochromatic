@@ -35,6 +35,7 @@ import {
   CLAUDE_PACE_WINDOW_MS,
   CLAUDE_REQUESTS_PER_MINUTE,
   ClaudeModelNotServedError,
+  ClaudeSchemaKeywordError,
   createClaudeClient,
   createProviderBudgets,
   statedWaitMsOf,
@@ -627,6 +628,39 @@ await describe({
         expect((wrongModel as Error).message,).toContain('claude-opus-5-5',);
         expect(wrongEffort,).toBeInstanceOf(ClaudeModelNotServedError,);
         expect((wrongEffort as Error).message,).toContain('effort xhigh',);
+        expect(exchanges.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SCHEMA THAT WRITES oneOf WITH ClaudeSchemaKeywordError AND MAKES NO EXCHANGE (F4 of the re-check of '
+        + 'the second fix round): the refusal leaves chatText as the named class, so the caller sees a programming fault '
+        + 'and not an HTTP 400',
+      fn: async () => {
+        const { transport, exchanges, } = scripted({ replies: [{ status: 200, bodyText: '', },], },);
+        const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+        const refusal: unknown = await rejectionOf(() =>
+          client.chatText({
+            modelId: 'claude-haiku-5-5',
+            messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+            signal: new AbortController().signal,
+            responseFormat: {
+              type: 'json_schema',
+              json_schema: {
+                name: 'cat_spot',
+                strict: true,
+                schema: {
+                  type: 'object',
+                  properties: { spot: { oneOf: [{ type: 'string', }, { type: 'integer', },], }, },
+                  required: ['spot',],
+                  additionalProperties: false,
+                },
+              },
+            },
+          },),
+        );
+        expect(refusal,).toBeInstanceOf(ClaudeSchemaKeywordError,);
+        expect((refusal as Error).message,).toContain('"oneOf"',);
         expect(exchanges.length,).toBe(0,);
       },
     },),
