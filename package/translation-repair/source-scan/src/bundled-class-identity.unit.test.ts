@@ -426,6 +426,33 @@ await describe({
     },),
 
     it({
+      name: 'FINDS A .constructor COMPARISON READ THROUGH AN OPTIONAL CHAIN, and one written with == or !=, since '
+        + 'each is the same test of a bundled copy as the strict form',
+      fn: async () => {
+        /**
+         Package a lists no sibling, so every site found is a finding.
+         */
+        const unlisted: Manifests = new Map();
+        /**
+         The forms planted, each of which must give exactly one finding.
+         */
+        const planted = [
+          'caught?.constructor === BError',
+          'BError === caught?.constructor',
+          'caught?.constructor !== BError',
+          'caught.constructor == BError',
+          'BError != caught.constructor',
+          'caught?.constructor != BError',
+        ];
+        expect(planted.filter(function missed(test,): boolean {
+          return classIdentityOf({ files: [catFile({ test, },),], manifests: unlisted, },).findings
+            .length
+            !== 1;
+        },),).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'LEAVES WHAT IS NOT A CLASS TEST OF A WORKSPACE IMPORT: a class defined in the file, a guard function '
         + 'the owner exports, a type-only import, a name that is not imported, and tests',
       fn: async () => {
