@@ -226,7 +226,7 @@ await describe({
     },),
 
     ...STAGES.filter(function isSlate({ name, },): boolean {
-      return name.includes('slate',);
+      return name.includes(' slate',);
     },)
       .map(function fenceCaseOf(stage,) {
         return it({
