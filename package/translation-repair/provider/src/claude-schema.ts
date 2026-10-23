@@ -1,4 +1,9 @@
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  NAMED_SCHEMA_MAPS,
+  SCHEMA_BEARING,
+  structuralRefusalOf,
+} from './claude-schema-refusals.ts';
 
 //region Claude schema
 // THE SCHEMA ONE CLAUDE CALL SENDS, narrowed to what Anthropic's structured outputs accept. The bundled API skill
@@ -14,13 +19,14 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // example being `{minimum: 100}`. The form here is the page's: the dropped constraints of one schema node as one
 // `{keyword: value, ...}` text, appended after a blank line to a description the node already has.
 //
-// THE STRUCTURED OUTPUTS PAGE IS THE AUTHORITY FOR WHAT THE FEATURE TAKES (https://platform.claude.com/docs/en/build-with-claude/structured-outputs,
-// "JSON Schema limitations", read 2026-10-22). Its supported list, quoted: "String formats: `date-time`, `time`,
-// `date`, `duration`, `email`, `hostname`, `uri`, `ipv4`, `ipv6`, `uuid`" and "Array `minItems` (only values 0 and 1
-// supported)". Its unsupported list, quoted: "Array constraints beyond `minItems` of 0 or 1". So `minItems` of 0 or 1
-// goes to the wire as written, any other `minItems` is stripped and told like the other bounds, and a `format` on the
-// list of ten goes as written while any other is stripped and told, which is step 4 of "How SDK transformation works",
-// "Filter string formats to the supported list only".
+// THE STRUCTURED OUTPUTS PAGE IS THE AUTHORITY FOR WHAT THE FEATURE TAKES
+// (https://platform.claude.com/docs/en/build-with-claude/structured-outputs, "JSON Schema limitations", read
+// 2026-10-22). Its supported list, quoted: "String formats: `date-time`, `time`, `date`, `duration`, `email`,
+// `hostname`, `uri`, `ipv4`, `ipv6`, `uuid`" and "Array `minItems` (only values 0 and 1 supported)". Its unsupported
+// list, quoted: "Array constraints beyond `minItems` of 0 or 1". So `minItems` of 0 or 1 goes to the wire as written,
+// any other `minItems` is stripped and told like the other bounds, and a `format` on the list of ten goes as written
+// while any other is stripped and told, which is step 4 of "How SDK transformation works", "Filter string formats to
+// the supported list only".
 //
 // `pattern` IS SUPPORTED. The page's "Pattern support (regex)" accordion, quoted: "Supported regex features: Full
 // matching (`^...$`) and partial matching; Quantifiers: `*`, `+`, `?`, simple `{n,m}` cases; Character classes: `[]`,
@@ -28,8 +34,15 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // Lookahead/lookbehind assertions (for example, `(?=...)`, `(?!...)`); Word boundaries: `\b`, `\B`; Complex `{n,m}`
 // quantifiers with large ranges". The keyed probe of 2026-10-22 (26 calls to claude-haiku-5-5) answered HTTP 200 to a
 // `pattern` control, which agrees with the page and proves no enforcement by itself. So a `pattern` passes, except one
-// that spells a construct the page names as unsupported, which fails here. A complex `{n,m}` quantifier is not
-// checked, since the page gives no range, and a pattern that is too complex may still answer HTTP 400.
+// that spells a construct the page names as unsupported, which fails here. A LARGE `{n,m}` QUANTIFIER IS NOT CHECKED:
+// the page says only "Complex `{n,m}` quantifiers with large ranges" and names no bound, so no figure is invented
+// here, and a pattern with a range the API finds too large may still answer HTTP 400 (N5 of the re-check of fix
+// rounds 3 and 4).
+//
+// WHAT THE ALLOWLIST CANNOT SEE IS REFUSED IN `claude-schema-refusals.ts`: a named backreference (`\k` outside a class,
+// refused here with the numbered ones), an `allOf` member that holds a `$ref`, an `enum` member that is not a string,
+// a number, a Boolean or null, a `$ref` into another document, a recursive `$ref`, and a request past the page's limits
+// of 24 optional and 16 union-typed parameters. That file's header quotes the page for each.
 //
 // A KEYWORD THE FEATURE REFUSES THAT NO SDK STRIPS STOPS THE BODY: `oneOf`, `not`, `if`, `then`, `else`,
 // `patternProperties`, `propertyNames`, `contains`, `prefixItems` and any other keyword outside `ALLOWED_KEYWORDS`
@@ -113,9 +126,9 @@ const STRIPPED_KEYWORDS: ReadonlySet<string> = new Set([
 /**
  Keywords a schema may carry into the request: the bundled API skill's supported list (basic types, `enum`, `const`,
  `anyOf`, `allOf`, `$ref` and `$defs`, string `format`, `additionalProperties`), the structure that list assumes
- (`properties`, `required`, `items`, `definitions`), `default`, `pattern` and `minItems` (the live Structured outputs page
- lists each as supported, `minItems` for 0 and 1 only and `pattern` without four constructs, see the header),
- and the annotations `description` and `title`, which the model reads and the feature does not constrain.
+ (`properties`, `required`, `items`, `definitions`), `default`, `pattern` and `minItems` (the live Structured
+ outputs page lists each as supported, `minItems` for 0 and 1 only and `pattern` without four constructs, see the
+ header), and the annotations `description` and `title`, which the model reads and the feature does not constrain.
  */
 const ALLOWED_KEYWORDS: ReadonlySet<string> = new Set([
   'type',
@@ -136,29 +149,6 @@ const ALLOWED_KEYWORDS: ReadonlySet<string> = new Set([
   'additionalProperties',
   'description',
   'title',
-],);
-
-/**
- Keywords whose value maps a NAME to a schema. The names are the caller's, so a member called `minimum` is kept, and
- only the schemas under it are narrowed.
- */
-const NAMED_SCHEMA_MAPS: ReadonlySet<string> = new Set([
-  'properties',
-  '$defs',
-  'definitions',
-],);
-
-/**
- Keywords whose value is one schema, or in the older tuple form a list of them.
- */
-const SCHEMA_VALUED: ReadonlySet<string> = new Set(['items',],);
-
-/**
- Keywords whose value is a list of schemas.
- */
-const SCHEMA_LISTS: ReadonlySet<string> = new Set([
-  'anyOf',
-  'allOf',
 ],);
 
 /**
@@ -185,7 +175,8 @@ const SUPPORTED_FORMATS: ReadonlySet<unknown> = new Set([
 
  @param value - value the node gives it
 
- @returns True for a bound the feature lists as unsupported, a `minItems` other than 0 or 1, and a `format` off the page's list
+ @returns True for a bound the feature lists as unsupported, a `minItems` other than 0 or 1, and a `format` off the
+ page's list
 
  @example
  ```ts
@@ -309,7 +300,7 @@ function unsupportedPatternConstruct({ pattern, }: { readonly pattern: string; }
        The character the backslash escapes.
        */
       const escaped = pattern.charAt(index + 1,);
-      if ((!scan.inClass) && isBackreferenceDigit({ character: escaped, },))
+      if ((!scan.inClass) && (isBackreferenceDigit({ character: escaped, },) || (escaped === 'k')))
         return ['backreference',];
       if ((!scan.inClass) && ((escaped === 'b') || (escaped === 'B')))
         return ['word boundary',];
@@ -568,15 +559,7 @@ function narrowedSchema(
               keyword,
             },),
           ];
-        if (SCHEMA_VALUED.has(keyword,))
-          return [
-            keyword,
-            narrowedValue({
-              value,
-              path: `${path}.${keyword}`,
-            },),
-          ];
-        if (SCHEMA_LISTS.has(keyword,))
+        if (SCHEMA_BEARING.has(keyword,))
           return [
             keyword,
             narrowedValue({
@@ -613,15 +596,16 @@ function narrowedSchema(
  the unsupported bounds are dropped and told to the model in the field's description, and a keyword the feature does
  not support that no SDK strips is refused. Nothing else changes.
 
- A BOUNDED WALK OVER THE SCHEMA'S OWN NESTING, which a stage writes by hand and which is a few levels deep; the schema
- is a tree (no `$ref` cycle is followed, since `$ref` is a string here), so the walk ends.
+ A BOUNDED WALK OVER THE SCHEMA'S OWN NESTING, which a stage writes by hand and which is a few levels deep; the
+ narrowing never follows a `$ref` (a string here), and the check for a recursive one is in
+ `claude-schema-refusals.ts`.
 
  @param schema - schema as the stage wrote it, never edited
 
  @returns New schema that shares no object with the one given
 
  @throws {@link ClaudeSchemaKeywordError} when a node of the schema carries a keyword outside the allowlist that is not
- one of the stripped bounds
+ one of the stripped bounds, or anything `structuralRefusalOf` refuses
 
  @example
  ```ts
@@ -632,10 +616,21 @@ function narrowedSchema(
 export function claudeSchemaOf(
   { schema, }: { readonly schema: Readonly<Record<string, unknown>>; },
 ): Record<string, unknown> {
-  return narrowedSchema({
+  /**
+   The schema with its bounds dropped and told, or the refusal of a keyword outside the allowlist.
+   */
+  const narrowed = narrowedSchema({
     schema,
     path: 'root',
   },);
+
+  /**
+   What the schema carries that the page lists as not supported and the allowlist cannot see.
+   */
+  const [refusal,] = structuralRefusalOf({ schema, },);
+  if (refusal !== undefined)
+    throw new ClaudeSchemaKeywordError(refusal,);
+  return narrowed;
 }
 
 //endregion Claude schema

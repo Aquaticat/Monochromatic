@@ -21,24 +21,24 @@ import {
 import { claudeSchemaOf, } from '../dist/final/node/index.mjs';
 
 /**
- What a schema is refused with, or nothing where it is sent.
+ What a schema is refused with, as text.
 
  @param schema - schema as a stage would write it
 
- @returns The failure `claudeSchemaOf` throws for it, absent where it returns
+ @returns Error name and message `claudeSchemaOf` throws for it, or empty text where it returns
 
  @example
  ```ts
- const failure = refusalOf({ schema: { type: 'object', allOf: [{ $ref: '#/$defs/cat', },], }, },);
+ const refusal = refusalTextOf({ schema: { type: 'object', allOf: [{ $ref: '#/$defs/cat', },], }, },);
  ```
  */
-function refusalOf({ schema, }: { readonly schema: Readonly<Record<string, unknown>>; },): Error | undefined {
+function refusalTextOf({ schema, }: { readonly schema: Readonly<Record<string, unknown>>; },): string {
   try {
     claudeSchemaOf({ schema, },);
-    return undefined;
+    return '';
   }
   catch (error) {
-    return error as Error;
+    return `${(error as Error).name}: ${(error as Error).message}`;
   }
 }
 
@@ -46,7 +46,9 @@ function refusalOf({ schema, }: { readonly schema: Readonly<Record<string, unkno
  Builds an object schema with the given number of members, of which a count are required.
 
  @param members - how many members the object declares
+
  @param required - how many of them are listed in `required`
+
  @param union - whether each member is a union typed by a type array
 
  @returns Schema of that shape
@@ -299,11 +301,14 @@ await describe({
     },),
 
     it({
-      name: 'SENDS A PATTERN, WHICH THE STRUCTURED OUTPUTS PAGE LISTS AS SUPPORTED (F7), and a keyed call of 2026-10-22 '
-        + 'accepted: it stays on the node beside its type and gains no description',
+      name: 'SENDS A PATTERN, WHICH THE STRUCTURED OUTPUTS PAGE LISTS AS SUPPORTED (F7), and a keyed call of '
+        + '2026-10-22 accepted: it stays on the node beside its type and gains no description',
       fn: async () => {
         expect(claudeSchemaOf({
-          schema: { type: 'object', properties: { name: { type: 'string', pattern: String.raw`^[a-z]+(\d{1,3})?$`, }, }, },
+          schema: {
+            type: 'object',
+            properties: { name: { type: 'string', pattern: String.raw`^[a-z]+(\d{1,3})?$`, }, },
+          },
         },),).toEqual({
           type: 'object',
           properties: { name: { type: 'string', pattern: String.raw`^[a-z]+(\d{1,3})?$`, }, },
@@ -398,21 +403,21 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A NAMED BACKREFERENCE OUTSIDE A CLASS, which is a backreference as much as \\1 is (N5), and leaves '
-        + 'the same two characters inside a class',
+      name: 'REFUSES A NAMED BACKREFERENCE OUTSIDE A CLASS, which is a backreference as much as a numbered one is '
+        + '(N5), and leaves the same two characters inside a class',
       fn: async () => {
         /**
-         Failure for a pattern that repeats a named group.
+         Refusal for a pattern that repeats a named group.
          */
-        const failure = refusalOf({
+        const refusal = refusalTextOf({
           schema: { type: 'object', properties: { name: { type: 'string', pattern: String.raw`^(?<n>a)\k<n>$`, }, }, },
         },);
-        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
-        expect(failure?.message,).toContain('backreference',);
-        expect(failure?.message,).toContain('root.name',);
-        expect(refusalOf({
+        expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+        expect(refusal,).toContain('backreference',);
+        expect(refusal,).toContain('root.name',);
+        expect(refusalTextOf({
           schema: { type: 'object', properties: { name: { type: 'string', pattern: String.raw`^[\k]$`, }, }, },
-        },),).toBeUndefined();
+        },),).toBe('',);
       },
     },),
 
@@ -421,21 +426,21 @@ await describe({
         + 'of plain schemas',
       fn: async () => {
         /**
-         Failure for an allOf that points at a definition.
+         Refusal for an allOf that points at a definition.
          */
-        const failure = refusalOf({
+        const refusal = refusalTextOf({
           schema: {
             type: 'object',
             properties: { cat: { allOf: [{ $ref: '#/$defs/cat', },], }, },
             $defs: { cat: { type: 'string', }, },
           },
         },);
-        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
-        expect(failure?.message,).toContain('allOf',);
-        expect(failure?.message,).toContain('root.cat.allOf[0]',);
-        expect(refusalOf({
+        expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+        expect(refusal,).toContain('allOf',);
+        expect(refusal,).toContain('root.cat.allOf[0]',);
+        expect(refusalTextOf({
           schema: { type: 'object', properties: { cat: { allOf: [{ type: 'string', },], }, }, },
-        },),).toBeUndefined();
+        },),).toBe('',);
       },
     },),
 
@@ -443,45 +448,43 @@ await describe({
       name: 'REFUSES AN enum MEMBER THAT IS NOT A STRING, A NUMBER, A BOOLEAN OR NULL (N5): the page allows no complex '
         + 'type in an enum',
       fn: async () => {
-        /**
-         Failures for an object member and an array member.
-         */
-        const failures = [{ spot: 'sunbeam', }, ['sunbeam',],].map(function failureFor(member,): Error | undefined {
-          return refusalOf({
+        for (const member of [{ spot: 'sunbeam', }, ['sunbeam',],]) {
+          /**
+           Refusal for an enum holding a complex member.
+           */
+          const refusal = refusalTextOf({
             schema: { type: 'object', properties: { place: { enum: ['lap', member,], }, }, },
           },);
-        },);
-        failures.forEach(function refused(failure,): void {
-          expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
-          expect(failure?.message,).toContain('enum',);
-          expect(failure?.message,).toContain('root.place',);
-        },);
-        expect(refusalOf({
+          expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+          expect(refusal,).toContain('enum',);
+          expect(refusal,).toContain('root.place',);
+        }
+        expect(refusalTextOf({
           schema: { type: 'object', properties: { place: { enum: ['lap', 2, true, null,], }, }, },
-        },),).toBeUndefined();
+        },),).toBe('',);
       },
     },),
 
     it({
-      name: 'REFUSES A $ref THAT DOES NOT START WITH #, an external reference the page lists as not supported (N5), and '
-        + 'sends one into the same document',
+      name: 'REFUSES A $ref THAT DOES NOT START WITH #, an external reference the page lists as not supported '
+        + '(N5), and sends one into the same document',
       fn: async () => {
         /**
-         Failure for a reference to another document.
+         Refusal for a reference to another document.
          */
-        const failure = refusalOf({
+        const refusal = refusalTextOf({
           schema: { type: 'object', properties: { cat: { $ref: 'http://example.test/cat.json', }, }, },
         },);
-        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
-        expect(failure?.message,).toContain('$ref',);
-        expect(failure?.message,).toContain('root.cat',);
-        expect(refusalOf({
+        expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+        expect(refusal,).toContain('$ref',);
+        expect(refusal,).toContain('root.cat',);
+        expect(refusalTextOf({
           schema: {
             type: 'object',
             properties: { cat: { $ref: '#/$defs/cat', }, },
             $defs: { cat: { type: 'string', }, },
           },
-        },),).toBeUndefined();
+        },),).toBe('',);
       },
     },),
 
@@ -490,9 +493,9 @@ await describe({
         + 'other (N5), and sends a definition used twice',
       fn: async () => {
         /**
-         Failure for a reference to the root, and for two definitions that refer to each other.
+         Schemas that refer back into themselves: to the root, and between two definitions.
          */
-        const failures = [
+        const recursive: readonly Readonly<Record<string, unknown>>[] = [
           { type: 'object', properties: { child: { $ref: '#', }, }, },
           {
             type: 'object',
@@ -502,20 +505,22 @@ await describe({
               kitten: { type: 'object', properties: { cat: { $ref: '#/$defs/cat', }, }, },
             },
           },
-        ].map(function failureFor(schema,): Error | undefined {
-          return refusalOf({ schema, },);
-        },);
-        failures.forEach(function refused(failure,): void {
-          expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
-          expect(failure?.message,).toContain('recursive',);
-        },);
-        expect(refusalOf({
+        ];
+        for (const schema of recursive) {
+          /**
+           Refusal for the recursive schema.
+           */
+          const refusal = refusalTextOf({ schema, },);
+          expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+          expect(refusal,).toContain('recursive',);
+        }
+        expect(refusalTextOf({
           schema: {
             type: 'object',
             properties: { mother: { $ref: '#/$defs/cat', }, father: { $ref: '#/$defs/cat', }, },
             $defs: { cat: { type: 'string', }, },
           },
-        },),).toBeUndefined();
+        },),).toBe('',);
       },
     },),
 
@@ -523,14 +528,14 @@ await describe({
       name: 'REFUSES MORE THAN 24 OPTIONAL PARAMETERS, the page\'s limit for one request (N5), and sends 24',
       fn: async () => {
         /**
-         Failure for 25 members none of which is required.
+         Refusal for 25 members none of which is required.
          */
-        const failure = refusalOf({ schema: membersSchema({ members: 25, required: 0, union: false, },), },);
-        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
-        expect(failure?.message,).toContain('optional parameters',);
-        expect(failure?.message,).toContain('25',);
-        expect(refusalOf({ schema: membersSchema({ members: 24, required: 0, union: false, },), },),).toBeUndefined();
-        expect(refusalOf({ schema: membersSchema({ members: 40, required: 40, union: false, },), },),).toBeUndefined();
+        const refusal = refusalTextOf({ schema: membersSchema({ members: 25, required: 0, union: false, },), },);
+        expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+        expect(refusal,).toContain('optional parameters',);
+        expect(refusal,).toContain('25',);
+        expect(refusalTextOf({ schema: membersSchema({ members: 24, required: 0, union: false, },), },),).toBe('',);
+        expect(refusalTextOf({ schema: membersSchema({ members: 40, required: 40, union: false, },), },),).toBe('',);
       },
     },),
 
@@ -538,17 +543,17 @@ await describe({
       name: 'REFUSES MORE THAN 16 PARAMETERS THAT USE A UNION TYPE, anyOf or a type array (N5), and sends 16',
       fn: async () => {
         /**
-         Failure for 17 members typed by a type array.
+         Refusal for 17 members typed by a type array.
          */
-        const failure = refusalOf({ schema: membersSchema({ members: 17, required: 17, union: true, },), },);
-        expect(failure?.name,).toBe('ClaudeSchemaKeywordError',);
-        expect(failure?.message,).toContain('union',);
-        expect(failure?.message,).toContain('17',);
-        expect(refusalOf({ schema: membersSchema({ members: 16, required: 16, union: true, },), },),).toBeUndefined();
+        const refusal = refusalTextOf({ schema: membersSchema({ members: 17, required: 17, union: true, },), },);
+        expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+        expect(refusal,).toContain('union',);
+        expect(refusal,).toContain('17',);
+        expect(refusalTextOf({ schema: membersSchema({ members: 16, required: 16, union: true, },), },),).toBe('',);
         /**
-         Failure for 17 members typed by anyOf.
+         Refusal for 17 members typed by anyOf.
          */
-        const anyOfFailure = refusalOf({
+        const anyOfRefusal = refusalTextOf({
           schema: {
             type: 'object',
             properties: Object.fromEntries(Array.from({ length: 17, }, function memberOf(_unused, index,) {
@@ -556,7 +561,7 @@ await describe({
             },),),
           },
         },);
-        expect(anyOfFailure?.message,).toContain('union',);
+        expect(anyOfRefusal,).toContain('union',);
       },
     },),
 
