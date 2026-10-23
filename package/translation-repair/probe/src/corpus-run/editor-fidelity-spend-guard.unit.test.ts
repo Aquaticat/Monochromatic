@@ -395,13 +395,12 @@ await describe({
             },);
             for (let call = 0; call < 3; call += 1) {
               // oxlint-disable-next-line no-await-in-loop -- each call fails before the next is asked
-              expect(
-                ((await raisedBy({
-                  ask: function failingCall(): Promise<unknown> {
-                    return askJson({ client, modelId: LOW_CARD, signal: controller.signal, },);
-                  },
-                },)) as Error).message,
-              ).toBe('the stream was cut',);
+              const raised = await raisedBy({
+                ask: function failingCall(): Promise<unknown> {
+                  return askJson({ client, modelId: LOW_CARD, signal: controller.signal, },);
+                },
+              },);
+              expect((raised as Error).message,).toBe('the stream was cut',);
             }
             expect(controller.signal.aborted,).toBe(false,);
           },
