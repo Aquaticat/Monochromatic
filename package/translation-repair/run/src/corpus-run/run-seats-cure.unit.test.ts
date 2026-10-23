@@ -278,5 +278,81 @@ await describe({
         expect(warning,).toContain('synthetic, hyper, openrouter',);
       },
     },),
+
+    it({
+      name: 'NAMES THE RUNNING HOLDS IT DID NOT WAIT FOR and why, in place of saying no provider named a return: the '
+        + 'DeepSeek hold is listed with its length and "would help cure a short bench" is the reason',
+      fn: async () => {
+        const lines: string[] = [];
+        await readsUnderHolds({ held: ['deepseek',], lines, },);
+        /**
+         The warning the reading wrote when it did not wait.
+         */
+        const warning = lines.find(function isShort(line,): boolean {
+          return line.startsWith('warn JUDGE SEATS phase=lane contest',) && line.includes('short of quorum',);
+        },);
+        expect(warning,).toContain('held: deepseek (1 s); it would not help cure a short bench',);
+        expect(warning,).not.toContain('no provider has named a return',);
+      },
+    },),
+
+    it({
+      name: 'NAMES BOTH SKIPPED HOLDS WITH "neither": DeepSeek and Xiaomi held, and neither would help cure the wide '
+        + 'bench',
+      fn: async () => {
+        const lines: string[] = [];
+        await readsUnderHolds({ held: ['deepseek', 'xiaomi',], lines, },);
+        /**
+         The warning the reading wrote when it did not wait.
+         */
+        const warning = lines.find(function isShort(line,): boolean {
+          return line.includes('short of quorum',) && line.startsWith('warn',);
+        },);
+        expect(warning,).toContain('held: deepseek (1 s), xiaomi (1 s); neither would help cure a short bench',);
+      },
+    },),
+
+    it({
+      name: 'SAYS NO NEURALWATT RETURN ONLY WHEN NEURALWATT IS DRY WITH NONE INSIDE WHAT THE PASS HAS LEFT: with '
+        + 'NeuralWatt wet the clause is absent, and with NeuralWatt dry and no hold on it the clause follows the '
+        + 'skipped holds',
+      fn: async () => {
+        /**
+         The warning of a reading over a view, with DeepSeek held.
+         */
+        async function warningOver({ view, }: { readonly view: BudgetView; },): Promise<string | undefined> {
+          const lines: string[] = [];
+          await readsUnderHolds({
+            held: ['deepseek',],
+            lines,
+            view,
+          },);
+          return lines.find(function isShort(line,): boolean {
+            return line.startsWith('warn',) && line.includes('short of quorum',);
+          },);
+        }
+        expect(await warningOver({ view: WIDE_ONE_SHORT, },),).not.toContain('no NeuralWatt return',);
+        expect(await warningOver({ view: { ...WIDE_ONE_SHORT, neuralwatt: true, }, },),).toContain(
+          '; no NeuralWatt return inside what the pass has left,',
+        );
+      },
+    },),
+
+    it({
+      name: 'KEEPS "no provider has named a return the pass can wait for" WHEN NO HOLD RUNS AT ALL: nothing is '
+        + 'skipped, so there is no hold to name',
+      fn: async () => {
+        const lines: string[] = [];
+        await readsUnderHolds({ held: [], lines, },);
+        /**
+         The warning the reading wrote.
+         */
+        const warning = lines.find(function isShort(line,): boolean {
+          return line.startsWith('warn',) && line.includes('short of quorum',);
+        },);
+        expect(warning,).toContain('no provider has named a return the pass can wait for',);
+        expect(warning,).not.toContain('held:',);
+      },
+    },),
   ],
 },);
