@@ -294,8 +294,9 @@ await describe({
 
     it({
       name: 'KEEPS A PICTURE THE ANTHROPIC PROTOCOL CANNOT READ A LOST VOICE (the control arm of N1): the data URI is '
-        + 'built from the bytes of one asset of one document, so a zero-byte file is a fault of that input and not of '
-        + 'the stage code, and the other seats of the round still answer',
+        + 'built by the caller of the request, so a malformed one is a fault of that caller\'s content part and not '
+        + 'of the stage code, and the other seats of the round still answer. A zero-byte file no longer reaches it, '
+        + 'since the encoder refuses it by name (R7)',
       fn: async () => {
         const warnings: string[] = [];
         const logger = warningRecordingLogger({ base: l, warnings, },);

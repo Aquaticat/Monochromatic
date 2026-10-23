@@ -289,10 +289,11 @@ const REQUEST_FAULT_CLASSES: readonly (new (...parameters: never) => Error)[] = 
  What stays a lost voice, and why. `ProviderHttpError` and every other transport failure are a provider's answer or
  a connection that dropped; a deadline, an idle stream and a runaway or degenerate stream are a model or a network
  being slow or wrong; `NoProviderForModelError` is a fact about which providers the bench holds wet, and the call
- reports it as an unreachable seat. `MalformedImageUriError` is thrown by the request builder but from the bytes of
- one asset: `encodeImageAsset` returns a usable data URI with an empty payload for a zero-byte file, so one
- document's picture can raise it, and ending the round would stop the seats that read the picture another way. It
- recurs for that document and not for the stage, so the seat's voice is lost for the call and the warning names it.
+ reports it as an unreachable seat. `MalformedImageUriError` is thrown by the request builder from the data URI of
+ one picture. `encodeImageAsset` refuses a zero-byte file with its own error before a URI exists, so the URIs the
+ stages build from a document's bytes always carry a payload; a URI that is malformed in another way came from a
+ caller's own content part, and ending the round would stop the seats that carry it correctly. It recurs for that
+ caller and not for the stage, so the seat's voice is lost for the call and the warning names it.
 
  @param error - caught value, of unknown type by construction
 

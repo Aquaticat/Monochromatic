@@ -3,7 +3,8 @@
  fit.
 
  WHAT THESE PIN is that refusing is a first-class outcome rather than an error
- path, and that the CALLER decides the ceiling.
+ path, and that the CALLER decides the ceiling. THE ONE THROW is a picture with
+ no bytes, which is a defect of the file and not a size or a type to refuse.
 
  THE CEILING USED TO BE DERIVED HERE and it measured the wrong thing: half a
  model's context, converted to characters, compared against base64 length. A

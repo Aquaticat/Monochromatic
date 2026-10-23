@@ -496,6 +496,8 @@ const NAMED_PARTS: Record<string, string> = {
  */
 const WITHHELD: Record<string, string> = {
   ArtifactProvenanceError: 'expected and observed carry whatever field disagreed, which may be text',
+  EmptyImageAssetError: 'names the picture by the file name a corpus chose, which is not this package\'s vocabulary; '
+    + 'the stage reports the picture by its reason and never forwards the message (R7)',
   PreparationIdentityError: 'quotes the string it refused, which a caller may have read from any file; the '
     + 'artifact reader refuses a stored identity by shape in its own words instead (ledger B34)',
   RenderingAuditInvariantError: 'forwards each site\'s own sentence, which names indexes and vocabulary '
