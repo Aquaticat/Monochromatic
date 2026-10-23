@@ -244,8 +244,11 @@ await describe({
               { signal: known.signal, },
             );
           }
-          catch {
+          catch (error) {
             // The outcome arrived first and ended this wait, which is the wait's purpose.
+            // Anything else is the case failing.
+            if (!(known.signal.aborted && Error.isError(error,) && (error.name === 'AbortError')))
+              throw error;
           }
           return 'hung';
         }

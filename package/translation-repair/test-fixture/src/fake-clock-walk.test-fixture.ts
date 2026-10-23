@@ -24,6 +24,12 @@ import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 // the clock the case owns. `setImmediate`, `setInterval` and `scheduler.wait` of that module stay real; no cut in the
 // family is written with them. `fake-clock-walk.unit.test.ts` walks both forms.
 //
+// THE STUB IS PROCESS-WIDE, so the retry ladder's sleeps (`provider/src/transient-retry.ts`) and the request pace
+// (`provider/src/request-pace.ts`), which import that built-in, are on the fake clock during a walk too, and so would the
+// harness's own fixtures be if they ran in a walking process (they do not: only the two bench probe suites walk). A
+// sleep the release of the transport provokes is therefore a wait on a clock nobody ticks again, and the walk stops
+// waiting for the walk's end at the hang stop after the release as it does before the first call.
+//
 // TEST SUPPORT, NOT PACKAGE SOURCE. The delayed transport this drives is `delayed-transport.test-fixture.ts` of the
 // provider package; this file knows it only through the promise and the release it is handed.
 
@@ -142,9 +148,14 @@ export type FakeClockWalk = {
  @param waitForEnd - whether to wait, up to the hang stop, for the walk to end once the ticking is done; a case whose
  walk is meant to outlast the ticking passes false and reads `endedByItself` as false
 
+ @param hangStopMs - real milliseconds every wait for the walk gives up after, the one after the release included;
+ `HANG_STOP_MS` unless a case of the rig itself needs the stop to be reached
+
  @returns Whether the walk ended by itself, and the cuts counted after each tick
 
  @throws Error when the walk makes no call in the real time the case allows
+
+ @throws Error when the walk has not ended in the real time the case allows after the transport is released
 
  @throws Whatever the walk threw, once the transport is released
 
@@ -170,6 +181,7 @@ export async function walkOnFakeClock(
     ticks,
     cutCount,
     waitForEnd,
+    hangStopMs = HANG_STOP_MS,
   }: {
     readonly sinon: DisposableSandbox;
     readonly walkOnce: () => Promise<void>;
@@ -178,6 +190,7 @@ export async function walkOnFakeClock(
     readonly ticks: readonly number[];
     readonly cutCount: () => number;
     readonly waitForEnd: boolean;
+    readonly hangStopMs?: number;
   },
 ): Promise<FakeClockWalk> {
   /**
@@ -289,7 +302,7 @@ export async function walkOnFakeClock(
     await Promise.race([
       firstCall,
       settled,
-      realWait(HANG_STOP_MS,)
+      realWait(hangStopMs,)
         .then(function giveUp(): never {
           throw new Error('the walk made no call in the real time the case allows',);
         },),
@@ -308,7 +321,7 @@ export async function walkOnFakeClock(
     if (waitForEnd)
       await Promise.race([
         settled,
-        realWait(HANG_STOP_MS,),
+        realWait(hangStopMs,),
       ],);
     return ended.done;
   }
@@ -317,7 +330,17 @@ export async function walkOnFakeClock(
    Whether the walk ended before the release.
    */
   const endedByItself = await ticked();
-  await settled;
+
+  // THE TRANSPORT IS RELEASED NOW, and a walk that sleeps again because of it sleeps on the fake clock, which nobody
+  // ticks any more: waiting for it without a stop would hang the case where, before the clock was faked, it ended in
+  // real time.
+  await Promise.race([
+    settled,
+    realWait(hangStopMs,)
+      .then(function giveUpAfterRelease(): never {
+        throw new Error('the walk did not end after the release in the real time the case allows',);
+      },),
+  ],);
   if (ended.thrown
     .length
     > 0)
