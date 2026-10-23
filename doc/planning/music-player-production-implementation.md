@@ -1247,6 +1247,16 @@ Read these before repeating them. Each one cost the human a correction.
   troubleshooting document, and the brief of every emulator agent:
   headful on the host GPU as its own systemd unit, never `-no-window`, `xvfb-run` or a container, and on a failed
   launch report the error instead of falling back.
+- 2026-10-23: I waited on `pgrep --newest --exact node`, which names a process by pattern and picked an unrelated
+  `node`, so the wait ended at once (bounded and harmless). I also ran a `sleep` that the harness blocks. Wait on the
+  PID of a unit (`systemctl --user show --property=MainPID --value <unit>`), never a name.
+- 2026-10-23: the first write-up of the Android ducking cause offered "drop `setWillPauseWhenDucked(true)`" as the
+  fix. The Android source (`PlaybackActivityMonitor.UNDUCKABLE_PLAYER_TYPES` lists AAudio, which the engine uses)
+  shows that would leave the music at full volume or unducked; the flag must stay and the listener ducks. Read the
+  deciding source before writing a fix option, not after.
+- 2026-10-23: the first phone test ran the app through the loudspeaker and the host microphone with a tone file
+  pushed to `/sdcard/Music/zz-duck-test`; the human has tenants and a quiet room. The file is removed. Ask before any
+  audible test on a device in the human's home, and prefer source traces and silent state checks.
 
 ## Queue
 
