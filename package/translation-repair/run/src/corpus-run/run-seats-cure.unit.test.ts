@@ -5,12 +5,14 @@
  THE SHAPE, from the second review of the Claude route (round 3): with one provider's key dry the wide bench stands one
  seat short of its quorum, and a hold on a provider that serves no seat the bench lacks is waited out in full (a
  refusal's cooldown is 300,000 ms, a stated return can be hours) and the bench is seated short all the same. Here the
- fleet is the
- live roster of this tree, NeuralWatt and Bedrock wet and the rest dry: the wide bench is 3 of 7 against a quorum of 4.
- Synthetic, Hyper or OpenRouter back reach the quorum; DeepSeek or Xiaomi back leave it at 3 of 7 (DeepSeek's one wide
- seat is one Bedrock or NeuralWatt already reach). THE CLAUDE KEY IS NOT IN THIS TREE (its route is another branch), so
- the
- case where that key is the dry one is added when the branches meet; the rule is the same.
+ fleet is the live roster of this tree, NeuralWatt and Bedrock wet and the rest dry: the wide bench is 3 of 7 against a
+ quorum of 4. Synthetic, Hyper or OpenRouter back reach the quorum; DeepSeek or Xiaomi back leave it at 3 of 7
+ (DeepSeek's one wide seat is one Bedrock or NeuralWatt already reach). THE CLAUDE KEY IS NOT IN THIS TREE (its route
+ is another branch), so the case where that key is the dry one is added when the branches meet; the rule is the same.
+
+ TWO HOLDS THAT EACH CURE ALONE (round 5): a hold counts when the held set cures the bench between them and that
+ provider's return adds a reachable seat to it. A rule asking that the bench stay short without the provider counted
+ neither of two providers that each reach the quorum alone, and the reader seated the bench short without waiting.
 
  Each case reads the phase that leans on the wide bench alone, and the wait is counted by the dryness reads (one read
  without a wait, two with).
@@ -27,7 +29,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
-import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract';
+import {
+  type ProviderName,
+  providerRecord,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   levelCapturingLogger,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -68,6 +73,79 @@ const NO_HOLDS = {
 const SHORT_HOLD_MS = 40;
 
 /**
+ NeuralWatt wet and every other provider dry: the wide bench is 1 of 7 reachable against a quorum of 4, three seats
+ short. Hyper back alone reaches the quorum (4 of 6), and so do Synthetic and Bedrock back together (5 of 7), while
+ Synthetic alone or Bedrock alone leaves it short (3 of 7): with the three held, each one is unnecessary given the
+ others, yet every one of them adds a seat to the bench the held set cures.
+ */
+const WIDE_THREE_SHORT: BudgetView = {
+  neuralwatt: false,
+  synthetic: true,
+  bedrock: true,
+  deepseek: true,
+  xiaomi: true,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
+ Reads one phase's seats over a scripted view under holds that all end with the first wait, counting the dryness reads.
+
+ @param held - providers the holds are on, each for the short hold
+
+ @param lines - receives what the reading logs
+
+ @param view - dryness every read returns (the wide bench one seat short by default)
+
+ @returns Dryness reads the reading took: 1 without a wait, 2 with one
+
+ @example
+ ```ts
+ const reads = await readsUnderHolds({ held: ['deepseek',], lines: [], },);
+ ```
+ */
+async function readsUnderHolds(
+  {
+    held,
+    lines,
+    view = WIDE_ONE_SHORT,
+  }: {
+    readonly held: readonly ProviderName[];
+    readonly lines: string[];
+    readonly view?: BudgetView;
+  },
+): Promise<number> {
+  /**
+   Reads taken so far, and how often the holds were asked (they end with the first wait).
+   */
+  const counted = { reads: 0, asks: 0, };
+  await readJudgeSeats({
+    client: {
+      providerDryness: async () => {
+        counted.reads += 1;
+        return view;
+      },
+      providerMeterStates: metersAllWet,
+      providerHolds: () => {
+        counted.asks += 1;
+        return (counted.asks === 1)
+          ? providerRecord({
+            of: function holdOf(provider,): number {
+              return held.includes(provider,) ? SHORT_HOLD_MS : 0;
+            },
+          },)
+          : NO_HOLDS;
+      },
+    },
+    phase: 'lane contest',
+    signal: new AbortController().signal,
+    l: levelCapturingLogger({ lines, },),
+    pollMs: 5,
+  },);
+  return counted.reads;
+}
+
+/**
  Reads the lane contest's seats over the one-short view under one hold, counting the dryness reads.
 
  @param held - provider the hold is on
@@ -90,28 +168,10 @@ async function readsUnderHold(
     readonly lines: string[];
   },
 ): Promise<number> {
-  /**
-   Reads taken so far, and whether the hold has been waited out (it ends with the first wait).
-   */
-  const counted = { reads: 0, asks: 0, };
-  await readJudgeSeats({
-    client: {
-      providerDryness: async () => {
-        counted.reads += 1;
-        return WIDE_ONE_SHORT;
-      },
-      providerMeterStates: metersAllWet,
-      providerHolds: () => {
-        counted.asks += 1;
-        return (counted.asks === 1) ? { ...NO_HOLDS, [held]: SHORT_HOLD_MS, } : NO_HOLDS;
-      },
-    },
-    phase: 'lane contest',
-    signal: new AbortController().signal,
-    l: levelCapturingLogger({ lines, },),
-    pollMs: 5,
+  return await readsUnderHolds({
+    held: [held,],
+    lines,
   },);
-  return counted.reads;
 }
 
 await describe({
@@ -134,6 +194,53 @@ await describe({
       fn: async () => {
         expect(await readsUnderHold({ held: 'deepseek', lines: [], },),).toBe(1,);
         expect(await readsUnderHold({ held: 'xiaomi', lines: [], },),).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'WAITS WHEN TWO HOLDS EACH CURE THE BENCH ALONE: Synthetic and Hyper both held, and either back makes the '
+        + 'wide bench 4 of 7, so the wait is for the shorter of them',
+      fn: async () => {
+        expect(await readsUnderHolds({ held: ['synthetic', 'hyper',], lines: [], },),).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'WAITS WHEN SYNTHETIC AND OPENROUTER ARE BOTH HELD, each of which cures the wide bench alone',
+      fn: async () => {
+        expect(await readsUnderHolds({ held: ['synthetic', 'openrouter',], lines: [], },),).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'WAITS WHEN THREE HOLDS EACH LEAVE THE OTHERS ENOUGH: NeuralWatt wet makes the wide bench 1 of 7, Hyper '
+        + 'cures it alone and Synthetic with Bedrock cure it together, so with all three held none is necessary '
+        + 'and every one adds a seat',
+      fn: async () => {
+        expect(
+          await readsUnderHolds({
+            held: ['synthetic', 'bedrock', 'hyper',],
+            lines: [],
+            view: WIDE_THREE_SHORT,
+          },),
+        ).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'WAITS FOR SYNTHETIC ONLY WHEN DEEPSEEK IS HELD BESIDE IT: DeepSeek back adds no wide seat, so its hold is '
+        + 'not one the wait counts, and the line names Synthetic as the hold waited for',
+      fn: async () => {
+        const lines: string[] = [];
+        expect(await readsUnderHolds({ held: ['synthetic', 'deepseek',], lines, },),).toBe(2,);
+        /**
+         The line announcing the wait, which prints each provider's hold as the wait counts it.
+         */
+        const waiting = lines.find(function isWaiting(line,): boolean {
+          return line.includes('waiting ',);
+        },);
+        expect(waiting,).toContain('synthetic 40ms',);
+        expect(waiting,).toContain('deepseek 0ms',);
       },
     },),
 
