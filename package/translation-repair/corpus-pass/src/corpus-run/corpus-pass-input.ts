@@ -85,7 +85,10 @@ export type CorpusPassInput = {
   /**
    Builds the one client the run asks models through, given where its prompt payloads are kept.
    */
-  readonly newClient: (input: { readonly promptPayloadDir: string; },) => RunClient;
+  readonly newClient: (input: {
+    readonly promptPayloadDir: string;
+    readonly maxHoldMs: number;
+  },) => RunClient;
 
   /**
    Settles one entry; the pass's whole per-entry procedure.

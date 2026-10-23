@@ -178,10 +178,17 @@ export function capTooTightNote(
     readonly claudeCallMs: number;
   },
 ): string {
+  /**
+   Deadline of the longest exchange, which the ceiling must outlast.
+   */
+  const longestMs = Math.max(
+    perCallMs,
+    claudeCallMs,
+  );
   return `CAP TOO TIGHT: an attempt runs ${String(capMs,)}ms, which is not longer than the `
-    + `${String(Math.max(perCallMs, claudeCallMs,),)}ms one model exchange is allowed `
-    + `(${String(perCallMs,)}ms by default, ${String(claudeCallMs,)}ms for a Claude exchange). Attempts are cut before an `
-    + 'exchange can return, so no slice caches, every attempt reports no progress, and the '
+    + `${String(longestMs,)}ms one model exchange is allowed `
+    + `(${String(perCallMs,)}ms by default, ${String(claudeCallMs,)}ms for a Claude exchange). Attempts are cut `
+    + 'before an exchange can return, so no slice caches, every attempt reports no progress, and the '
     + 'queue drops the entry as stalled after its second try. Raise the ceiling above one '
     + 'exchange to buy anything, or keep it here to exercise the stall path deliberately.';
 }

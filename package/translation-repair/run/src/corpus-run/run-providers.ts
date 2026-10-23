@@ -142,6 +142,9 @@ export type ConfiguredProviders = {
  dry, and no call. The owner's rulings by default (`PROVIDERS_LEFT_OFF`); a test that exercises
  an off provider's client hands an empty list
 
+ @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out (default: no cut); the pass
+ hands its hard cap, the longest a hold can matter
+
  @returns Clients present per key, plus the budgets
 
  @throws {@link RunConfigError} when every provider key variable is unset or empty
@@ -156,10 +159,12 @@ export function configureProviders(
     env,
     transport,
     off = PROVIDERS_LEFT_OFF,
+    maxHoldMs,
   }: {
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly transport: ModelTransport;
     readonly off?: readonly ProviderOff[];
+    readonly maxHoldMs?: number;
   },
 ): ConfiguredProviders {
   /**
@@ -419,6 +424,8 @@ export function configureProviders(
     ...((xiaomi === undefined) ? {} : { xiaomi, }),
     ...((anthropic === undefined) ? {} : { anthropic, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
+    // Conditional spread keeps the cap absent instead of undefined.
+    ...((maxHoldMs === undefined) ? {} : { maxHoldMs, }),
     heldOut: function credentialRefused(provider,): boolean {
       return credentialHolds.isHeld({ provider, },);
     },

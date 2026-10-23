@@ -326,6 +326,10 @@ function notHeldOut(): boolean {
  @param rateLimitBackoffMs - how long a refusal on a wet meter holds a
  provider out while another provider can take the traffic
 
+ @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out, which the run sets to its hard
+ cap: a hold past it can never be waited out, so a longer stated wait is cut to it and logged once for each provider
+ with the value the provider stated (default: no cut)
+
  @param heldOut - whether the run holds a provider out for a reason its meter cannot show, such as a refused
  credential; the `METERS` line prints such a provider as dry. It changes only the printed word, never the routed view
  or the states the budgets report (default: no provider is held out)
@@ -354,6 +358,7 @@ export function createProviderBudgets(
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
+    maxHoldMs = Number.POSITIVE_INFINITY,
     heldOut = notHeldOut,
     now = monotonicMs,
   }: {
@@ -368,6 +373,7 @@ export function createProviderBudgets(
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
     readonly rateLimitBackoffMs?: number;
+    readonly maxHoldMs?: number;
     readonly heldOut?: (provider: ProviderName,) => boolean;
     readonly now?: () => number;
   },
@@ -516,6 +522,46 @@ export function createProviderBudgets(
    */
   function holdLeftOn(provider: ProviderName,): number {
     return holdLeft({ provider, },);
+  }
+
+  /**
+   Providers whose stated wait was cut to {@link maxHoldMs} and logged, so the cut is written once for each provider
+   and not on every refusal that repeats it.
+   */
+  const cutLogged = new Set<ProviderName>();
+
+  /**
+   Cuts a wait a refusal states for itself to the longest hold the run can use.
+
+   @param provider - provider that stated the wait
+
+   @param statedWaitMs - wait the refusal stated, in milliseconds
+
+   @param rl - logger the cut is written to
+
+   @returns The stated wait, or {@link maxHoldMs} where it is longer
+   */
+  function cappedWait(
+    {
+      provider,
+      statedWaitMs,
+      rl,
+    }: {
+      readonly provider: ProviderName;
+      readonly statedWaitMs: number;
+      readonly rl: ReturnType<typeof tagged>;
+    },
+  ): number {
+    if (statedWaitMs <= maxHoldMs)
+      return statedWaitMs;
+    if (!cutLogged.has(provider,)) {
+      cutLogged.add(provider,);
+      rl.warn(
+        `${provider}: refusal stated a wait of ${String(statedWaitMs,)}ms, capped at ${String(maxHoldMs,)}ms, `
+          + 'the longest hold this run can use',
+      );
+    }
+    return maxHoldMs;
   }
 
   /**
@@ -767,7 +813,7 @@ export function createProviderBudgets(
     markRefused: async function markRefused({
       provider,
       signal,
-      statedWaitMs = 0,
+      statedWaitMs: statedByProvider = 0,
       paymentRequired = false,
     },): Promise<void> {
       /**
@@ -776,6 +822,15 @@ export function createProviderBudgets(
       const rl = tagged({
         tag: markRefused.name,
         l,
+      },);
+
+      /**
+       Wait the refusal stated, cut to the longest hold the run can use.
+       */
+      const statedWaitMs = cappedWait({
+        provider,
+        statedWaitMs: statedByProvider,
+        rl,
       },);
 
       // THE METER IS ASKED AT ONCE, freshness window or not. A refusal from a

@@ -214,7 +214,10 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
   /**
    Shared client using measured production provider concurrency.
    */
-  const client = input.newClient({ promptPayloadDir, },);
+  const client = input.newClient({
+    promptPayloadDir,
+    maxHoldMs: hardCapMs,
+  },);
 
   if (line.switched('plan',)) {
     console.log(passPlanLine({

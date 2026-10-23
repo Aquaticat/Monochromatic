@@ -386,6 +386,26 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'other',
     reason: SCRIPTED_CLOCK,
   },
+  'provider/provider-budget-hold-cap.unit.test.ts#cappedBudgets: rateLimitBackoffMs: 1_000': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-hold-cap.unit.test.ts#refuseForPayment: statedWaitMs: STATED_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-hold-cap.unit.test.ts#refuseShort: statedWaitMs: 3_000': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-hold-cap.unit.test.ts#refuseTwice: statedWaitMs: STATED_MS': {
+    count: 2,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
   'stage/seat-tally-silent.unit.test.ts#<module>: graceMs: 30': {
     count: 1,
     bound: 'reached',
