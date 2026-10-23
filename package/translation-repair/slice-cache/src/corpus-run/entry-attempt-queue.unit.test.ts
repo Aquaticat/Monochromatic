@@ -385,6 +385,35 @@ await describe({
     },),
 
     it({
+      name: 'NAMES NO ENTRY THE PASS ENDS ON AFTER IT WAS CUT SHORT AND THEN ATTEMPTED AGAIN, even one that earned a '
+        + 'second attempt and sits at the front when the budget ends the pass: the REATTEMPT line stands alone',
+      fn: async (ctx,) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        /**
+         Attempts made.
+         */
+        const attempts: string[] = [];
+        await runAttemptQueue({
+          pending: [{ id: 'tabby', },],
+          // The second attempt caches one record, so the entry is queued again behind nothing.
+          cachedCountFor: async () => (attempts.length >= 2) ? 1 : 0,
+          // The budget ends the pass on the third ask, with the entry at the front.
+          stopBeforeNext: () => attempts.length === 2,
+          // The first attempt is cut short by a pause; the second is not.
+          interrupted: () => attempts.length === 1,
+          attempt: async function attempt({ entry, },): Promise<AttemptOutcome> {
+            attempts.push(entry.id,);
+            return { kind: 'resumable-failure', };
+          },
+        },);
+        expect(attempts,).toEqual(['tabby', 'tabby',],);
+        expect(printed.lines,).toEqual([
+          'REATTEMPT tabby queued: 1 more cache record than it had, so the next attempt starts further along',
+        ],);
+      },
+    },),
+
+    it({
       name: 'NAMES NO ENTRY WHEN THE BUDGET ENDS THE PASS WITH NO PAUSE IN PLAY, since nothing was cut short',
       fn: async (ctx,) => {
         using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
