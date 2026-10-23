@@ -34,6 +34,7 @@ import type {
   ChatJsonRequest,
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
+import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import {
   noteRunSpend,
@@ -608,6 +609,27 @@ await describe({
             },);
             expect(ceilingAt,).toBeGreaterThan(0,);
             expect(seen.lines[ceilingAt - 1],).toBe('pool: 2 trials over 1 entry (insertion 1, alteration 1)',);
+          },
+        },),
+
+        it({
+          name: 'SAYS THE DIGEST OF THE MANIFEST IT ASKED just before the pool, so the logs of the arms can be checked '
+            + 'to have asked the same specifications: the count and the sha256 of the specifications as JSON',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const seen = await probeIn({
+              runsDir: scratch.path,
+              typed: ONE_CARD,
+            },);
+            const poolAt = seen.lines.findIndex(function isPool(line,): boolean {
+              return line.startsWith('pool: ',);
+            },);
+            expect(poolAt,).toBeGreaterThan(0,);
+            expect(seen.lines[poolAt - 1],).toBe(
+              `manifest: ${String(EDITOR_FIDELITY_POOL.length,)} specifications, digest ${
+                hashContent({ content: JSON.stringify(EDITOR_FIDELITY_POOL,), },)
+              }`,
+            );
           },
         },),
 
