@@ -562,10 +562,14 @@ named for that subject and listed here.
   a flag that confines the editing and not the spend (B871),
   a lone editor whose slate ships unjudged (B872),
   a relative share that moved from 52.2 to 26.7 to 10.0 percent across identical runs (B874),
-  and the absolute probe that reads one card's edit against a known fix,
+  the absolute probe that reads one card's edit against a known fix,
   with its shared gather,
   its refused deletion,
-  its cost ceiling and its card-only client (B875 to B879).
+  its cost ceiling and its card-only client (B875 to B879),
+  the frozen pool of forty-one trials it reads (B880),
+  the per-call spend guard that replaced a gate on the first-pass total (B881 and B882),
+  the end-of-section insertions it cannot score (B883),
+  and the process slips of two rounds (B884).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,
