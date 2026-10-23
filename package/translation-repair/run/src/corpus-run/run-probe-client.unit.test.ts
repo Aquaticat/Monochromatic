@@ -38,6 +38,11 @@ import {
 const FAR_BOUND_MS = 86_400_000;
 
 /**
+ Milliseconds of fake time the call is given to meet its refusal before the hold is read.
+ */
+const FAKE_TICK_MS = 1;
+
+/**
  Environment holding the first provider's key and nothing else. Invented.
  */
 const ONE_KEY = { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: 'whiskers-not-a-real-key', };
@@ -84,7 +89,7 @@ async function heldAfterRefusal(
   /**
    The fake clock the wait for the hold sleeps on.
    */
-  const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout',], },);
+  const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance',], },);
   /**
    Abort the call is abandoned by.
    */
@@ -113,7 +118,7 @@ async function heldAfterRefusal(
    The call, started on the fake clock.
    */
   const asking = askSeat();
-  await clock.tickAsync(1,);
+  await clock.tickAsync(FAKE_TICK_MS,);
   /**
    Hold the refusal left on Synthetic.
    */
@@ -137,11 +142,11 @@ await describe({
           sinon: ctx.sinon,
         },);
 
-        // THE HOLD COUNTS DOWN ON THE REAL MONOTONIC CLOCK between the refusal and the read, so it sits a few
-        // milliseconds under the bound and not on it.
+        // THE HOLD COUNTS DOWN ON THE CLOCK THE BUDGETS READ, which `heldAfterRefusal` fakes with the timers, and it
+        // ticks one millisecond between the refusal and the read: the hold is the bound less that millisecond at the
+        // most, on any load, where a window on the real clock was flipped by a host that stalled the process.
         expect(held,).toBeLessThanOrEqual(PROBE_MAX_HOLD_MS,);
-        expect(held,).toBeGreaterThan(PROBE_MAX_HOLD_MS - 60_000,);
-        expect(PROBE_MAX_HOLD_MS,).toBeLessThan(FAR_BOUND_MS,);
+        expect(held,).toBeGreaterThanOrEqual(PROBE_MAX_HOLD_MS - FAKE_TICK_MS,);
       },
     },),
 

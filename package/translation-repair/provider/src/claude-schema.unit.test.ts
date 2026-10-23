@@ -445,8 +445,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A $ref THAT RESOLVES TO NOTHING, naming the node that holds it (R8), and sends one that '
-        + 'resolves',
+      name: 'REFUSES A $ref THAT RESOLVES TO NOTHING, naming the node that holds it (R8), '
+        + 'and sends one that resolves',
       fn: async () => {
         /**
          Refusal for a pointer into a definition nobody wrote.

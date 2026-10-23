@@ -4,8 +4,11 @@
 
  A provider's `Retry-After` header can state any number of seconds: `99999999999` is 99,999,999,999,000 ms, and the hold
  that wait sets keeps the provider out of routing for about 3,170 years while the wait for the hold polls once a second.
- No timer overflows, since a hold is a timestamp. The run's hard cap is the longest a hold can matter, so a hold past it
- is cut to it and the stated value is logged once, so the cut shows in the log with the number the provider gave.
+ No timer overflows, since a hold is a timestamp and `waitOutHold` (`budget-hold-wait.ts`) sleeps it out in slices of at
+ most `HOLD_POLL_MS`, so no delay past the 2,147,483,647 ms that `setTimeout` takes ever reaches it, which is why the
+ largest whole number is a valid bound (F10 of the re-check of fix round 6, traced). The run's hard cap is the longest a
+ hold can matter, so a hold past it is cut to it and the stated value is logged once, so the cut shows in the log with
+ the number the provider gave.
 
  Fixtures are cat-themed invention; every meter is a stub and no HTTP is made.
 
@@ -151,20 +154,21 @@ await describe({
       },
     },),
 
-    it({
-      name: 'REFUSES A BOUND THAT IS NOT A FINITE WHOLE NUMBER OF MILLISECONDS GREATER THAN ZERO when the budgets are '
-        + 'built (R8): the type says number and nothing at run time did, so Infinity reintroduced the unbounded hold '
-        + 'the bound exists to end and NaN made the cut return NaN. Every value is refused with the class that names '
-        + 'it and the value it was given',
-      fn: async () => {
-        for (const [maxHoldMs, shown,] of [
-          [Number.POSITIVE_INFINITY, 'Infinity',],
-          [Number.NEGATIVE_INFINITY, '-Infinity',],
-          [Number.NaN, 'NaN',],
-          [0, '0',],
-          [-1, '-1',],
-          [1.5, '1.5',],
-        ] as const) {
+    // ONE CASE PER BOUND (F10 of the re-check of fix round 6): the type says number and nothing at run time did, so
+    // Infinity reintroduced the unbounded hold the bound exists to end and NaN made the cut return NaN. A case that
+    // looped over the six bad values stopped at the first failure and hid the rest.
+    ...([
+      [Number.POSITIVE_INFINITY, 'Infinity',],
+      [Number.NEGATIVE_INFINITY, '-Infinity',],
+      [Number.NaN, 'NaN',],
+      [0, '0',],
+      [-1, '-1',],
+      [1.5, '1.5',],
+    ] as const).map(function refusedBoundCase([maxHoldMs, shown,],) {
+      return it({
+        name: `REFUSES A BOUND OF ${shown} when the budgets are built (R8), with the class that names it and `
+          + 'the value it was given',
+        fn: async () => {
           /**
            What the build threw for this bound, or nothing when it built.
            */
@@ -182,8 +186,8 @@ await describe({
           expect(thrown.name,).toBe('HoldBoundError',);
           expect(thrown.message,).toContain(shown,);
           expect(thrown.message,).toContain('maxHoldMs',);
-        }
-      },
+        },
+      },);
     },),
 
     it({
