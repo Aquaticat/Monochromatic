@@ -1289,8 +1289,8 @@ Read these before repeating them. Each one cost the human a correction.
   `auto-play` session now checks default on, switch off, select-only, and off surviving a restart. The whole e2e run
   on the release build: 123 passed, 0 failed, 1 not injectable, 254 s. Released in 0.1.13 (run `39899963193`, 13
   assets, 12 checksums OK, attestation OK, pre-release); the release APK was installed over the human's app on the
-  Pixel 6 (`versionName=0.1.13`, data kept). A debug build under `dev.monochromatic.musicplayer.duck` is also on the
-  phone; remove it with `adb uninstall dev.monochromatic.musicplayer.duck` once the human has tried it.
+  Pixel 6 (`versionName=0.1.13`, data kept). The debug build under `dev.monochromatic.musicplayer.duck` was removed
+  from the phone at the human's request (2026-10-23).
 - [ ] Android notification sounds pause the player instead of ducking (2026-10-22, reported by the human):
   cause read in `RustEngine.kt` (`setWillPauseWhenDucked(true)` plus the can-duck arm pausing), write-up in
   `doc/troubleshooting/music-player-android-pauses-instead-of-ducking-for-notification-sounds.md`. The human chose
