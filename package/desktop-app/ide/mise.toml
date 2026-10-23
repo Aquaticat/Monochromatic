@@ -179,8 +179,12 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 const { writeFileSync } = await import('node:fs')
-// cargo tree --edges normal,no-proc-macro follows what is compiled into the binary for its one target.
-const tree = runCargo(['tree', '--frozen', '--edges', 'normal,no-proc-macro', '--target', 'x86_64-unknown-linux-gnu', '--prefix', 'none', '--format', '{p}'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 })
+// cargo tree --edges normal,no-proc-macro follows what is compiled into the binary for its one target: the target the
+// build container compiles for natively (the container runs the host's architecture, so an arm64 runner builds
+// aarch64-unknown-linux-gnu and every other host builds x86_64-unknown-linux-gnu).
+const hostTarget = process.arch === 'arm64' ? 'aarch64-unknown-linux-gnu' : 'x86_64-unknown-linux-gnu'
+console.error('Linked crates for ' + hostTarget)
+const tree = runCargo(['tree', '--frozen', '--edges', 'normal,no-proc-macro', '--target', hostTarget, '--prefix', 'none', '--format', '{p}'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 16 * 1024 * 1024 })
 const crates = [...new Set(tree.split(String.fromCharCode(10)).filter(Boolean).map(line => line.replace(/ [(][*][)]$/, '').replace(/ [(].*[)]$/, '').replace(' v', ' ')))].sort()
 writeFileSync('target/linked-crates.txt', crates.join(String.fromCharCode(10)) + String.fromCharCode(10))
 console.log('Wrote target/linked-crates.txt: ' + crates.length + ' crates, the package itself included')
@@ -191,10 +195,14 @@ description = "Fail when Slint's software renderer is linked into any build the 
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-// The inverted tree of the CPU renderer over every edge kind that reaches a compiled binary, for the one target.
+// The inverted tree of the CPU renderer over every edge kind that reaches a compiled binary, for one release target.
 // A package that is not in the build graph at all makes cargo print "nothing to print" to stderr and nothing to stdout.
 // The checks run offline (--frozen); `online` is the index pass below, which uses --locked and the network instead.
-const invertedTree = (features, { online = false } = {}) => runCargo(['tree', online ? '--locked' : '--frozen', '--edges', 'normal,dev,no-proc-macro', '--target', 'x86_64-unknown-linux-gnu', '--invert', 'i-slint-renderer-software', ...features], { network: online, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
+// Both Linux release targets are checked on every host: `cargo tree --target` reads the lock file and the manifests of
+// the crates, so the aarch64 graph can be checked on an x86_64 host and the other way round (platform-specific
+// dependencies differ per target, so a renderer that only one target pulls in is still seen).
+const releaseTargets = ['x86_64-unknown-linux-gnu', 'aarch64-unknown-linux-gnu']
+const invertedTree = (features, { online = false, target = releaseTargets[0] } = {}) => runCargo(['tree', online ? '--locked' : '--frozen', '--edges', 'normal,dev,no-proc-macro', '--target', target, '--invert', 'i-slint-renderer-software', ...features], { network: online, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
 // A cargo volume that is new (a CI runner, a fresh clone) holds registry index entries only for what the `fetch` task
 // resolved. The slint/mcp positive control below resolves crates that no build of this package uses (async-net, for
 // one), and --frozen cannot download their index entries: on a fresh volume it stopped with "no matching package named
@@ -204,15 +212,18 @@ const invertedTree = (features, { online = false } = {}) => runCargo(['tree', on
 for (const features of [['--all-features'], ['--features', 'slint/renderer-software'], ['--features', 'slint/mcp']]) {
   try { invertedTree(features, { online: true }) } catch (error) { console.error('Index pass for ' + features.join(' ') + ' skipped: ' + String(error.message).split(String.fromCharCode(10))[0]) }
 }
-// --all-features turns on every feature the package defines, so a feature added later that reaches the renderer is seen.
-const tree = invertedTree(['--all-features'])
-if (tree.trim() !== '') { throw new Error('Slint software renderer is linked:' + String.fromCharCode(10) + tree) }
-// Positive controls: each request below must reach the renderer, or the empty tree above proves nothing. The second is
-// Slint's MCP server, whose screenshots use the software renderer and which this package no longer builds.
-for (const feature of ['slint/renderer-software', 'slint/mcp']) {
-  if (invertedTree(['--features', feature]).trim() === '') { throw new Error('The positive control --features ' + feature + ' did not reach the software renderer, so this check cannot see it') }
+for (const target of releaseTargets) {
+  // --all-features turns on every feature the package defines, so a feature added later that reaches the renderer is seen.
+  const tree = invertedTree(['--all-features'], { target })
+  if (tree.trim() !== '') { throw new Error('Slint software renderer is linked for ' + target + ':' + String.fromCharCode(10) + tree) }
+  // Positive controls: each request below must reach the renderer for this target, or the empty tree above proves
+  // nothing. The second is Slint's MCP server, whose screenshots use the software renderer and which this package no
+  // longer builds.
+  for (const feature of ['slint/renderer-software', 'slint/mcp']) {
+    if (invertedTree(['--features', feature], { target }).trim() === '') { throw new Error('The positive control --features ' + feature + ' did not reach the software renderer for ' + target + ', so this check cannot see it') }
+  }
 }
-console.log('Slint software renderer is not linked into any build of this package; --features slint/renderer-software and slint/mcp do reach it')
+console.log('Slint software renderer is not linked into any build of this package for ' + releaseTargets.join(' and ') + '; --features slint/renderer-software and slint/mcp do reach it for each')
 """
 
 [tasks."build:debug"]

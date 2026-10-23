@@ -1,7 +1,8 @@
 name: ide-release
 
-# Releases the Slint IDE (package/desktop-app/ide, program monochromatic-ide) for Linux x86_64 as a GitHub
-# pre-release. Decision and rationale: doc/decision/ide-releases.md. How to cut a release: doc/runbook/release-the-ide.md.
+# Releases the Slint IDE (package/desktop-app/ide, program monochromatic-ide) for Linux x86_64 and Linux ARM64
+# (aarch64) as a GitHub pre-release. Decision and rationale: doc/decision/ide-releases.md. How to cut a release:
+# doc/runbook/release-the-ide.md.
 # The structure follows .github/workflows/music-player-release.yml, whose decision is doc/decision/music-player-releases.md.
 #
 # - Trigger: a push to main that changes the product version in package/desktop-app/ide/Cargo.toml, or a manual
@@ -16,14 +17,19 @@ name: ide-release
 # - Build: the repository's own mise tasks run in the repository's podman build container, as developers build the
 #   program (doc/decision/ide-releases.md says why that is the tested flow and what it costs). The Rust toolchain is the
 #   one in the container image, not the mise.lock nightly; mise.lock supplies node, which runs the tasks.
-# - Gates before upload: the program prints its own version; the single executable embeds its runtime files and license
-#   texts byte for byte (inspect:bundle, the checks that need no window); no software renderer is linked
-#   (inspect:no-software-renderer); Cargo.lock is unchanged by the build; the glibc floor and the shared libraries are
-#   the ones INSTALL.txt names. The runner has no display and no GPU, so no window is opened; the decision lists the
-#   checks left out.
+# - Targets: one native build per architecture, as a two-entry matrix on named runners (x64 on ubuntu-24.04, arm64 on
+#   ubuntu-24.04-arm, both Ubuntu 24.04 and so glibc 2.39). The build container is the host's architecture, so the
+#   arm64 leg builds aarch64-unknown-linux-gnu with no emulation and no cross compiler. Asset names follow the music
+#   player's spelling: linux-x64 and linux-arm64. ide-v0.1.0 is x86_64 only; arm64 ships from the next version.
+# - Gates before upload (each leg): the program prints its own version; the single executable embeds its runtime files
+#   and license texts byte for byte (inspect:bundle, the checks that need no window); no software renderer is linked
+#   for either target (inspect:no-software-renderer); Cargo.lock is unchanged by the build; the glibc floor, the
+#   shared libraries are the ones INSTALL.txt names (the list is per architecture). The runner has no display and no GPU, so
+#   no window is opened; the decision lists the checks left out.
 # - Licenses: the program embeds its license notices and prints them with --licenses; the archive ships them as
 #   THIRD-PARTY-LICENSES.txt and the release carries them as a file of their own, byte for byte what the verified
-#   executable prints.
+#   executable prints. Both legs print the same notices (about.toml lists both targets); the x64 leg uploads the file as
+#   the asset, and the checksums job fails unless the arm64 leg printed the identical bytes.
 # - mise: the jdx/mise-action step pins the mise version; doc/runbook/release-the-music-player.md, section "The mise
 #   version pin", says how to update it, and doc/runbook/release-the-ide.md points there.
 # - Caches: none. The container image, the cargo volume and the target directory are built fresh in every run.
@@ -165,12 +171,35 @@ jobs:
         } >> "$GITHUB_OUTPUT"
         printf 'should_build=%s dry_run=%s tag=%s tag_exists=%s\n' "$should_build" "$dry_run" "$tag" "$tag_exists"
 
-  # One native build on ubuntu-24.04: the repository's mise tasks run the bounded podman container, then the gates, then
+  # One native build per architecture: the repository's mise tasks run the bounded podman container, then the gates, then
   # the archive and the notices file are written, verified a second time from the archive, attested and uploaded.
   build:
+    name: build (${{ matrix.arch }})
     needs: detect
     if: ${{ needs.detect.outputs.should_build == 'true' }}
-    runs-on: ubuntu-24.04
+    strategy:
+      # A failed leg blocks the release anyway (the checksums and release jobs need both), but a dry run is most useful
+      # when it shows the result of both legs.
+      fail-fast: false
+      matrix:
+        include:
+        # The runners are named, not ubuntu-latest: GitHub moves that label to Ubuntu 26.04 (glibc 2.43) in November
+        # 2026, which would raise the glibc floor of every archive. The arm64 runner is Ubuntu 24.04 for the same glibc
+        # (cargo-publish.yml, job nws-build-binary, does the same).
+        # arch is the spelling of the asset names (music-player-release.yml uses it too); machine is `uname -m`; needed
+        # is the exact sorted list of shared libraries in the dynamic section of the executable (INSTALL.txt names them).
+        # The lists differ by architecture: the x86_64 executable also names its dynamic loader (first dry run), while
+        # the aarch64 helper binary ide-runtime, linked in the arm64 build image on 2026-10-22, names only
+        # libgcc_s.so.1 and libc.so.6 and not ld-linux-aarch64.so.1.
+        - arch: x64
+          runner: ubuntu-24.04
+          machine: x86_64
+          needed: ld-linux-x86-64.so.2 libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6
+        - arch: arm64
+          runner: ubuntu-24.04-arm
+          machine: aarch64
+          needed: libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6
+    runs-on: ${{ matrix.runner }}
     # The first dry run took 15 min 37 s up to the renderer gate (doc/decision/ide-releases.md, "First dry run").
     timeout-minutes: 150
     permissions:
@@ -178,13 +207,14 @@ jobs:
       # Attest build provenance for the files this job uploads.
       id-token: write
       attestations: write
-    outputs:
-      rustc: ${{ steps.toolchain.outputs.rustc }}
     env:
       VERSION: ${{ needs.detect.outputs.version }}
-      # The runner has 4 vCPUs and 16 GB (as music-player-release.yml notes for its Alpine jobs). The task bound
-      # (package/desktop-app/ide/bin/container-bounds.ts) would take 90 percent of both; these leave the runner room
-      # for podman and the runner processes. container-bounds.ts reads exactly these variable names.
+      ARCH: ${{ matrix.arch }}
+      MACHINE: ${{ matrix.machine }}
+      EXPECTED_NEEDED: ${{ matrix.needed }}
+      # The runner has 4 vCPUs and 16 GB (as music-player-release.yml notes for its Alpine jobs, on both architectures).
+      # The task bound (package/desktop-app/ide/bin/container-bounds.ts) would take 90 percent of both; these leave the
+      # runner room for podman and the runner processes. container-bounds.ts reads exactly these variable names.
       IDE_CONTAINER_CPUS: '4'
       IDE_CONTAINER_MEMORY: '12g'
       # One mise task at a time: build depends on runtime and notices, each starting a bounded container, and the
@@ -193,6 +223,8 @@ jobs:
       # The program prints the version of Cargo.toml and exits before it opens a display.
       PROGRAM: package/desktop-app/ide/dist/monochromatic-ide
       # The newest glibc symbol version the executable may need: the glibc of Ubuntu 24.04, which INSTALL.txt names.
+      # Both runners are Ubuntu 24.04. The ceiling is the same for both architectures; the executable usually needs
+      # less, and the step that checks it prints the version it found.
       GLIBC_FLOOR: '2.39'
     steps:
     - name: Checkout
@@ -200,6 +232,18 @@ jobs:
       with:
         fetch-depth: 1
         persist-credentials: false
+
+    # The matrix names the architecture; the runner must really be it, or every later gate would check the wrong build.
+    # The container the tasks start is the host's architecture, which is what makes the build native.
+    - name: Check the runner architecture
+      run: |
+        set -euo pipefail
+        actual=$(uname -m)
+        echo "runner machine: ${actual}, expected: ${MACHINE}"
+        if [ "$actual" != "$MACHINE" ]; then
+          echo "::error::The runner is ${actual}, the matrix entry ${ARCH} expects ${MACHINE}."
+          exit 1
+        fi
 
     # The container image, the cargo volume and the target directory take several GB. The preinstalled Android SDK,
     # .NET, GHC and CodeQL bundles are not used by this job. The disk is printed before and after so the first dry run
@@ -257,17 +301,27 @@ jobs:
     # A bounded container with the same kinds of limits the tasks pass (CPU, memory, processes, open files), so a
     # runner that refuses one of them fails here and not an hour into the build. The Alpine jobs of
     # music-player-release.yml prove --memory and --cpus on this runner image; --pids-limit and --ulimit were not proven.
-    # The compiler version is a job output for the release notes: the image installs the stable toolchain
-    # of the day it is built (package/desktop-app/terminal/Containerfile), so the run records which one.
+    # The compiler version goes to the release notes: the image installs the stable toolchain of the day it is built
+    # (package/desktop-app/terminal/Containerfile), so each leg records which one. A matrix job cannot hand a value to
+    # a later job as an output (the legs would overwrite each other), so the line travels as a small artifact. Its name
+    # does not start with asset-, so it is never released. The compiler must also be native for the runner: its host
+    # triple is the target of this leg's build.
     - name: Record the toolchain of the build image
-      id: toolchain
       run: |
         set -euo pipefail
         podman run --rm --network=none --security-opt label=disable \
           --memory="$IDE_CONTAINER_MEMORY" --cpus="$IDE_CONTAINER_CPUS" --pids-limit=1024 --ulimit nofile=4096:4096 \
           localhost/monochromatic/ide sh -c 'rustc --version --verbose && cargo --version && cargo-about --version'
+        host=$(podman run --rm --network=none --security-opt label=disable localhost/monochromatic/ide \
+          sh -c "rustc --version --verbose | awk '/^host: / { print \$2 }'")
+        echo "rustc host triple: ${host}"
+        if [ "$host" != "${MACHINE}-unknown-linux-gnu" ]; then
+          echo "::error::The build image compiles for '${host}', expected '${MACHINE}-unknown-linux-gnu'."
+          exit 1
+        fi
         rustc=$(podman run --rm --network=none --security-opt label=disable localhost/monochromatic/ide rustc --version)
-        echo "rustc=${rustc}" >> "$GITHUB_OUTPUT"
+        mkdir --parents "${RUNNER_TEMP}/ide-meta"
+        echo "$rustc" > "${RUNNER_TEMP}/ide-meta/rustc-${ARCH}.txt"
         df --human-readable /
 
     # bundle depends on build, which depends on runtime (grammars and queries at the pinned Helix revision) and notices
@@ -311,9 +365,10 @@ jobs:
         file "$PROGRAM"
         needed=$(objdump -p "$PROGRAM" | awk '$1 == "NEEDED" { print $2 }' | LC_ALL=C sort | tr '\n' ' ')
         echo "needed: $needed"
-        expected='ld-linux-x86-64.so.2 libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6 '
+        # The list comes from the matrix entry of this architecture. The trailing space is the one tr leaves.
+        expected="${EXPECTED_NEEDED} "
         if [ "$needed" != "$expected" ]; then
-          echo "::error::The executable needs '$needed', INSTALL.txt names '$expected'."
+          echo "::error::The ${ARCH} executable needs '$needed', INSTALL.txt names '$expected'."
           exit 1
         fi
         floor=$(objdump -T "$PROGRAM" | grep --only-matching 'GLIBC_[0-9][0-9.]*' | sed 's/^GLIBC_//' \
@@ -321,7 +376,7 @@ jobs:
         echo "newest glibc symbol version: $floor"
         highest=$(printf '%s\n%s\n' "$floor" "$GLIBC_FLOOR" | sort --version-sort | tail --lines=1)
         if [ "$highest" != "$GLIBC_FLOOR" ]; then
-          echo "::error::The executable needs glibc $floor, INSTALL.txt names $GLIBC_FLOOR."
+          echo "::error::The ${ARCH} executable needs glibc $floor, INSTALL.txt names $GLIBC_FLOOR."
           exit 1
         fi
 
@@ -359,7 +414,7 @@ jobs:
         set -euo pipefail
         app='package/desktop-app/ide'
         assets="${RUNNER_TEMP}/ide-assets"
-        stage_name="ide-${VERSION}-linux-x64"
+        stage_name="ide-${VERSION}-linux-${ARCH}"
         stage="${RUNNER_TEMP}/ide-stage/${stage_name}"
         rm -rf "${RUNNER_TEMP}/ide-stage"
         mkdir --parents "${stage}/bin" "${stage}/share/applications"
@@ -369,7 +424,7 @@ jobs:
         cp --recursive "${app}/LICENSES" "${stage}/LICENSES"
         cp "${assets}/ide-${VERSION}-third-party-licenses.txt" "${stage}/THIRD-PARTY-LICENSES.txt"
         cat > "${stage}/INSTALL.txt" <<'INSTALL'
-        Monochromatic IDE for Linux x86_64 (pre-release, built by CI)
+        Monochromatic IDE for Linux @MACHINE@ (pre-release, built by CI)
 
         Run it in place:
           ./bin/monochromatic-ide /path/to/project
@@ -386,7 +441,7 @@ jobs:
         parsers it needs into $XDG_CACHE_HOME/monochromatic-ide (default ~/.cache/monochromatic-ide).
 
         Needs:
-          - Linux on x86_64 with glibc 2.39 or newer (the glibc of Ubuntu 24.04), and libfontconfig (libfontconfig.so.1).
+          - Linux on @MACHINE@ with glibc 2.39 or newer (the glibc of Ubuntu 24.04), and libfontconfig (libfontconfig.so.1).
           - A Wayland session. X11 was not checked. The program opens libwayland-client, libwayland-egl, libxkbcommon
             and libEGL when it starts.
           - A Vulkan driver for a hardware GPU (discrete or integrated). The program has no software renderer: a host
@@ -401,6 +456,8 @@ jobs:
         application. THIRD-PARTY-LICENSES.txt lists the licenses of everything built into the program, in full;
         bin/monochromatic-ide --licenses prints the same text.
         INSTALL
+        # The one architecture-specific word of INSTALL.txt is the machine name (x86_64 or aarch64).
+        sed --in-place --expression="s|@MACHINE@|${MACHINE}|g" "${stage}/INSTALL.txt"
         # Fixed modes, order, owner and timestamps so the same inputs give the same tar stream.
         find "$stage" -type d -exec chmod 755 {} +
         find "$stage" -type f -exec chmod 644 {} +
@@ -417,7 +474,7 @@ jobs:
       run: |
         set -euo pipefail
         assets="${RUNNER_TEMP}/ide-assets"
-        stage_name="ide-${VERSION}-linux-x64"
+        stage_name="ide-${VERSION}-linux-${ARCH}"
         notices="${assets}/ide-${VERSION}-third-party-licenses.txt"
         extract=$(mktemp --directory --tmpdir="$RUNNER_TEMP")
         tar --extract --gzip --file "${assets}/${stage_name}.tar.gz" --directory "$extract"
@@ -442,28 +499,54 @@ jobs:
         desktop-file-validate "${root}/share/applications/monochromatic.ide.desktop"
         echo "The archive holds the verified program, its notices and a valid launcher entry."
 
-    - name: Attest provenance
+    # Each leg attests its own archive. The notices are one file for the whole release, so only the x64 leg ships and
+    # attests it; the arm64 leg's copy is compared with it by the checksums job and is never released.
+    - name: Attest provenance of the archive
       if: ${{ needs.detect.outputs.dry_run == 'false' }}
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
       with:
-        subject-path: |
-          ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-linux-x64.tar.gz
-          ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-third-party-licenses.txt
+        subject-path: ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-linux-${{ matrix.arch }}.tar.gz
+
+    - name: Attest provenance of the notices
+      if: ${{ needs.detect.outputs.dry_run == 'false' && matrix.arch == 'x64' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-third-party-licenses.txt
 
     # The checksums and release jobs collect these with the pattern asset-*.
     - name: Upload the archive as workflow artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
-        name: asset-linux-x64
-        path: ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-linux-x64.tar.gz
+        name: asset-linux-${{ matrix.arch }}
+        path: ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-linux-${{ matrix.arch }}.tar.gz
         if-no-files-found: error
         retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
 
     - name: Upload the notices as workflow artifact
+      if: ${{ matrix.arch == 'x64' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: asset-third-party-licenses
         path: ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-third-party-licenses.txt
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+    # Not an asset (the name does not start with asset-): the checksums job compares it with the released notices.
+    - name: Upload this leg's notices for the comparison
+      if: ${{ matrix.arch != 'x64' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: notices-${{ matrix.arch }}
+        path: ${{ runner.temp }}/ide-assets/ide-${{ needs.detect.outputs.version }}-third-party-licenses.txt
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+    # Not an asset either: the release job reads the compiler lines for the notes.
+    - name: Upload the compiler version for the release notes
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: toolchain-${{ matrix.arch }}
+        path: ${{ runner.temp }}/ide-meta/rustc-${{ matrix.arch }}.txt
         if-no-files-found: error
         retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
 
@@ -488,16 +571,30 @@ jobs:
         path: assets
         merge-multiple: true
 
+    # The arm64 leg's own notices. Its executable embeds the notices of the build graph, and about.toml lists both
+    # targets, so the two executables must print the same bytes; the release carries the x64 leg's file.
+    - name: Download the notices of the arm64 leg
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: notices-arm64
+        path: notices-arm64
+
     - name: Check the asset set and write SHA256SUMS
       run: |
         set -euo pipefail
         expected=$(printf '%s\n' \
+          "ide-${VERSION}-linux-arm64.tar.gz" \
           "ide-${VERSION}-linux-x64.tar.gz" \
-          "ide-${VERSION}-third-party-licenses.txt")
+          "ide-${VERSION}-third-party-licenses.txt" | LC_ALL=C sort)
         actual=$(ls -1 assets | LC_ALL=C sort)
         if [ "$actual" != "$expected" ]; then
           echo "::error::Unexpected asset set."
           diff <(echo "$expected") <(echo "$actual") || true
+          exit 1
+        fi
+        # One notices file serves both archives, so both executables must have printed it.
+        if ! cmp "assets/ide-${VERSION}-third-party-licenses.txt" "notices-arm64/ide-${VERSION}-third-party-licenses.txt"; then
+          echo "::error::The arm64 executable prints other license notices than the x64 executable; the release carries one notices file."
           exit 1
         fi
         mkdir -p checksums
@@ -533,7 +630,6 @@ jobs:
       DRY_RUN: ${{ needs.detect.outputs.dry_run }}
       VERSION: ${{ needs.detect.outputs.version }}
       TAG: ${{ needs.detect.outputs.tag }}
-      RUSTC: ${{ needs.build.outputs.rustc }}
       SHA: ${{ github.sha }}
       REF: ${{ github.ref }}
       REPO: ${{ github.repository }}
@@ -552,9 +648,25 @@ jobs:
         name: checksums
         path: assets
 
+    # The compiler line of each leg, kept out of assets/ so that it is never released.
+    - name: Download the compiler versions
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: toolchain-*
+        path: toolchain
+        merge-multiple: true
+
     - name: Write the release notes
       run: |
         set -euo pipefail
+        rustc_x64=$(cat toolchain/rustc-x64.txt)
+        rustc_arm64=$(cat toolchain/rustc-arm64.txt)
+        # Both legs install the stable toolchain on the day they build, so the lines normally match.
+        if [ "$rustc_x64" = "$rustc_arm64" ]; then
+          RUSTC="$rustc_x64"
+        else
+          RUSTC="$rustc_x64 (x86_64) and $rustc_arm64 (arm64)"
+        fi
         cat > notes.md <<'NOTES'
         Monochromatic IDE @VERSION@, a **pre-release**. The project is under active development.
 
@@ -562,21 +674,22 @@ jobs:
 
         ## Downloads
 
-        - `ide-@VERSION@-linux-x64.tar.gz`: the program `bin/monochromatic-ide` (one executable that carries its syntax grammars, queries and license texts), its launcher entry `share/applications/monochromatic.ide.desktop`, the license texts, and `INSTALL.txt`.
-        - `ide-@VERSION@-third-party-licenses.txt`: the license notices of everything built into the program (see "Licenses").
+        - `ide-@VERSION@-linux-x64.tar.gz`: for Linux on x86_64 (Intel and AMD 64-bit). The program `bin/monochromatic-ide` (one executable that carries its syntax grammars, queries and license texts), its launcher entry `share/applications/monochromatic.ide.desktop`, the license texts, and `INSTALL.txt`.
+        - `ide-@VERSION@-linux-arm64.tar.gz`: for Linux on ARM64 (aarch64), with the same contents.
+        - `ide-@VERSION@-third-party-licenses.txt`: the license notices of everything built into the program (see "Licenses"). Both executables carry the same notices.
         - `SHA256SUMS`: the SHA-256 of every file above.
 
-        There are no Windows, macOS or Linux arm64 builds. The program needs a Wayland session and a Vulkan driver for a hardware GPU.
+        There are no Windows, macOS or musl builds, and no Linux builds for other architectures. The program needs a Wayland session and a Vulkan driver for a hardware GPU.
 
         ## What has been tested
 
-        The maintainers have run the program on Linux x86_64 under Wayland only.
-        CI runs on a machine with no display and no GPU, so it never opens a window. It checks that the program prints its version, that the single executable embeds its runtime files and license texts byte for byte, that every linked Rust crate has a license text, that no software renderer is linked, and that the archive unpacks to a program that prints the same notices.
+        The maintainers have run the program on Linux x86_64 under Wayland only. The ARM64 archive is built and checked on a native ARM64 machine, but nobody has opened its window on ARM64 hardware.
+        CI runs on machines with no display and no GPU, so it never opens a window. On each architecture it checks that the program prints its version, that the single executable embeds its runtime files and license texts byte for byte, that every linked Rust crate has a license text, that no software renderer is linked, that the executable needs only the shared libraries and the glibc version `INSTALL.txt` names, and that the archive unpacks to a program that prints the same notices.
         Expect problems and report them as issues.
 
         ## Install
 
-        Extract the archive and run `bin/monochromatic-ide [PROJECT]`. `INSTALL.txt` inside lists what the host must provide and shows how to add a menu entry. It needs glibc 2.39 or newer (the glibc of Ubuntu 24.04), fontconfig, a Wayland session and a Vulkan hardware GPU driver.
+        Pick the archive that matches `uname -m` (x86_64 or aarch64). Extract it and run `bin/monochromatic-ide [PROJECT]`. `INSTALL.txt` inside lists what the host must provide and shows how to add a menu entry. It needs glibc 2.39 or newer (the glibc of Ubuntu 24.04), fontconfig, a Wayland session and a Vulkan hardware GPU driver.
 
         ## Licenses
 

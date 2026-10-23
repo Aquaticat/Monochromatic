@@ -5603,6 +5603,10 @@ and fails if the software renderer is in the graph.
 It also runs the same query with `--features slint/renderer-software` and with `--features slint/mcp`,
 and fails unless both reach the renderer,
 so an empty answer cannot come from a query that cannot see it.
+Every query runs for both release targets,
+`x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu`,
+on whichever of the two hosts runs the task,
+because platform-specific dependencies differ per target.
 
 ### What the executable carries
 
@@ -5804,8 +5808,16 @@ Just it."
   the `crate-licenses` bundle check found all 369 linked crates
   and all 291 registry crates whose source paths the executable contains among the crates printed.
 - The `linked-crates` task writes `target/linked-crates.txt`
-  from `cargo tree --frozen --edges normal,no-proc-macro --target x86_64-unknown-linux-gnu`
+  from `cargo tree --frozen --edges normal,no-proc-macro` for the target the build container compiles natively
+  (`x86_64-unknown-linux-gnu` on an x86_64 host,
+  `aarch64-unknown-linux-gnu` on an arm64 host)
   for the bundle checks.
+- `about.toml` lists both release targets,
+  so both executables embed the same license list.
+  Measured on 2026-10-22,
+  the aarch64 graph is a subset of the x86_64 graph (448 crates against 449;
+  `core_detect` is the one crate only x86_64 links),
+  and the list `cargo-about` printed for both targets was byte for byte the one it printed for x86_64 alone.
 
 #### Choices made by default and open to veto
 
@@ -5911,7 +5923,10 @@ when the prepared runtime lacks its manifest or a grammar library the manifest l
 
 ### What the host provides
 
-- Linux on x86_64 with glibc 2.39 or later,
+- Linux on x86_64 or on aarch64 (ARM64) with glibc 2.39 or later
+  (the release builds both;
+  only the x86_64 build has been started on real hardware,
+  see [Releases](#releases)),
   `libstdc++`,
   `libgcc_s`,
   and `libfontconfig`.
@@ -6168,18 +6183,23 @@ GitHub pre-releases come from `.github/workflows/ide-release.yml`
 steps in the [runbook][release-the-ide]).
 A push to `main` that changes `version` in `Cargo.toml` starts a build and,
 when the tag `ide-v<version>` is free,
-a pre-release with three files:
-`ide-<version>-linux-x64.tar.gz`
-(the executable from `bundle`,
+a pre-release with four files:
+`ide-<version>-linux-x64.tar.gz` and `ide-<version>-linux-arm64.tar.gz`
+(each holds the executable from `bundle`,
 the launcher entry,
 the license texts,
 and `INSTALL.txt`),
 `ide-<version>-third-party-licenses.txt`,
 and `SHA256SUMS`.
-Only Linux x86_64 is built,
-and the requirements under [What the host provides](#what-the-host-provides) apply to it.
+The release `ide-v0.1.0` predates the arm64 build:
+it holds the x86_64 archive only,
+and it is immutable,
+so the arm64 archive first ships with the next version.
+Only Linux on x86_64 and aarch64 is built,
+and the requirements under [What the host provides](#what-the-host-provides) apply to both.
 
-The workflow runs the same tasks as a local build in the bounded container:
+The workflow builds each architecture natively on its own runner
+and runs the same tasks as a local build in the bounded container:
 `bundle`,
 then `inspect:no-software-renderer`,
 and `inspect:bundle` with the checks `inventory`,
@@ -6187,7 +6207,9 @@ and `inspect:bundle` with the checks `inventory`,
 and `crate-licenses`,
 which need no window.
 It also requires that `--version` prints `monochromatic-ide <version>`,
-that the dynamic section of the executable lists only the loader,
+that the dynamic section of the executable lists only the libraries it was measured to need
+(on x86_64 the loader `ld-linux-x86-64.so.2` too,
+on aarch64 no loader),
 `libc`,
 `libm`,
 `libgcc_s`,
