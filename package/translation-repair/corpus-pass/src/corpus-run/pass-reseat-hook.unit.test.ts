@@ -113,13 +113,24 @@ const WIDE_ONE_SHORT: BudgetView = {
 };
 
 /**
- How long the DeepSeek hold of the case stands, in milliseconds: under the length from which the scan of real-clock
- bounds reads a hold as a wait, since the reading never waits for a hold that cannot cure the bench.
+ How much of the DeepSeek hold of the case is left at the n-th time the holds are asked, in milliseconds: it shrinks by
+ a second with every ask, as a real hold does between slices, so the sentence naming its length is a new one each time.
+ The reading never waits for it, since DeepSeek back leaves the bench as short as it is.
+
+ @param asks - how many times the holds have been asked, this time included
+
+ @returns Milliseconds left, never below one
  */
-const HELD_FOR_A_MOMENT = 500;
+function leftAfter({ asks, }: { readonly asks: number; },): number {
+  return Math.max(
+    1,
+    30_000 - (asks * 1_000),
+  );
+}
 
 /**
- The hook over a short bench with a hold that cannot cure it, whose hold the case ends by hand.
+ The hook over a short bench with a hold that cannot cure it, whose hold the case ends by hand and which shrinks with
+ every ask.
 
  @param lines - receives what the readings log
 
@@ -131,20 +142,23 @@ const HELD_FOR_A_MOMENT = 500;
  ```
  */
 function hookUnderDeepSeekHold({ lines, }: { readonly lines: string[]; },) {
-  const hold = { running: true, };
+  const hold = { running: true, asks: 0, };
   const hook = reseatHookFor({
     client: {
       providerDryness: async () => WIDE_ONE_SHORT,
       providerMeterStates: metersAllWet,
-      providerHolds: () => ({
-        neuralwatt: 0,
-        synthetic: 0,
-        bedrock: 0,
-        deepseek: hold.running ? HELD_FOR_A_MOMENT : 0,
-        xiaomi: 0,
-        hyper: 0,
-        openrouter: 0,
-      }),
+      providerHolds: () => {
+        hold.asks += 1;
+        return {
+          neuralwatt: 0,
+          synthetic: 0,
+          bedrock: 0,
+          deepseek: hold.running ? leftAfter({ asks: hold.asks, },) : 0,
+          xiaomi: 0,
+          hyper: 0,
+          openrouter: 0,
+        };
+      },
     },
     signal: new AbortController().signal,
     phase: 'lane contest',
