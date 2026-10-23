@@ -56,9 +56,12 @@ const ITEMS = '[]';
  Reads the schema node one path leads to, a member name stepping into `properties` and `[]` into `items`.
 
  @param format - response format read
+
  @param path - member names from the root, `[]` for an array's items
 
- @returns The node, absent where the path leaves the schema
+ @returns The node
+
+ @throws {@link TypeError} where the path leaves the schema
 
  @example
  ```ts
@@ -73,19 +76,26 @@ function fieldAt(
     readonly format: JsonSchemaResponseFormat;
     readonly path: readonly string[];
   },
-): Readonly<Record<string, unknown>> | undefined {
+): Readonly<Record<string, unknown>> {
   /**
-   Node the walk has reached.
+   Node the walk ends at.
    */
-  let node: unknown = format.json_schema.schema;
-  for (const step of path) {
-    if (!isJsonRecord(node,))
-      return undefined;
-    node = (step === ITEMS)
-      ? node.items
-      : (isJsonRecord(node.properties,) ? node.properties[step] : undefined);
-  }
-  return isJsonRecord(node,) ? node : undefined;
+  const node = path.reduce(
+    function step(
+      current: unknown,
+      name: string,
+    ): unknown {
+      if (!isJsonRecord(current,))
+        throw new TypeError(`The schema holds no object at the step ${name}`,);
+      if (name === ITEMS)
+        return current.items;
+      return isJsonRecord(current.properties,) ? current.properties[name] : undefined;
+    },
+    format.json_schema.schema,
+  );
+  if (!isJsonRecord(node,))
+    throw new TypeError(`The path ${path.join('.',)} leaves the schema`,);
+  return node;
 }
 
 /**
@@ -188,8 +198,8 @@ await describe({
         name: `LISTS THE ${label.toUpperCase()} AS AN enum EQUAL TO THE VOCABULARY ITS GUARD READS (P1), so the model is `
           + 'held to the labels the stage accepts and the two cannot drift',
         fn: async () => {
-          expect(fieldAt({ format, path, },)?.enum,).toEqual([...vocabulary,],);
-          expect(fieldAt({ format, path, },)?.type,).toBe('string',);
+          expect(fieldAt({ format, path, },).enum,).toEqual([...vocabulary,],);
+          expect(fieldAt({ format, path, },).type,).toBe('string',);
         },
       },);
     },),
