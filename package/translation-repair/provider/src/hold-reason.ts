@@ -5,7 +5,10 @@ import {
 import type { NeuralWattReturn, } from './budget-routing.ts';
 import { durationWordsOf, } from './duration-words.ts';
 import type { NeuralWattDryness, } from './neuralwatt-return-hold.ts';
-import { pastPassWordsOf, } from './neuralwatt-return-fit.ts';
+import {
+  type BoundOwner,
+  pastPassWordsOf,
+} from './neuralwatt-return-fit.ts';
 import { keyUnblockTextOf, } from './neuralwatt-return-words.ts';
 import {
   PROVIDER_ORDER,
@@ -76,6 +79,9 @@ export function holdReasonOf(
  @param passLeftMs - milliseconds the pass has left, where the reader's wait is bounded by it: a spent day's return past
  it is stated as past what the pass has left
 
+ @param boundOwner - whose bound passLeftMs is, so the sentence names the entry when its own cap is the smaller bound
+ (default: the pass)
+
  @returns One sentence, or none where NeuralWatt is not dry
 
  @example
@@ -87,9 +93,11 @@ export function dryCauseClausesOf(
   {
     dryness,
     passLeftMs,
+    boundOwner,
   }: {
     readonly dryness: NeuralWattDryness;
     readonly passLeftMs?: number;
+    readonly boundOwner?: BoundOwner;
   },
 ): readonly string[] {
   if (dryness.kind === 'wet')
@@ -119,6 +127,7 @@ export function dryCauseClausesOf(
   const pastPass = pastPassWordsOf({
     returnsInMs: dryness.returnsInMs,
     ...((passLeftMs === undefined) ? {} : { passLeftMs, }),
+    ...((boundOwner === undefined) ? {} : { boundOwner, }),
   },)
     .map(function clauseOf(words,): string {
       return `, which is ${words}`;

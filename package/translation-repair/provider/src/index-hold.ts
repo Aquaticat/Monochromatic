@@ -21,6 +21,7 @@ export {
 } from './budget-routing.ts';
 export { durationWordsOf, } from './duration-words.ts';
 export {
+  type BoundOwner,
   pastPassWordsOf,
   returnFitsWithin,
 } from './neuralwatt-return-fit.ts';

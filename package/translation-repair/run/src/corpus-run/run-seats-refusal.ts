@@ -28,7 +28,7 @@ import type { JudgeSeatPhase, } from './run-seats-wait.ts';
  */
 export type RefusalClient = Pick<
   RunClient,
-  'neuralwattDryness' | 'neuralwattReturn' | 'passLeftMs' | 'providerHolds' | 'writingProviders'
+  'neuralwattDryness' | 'neuralwattReturn' | 'passBoundOwner' | 'passLeftMs' | 'providerHolds' | 'writingProviders'
   >;
 
 /**
@@ -96,7 +96,7 @@ export function withNeuralWattReturn(
   }: {
     readonly clauses: readonly string[];
     readonly dry: BudgetView;
-    readonly client: Pick<RunClient, 'neuralwattDryness' | 'passLeftMs' | 'writingProviders'>;
+    readonly client: Pick<RunClient, 'neuralwattDryness' | 'passBoundOwner' | 'passLeftMs' | 'writingProviders'>;
     readonly refusalFollows?: boolean;
   },
 ): readonly string[] {
@@ -111,6 +111,7 @@ export function withNeuralWattReturn(
     ? dryCauseClausesOf({
       dryness: client.neuralwattDryness?.() ?? { kind: 'wet', },
       ...((client.passLeftMs === undefined) ? {} : { passLeftMs: client.passLeftMs(), }),
+      ...((client.passBoundOwner === undefined) ? {} : { boundOwner: client.passBoundOwner(), }),
     },)
     : [];
   return [
@@ -143,7 +144,7 @@ export function withNeuralWattReturn(
 
  @example
  ```ts
- throw everyProviderDryRefusal({ phase: 'lanes', holds: client.providerHolds(), dry, writing, pastPass: [], },);
+ throw everyProviderDryRefusal({ phase: 'lanes', holds: holdsWithinPass({ client, },), dry, writing, pastPass: [], },);
  ```
  */
 function everyProviderDryRefusal(
@@ -278,6 +279,7 @@ export function writtenRefusal(
         : pastPassWordsOf({
           returnsInMs,
           ...((client.passLeftMs === undefined) ? {} : { passLeftMs: client.passLeftMs(), }),
+          ...((client.passBoundOwner === undefined) ? {} : { boundOwner: client.passBoundOwner(), }),
         },),
       ...((returnsInMs === undefined) ? {} : { neuralwattReturnsInMs: returnsInMs, }),
       ...((client.neuralwattReturn === undefined) ? {} : { neuralwatt: client.neuralwattReturn(), }),

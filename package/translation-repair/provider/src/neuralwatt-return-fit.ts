@@ -8,6 +8,33 @@ import { durationWordsOf, } from './duration-words.ts';
 // states, margin included, so the three cannot disagree on a return that sits within the margin of the bound.
 
 /**
+ Whose bound a pass-left figure is: the entry's own hard cap when that is the smaller of the two bounds an entry runs
+ under, the pass's otherwise.
+
+ @example
+ ```ts
+ const owner: BoundOwner = 'entry';
+ ```
+ */
+export type BoundOwner = 'entry' | 'pass';
+
+/**
+ The words naming whose bound a return lies past, for the sentence of a refusal.
+
+ @param boundOwner - whose bound it is
+
+ @returns "the entry has left" or "this pass has left"
+
+ @example
+ ```ts
+ boundWordsOf({ boundOwner: 'entry', },); // => 'the entry has left'
+ ```
+ */
+function boundWordsOf({ boundOwner, }: { readonly boundOwner: BoundOwner; },): string {
+  return (boundOwner === 'entry') ? 'the entry has left' : 'this pass has left';
+}
+
+/**
  Whether a return lies inside a bound, the distance counted as the refusal states it.
 
  @param returnsInMs - milliseconds until the day starts again, the margin included
@@ -40,6 +67,9 @@ export function returnFitsWithin(
 
  @param passLeftMs - what the pass has left, absent where nothing bounds the wait
 
+ @param boundOwner - whose bound passLeftMs is, the entry's own hard cap when that is the smaller of the two bounds an
+ entry runs under (default: the pass)
+
  @returns The words as the one entry of a list, or an empty list when the return fits or nothing bounds the wait
 
  @example
@@ -52,9 +82,11 @@ export function pastPassWordsOf(
   {
     returnsInMs,
     passLeftMs,
+    boundOwner = 'pass',
   }: {
     readonly returnsInMs: number;
     readonly passLeftMs?: number;
+    readonly boundOwner?: BoundOwner;
   },
 ): readonly string[] {
   return ((passLeftMs === undefined) || returnFitsWithin({
@@ -62,7 +94,7 @@ export function pastPassWordsOf(
     boundMs: passLeftMs,
   },))
     ? []
-    : [`past the ${durationWordsOf({ ms: passLeftMs, },)} this pass has left`,];
+    : [`past the ${durationWordsOf({ ms: passLeftMs, },)} ${boundWordsOf({ boundOwner, },)}`,];
 }
 
 //endregion NeuralWatt return fit

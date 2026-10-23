@@ -1,4 +1,5 @@
 import type {
+  BoundOwner,
   BudgetView,
   MeterState,
   ModelClient,
@@ -96,12 +97,22 @@ export type RunClient = ModelClient & {
 
   /**
    Milliseconds the seat reader may wait for NeuralWatt's return: the pass's soft budget left or its hard cap, whichever
-   is shorter, and inside an entry also what that entry's own cap has left (`pass-entry-bound.ts`), so a wait never
-   outlasts the entry's timer. A return inside it is waited for, one past it is refused at once with its time stated,
-   since the pass or the entry would end first. Absent for a client built outside a pass, which bounds the wait by the
-   entry's abort alone.
+   is shorter, and inside an entry also what that entry's own cap has left (`pass-entry-bound.ts`), so a wait for a
+   NeuralWatt return never outlasts the entry's timer. A return inside it is waited for, one past it is refused at
+   once with its time stated, since the pass or the entry would end first. Absent for a client built outside a pass,
+   which bounds the wait by the entry's abort alone.
+
+   ONLY A NEURALWATT RETURN IS FILTERED BY THIS BOUND. A stated hold (Hyper's daily limit, a rate limit's) and a refusal
+   cooldown are waited for whatever the bound is and are cut by the entry's abort when the entry's timer ends first.
    */
   readonly passLeftMs?: () => number;
+
+  /**
+   Whose bound `passLeftMs` is: the entry when its own hard cap has less left than the pass, the pass otherwise, so a
+   refusal past the bound says "the entry has left" or "this pass has left" for the bound that won. Absent where the
+   client carries no entry bound, which the sentence reads as the pass's.
+   */
+  readonly passBoundOwner?: () => BoundOwner;
 };
 
 //endregion Run client contract

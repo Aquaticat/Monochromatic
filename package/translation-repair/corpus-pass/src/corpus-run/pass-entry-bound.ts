@@ -1,3 +1,4 @@
+import type { BoundOwner, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RunClient, } from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Entry bound
@@ -40,13 +41,32 @@ export function withEntryBound(
     readonly now: () => number;
   },
 ): RunClient {
+  /**
+   What the entry's own cap has left now.
+
+   @returns Milliseconds, zero or below once the cap is spent
+   */
+  function capLeftMs(): number {
+    return hardCapMs - (now() - startedAt);
+  }
+  /**
+   What the pass has left now, unbounded for a client that carries no bound.
+
+   @returns Milliseconds
+   */
+  function passLeftMs(): number {
+    return client.passLeftMs?.() ?? Number.POSITIVE_INFINITY;
+  }
   return {
     ...client,
     passLeftMs: function entryLeftMs(): number {
       return Math.min(
-        client.passLeftMs?.() ?? Number.POSITIVE_INFINITY,
-        hardCapMs - (now() - startedAt),
+        passLeftMs(),
+        capLeftMs(),
       );
+    },
+    passBoundOwner: function entryBoundOwner(): BoundOwner {
+      return (capLeftMs() < passLeftMs()) ? 'entry' : 'pass';
     },
   };
 }

@@ -57,6 +57,7 @@ export type SeatReadingClient = Pick<
   'neuralwattDryness'
     | 'neuralwattHeldByReturn'
     | 'neuralwattReturn'
+    | 'passBoundOwner'
     | 'passLeftMs'
     | 'providerDryness'
     | 'providerHolds'
