@@ -167,7 +167,11 @@ that form stays removed.
 To restore the stop for a funded Xiaomi,
 change `routeProviderFor` in `provider/src/budget-routing.ts` and `readBudgetsPastHolds` in
 `provider/src/budget-hold-wait.ts` to treat `writing` as every provider (`EVERY_PROVIDER_COUNTS`),
-or revert the range `11cddf0a37..8a54f4c72e` that introduced D4 together with the commits that built on it.
+or revert the two commits that introduced D4:
+the red test `11cddf0a37` and its fix `8a54f4c72e`.
+Commits built on them since (the NeuralWatt return,
+the park and the seat bounds) are not part of D4
+and are reverted separately.
 The `NoProviderForModelError` for a lost seat names the model and how each provider read
 (`modelDarkReason` in `model-dark-reason.ts`),
 and the router logs it as `<model> went dark: ...`,
@@ -194,35 +198,73 @@ a day the account still shows spent after its return passed is the account laggi
 and a refusal names the day start only when the day-start hold is the one that won.
 
 **The bounds are open to the owner's veto.**
-Three waits meet it,
+They are the lead's rulings of fix rounds 1 to 4,
+not the owner's.
+Three waits meet the return,
 each bounded by what can cut it.
 
-- A router call waits for a return at most 300 s (`NEURALWATT_RETURN_WAIT_BOUND_MS`),
-  because a call carries a deadline of 360 s that would cut anything longer.
-  The distance is compared without its margin.
-  A return past 300 s ends the call with the all-dry refusal,
+- A router call bounds the sum of its waits for a return at 300 s (`NEURALWATT_RETURN_WAIT_BOUND_MS`),
+  the budget layer's own refusal cooldown (`REFUSAL_COOLDOWN_MS`).
+  The 360 s per-call deadline (`RUN_PER_CALL_TIMEOUT_MS`) is not the reason:
+  it is armed inside each client's per-model slot,
+  after routing,
+  and the router waits on the stage's round signal (the caller's abort and the straggler cut),
+  so the deadline never reaches the router's wait.
+  The bound is a sum:
+  what the waits so far took comes off it before the holds are asked again,
+  so a 300 s hold waited out leaves no room for a return 250 s away,
+  and that return ends the call with the refusal at once.
+  The distance is compared with its margin included (`returnFitsWithin`),
+  the way the refusal's clause and the pass's park compare it.
+  A return past the bound ends the call with the all-dry refusal,
   which states the time of day and the distance (`at 19:15:08 UTC (in 5 min 1 s)`)
   and carries the distance as `neuralwattReturnsInMs`.
   The distance stays on the refusal while the return still lies ahead,
   also after the call waited out another hold first,
   so the pass can park on it.
 - The seat reader sits outside every exchange,
-  so no call deadline applies.
-  Its bound is what the pass has left,
-  the shorter of the soft budget remaining and the hard cap
-  (the client carries it as `passLeftMs`).
+  so no call deadline applies to it.
+  Its bound is what the pass has left:
+  the shorter of the soft budget remaining and the hard cap,
+  and inside an entry also what that entry's own hard cap has left,
+  so a wait never outlasts the entry's timer (`withEntryBound` in `pass-entry-bound.ts`;
+  the client carries the bound as `passLeftMs`).
   A return inside it is waited for,
   as Hyper's stated holds are (923 s and 2 h 25 m on record).
   A return past it is refused at once,
   with the time of day in UTC and the distance stated and the note that it is past what the pass has left,
-  because the pass would end first.
+  whichever refusal ends the reading:
+  the bench error,
+  the error line of a phase that goes on without its writers,
+  the warning of a bench short of quorum,
+  or the all-dry refusal,
+  which also carries `neuralwattReturnsInMs`.
   Nothing here is bounded by 300 s.
+  The reader waits only for a hold whose provider,
+  back,
+  would cure a bench that stands short
+  (the seats are derived again with the held providers back,
+  from the roster through `reachOf`,
+  `run-seats-hold-need.ts`);
+  a hold on a provider that serves no seat the bench lacks cannot bring it back and is not waited for,
+  which includes DeepSeek on a wide bench the wet providers already reach through its one seat.
+  When a bench is seated short,
+  a warning names it,
+  the reachable and needed counts,
+  and the providers whose return alone would reach the quorum.
+  The re-seat hook still reads the seats under any hold,
+  since its reading is what re-seats a slice,
+  and takes the same rule for its waiting through the reader.
   **This seat-reader bound is the lead's ruling after the first fix waited at any distance,
-  and is open to the owner's veto.**
+  its entry-scoped form the lead's ruling of fix round 4,
+  and both are open to the owner's veto.**
 - The pass parks when every provider reads dry and the return is known and inside what the pass has left,
-  which is the shorter of the soft budget remaining and the hard cap.
+  which is the shorter of the soft budget remaining and the hard cap (the park sits between entries on a fresh timer,
+  so the entry's cap does not narrow it).
   The run ends only when the return is unknown or past what the pass has left,
   and the stop line states the return time.
+  A seat reader's refusal for a return inside what the pass has left but past what the entry has left
+  therefore parks the pass and ends nothing.
 
 The park works at the seam between entries,
 because the wait must sit outside any exchange:
@@ -236,18 +278,19 @@ because the wait must sit outside any exchange:
    so none of `REATTEMPT`,
    `STALLED` and `INCOMPLETE` is printed,
    and calls the gate's wait before asking the budget whether the pass goes on.
-3. The gate waits the distance,
+3. The gate waits for what is left of the return,
+   stored as an instant on its monotonic clock when the refusal arrived,
    logs the end,
    and gives the pass a fresh signal.
-4. A refusal that arrives within 60 s of a park's end trips instead of parking again,
-   since the account has then not shown the energy it should,
+4. A refusal for the day start of a park that has ended trips instead of parking again,
+   since the account has then not rolled to the new day it should have,
    and parking again would wait a day in a loop.
+   This replaces a 60 s window copied from the budget layer's freshness window,
+   which was not the mechanism and let a refusal an hour later park for another day.
 
 Known costs of the park:
 the attempt it interrupts is already counted in the attempt map,
-its `TALLY` line says `INCOMPLETE`,
-and the wait is the full distance from the moment the entry ends,
-not from the refusal.
+and its `TALLY` line says `INCOMPLETE`.
 A long NeuralWatt hold also makes the per-slice re-seating (`pass-reseat-hook.ts`) read the seats on every slice
 while it runs,
 as it does for any hold.
