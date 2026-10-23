@@ -115,6 +115,8 @@ The groups that follow name the main ones.
   or checker.
   Names:
   `editorFidelityTrials`,
+  `EDITOR_FIDELITY_POOL`,
+  `poolLine`,
   `scoreEditedText`,
   `runEditorFidelityProbe`,
   `runEditorTrial`,
@@ -124,6 +126,9 @@ The groups that follow name the main ones.
   `cardsOnlyClient`,
   `editorProbeEnv`.
   Declared in `editor-fidelity-trials.ts`,
+  `editor-fidelity-pool-manifest.ts`
+  (with its drawn parts `editor-fidelity-pool-drawn-1.ts` to `editor-fidelity-pool-drawn-4.ts`),
+  `corpus-run/editor-fidelity-pool-line.ts`,
   `editor-fidelity-score.ts`,
   `corpus-run/editor-fidelity-probe-run.ts`,
   `corpus-run/editor-fidelity-trial.ts`,
@@ -208,12 +213,20 @@ and each task sets it to its own name.
 - `editor-fidelity-probe`:
   seats each card `--candidates` names alone as the editor of an inserted sentence or an altered number,
   and scores the patched text without a model.
+  The trials are the frozen pool's:
+  the three source-reviewed references and heading sections drawn from the same corpus pin by a stated rule,
+  at least forty trials in all,
+  held as ids,
+  offsets and hashes with no corpus text.
   A fix is exact,
   or equal to the clean text once whitespace runs are collapsed.
   Collateral is a change to text outside the defect.
   Refused and unusable replies are counted apart.
-  Options after `--` are `--only` with reviewed entry ids,
-  `--cap n` (`--cap 0` is a preflight that spends nothing),
+  Options after `--` are `--only` with entry ids of the pool,
+  `--cap n`
+  (default 64,
+  above the pool;
+  `--cap 0` is a preflight that spends nothing),
   `--damage insertion|alteration`
   (a deletion is refused,
   because its fix is a sentence the editor must write),

@@ -725,6 +725,13 @@ const ALLOWLIST: readonly string[] = [
   'document-structure/document-node.ts',
   'repair/editor-envelope-context.ts',
   'repair/editor-selection-sheet.ts',
+  // The editor fidelity pool's drawn specifications are ids, offsets and hashes with no logic: the pool manifest's own
+  // test holds their shape, and every run replays each against the pinned clone. Each line goes when its module gains
+  // an own test.
+  'probe/editor-fidelity-pool-drawn-1.ts',
+  'probe/editor-fidelity-pool-drawn-2.ts',
+  'probe/editor-fidelity-pool-drawn-3.ts',
+  'probe/editor-fidelity-pool-drawn-4.ts',
   'probe/fidelity-reference-build.ts',
   'probe/fidelity-reference-error.ts',
   'probe/fidelity-reference-manifest.ts',

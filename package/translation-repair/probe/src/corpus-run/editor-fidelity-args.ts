@@ -1,4 +1,5 @@
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   type CommandLineOf,
   type FlagValue,
@@ -17,9 +18,10 @@ import {
 // and with the amount the run may spend.
 
 /**
- How many trials one invocation runs by default, counted in attempts like the judge probe's own.
+ How many trials one invocation runs by default, counted in attempts like the judge probe's own: enough for every trial
+ of the frozen pool, so an arm run with no `--cap` asks them all and every arm sees the same ones.
  */
-export const DEFAULT_EDITOR_TRIAL_CAP = 16;
+export const DEFAULT_EDITOR_TRIAL_CAP = 64;
 
 /**
  Most a run may spend, in US dollars, when `--max-usd` is not written: the spend guard refuses the call that would take
@@ -118,7 +120,13 @@ export function readEditorFidelityArguments(
     cap: wholeNumberFlag({
       asked: line.flag('cap',),
       unwritten: DEFAULT_EDITOR_TRIAL_CAP,
-      leaveOffTo: `run the default of ${String(DEFAULT_EDITOR_TRIAL_CAP,)} trials`,
+      leaveOffTo: `run the default of ${String(DEFAULT_EDITOR_TRIAL_CAP,)} ${
+        wordForCount({
+          count: DEFAULT_EDITOR_TRIAL_CAP,
+          one: 'trial',
+          many: 'trials',
+        },)
+      }`,
     },),
     maxUsd: usdFlag({
       asked: line.flag('max-usd',),

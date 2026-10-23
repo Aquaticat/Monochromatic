@@ -22,6 +22,7 @@ export {
   cardsOnlyClient,
   editorProbeEnv,
 } from './corpus-run/editor-fidelity-client.ts';
+export { poolLine, } from './corpus-run/editor-fidelity-pool-line.ts';
 export {
   type EditorCardTally,
   type EditorFidelityPlan,
@@ -55,6 +56,7 @@ export {
   type EditorTrialReading,
   runEditorTrial,
 } from './corpus-run/editor-fidelity-trial.ts';
+export { EDITOR_FIDELITY_POOL, } from './editor-fidelity-pool-manifest.ts';
 export {
   type EditorFidelityScore,
   type EditorFixKind,

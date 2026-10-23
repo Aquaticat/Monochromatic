@@ -311,7 +311,7 @@ export function editorTallyLine({ tally, }: { readonly tally: EditorCardTally; }
 
  @param cardIds - cards the request seats
 
- @param selected - reviewed reference specifications the request selected
+ @param selected - pinned reference specifications the request selected
 
  @returns The line, without a newline
 
@@ -329,7 +329,7 @@ export function editorPreflightLine(
     readonly selected: number;
   },
 ): string {
-  return `preflight only: ${String(selected,)} reviewed reference ${
+  return `preflight only: ${String(selected,)} pinned reference ${
     wordForCount({
       count: selected,
       one: 'specification',

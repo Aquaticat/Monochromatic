@@ -20,6 +20,7 @@ import type {
   FidelityReferenceSpec,
   ReviewedFidelityReference,
 } from '../fidelity-reference-model.ts';
+import { EDITOR_FIDELITY_POOL, } from '../editor-fidelity-pool-manifest.ts';
 import { editorFidelityTrials, } from '../editor-fidelity-trials.ts';
 import { readEditorFidelityArguments, } from './editor-fidelity-args.ts';
 import {
@@ -42,6 +43,7 @@ import {
   guardLine,
   spendGuardedClient,
 } from './editor-fidelity-spend-guard.ts';
+import { poolLine, } from './editor-fidelity-pool-line.ts';
 import { runEditorTrial, } from './editor-fidelity-trial.ts';
 import {
   pairName,
@@ -55,7 +57,8 @@ import { persistProbeRun, } from './probe-store.ts';
 
 //region Editor fidelity probe run
 // Seats each named Claude card alone as the editor of a hash-verified seeded defect that has a known fix, asks it what
-// the pipeline's editor stage asks an editor, and reads the patched text by comparison with the reviewed reference.
+// the pipeline's editor stage asks an editor, and reads the patched text by comparison with the reference. The trials
+// are the frozen pool's (`editor-fidelity-pool-manifest.ts`), the same for every arm.
 // Nothing else is asked: no critic, panel, judge or checker, so the only model called is the card, and no call is made
 // that the spend measured so far plus its ceiling would take past `--max-usd`. The command line,
 // the corpus pin, the reference reader, the runs directory, the client builder, the clock, the build's identity, the
@@ -79,7 +82,7 @@ export type EditorProbeSink = {
 };
 
 /**
- Runs each named card alone over the reviewed trials and reads what it did.
+ Runs each named card alone over the frozen pool's trials and reads what it did.
 
  @param line - the probe's command line, read whole by `reportingRefusals`
 
@@ -175,6 +178,7 @@ export async function runEditorFidelityProbe(
    */
   const specs = requestedSpecs({
     request: {
+      specs: EDITOR_FIDELITY_POOL,
       corpusSha: pin.commitSha,
       onlyEntryIds: onlyIds,
       damageKinds,
@@ -209,6 +213,7 @@ export async function runEditorFidelityProbe(
     references,
     damageKinds,
   },);
+  log.info(poolLine({ trials, },),);
   /**
    Leading trials within the cap, counted in attempts for each card.
    */
