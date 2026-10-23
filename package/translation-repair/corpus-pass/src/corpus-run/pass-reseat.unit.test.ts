@@ -111,17 +111,21 @@ const NO_HOLDS = {
 };
 
 /**
- A hold short enough for a case to wait it out, and the hold the router registers on a refusal from a meter that reads
- dry.
+ The hold the router registers on a refusal from a meter that reads dry.
 
  A READING UNDER A HOLD SLEEPS ITS SHORTEST HOLD ONCE WHEN A BENCH IT LEANS ON IS SHORT OF QUORUM, on the real clock
- (`run/src/corpus-run/run-seats-read.ts`, `readDrynessPastShortBench`). The router registers 300000 ms on such a
- refusal, so a case that handed its client that figure and drove such a reading waited five real minutes in every
- gate (ledger B817). This file's views under this hold are short in one of them (the padded view, 3 of 8 wide seats
- against a quorum of 4 with the Claude key reading dry), and the describe took 300.3 s at `f2f77b0701` and at the tip
- of the second review. `viewClient` therefore reports every hold as ending within {@link SHORT_HOLD_MS}, whatever a
- case names, and a case that needs a hold to run names this one. A case whose bench stays short can also end every
- hold at a named read (`holdEndsAtRead`).
+ (`run/src/corpus-run/run-seats-read.ts`, `readDrynessPastShortBench`), so a case that handed its client this figure
+ and drove such a reading waited five real minutes in every gate (ledger B817). This file's views under this hold are
+ short in one of them (the padded view, 3 of 8 wide seats against a quorum of 4 with the Claude key reading dry), and
+ the describe took 300.3 s at `f2f77b0701` and at the tip of the second review. `viewClient` therefore reports every
+ hold as ending within {@link SHORT_HOLD_MS}, whatever a case names.
+ */
+const DRY_HOLD_MS = 300_000;
+
+/**
+ A hold short enough for a case to wait it out. A case here needs a hold only to be running, so a case that does not
+ report its hold through the cap names this one, and a case whose bench stays short can also end every hold at a named
+ read (`holdEndsAtRead`).
  */
 const SHORT_HOLD_MS = 40;
 
@@ -443,7 +447,7 @@ await describe({
             const wet = viewClient({ view: { ...NEURALWATT_AND_BEDROCK, anthropic: false, }, },);
             wet.holds.synthetic = DRY_HOLD_MS;
             /** Rig of the padded view with the Claude key dry, under the same hold. */
-            const dry = viewClient({ view: NEURALWATT_AND_BEDROCK, },);
+            const dry = viewClient({ view: NEURALWATT_AND_BEDROCK, holdEndsAtRead: 2, },);
             dry.holds.synthetic = DRY_HOLD_MS;
             /** Lines the wet rig's hook wrote. */
             const wetLines: string[] = [];
@@ -498,10 +502,10 @@ await describe({
             + 'of the order that fills the place',
           fn: async () => {
             /** Rig whose Claude key is wet and whose second measured checker nobody serves, under a running hold. */
-            const wet = viewClient({ view: MIMO_UNSERVED_CLAUDE_WET, },);
+            const wet = viewClient({ view: MIMO_UNSERVED_CLAUDE_WET, holdEndsAtRead: 2, },);
             wet.holds.synthetic = DRY_HOLD_MS;
             /** The same rig with the Claude key dry. */
-            const dry = viewClient({ view: { ...MIMO_UNSERVED_CLAUDE_WET, anthropic: true, }, },);
+            const dry = viewClient({ view: { ...MIMO_UNSERVED_CLAUDE_WET, anthropic: true, }, holdEndsAtRead: 2, },);
             dry.holds.synthetic = DRY_HOLD_MS;
             /** Roster the hook hands the driver for the next chunk, Claude key wet. */
             const wetSeating = await lanesHooksFor({
@@ -1062,7 +1066,7 @@ await describe({
             /** The fake clock the production wait sleeps on. */
             const clock = ctx.sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout',], },);
             /** Rig whose padded view is short of quorum, reporting the hold whole. */
-            const rig = viewClient({ view: NEURALWATT_AND_BEDROCK, capMs: DRY_HOLD_MS, },);
+            const rig = viewClient({ view: NEURALWATT_AND_BEDROCK, capMs: DRY_HOLD_MS, holdEndsAtRead: 2, },);
             rig.holds.synthetic = DRY_HOLD_MS;
             /** Lines the hook wrote. */
             const lines: string[] = [];

@@ -947,9 +947,10 @@ await describe({
           anchor: { known: false, },
         };
         /** Budget view over no NeuralWatt client. */
-        const without = createProviderBudgets({ synthetic, hyper, openrouter, },);
+        const without = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, synthetic, hyper, openrouter, },);
         /** Budget view over a stub NeuralWatt client. */
         const withClient = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           neuralwatt: {
             // Asking for the NeuralWatt day must not read the energy.
             energy: async () => {

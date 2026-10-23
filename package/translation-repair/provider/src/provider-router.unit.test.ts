@@ -911,6 +911,7 @@ await describe({
           bedrock: true,
           deepseek: true,
           xiaomi: false,
+          anthropic: true,
           openrouter: true,
         };
         const dry = {
@@ -1005,7 +1006,7 @@ await describe({
         expect(String(outcome.thrown,),).toBe(
           'NoProviderForModelError: no provider can take deepseek-v4.1-flash: every provider serving this model '
             + 'is out of budget (neuralwatt dry, deepseek dry, hyper dry, openrouter dry); the providers that do not '
-            + 'serve it read synthetic wet, bedrock dry, xiaomi dry',
+            + 'serve it read synthetic wet, bedrock dry, xiaomi dry, anthropic dry',
         );
         expect(called,).toEqual([],);
       },

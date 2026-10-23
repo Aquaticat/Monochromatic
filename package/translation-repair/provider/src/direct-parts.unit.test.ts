@@ -183,7 +183,7 @@ await describe({
             + 'run when Xiaomi reads dry too, and still sends Xiaomi\'s own model to Xiaomi',
           fn: async () => {
             const dryButXiaomi = { ...NONE_DRY, neuralwatt: true, synthetic: true, bedrock: true, deepseek: true,
-              hyper: true, openrouter: true, };
+              hyper: true, openrouter: true, anthropic: true, };
             expect(routeProviderFor({
               reach: reachOf({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, }),
               dry: dryButXiaomi,

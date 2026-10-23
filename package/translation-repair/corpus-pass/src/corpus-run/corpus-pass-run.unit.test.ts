@@ -56,9 +56,9 @@ import {
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
+import { TEST_MAX_HOLD_MS, } from '@monochromatic-dev/translation-repair-provider/ts/budget-hold.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { relayingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
-import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { makeCorpusPassClone, } from './corpus-pass-clone.test-fixture.ts';
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
@@ -725,11 +725,12 @@ await describe({
           pipelineDir: built.dir,
           watched: nothingWatched(),
           overrides: {
-            newClient: function newClient({ passLeftMs, },) {
+            newClient: function newClient({ maxHoldMs, passLeftMs, },) {
               seen.before = passLeftMs();
               return runClientFrom({
                 env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
                 transport: unreachedTransport,
+                maxHoldMs,
                 passLeftMs,
               },);
             },
@@ -789,10 +790,11 @@ await describe({
             now: function now() {
               return clock.now;
             },
-            newClient: function newClient({ passLeftMs, },) {
+            newClient: function newClient({ maxHoldMs, passLeftMs, },) {
               return runClientFrom({
                 env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
                 transport: unreachedTransport,
+                maxHoldMs,
                 passLeftMs,
               },);
             },
@@ -1066,6 +1068,7 @@ await describe({
                 ...runClientFrom({
                   env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
                   transport: unreachedTransport,
+                  maxHoldMs: TEST_MAX_HOLD_MS,
                 },),
                 chatText: async () => {
                   throw dry;

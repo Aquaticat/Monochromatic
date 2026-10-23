@@ -619,7 +619,7 @@ await describe({
             },),).toEqual({
               kind: 'unreachable',
               reason: 'every provider serving this model is out of budget (synthetic dry); the providers that do not '
-                + 'serve it read neuralwatt wet, bedrock wet, deepseek wet, xiaomi wet, hyper wet, openrouter wet',
+                + 'serve it read neuralwatt wet, bedrock wet, deepseek wet, xiaomi wet, anthropic wet, hyper wet, openrouter wet',
             },);
           },
         },),
@@ -662,7 +662,7 @@ await describe({
             },),).toEqual({
               kind: 'unreachable',
               reason: 'every provider serving this model is out of budget (deepseek dry, hyper dry, openrouter dry); '
-                + 'the providers that do not serve it read neuralwatt wet, synthetic wet, bedrock wet, xiaomi wet',
+                + 'the providers that do not serve it read neuralwatt wet, synthetic wet, bedrock wet, xiaomi wet, anthropic wet',
             },);
           },
         },),
@@ -679,6 +679,7 @@ await describe({
                 bedrock: false,
                 deepseek: false,
                 xiaomi: false,
+                anthropic: false,
                 openrouter: false,
               },
               dry: {
@@ -931,6 +932,7 @@ await describe({
                     bedrock: true,
                     deepseek: true,
                     xiaomi: true,
+                    anthropic: true,
                     openrouter: true,
                   },
                   dry: {
@@ -940,6 +942,7 @@ await describe({
                     bedrock: true,
                     deepseek: true,
                     xiaomi: true,
+                    anthropic: true,
                     openrouter: true,
                   },
                   saturated: {
@@ -949,6 +952,7 @@ await describe({
                     bedrock: false,
                     deepseek: false,
                     xiaomi: false,
+                    anthropic: false,
                     openrouter: false,
                   },
                   neuralwatt: {

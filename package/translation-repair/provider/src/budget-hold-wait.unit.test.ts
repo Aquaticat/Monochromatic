@@ -193,6 +193,7 @@ const XIAOMI_CHECKER_ONLY: WritingReach = {
   bedrock: true,
   deepseek: true,
   xiaomi: false,
+  anthropic: true,
   openrouter: true,
 };
 
