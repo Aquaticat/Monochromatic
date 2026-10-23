@@ -105,9 +105,12 @@ function parseSyntheticQuotasHeader(
 
 /**
  Weekly block key names Synthetic has delivered, in the order they were first seen.
- 
- `weeklyTokenLimit` until the keyed reading of 2026-10-22 19:32 UTC and `planWeeklyLimit` from the keyed reading of
- 2026-10-23 03:28 UTC. Whether the rename is permanent or tied to a spent weekly credit is not known, so both are read.
+
+ The `GET /v2/quotas` body carried `weeklyTokenLimit` at 19:32:44 UTC on 2026-10-22 and `planWeeklyLimit` at 03:28:16 UTC
+ on 2026-10-23; the rename happened between 19:32:44 UTC and 22:21:58 UTC on 2026-10-22, as the sibling reader in
+ `package/translation-repair/provider-stream/src/synthetic-quota.ts` records. The shape of the `x-synthetic-quotas`
+ header this module reads is not yet measured, and whether the rename is permanent or tied to a spent weekly credit is
+ not known, so both names are read.
  */
 const SYNTHETIC_WEEKLY_BLOCK_NAMES = [
   'weeklyTokenLimit',
@@ -161,9 +164,9 @@ function readSyntheticWeeklyBlock(block: UnknownRecord,): SyntheticWeeklyReading
 /**
  Reads the weekly reading from whichever key a quotas object carries it under.
  
- Both keys present and reading the same is accepted; both present and reading differently is refused, since which one
- to believe is then unknowable. A key present that is no readable block is refused even beside a readable other, and
- neither key present is refused.
+ A key that is missing or holds `null` counts as absent. Both keys present and reading the same is accepted; both
+ present and reading differently is refused, since which one to believe is then unknowable. Any other value that is no
+ readable block is refused even beside a readable other, and neither key present is refused.
  
  @param quotas - Synthetic quotas response object
  
@@ -186,13 +189,10 @@ function readSyntheticWeeklyReading(quotas: UnknownRecord,): SyntheticWeeklyRead
    Weekly block names this quotas object carries.
    */
   const present = SYNTHETIC_WEEKLY_BLOCK_NAMES.filter(function carried(name,): boolean {
-    return Object.hasOwn(
-      quotas,
-      name,
-    );
+    return (quotas[name] !== undefined) && (quotas[name] !== null);
   },);
   if (present.length === 0) {
-    log.debug(`refusing quotas without ${SYNTHETIC_WEEKLY_BLOCK_NAMES.join(' or ',)}`,);
+    log.debug(`refusing quotas without ${SYNTHETIC_WEEKLY_BLOCK_NAMES.join(' or ',)} as a non-null value`,);
     return INVALID_VALUE;
   }
 
@@ -212,7 +212,14 @@ function readSyntheticWeeklyReading(quotas: UnknownRecord,): SyntheticWeeklyRead
       return INVALID_VALUE;
     }
 
-    return readSyntheticWeeklyBlock(block,);
+    /**
+     Reading of this block, or the invalid sentinel when one of its fields is unreadable.
+     */
+    const reading = readSyntheticWeeklyBlock(block,);
+    if (reading === INVALID_VALUE)
+      log.debug(`refusing quotas whose ${name} has an unreadable percentRemaining or nextRegenAt`,);
+
+    return reading;
   },);
   /**
    First carried block, and the second where the quotas object carries both names.

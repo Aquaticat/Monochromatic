@@ -57,11 +57,16 @@ new,
  that means `rollingFiveHourLimit` and legacy `subscription` data are ignored because
 `@aliou/pi-synthetic` does not model them as pace-projectable windows.
 
-The Synthetic weekly credit block is read under `weeklyTokenLimit` or `planWeeklyLimit`;
-Synthetic delivered the second name in its keyed quota reading of 2026-10-23 03:28 UTC.
+The Synthetic weekly credit block is read under `weeklyTokenLimit` or `planWeeklyLimit`.
+The `GET /v2/quotas` body at 2026-10-23 03:28:16 UTC carried the second name;
+the shape of the `x-synthetic-quotas` header is not yet measured, so both names are read.
+A name whose value is missing or `null` counts as absent.
 A body that carries both names is read when the two blocks agree on `percentRemaining` and `nextRegenAt`,
-and the weekly window is skipped when they differ, when either is no readable block,
+and the weekly window is skipped when they differ,
+when either name holds a value that is not a readable block,
 or when neither name is present.
+Every reset timestamp (`nextRegenAt` and the search and free-tool `renewsAt`) must be an ISO-8601 instant with a zone,
+`Z` or an offset such as `-04:00`; other text is refused.
 
 ## Colors
 

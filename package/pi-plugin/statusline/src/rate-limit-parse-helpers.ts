@@ -335,54 +335,125 @@ function readNumberProperty({
 }
 
 /**
- Reads string property from an unknown record.
+ ASCII digit characters, each standing for one digit in a text's shape.
+ */
+const ASCII_DIGITS = '0123456789';
+
+/**
+ Shape of an ISO-8601 date and time to the second, with each digit written as `9`.
+ */
+const ISO_DATE_TIME_SHAPE = '9999-99-99T99:99:99';
+
+/**
+ Shapes a zone designator may take once digits are written as `9`: `Z` or a colon-separated offset.
+ */
+const ISO_ZONE_SHAPES = [
+  'Z',
+  '+99:99',
+  '-99:99',
+] as const;
+
+/**
+ Index that `findIndex` returns when no character ends the fraction, which means no zone follows.
+ */
+const NO_ZONE_FOUND = -1;
+
+/**
+ Writes each ASCII digit of a text as `9` and leaves every other character as it is.
  
- @param record - source record
+ @param text - text to reduce to its shape
  
- @param key - property key to read
- 
- @returns non-empty string, or {@link INVALID_VALUE} when missing or invalid
+ @returns the shape of the text
  
  @example
  ```ts
- readStringProperty({ record: { reset: '2026-06-01T12:00:00Z' }, key: 'reset' });
+ shapeOfText('2026-10-23T05:03:47Z');
  ```
  */
-function readStringProperty({
-  record,
-  key,
-}: Readonly<{
-  record: UnknownRecord;
-  key: string;
-}>,): string | InvalidValue {
+function shapeOfText(text: string,): string {
   /**
-   Property value before string narrowing.
+   Each character of the text, a digit written as `9`.
    */
-  const value = record[key];
-  if ((typeof value) !== 'string')
-    return INVALID_VALUE;
+  const shapedCharacters = Array.from(
+    text,
+    function shapeOfCharacter(character,): string {
+      return ASCII_DIGITS.includes(character,) ? '9' : character;
+    },
+  );
+
+  return shapedCharacters.join('',);
+}
+
+/**
+ Tells whether text is an ISO-8601 instant with a zone: date, `T`, time with an optional fraction, then `Z` or a
+ colon-separated offset.
+ 
+ Checked on the untrimmed text, so a trailing newline, a year alone, a month-name form, a local time without a zone and
+ an offset without its colon are all outside it. `Date.parse` reads those leniently, and reads the zone-less ones in the
+ process's time zone. The calendar values are not range-checked here; the caller's `Date.parse` rejects an impossible one.
+ 
+ @param text - candidate reset text
+ 
+ @returns true when the text has the shape
+ 
+ @example
+ ```ts
+ isIsoInstantWithZone('2026-10-23T05:03:47.000Z');
+ ```
+ */
+function isIsoInstantWithZone(text: string,): boolean {
+  /**
+   Shape of the text, digits written as `9`.
+   */
+  const shape = shapeOfText(text,);
+  if (!shape.startsWith(ISO_DATE_TIME_SHAPE,))
+    return false;
 
   /**
-
-   Trimmed property value.
-
+   Shape after the seconds: a fraction, then the zone.
    */
-  const trimmedValue = value.trim();
-  if (trimmedValue.length === 0)
-    return INVALID_VALUE;
+  const afterSeconds = shape.slice(ISO_DATE_TIME_SHAPE.length,);
+  /**
+   Whether a fraction follows the seconds.
+   */
+  const hasFraction = afterSeconds.startsWith('.',);
+  /**
+   Fraction digits, when present, followed by the zone.
+   */
+  const fractionAndZone = hasFraction ? afterSeconds.slice('.'.length,) : afterSeconds;
+  /**
+   Characters of the fraction and zone shape.
+   */
+  const fractionCharacters = Array.from(fractionAndZone,);
+  /**
+   Count of fraction digits before the zone begins.
+   */
+  const fractionLength = fractionCharacters.findIndex(function endsFraction(character,): boolean {
+    return character !== '9';
+  },);
+  if (fractionLength === NO_ZONE_FOUND)
+    return false;
 
-  return trimmedValue;
+  if (hasFraction && (fractionLength === 0))
+    return false;
+
+  if ((!hasFraction) && (fractionLength > 0))
+    return false;
+
+  return (ISO_ZONE_SHAPES as readonly string[]).includes(fractionAndZone.slice(fractionLength,),);
 }
 
 /**
  Parses reset property from an unknown record.
- 
+
+ Accepts only an ISO-8601 instant with a zone (`Z` or an offset) that also names a real time.
+
  @param record - source record
- 
+
  @param key - property key to read
- 
+
  @returns epoch milliseconds, or {@link INVALID_VALUE} when missing or invalid
- 
+
  @example
  ```ts
  readResetProperty({ record: { reset: '2026-06-01T12:00:00Z' }, key: 'reset' });
@@ -398,11 +469,8 @@ function readResetProperty({
   /**
    Reset string before timestamp parsing.
    */
-  const value = readStringProperty({
-    record,
-    key,
-  },);
-  if (value === INVALID_VALUE)
+  const value = record[key];
+  if (((typeof value) !== 'string') || (!isIsoInstantWithZone(value,)))
     return INVALID_VALUE;
 
   /**
