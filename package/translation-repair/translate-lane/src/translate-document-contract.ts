@@ -436,8 +436,19 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  because its key digests the exact sheet, and the page title and pairing versions stay because their sheets name no
  fence length, no break count and no marks. No record has been written at the new number, which this change sets
  first.
+
+ Version 27 covers the reader of a model's reply taking a value that differs from a listed `enum` or `const` value
+ only in capitalization as the listed value (`provider/src/enum-case-fold.ts`, run by `readJsonOutcome`). The
+ translate repair stage lists its resolutions as an enum (`translate-floor/src/translate-repair-wire.ts`), so a
+ resolution that a reply spelled with another capital, which the guard refused and the round counted as no voice, now
+ counts. The key hashes the version, the shape of the run and the texts, not the reader, so a slice stored before
+ would be served after, though it may rest on a round that lost such a voice. The previous number was set by
+ `33ca9974f2`, and no slice-cache directory was searched for a record written by code that holds that commit and lacks
+ the fold, so the change cannot ride inside it and the number moves. A build whose pipeline digest differs discards
+ the namespace before it reads it (`openNamespacedCache`), and the number is the belt beside that brace. The account
+ of every cache is in the header of `provider/src/enum-case-fold.ts`.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 26;
+export const TRANSLATE_SLICE_CACHE_VERSION = 27;
 
 /**
  Models the translate lane seats.

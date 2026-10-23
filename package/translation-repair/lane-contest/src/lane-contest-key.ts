@@ -326,8 +326,19 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  worktree, so the argument that holds is the ancestry argument: no record written by code without the commit can stand
  at this number. The one bump covers both the system text and the schemas, and the number does not move twice
  for one release.
+
+ Version 18 covers the reader of a model's reply taking a value that differs from a listed `enum` or `const` value
+ only in capitalization as the listed value (`provider/src/enum-case-fold.ts`, run by `readJsonOutcome`). The lane
+ contest's ballot lists its verdicts as an enum (`lane-contest/src/contest-ballot-wire.ts`), so a verdict that a reply
+ spelled with another capital, which the guard refused and the round counted as no voice, now counts. The key hashes
+ the version, the shape of the run and the texts, not the reader, so a ballot stored before would be served after,
+ though it may rest on a round that lost such a voice. The previous number was set by `33ca9974f2`, and no slice-cache
+ directory was searched for a record written by code that holds that commit and lacks the fold, so the change cannot
+ ride inside it and the number moves. A build whose pipeline digest differs discards the namespace before it reads it
+ (`openNamespacedCache`), and the number is the belt beside that brace. The account of every cache is in the
+ header of `provider/src/enum-case-fold.ts`.
  */
-export const LANE_CONTEST_CACHE_VERSION = 17;
+export const LANE_CONTEST_CACHE_VERSION = 18;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into

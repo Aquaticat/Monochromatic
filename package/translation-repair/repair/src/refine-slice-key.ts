@@ -367,8 +367,20 @@ import type {
  worktree, so the argument that holds is the ancestry argument: no record written by code without the commit can stand
  at this number. The one bump covers both the system text and the schemas, and the number does not move twice
  for one release.
+
+ Version 16 covers the reader of a model's reply taking a value that differs from a listed `enum` or `const` value
+ only in capitalization as the listed value (`provider/src/enum-case-fold.ts`, run by `readJsonOutcome`). The
+ introduced-defect check and the resolution check list their labels as an enum
+ (`adjudication/src/introduced-defect-format.ts`, `adjudication/src/resolution-wire.ts`), so a label that a reply
+ spelled with another capital, which the guard refused and the round counted as no voice, now counts. The key hashes
+ the version, the shape of the run and the texts, not the reader, so a refinement stored before would be served after,
+ though it may rest on a round that lost such a voice. The previous number was set by `33ca9974f2`, and no slice-cache
+ directory was searched for a record written by code that holds that commit and lacks the fold, so the change cannot
+ ride inside it and the number moves. A build whose pipeline digest differs discards the namespace before it reads it
+ (`openNamespacedCache`), and the number is the belt beside that brace. The account of every cache is in the
+ header of `provider/src/enum-case-fold.ts`.
  */
-export const REFINE_CACHE_VERSION = 15;
+export const REFINE_CACHE_VERSION = 16;
 
 /**
  Everything about this run that changes what the voices are ASKED.

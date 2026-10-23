@@ -21,6 +21,22 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // one does, or lists an `enum` or `const` where this does not read. `claude-schema.ts` accepts `anyOf`, `allOf` and
 // `$ref`, so a stage that adds one would get the exact comparison it had before this file, and that test says so. A
 // reply left as it came is the behaviour before this file, never a wrong value.
+//
+// WHAT THE CACHES DO WITH IT, read from their key files on 2026-10-23. No cache key hashes the reader, so a reader
+// that accepts a reply it used to refuse is a change a key cannot see. The durable prompt payload store
+// (`stage/src/prompt-payload-store.ts`) keeps a model's raw reply under the digest of the model and the messages, and
+// `promptUniqueClient` reads a replayed reply through `readJsonOutcome`: a stored reply that failed the guard for a
+// capital and was re-asked is now accepted on its first read, the re-ask's stored reply goes unused, and no outcome
+// is stored, so the store stays valid and its format version (1) stays. Every slice cache keeps an outcome that
+// stages settled from replies read before the fold, never a raw reply, so such an outcome would differ if the same
+// replies were read now wherever a stage's schema lists an `enum` or `const`. A read of the built
+// `CLAUDE_SCHEMA_PRODUCERS` found a listing in the schemas of the panel, critic, introduced-defect, resolution,
+// coverage, archive-block, rendering-audit, consistency, contest-ballot and translate-repair stages (and of the
+// derivability and restoration checks, whose output no slice record holds). So the repair slice, refine, consolidate,
+// lane-contest, translate slice and consistency versions move for the fold. The block and section pairing schemas and
+// the page title schema list no `enum` or `const`, so the fold reads nothing in them and the pairing and page title
+// versions stay. The picture reading cache keeps text read from a picture under no schema and stays. An artifact is a
+// record of a finished pass and not a cache a run resumes.
 
 /**
  One value taken back to the schema's spelling.
