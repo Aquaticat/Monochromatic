@@ -126,6 +126,49 @@ const REFUSED_RESET_TEXTS = [
   { text: '2026-10-23T24:00:00Z', why: 'hour 24 is an end-of-day spelling, not an instant', },
 ] as const;
 
+/**
+ Shape-valid texts with a field outside its range, which the reader refuses by its own range checks.
+ 
+ The engine's `Date.parse` refuses each of these too; {@link parseWithEngineAcceptingAll} takes that second line away.
+ */
+const OUT_OF_RANGE_RESET_TEXTS = [
+  { text: '2026-13-23T05:03:47Z', why: 'month 13', },
+  { text: '2026-00-23T05:03:47Z', why: 'month 00', },
+  { text: '2026-10-23T05:60:47Z', why: 'minute 60', },
+  { text: '2026-10-23T05:03:60Z', why: 'second 60, a leap second is not an instant here', },
+  { text: '2026-10-23T05:03:47+24:00', why: 'offset hours 24', },
+  { text: '2026-10-23T05:03:47+00:60', why: 'offset minutes 60', },
+  { text: '2026-10-23T05:03:47-23:60', why: 'offset minutes 60 beside valid offset hours', },
+] as const;
+
+/**
+ Runs the weekly reset reader while the engine's `Date.parse` accepts every text as epoch zero, so a refusal can only
+ come from the reader's own checks.
+ 
+ @param nextRegenAt - reset text to read
+ 
+ @returns snapshots the reader yields for that text
+ 
+ @example
+ ```ts
+ parseWithEngineAcceptingAll('2026-13-23T05:03:47Z');
+ ```
+ */
+function parseWithEngineAcceptingAll(nextRegenAt: string,): readonly RateLimitSnapshot[] {
+  const engineParse = Date.parse;
+  const restoreEngineParse = {
+    [Symbol.dispose](): void {
+      Date.parse = engineParse;
+    },
+  };
+  using restore = restoreEngineParse;
+  Date.parse = function acceptEverything(): number {
+    return 0;
+  };
+
+  return weeklyResetSnapshots(nextRegenAt,);
+}
+
 const READ_RESET_TEXTS = [
   { text: '2026-10-23T05:03:47.000Z', instant: '2026-10-23T05:03:47.000Z', },
   { text: '2026-10-23T01:03:47-04:00', instant: '2026-10-23T05:03:47.000Z', },
@@ -533,6 +576,28 @@ await describe({
             return it({
               name: `refuses ${JSON.stringify(refused.text,)}: ${refused.why}`,
               fn: async function testSyntheticResetInstantRefused() {
+                expect(weeklyResetSnapshots(refused.text,).length,).toBe(0,);
+              },
+            },);
+          },),
+        },),
+        describe({
+          name: 'refuses nextRegenAt with a field out of range, without help from Date.parse',
+          children: OUT_OF_RANGE_RESET_TEXTS.map(function outOfRangeCase(refused,) {
+            return it({
+              name: `refuses ${JSON.stringify(refused.text,)}: ${refused.why}`,
+              fn: async function testSyntheticResetFieldOutOfRange() {
+                expect(parseWithEngineAcceptingAll(refused.text,).length,).toBe(0,);
+              },
+            },);
+          },),
+        },),
+        describe({
+          name: 'refuses nextRegenAt with a field out of range under the real Date.parse',
+          children: OUT_OF_RANGE_RESET_TEXTS.map(function outOfRangeEngineCase(refused,) {
+            return it({
+              name: `refuses ${JSON.stringify(refused.text,)}: ${refused.why}`,
+              fn: async function testSyntheticResetFieldOutOfRangeEngine() {
                 expect(weeklyResetSnapshots(refused.text,).length,).toBe(0,);
               },
             },);
