@@ -53,6 +53,7 @@ await describe({
           now: () => clock.now,
         },);
         expect(entry.passLeftMs?.(),).toBe(20 * 60_000,);
+        expect(entry.passBoundOwner?.(),).toBe('entry',);
         clock.now += 5 * 60_000;
         expect(entry.passLeftMs?.(),).toBe(15 * 60_000,);
       },
@@ -68,6 +69,7 @@ await describe({
           now: () => 5_000,
         },);
         expect(entry.passLeftMs?.(),).toBe(10 * 60_000,);
+        expect(entry.passBoundOwner?.(),).toBe('pass',);
       },
     },),
 
@@ -83,6 +85,7 @@ await describe({
           now: () => clock.now,
         },);
         expect(entry.passLeftMs?.(),).toBe(1_000,);
+        expect(entry.passBoundOwner?.(),).toBe('entry',);
         clock.now = 1_000;
         expect(entry.passLeftMs?.(),).toBe(0,);
         clock.now = 1_500;

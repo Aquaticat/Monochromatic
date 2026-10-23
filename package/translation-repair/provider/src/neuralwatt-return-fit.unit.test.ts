@@ -57,6 +57,19 @@ await describe({
         },),
 
         it({
+          name: 'NAMES THE BOUND THAT WON: "the entry has left" when the entry\'s own cap is the smaller bound, and '
+            + '"this pass has left" for the pass\'s or when no owner is named',
+          fn: async () => {
+            expect(pastPassWordsOf({ returnsInMs: 3_600_000, passLeftMs: 1_200_000, boundOwner: 'entry', },),).toEqual([
+              'past the 20 min the entry has left',
+            ],);
+            expect(pastPassWordsOf({ returnsInMs: 3_600_000, passLeftMs: 1_200_000, boundOwner: 'pass', },),).toEqual([
+              'past the 20 min this pass has left',
+            ],);
+          },
+        },),
+
+        it({
           name: 'READS A SPENT PASS AS 0 s, never a negative number',
           fn: async () => {
             expect(pastPassWordsOf({ returnsInMs: 5, passLeftMs: -1, },),).toEqual([

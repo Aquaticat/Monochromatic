@@ -144,6 +144,20 @@ await describe({
         },),
 
         it({
+          name: 'NAMES THE BOUND THAT WON in the clause: the entry when its own cap is the smaller bound',
+          fn: async () => {
+            /**
+             A spent day an hour from its return.
+             */
+            const dryness = { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 3_600_000, } as const;
+            expect(dryCauseClausesOf({ dryness, passLeftMs: 1_200_000, boundOwner: 'entry', },),).toEqual([
+              'NeuralWatt reads dry and its day starts again at 19:15:08 UTC (in 1 h), which is past the 20 min '
+                + 'the entry has left',
+            ],);
+          },
+        },),
+
+        it({
           name: 'SAYS NOTHING where NeuralWatt is not dry',
           fn: async () => {
             expect(dryCauseClausesOf({ dryness: { kind: 'wet', }, },),).toEqual([],);

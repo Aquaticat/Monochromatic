@@ -132,6 +132,52 @@ await describe({
     },),
 
     it({
+      name: 'NAMES THE ENTRY WHEN ITS CAP IS THE SMALLER BOUND: a return an hour away with 20 min left of the entry\'s '
+        + 'cap says "the entry has left" in the run-ending refusal and in the bench error, and "this pass has left" '
+        + 'when the pass\'s own bound is the smaller',
+      fn: async () => {
+        /**
+         The refusal of a reading over a return an hour away under a 20 min bound owned by the given side.
+         */
+        async function refusalUnder(
+          { boundOwner, syntheticWet, }: { readonly boundOwner: 'entry' | 'pass'; readonly syntheticWet: boolean; },
+        ): Promise<Error> {
+          const { client, } = clientBefore({
+            msBeforeReturn: 3_600_000,
+            passLeftMs: 1_200_000,
+            boundOwner,
+            syntheticWet,
+            now: FROZEN,
+          },);
+          return await rejectionOf({
+            promise: readPhaseSeats({
+              client,
+              phase: 'lanes',
+              signal: SIGNAL,
+              l: levelCapturingLogger({ lines: [], },),
+              pollMs: 5,
+            },),
+          },) as Error;
+        }
+        /**
+         The run-ending refusal and the bench error under the entry's bound.
+         */
+        const dryEntry = await refusalUnder({ boundOwner: 'entry', syntheticWet: false, },);
+        const benchEntry = await refusalUnder({ boundOwner: 'entry', syntheticWet: true, },);
+        expect(dryEntry.message,).toContain('past the 20 min the entry has left',);
+        expect(dryEntry.message,).not.toContain('this pass has left',);
+        expect(benchEntry.message,).toContain('the entry has left',);
+        expect(benchEntry.message,).not.toContain('this pass has left',);
+        /**
+         The same refusal under the pass's own bound.
+         */
+        const dryPass = await refusalUnder({ boundOwner: 'pass', syntheticWet: false, },);
+        expect(dryPass.message,).toContain('past the 20 min this pass has left',);
+        expect(dryPass.message,).not.toContain('the entry has left',);
+      },
+    },),
+
+    it({
       name: 'WAITS FOR NO RETURN WHEN THE BOUND IS ZERO OR BELOW, the pass or the entry\'s cap already spent: a return '
         + '5 away with a bound of -1 refuses at once and the sentence reads 0 s, never a negative number',
       fn: async () => {
