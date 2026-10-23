@@ -13,6 +13,13 @@
  the reader of its stage enforces). A FOURTH CASE KEEPS THE LIST HONEST: it reads the source of the family for files
  that declare a `json_schema` and fails when one is missing here, so a new stage schema cannot skip the check.
 
+ A FIFTH CASE HOLDS THE LIMIT OF THE ENUM CASE FOLD (`provider/src/enum-case-fold.ts`): the fold takes a reply value
+ back to the spelling its schema lists only along `properties` and `items`, and leaves `anyOf`, `oneOf`, `allOf`,
+ `$ref`, a schema-valued `additionalProperties` and tuple-form `items` untouched. It fails when a schema a stage sends
+ carries one of those six forms, or lists an `enum` or `const` where the fold does not read, so a stage that adds one
+ cannot lose a voice to a capital without this file saying so. A SIXTH CASE IS ITS POSITIVE CONTROL: it feeds the walk a
+ schema with each form and a schema the fold reads, so a walk that stopped finding them could not pass.
+
  NOTHING HERE REACHES A PROVIDER: the body is built and read, never sent.
 
  @module
@@ -218,6 +225,135 @@ function keywordsOutsideAllowlistOf(
 
 //endregion Rules
 
+//region Forms the enum case fold does not read
+// The six forms `foldEnumCase` leaves untouched, and the places it does read. Written here on their own, so the case
+// does not lean on the fold it guards.
+
+/**
+ Keywords whose presence puts schemas where the enum case fold does not read.
+ */
+const UNREAD_KEYWORDS: readonly string[] = ['anyOf', 'oneOf', 'allOf', '$ref',];
+
+/**
+ The forms the enum case fold does not read that a schema carries, at any depth.
+
+ @param schema - schema read, or a node of it
+ @param path - where it sits
+
+ @returns One entry per form, `path: form`
+
+ @example
+ ```ts
+ const forms = unreadFormsOf({ schema: { oneOf: [], }, path: 'root', },);
+ // => ['root: oneOf']
+ ```
+ */
+function unreadFormsOf(
+  {
+    schema,
+    path,
+  }: {
+    readonly schema: Readonly<Record<string, unknown>>;
+    readonly path: string;
+  },
+): readonly string[] {
+  /**
+   The forms this node itself carries.
+   */
+  const own = [
+    ...UNREAD_KEYWORDS.filter(function carried(keyword,): boolean {
+      return Object.hasOwn(
+        schema,
+        keyword,
+      );
+    },),
+    ...(isJsonRecord(schema.additionalProperties,) ? ['additionalProperties as a schema',] : []),
+    ...(Array.isArray(schema.items,) ? ['items as a list of schemas',] : []),
+  ].map(function named(form,): string {
+    return `${path}: ${form}`;
+  },);
+  return [
+    ...own,
+    ...Object.entries(schema,)
+      .flatMap(function formsBelow([keyword, value,],): readonly string[] {
+        if (keyword === 'properties' && isJsonRecord(value,)) {
+          return Object.entries(value,)
+            .flatMap(function formsOfMember([name, member,],): readonly string[] {
+              return isJsonRecord(member,)
+                ? unreadFormsOf({ schema: member, path: `${path}.${name}`, },)
+                : [];
+            },);
+        }
+        if (isJsonRecord(value,))
+          return unreadFormsOf({ schema: value, path: `${path}.${keyword}`, },);
+        if (Array.isArray(value,)) {
+          return value.flatMap(function formsOfItem(item: unknown, index,): readonly string[] {
+            return isJsonRecord(item,)
+              ? unreadFormsOf({ schema: item, path: `${path}.${keyword}[${String(index,)}]`, },)
+              : [];
+          },);
+        }
+        return [];
+      },),
+  ];
+}
+
+/**
+ The `enum` and `const` keywords a schema lists where the enum case fold does not read: anywhere but the root, a
+ member of `properties` and a single `items` schema, reached through those alone.
+
+ @param schema - schema read, or a node of it
+ @param path - where it sits
+ @param read - whether the fold reads this node
+
+ @returns One entry per keyword, `path: keyword`
+
+ @example
+ ```ts
+ const unread = choicesOutsideReadOf({ schema: { anyOf: [{ enum: ['a',], },], }, path: 'root', read: true, },);
+ // => ['root.anyOf[0]: enum']
+ ```
+ */
+function choicesOutsideReadOf(
+  {
+    schema,
+    path,
+    read,
+  }: {
+    readonly schema: Readonly<Record<string, unknown>>;
+    readonly path: string;
+    readonly read: boolean;
+  },
+): readonly string[] {
+  return Object.entries(schema,)
+    .flatMap(function choicesBelow([keyword, value,],): readonly string[] {
+      if (keyword === 'enum' || keyword === 'const')
+        return read ? [] : [`${path}: ${keyword}`,];
+      if (keyword === 'properties' && isJsonRecord(value,)) {
+        return Object.entries(value,)
+          .flatMap(function choicesOfMember([name, member,],): readonly string[] {
+            return isJsonRecord(member,)
+              ? choicesOutsideReadOf({ schema: member, path: `${path}.${name}`, read, },)
+              : [];
+          },);
+      }
+      if (keyword === 'items' && isJsonRecord(value,))
+        return choicesOutsideReadOf({ schema: value, path: `${path}.items`, read, },);
+      if (isJsonRecord(value,))
+        return choicesOutsideReadOf({ schema: value, path: `${path}.${keyword}`, read: false, },);
+      if (Array.isArray(value,)) {
+        return value.flatMap(function choicesOfItem(item: unknown, index,): readonly string[] {
+          return isJsonRecord(item,)
+            ? choicesOutsideReadOf({ schema: item, path: `${path}.${keyword}[${String(index,)}]`, read: false, },)
+            : [];
+        },);
+      }
+      return [];
+    },);
+}
+
+//endregion Forms the enum case fold does not read
+
 /**
  Every schema of every producer, named by the file and the schema's own name.
 
@@ -355,6 +491,80 @@ await describe({
             'archive/src/absolute-naturalness-review-wire.ts (absolute_naturalness_review) '
               + 'root.findings.items.paragraph: minimum',
           ],);
+      },
+    },),
+
+    it({
+      name: 'CARRIES NO anyOf, oneOf, allOf, $ref, SCHEMA-VALUED additionalProperties OR LIST-FORM items IN ANY '
+        + 'SCHEMA A STAGE SENDS, and lists no enum or const where the enum case fold does not read, so a capital '
+        + 'that differs from a listed value cannot cost a voice in a place the fold never looks',
+      fn: async () => {
+        expect(schemasOf()
+          .flatMap(function unreadIn({ label, format, },): readonly string[] {
+            return [
+              ...unreadFormsOf({ schema: format.json_schema.schema, path: 'root', },),
+              ...choicesOutsideReadOf({ schema: format.json_schema.schema, path: 'root', read: true, },),
+            ].map(function named(unread,): string {
+              return `${label} ${unread}`;
+            },);
+          },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'FINDS EACH OF THE SIX FORMS AND EACH enum OR const OUTSIDE THE FOLD\'S READING in a schema made for the '
+        + 'purpose, and nothing in a schema whose enums sit under properties and items, which is the positive '
+        + 'control that the walk of every stage schema can fail',
+      fn: async () => {
+        /**
+         A schema carrying every form the fold does not read, with an enum under each of the keywords that hold one.
+         */
+        const carrying = {
+          type: 'object',
+          properties: {
+            a: { anyOf: [{ enum: ['x',], },], },
+            b: { oneOf: [{ const: 'x', },], },
+            c: { allOf: [{ enum: ['x',], },], },
+            d: { $ref: '#/$defs/d', },
+            e: { type: 'object', additionalProperties: { enum: ['x',], }, },
+            f: { type: 'array', items: [{ enum: ['x',], },], },
+          },
+          $defs: { d: { enum: ['x',], }, },
+        };
+        expect(unreadFormsOf({ schema: carrying, path: 'root', },),).toEqual([
+          'root.a: anyOf',
+          'root.b: oneOf',
+          'root.c: allOf',
+          'root.d: $ref',
+          'root.e: additionalProperties as a schema',
+          'root.f: items as a list of schemas',
+        ],);
+        expect(choicesOutsideReadOf({ schema: carrying, path: 'root', read: true, },),).toEqual([
+          'root.a.anyOf[0]: enum',
+          'root.b.oneOf[0]: const',
+          'root.c.allOf[0]: enum',
+          'root.e.additionalProperties: enum',
+          'root.f.items[0]: enum',
+          'root.$defs.d: enum',
+        ],);
+
+        /**
+         A schema whose every enum and const sit where the fold reads: the root, a property, and a list's one schema.
+         */
+        const read = {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            mood: { type: 'string', enum: ['calm',], },
+            kind: { const: 'ballot', },
+            findings: {
+              type: 'array',
+              items: { type: 'object', additionalProperties: false, properties: { severity: { enum: ['minor',], }, }, },
+            },
+          },
+        };
+        expect(unreadFormsOf({ schema: read, path: 'root', },),).toEqual([],);
+        expect(choicesOutsideReadOf({ schema: read, path: 'root', read: true, },),).toEqual([],);
       },
     },),
   ],

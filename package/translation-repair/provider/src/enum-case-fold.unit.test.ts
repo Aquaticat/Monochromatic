@@ -237,5 +237,213 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'LEAVES A VALUE WITH SPACE AROUND IT, since the rule is capitalization alone and a leading or trailing '
+        + 'space, or a no-break space, is a different value that the stage guard decides',
+      fn: async () => {
+        /**
+         Schema listing one mood, to read each spelling against.
+         */
+        const schema = {
+          type: 'object',
+          properties: { mood: { enum: ['major', 'not calm',], }, },
+        };
+        for (const mood of ['major ', ' Major', 'not\u00a0Calm', 'Major\n',]) {
+          expect(foldEnumCase({
+            schema,
+            value: { mood, },
+          },),).toEqual({
+            value: { mood, },
+            folds: [],
+          },);
+        }
+      },
+    },),
+
+    it({
+      name: 'COMPARES WITHOUT A LOCALE, so the dotted capital I (U+0130) and the dotless small i (U+0131) match '
+        + 'only what the language-neutral lowercase says: the dotted capital lowers to i with a combining dot '
+        + '(U+0307), and the dotless i lowers to itself',
+      fn: async () => {
+        /**
+         Reads a reply value against a list of one listed spelling.
+
+         @param listed - spelling the schema lists
+
+         @param received - what the reply gave
+
+         @returns Whatever the fold made of the value
+
+         @example
+         ```ts
+         const read = readAgainst({ listed: 'id', received: 'Id', },);
+         ```
+         */
+        function readAgainst(
+          {
+            listed,
+            received,
+          }: {
+            readonly listed: string;
+            readonly received: string;
+          },
+        ): ReturnType<typeof foldEnumCase> {
+          return foldEnumCase({
+            schema: {
+              type: 'object',
+              properties: { id: { enum: [listed,], }, },
+            },
+            value: { id: received, },
+          },);
+        }
+
+        // The dotted capital I does not fold to a plain i.
+        expect(readAgainst({ listed: 'id', received: '\u0130d', },).folds,).toEqual([],);
+
+        // It does fold to the spelling its lowercase is: a plain i and a combining dot (U+0307).
+        expect(readAgainst({ listed: 'i\u0307d', received: '\u0130d', },).folds,).toEqual([
+          {
+            path: 'reply.id',
+            received: '\u0130d',
+            taken: 'i\u0307d',
+          },
+        ],);
+
+        // The dotless small i matches neither I nor i, and a capital I does not match a listed dotless i.
+        expect(readAgainst({ listed: 'I', received: '\u0131', },).folds,).toEqual([],);
+        expect(readAgainst({ listed: 'i', received: '\u0131', },).folds,).toEqual([],);
+        expect(readAgainst({ listed: '\u0131d', received: 'Id', },).folds,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'FOLDS CAPITALS OF THE GERMAN SHARP S ONLY WHERE THE LOWERCASE ALLOWS: STRASSE matches strasse, '
+        + 'does not match a listed strasse with the sharp s, and the capital sharp s (U+1E9E) matches it',
+      fn: async () => {
+        /**
+         Reads a reply value against a list of one listed spelling.
+
+         @param listed - spelling the schema lists
+
+         @param received - what the reply gave
+
+         @returns Values taken back
+
+         @example
+         ```ts
+         const folds = foldsAgainst({ listed: 'strasse', received: 'STRASSE', },);
+         ```
+         */
+        function foldsAgainst(
+          {
+            listed,
+            received,
+          }: {
+            readonly listed: string;
+            readonly received: string;
+          },
+        ): ReturnType<typeof foldEnumCase>['folds'] {
+          return foldEnumCase({
+            schema: { enum: [listed,], },
+            value: received,
+          },).folds;
+        }
+
+        expect(foldsAgainst({ listed: 'strasse', received: 'STRASSE', },),).toEqual([
+          {
+            path: 'reply',
+            received: 'STRASSE',
+            taken: 'strasse',
+          },
+        ],);
+        expect(foldsAgainst({ listed: 'stra\u00dfe', received: 'STRASSE', },),).toEqual([],);
+        expect(foldsAgainst({ listed: 'stra\u00dfe', received: 'STRA\u1e9eE', },),).toEqual([
+          {
+            path: 'reply',
+            received: 'STRA\u1e9eE',
+            taken: 'stra\u00dfe',
+          },
+        ],);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A NUMBER, A NULL, A BOOLEAN AND A LIST WHERE THE ENUM LISTS STRINGS, and reads only the strings '
+        + 'of an enum that mixes kinds',
+      fn: async () => {
+        for (const mood of [1, null, true, ['Calm',], { mood: 'Calm', },]) {
+          expect(foldEnumCase({
+            schema: {
+              type: 'object',
+              properties: { mood: { enum: ['calm', 'not calm',], }, },
+            },
+            value: { mood, },
+          },),).toEqual({
+            value: { mood, },
+            folds: [],
+          },);
+        }
+        expect(foldEnumCase({
+          schema: { enum: ['calm', null, 3,], },
+          value: 'Calm',
+        },).value,).toBe('calm',);
+        expect(foldEnumCase({
+          schema: { enum: ['calm', null, 3,], },
+          value: null,
+        },).value,).toBeNull();
+      },
+    },),
+
+    it({
+      name: 'LEAVES A VALUE UNDER anyOf, oneOf, allOf, $ref, A SCHEMA-VALUED additionalProperties AND A LIST OF '
+        + 'ITEMS SCHEMAS AS IT CAME, which is the stated limit of the rule',
+      fn: async () => {
+        /**
+         Node listing a spelling that a reply of `Calm` differs from only in its capital.
+         */
+        const listing = { enum: ['calm',], };
+
+        /**
+         Schemas that put the listing under a form the rule does not follow, each with the reply that reaches it.
+         */
+        const unfollowed = [
+          {
+            schema: { type: 'object', properties: { mood: { anyOf: [listing, { type: 'null', },], }, }, },
+            value: { mood: 'Calm', },
+          },
+          {
+            schema: { type: 'object', properties: { mood: { oneOf: [listing,], }, }, },
+            value: { mood: 'Calm', },
+          },
+          {
+            schema: { type: 'object', properties: { mood: { allOf: [listing,], }, }, },
+            value: { mood: 'Calm', },
+          },
+          {
+            schema: {
+              type: 'object',
+              properties: { mood: { $ref: '#/$defs/mood', }, },
+              $defs: { mood: listing, },
+            },
+            value: { mood: 'Calm', },
+          },
+          {
+            schema: { type: 'object', additionalProperties: listing, },
+            value: { mood: 'Calm', },
+          },
+          {
+            schema: { type: 'array', items: [listing,], },
+            value: ['Calm',],
+          },
+        ];
+        for (const { schema, value, } of unfollowed) {
+          expect(foldEnumCase({ schema, value, },),).toEqual({
+            value,
+            folds: [],
+          },);
+        }
+      },
+    },),
   ],
 },);
