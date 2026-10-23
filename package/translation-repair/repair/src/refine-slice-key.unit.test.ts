@@ -121,9 +121,10 @@ await describe({
             + 'a stored refinement was chosen on a selection ballot that asked for the candidate before its reason; '
             + 'and from 12 to 13 with the answer schemas in alphabetical order (ledger B762): a stored refinement was '
             + 'answered under the old reply keys; and from 13 to 14 with the quorum rule of 2026-10-22 (ledger B816): a '
-            + 'stored refinement was gathered before a short bench could close one voice fewer than every live seat)',
+            + 'stored refinement was gathered before a short bench could close one voice fewer than every live seat; and from 14 to 15 with '
+            + 'the fence length moved out of the system text of the slates, R4 of the third review of the Claude route)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('8a6031524ebe923e2a759203d39ff0d6e4834935e5c4d19bc240f0fcc06064de',);
+            expect(refineSliceKey(BASE,),).toBe('a2f1071216e7875d6427ee63429c7353643b6e41467479787d1b7fd729b182ca',);
           },
         },),
 

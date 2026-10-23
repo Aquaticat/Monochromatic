@@ -88,11 +88,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 24 declares the answer schemas of the translate lane in alphabetical order (ledger B762).
  Version 25 gathers under the quorum rule that lets a short bench close one voice fewer than every live seat once the
  straggler grace ends (ledger B816).
+ Version 26 moves the fence length and the rendered-break counts out of the system text into the user turn (R4 of the
+ third review of the Claude route).
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = 'c5ea936a36263365fc3bf62b366b1b203ef650ab75ee9e8eeca5cb35c58702ee';
+const LEGACY_WINDOWLESS_KEY = 'e1c4ca501a4c490fc774b6aaa04b53522f549f64ca096ca643e3be062343710c';
 
 /**
  One slice's key, with whatever this case wants to vary.

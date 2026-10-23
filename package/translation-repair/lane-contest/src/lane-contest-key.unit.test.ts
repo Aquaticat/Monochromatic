@@ -130,7 +130,10 @@ await describe({
         // Version 16 (2026-10-22) re-keys every ballot cast before a short
         // bench closed one voice fewer than every live seat once the straggler
         // grace ended (ledger B816).
-        expect(key,).toBe('fcdb9c7c27d192aad9758e5a2bcdc2f34f7a27ebc2b260dd9a75e8349e611ba5',);
+        // Version 17 (2026-10-22) re-keys every ballot cast before the rendered-break
+        // counts moved out of the system text into the user turn (R4 of the third
+        // review of the Claude route).
+        expect(key,).toBe('569b8860a0d292d1bfc32cdde2a36077b5f75191e31e63c2adaef23d43b8341b',);
       },
     },),
     it({

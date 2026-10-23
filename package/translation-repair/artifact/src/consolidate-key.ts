@@ -483,8 +483,22 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  consistency (7), page title (6) versions move with this one; the pairing version stays, by its own account of
  2026-10-18 (`slice-reading/src/pairing-cache-version.ts`). No record has been written at 32, which this change sets
  first.
+
+ Version 33 covers the system text of 2026-10-22 (R4 of the third review of the Claude route): the consolidation
+ writer and its gate keep the rendered-break instruction in the system text and show the measured break counts in the
+ user turn (`consolidate/src/consolidate-wire.ts`, `consolidate/src/consolidate-gate-wire.ts`), with the counts of the
+ candidates it displays. The counts are the same facts in a different place. The key hashes the version, the shape of
+ the run and the texts, not the sheet (`source-scan/src/cache-key-sheet-blindness.unit.test.ts` reads the imports of
+ the five key files), so a record written before would be served after. The previous number was set in `eb4db609ff`,
+ and the tip `8864316eb2` of runs zheermao23 and XingZ6018 holds it (`git merge-base --is-ancestor`, with `2eeef91fac`
+ as an ancestor of `HEAD` for the control that finds ancestry and the reverse pair for the control that does not);
+ `find` under those two run directories finds 180 slice-cache files newer than that tip's commit time
+ (2026-10-22T10:30:29Z), so records may stand at the previous number and the change cannot ride inside it. The
+ consistency version stays because its key digests the exact sheet, and the page title and pairing versions stay
+ because their sheets name no fence length, no break count and no marks. No record has been written at the new number,
+ which this change sets first.
  */
-export const CONSOLIDATE_CACHE_VERSION = 32;
+export const CONSOLIDATE_CACHE_VERSION = 33;
 
 /**
  What a line-structured slice appends to its key material.

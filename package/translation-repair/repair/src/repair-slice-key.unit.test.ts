@@ -173,8 +173,11 @@ await describe({
         //
         // VERSION 43 ON 2026-10-22 (a short bench closes one voice below every live seat once the grace ends, ledger B816):
         // moved the same way.
+        //
+        // VERSION 44 ON 2026-10-22 (the fence length left the system text of the candidate selection, R4 of the third
+        // review of the Claude route): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('ce98ec079272db7d44c1b0dc8ad8309c57bd6e908de8bbca6212e77787d93761',);
+          .toBe('167c783587bbd2b6ee64b8a8c7591cd45b26df54224bdca9470b167adb24a0d5',);
       },
     },),
     it({

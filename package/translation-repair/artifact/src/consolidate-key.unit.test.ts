@@ -436,8 +436,10 @@ await describe({
         // short bench close one voice fewer than every live seat once the
         // straggler grace ends (ledger B816), which moved this literal to the
         // value this expectation names.
+        // Version 33 (2026-10-22) moved the rendered-break counts out of the system
+        // text into the user turn (R4 of the third review of the Claude route).
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '91b9a46fe40ad07a1299345c52c9e534d66af2c7b7b8337a221446a176980d68',
+          'a7f9b5ecb702518ee267ba023f94b17464edfbd89bf1b920cd2a06179fd4c452',
         );
       },
     },),
