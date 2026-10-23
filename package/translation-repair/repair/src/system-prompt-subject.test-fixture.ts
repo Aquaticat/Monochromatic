@@ -81,6 +81,12 @@ type SubjectWords = {
    The last part of the cited reference's address.
    */
   readonly address: string;
+
+  /**
+   A row of equals signs every shown text carries on a line of its own (a setext heading underline), which lengthens
+   the fence a sheet encloses its blocks in; empty for none.
+   */
+  readonly underline: string;
 };
 
 /**
@@ -251,13 +257,21 @@ function subjectOf(
    */
   const repairQuote = `That night the ${words.animal} fell asleep on the ${words.place}.`;
   /**
+   What joins the sentences of an original: nothing, or the underline on a line of its own.
+   */
+  const joinOriginal = (words.underline === '') ? '' : `\n${words.underline}\n`;
+  /**
+   What joins the sentences of an English text: a space, or the underline on a line of its own.
+   */
+  const joinEnglish = (words.underline === '') ? ' ' : `\n${words.underline}\n`;
+  /**
    The original passage.
    */
-  const source = `${sourceQuote}她说：「我明天还来。」`;
+  const source = `${sourceQuote}${joinOriginal}她说：「我明天还来。」`;
   /**
    The archive rendering.
    */
-  const archive = `${archiveQuote} She says, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
+  const archive = `${archiveQuote}${joinEnglish}She says, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
   /**
    The claims of the accepted issue, each quoting both documents.
    */
@@ -293,9 +307,9 @@ function subjectOf(
     label: words.name,
     source,
     archive,
-    repair: `${repairQuote} She said, "I will come again tomorrow." ${TRANSLATORS_NOTE}`,
+    repair: `${repairQuote}${joinEnglish}She said, "I will come again tomorrow." ${TRANSLATORS_NOTE}`,
     neighbourSource: `隔壁的${words.originalAnimal}也睡着了。`,
-    neighbourArchive: `The ${words.animal} next door fell asleep too. ${TRANSLATORS_NOTE}`,
+    neighbourArchive: `The ${words.animal} next door fell asleep too.${joinEnglish}${TRANSLATORS_NOTE}`,
     identity: `name: ${words.originalName} = ${words.name}`,
     references: `- reference 1 https://example.org/${words.address} ("${words.name}"): ${words.name} `
       + 'had an older sister who was also a tabby.',
@@ -304,8 +318,8 @@ function subjectOf(
     prefix: `所以${words.originalAnimal}`,
     title: `${words.originalAnimal}之歌`,
     verseSource: `${words.originalAnimal}睡着了。<br/>它梦见了鱼。`,
-    aside: `The ${words.animal} was the favourite of the whole street. ${TRANSLATORS_NOTE}`,
-    asideRevised: `The ${words.animal} was a favourite of the neighbours. ${TRANSLATORS_NOTE}`,
+    aside: `The ${words.animal} was the favourite of the whole street.${joinEnglish}${TRANSLATORS_NOTE}`,
+    asideRevised: `The ${words.animal} was a favourite of the neighbours.${joinEnglish}${TRANSLATORS_NOTE}`,
     archiveQuote,
     repairQuote,
     finding: `The translation drops what the ${words.animal} promised.`,
@@ -361,6 +375,7 @@ export const CAT_SUBJECT: PromptSubject = subjectOf({
     originalName: '咪咪',
     name: 'Mittens',
     address: 'mittens',
+    underline: '',
   },
 },);
 
@@ -376,6 +391,24 @@ export const DOG_SUBJECT: PromptSubject = subjectOf({
     originalName: '旺旺',
     name: 'Biscuit',
     address: 'biscuit',
+    underline: '',
+  },
+},);
+
+/**
+ A third subject whose every text holds a line of eleven equals signs, so a sheet that fences its blocks chooses a fence of
+ twelve where the cat and the dog get five.
+ */
+export const FENCED_SUBJECT: PromptSubject = subjectOf({
+  words: {
+    originalAnimal: '小狐狸',
+    originalPlace: '树桩',
+    animal: 'fox cub',
+    place: 'tree stump',
+    originalName: '阿福',
+    name: 'Biscotti',
+    address: 'biscotti',
+    underline: '===========',
   },
 },);
 
