@@ -17,6 +17,7 @@ import {
   holdsThatCureShortBenches,
   shortBenchesWithCure,
   noWaitWordsOf,
+  unmetBenchNames,
 } from './run-seats-hold-need.ts';
 import {
   holdsWithinPass,
@@ -66,6 +67,23 @@ export type SeatReadingClient = Pick<
   >;
 
 /**
+ What a caller that reads the seats again and again under the same holds remembers of the last no-wait line it let
+ through: which providers were held and which benches stood unmet, as one signature, so the same state is said once and
+ never by its text (a text carries distances that shrink between readings).
+
+ @example
+ ```ts
+ const warned: WarnedState = { signature: '', };
+ ```
+ */
+export type WarnedState = {
+  /**
+   The providers held and the benches unmet when the line was last written, none before one was.
+   */
+  signature: string;
+};
+
+/**
  What a reading that stops waiting says of the returns, said of NeuralWatt's too when its return lies past what the pass
  has left: no provider has one the reader can wait for.
  */
@@ -113,6 +131,11 @@ function wetWhenUnread(): boolean {
 
  @param pollMs - how often the wait checks for abort
 
+ @param warned - memory of the no-wait line last written, which the reading reads and updates so the same held
+ providers and the same unmet benches are said once; absent for a caller that reads once
+
+ @mutates warned - holds the signature of the state this reading found
+
  @returns Dryness the phase seats on, how long was waited for it, and one clause
  for each writing bench of a phase that goes on without its writers that is below
  its floor
@@ -129,12 +152,14 @@ export async function readDrynessPastShortBench(
     signal,
     l,
     pollMs,
+    warned,
   }: {
     readonly client: SeatReadingClient;
     readonly phase: JudgeSeatPhase;
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly pollMs: number;
+    readonly warned?: WarnedState;
   },
 ): Promise<{
   readonly dry: BudgetView;
@@ -224,6 +249,28 @@ export async function readDrynessPastShortBench(
       nothingHeld: NO_WAITABLE_RETURN,
     },);
     /**
+     What this state is: which providers are held and which benches stand unmet.
+     */
+    const signature = `${
+      PROVIDER_ORDER.filter(function isHeld(provider,): boolean {
+        return running[provider] > 0;
+      },)
+        .join(',',)
+    }|${
+      [
+        ...unmetBenchNames({
+          dry: first,
+          names,
+        },),
+      ].join(',',)
+    }`;
+    /**
+     Whether the last line this caller let through was about the same state, so it is not said again.
+     */
+    const repeated = warned?.signature === signature;
+    if (warned !== undefined)
+      warned.signature = signature;
+    /**
      The unreachable benches with why NeuralWatt reads dry, so a refusal states the true cause.
      */
     const stated = withNeuralWattReturn({
@@ -236,13 +283,15 @@ export async function readDrynessPastShortBench(
       // THE FIFTEENTH CLASS: a writing bench below its floor with nothing to wait for stops the entry rather than
       // writing a one-writer page. A PHASE THAT GOES ON WITHOUT ITS WRITERS says so once, naming the bench, and never
       // says the entry stops, since it does not.
-      l.error(
-        `JUDGE SEATS phase=${phase} writing bench unreachable: ${stated.join('; ',)}; ${
-          goesOn
-            ? `${noWait}, so the phase goes on without its writers`
-            : 'stopping the entry'
-        }`,
-      );
+      if (!(goesOn && repeated)) {
+        l.error(
+          `JUDGE SEATS phase=${phase} writing bench unreachable: ${stated.join('; ',)}; ${
+            goesOn
+              ? `${noWait}, so the phase goes on without its writers`
+              : 'stopping the entry'
+          }`,
+        );
+      }
       if (!goesOn) {
         throw writtenRefusal({
           phase,
@@ -277,7 +326,7 @@ export async function readDrynessPastShortBench(
       names: namesElsewhere,
       dry: first,
     },);
-    if (shortElsewhere.length > 0) {
+    if ((shortElsewhere.length > 0) && (!repeated)) {
       // SAID EVEN WHEN THERE IS NOTHING TO WAIT FOR. The seventh hakureico
       // launch (2026-09-08, Bedrock alone) printed `readers=4 roster=10
       // withheld=none` at the pictures with three providers dry, since

@@ -82,7 +82,7 @@ function viewWithBack(
  const unmet = unmetBenchNames({ dry, names: phaseBenches({ phase, },), },);
  ```
  */
-function unmetBenchNames(
+export function unmetBenchNames(
   {
     dry,
     names,

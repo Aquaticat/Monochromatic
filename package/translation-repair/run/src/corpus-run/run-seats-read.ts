@@ -20,6 +20,7 @@ import {
 import {
   readDrynessPastShortBench,
   type SeatReadingClient,
+  type WarnedState,
 } from './run-seats-short-bench.ts';
 import {
   readMeterStates,
@@ -28,7 +29,10 @@ import {
 import { WritingBenchUnreachableError, } from './run-seats-floor.ts';
 import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 
-export type { SeatReadingClient, } from './run-seats-short-bench.ts';
+export type {
+  SeatReadingClient,
+  WarnedState,
+} from './run-seats-short-bench.ts';
 
 //region Seat readings past a named hold
 // THE READING EVERY PHASE AND EVERY CHUNK TAKES before it asks anyone.
@@ -63,6 +67,9 @@ export type { SeatReadingClient, } from './run-seats-short-bench.ts';
 
  @param pollMs - how often a wait checks for abort
 
+ @param warned - memory of the no-wait line last written, so a caller that reads again under the same holds says the
+ same state once; absent for a caller that reads once
+
  @returns Benches for this phase, and one clause for each writing bench below the
  floor that the phase goes on without; none for a phase that stops for it
 
@@ -84,12 +91,14 @@ export async function readPhaseSeats(
     signal,
     l,
     pollMs = HOLD_POLL_MS,
+    warned,
   }: {
     readonly client: SeatReadingClient;
     readonly phase: JudgeSeatPhase;
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly pollMs?: number;
+    readonly warned?: WarnedState;
   },
 ): Promise<{
   readonly seats: JudgeSeats;
@@ -108,6 +117,7 @@ export async function readPhaseSeats(
     signal,
     l,
     pollMs,
+    ...((warned === undefined) ? {} : { warned, }),
   },);
   /**
    Benches for this reading.
@@ -199,6 +209,9 @@ export async function readPhaseSeats(
 
  @param pollMs - how often a wait checks for abort
 
+ @param warned - memory of the no-wait line last written, so a caller that reads again under the same holds says the
+ same state once; absent for a caller that reads once
+
  @returns Benches for this phase
 
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
@@ -220,12 +233,14 @@ export async function readJudgeSeats(
     signal,
     l,
     pollMs = HOLD_POLL_MS,
+    warned,
   }: {
     readonly client: SeatReadingClient;
     readonly phase: JudgeSeatPhase;
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly pollMs?: number;
+    readonly warned?: WarnedState;
   },
 ): Promise<JudgeSeats> {
   return (await readPhaseSeats({
@@ -234,6 +249,7 @@ export async function readJudgeSeats(
     signal,
     l,
     pollMs,
+    ...((warned === undefined) ? {} : { warned, }),
   },))
     .seats;
 }

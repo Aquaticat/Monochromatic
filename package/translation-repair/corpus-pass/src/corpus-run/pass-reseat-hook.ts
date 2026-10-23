@@ -1,13 +1,13 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { shortestHold, } from '@monochromatic-dev/translation-repair-provider/ts';
-import { PROVIDER_ORDER, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type JudgeSeatPhase,
   type JudgeSeats,
   holdsWithinPass,
   readJudgeSeats,
   type SeatReadingClient,
+  type WarnedState,
 } from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Per-slice re-seating under a hold
@@ -25,56 +25,18 @@ import {
 // once when a bench the phase leans on cannot reach quorum
 // (`run-seats-read.ts`).
 //
-// A WARNING IS WRITTEN ONCE PER HOLD (round 5). A hold that cannot cure a short bench is not waited for, so every
-// slice under it reads the same short bench and the reading warns of it each time; a Xiaomi or DeepSeek hold of hours
-// over hundreds of slices wrote hundreds of identical lines. The hook still reads the seats for every slice, since a
-// provider going dry changes the seating a slice must run on whether or not its hold would cure anything, and it
-// lets a warning through once until the set of held providers changes or empties. The hook cannot skip the read on
-// "no running hold would cure": that is also the state of a hold with no short bench at all, which is the state the
-// seating is for.
+// A WARNING IS WRITTEN ONCE PER STATE (rounds 5 and 6). A hold that cannot cure a short bench is not waited for, so
+// every slice under it reads the same short bench and the reading warns of it each time; a Xiaomi or DeepSeek hold of
+// hours over hundreds of slices wrote hundreds of identical lines. The hook still reads the seats for every slice,
+// since a provider going dry changes the seating a slice must run on whether or not its hold would cure anything. It
+// cannot skip the read on "no running hold would cure": that is also the state of a hold with no short bench at all,
+// which is the state the seating is for.
 //
-// THE MEMORY IS KEYED ON WHICH PROVIDERS ARE HELD AND ON THE WARNING WITHOUT ITS SKIPPED-HOLDS CLAUSE. That clause
-// names each skipped hold with the time it has left, which shrinks between slices, so the text alone is a new line
-// every time.
-
-/**
- The warning with the clause naming the skipped holds and their lengths taken out, so two readings under the same
- holds say the same thing (the hook keys its memory on which providers are held beside it).
-
- @param message - the warning as the reading wrote it
-
- @returns The message without the text from `held: ` to the semicolon that ends the clause
-
- @example
- ```ts
- // => 'short of quorum: wide 3 of 7; it would not help'
- withoutHeldClause({ message: 'short of quorum: wide 3 of 7; held: deepseek (1 h 59 min 58 s); it would not help', },);
- ```
- */
-function withoutHeldClause({ message, }: { readonly message: string; },): string {
-  /**
-   Where the clause starts, none where the warning names no skipped hold.
-   */
-  const start = message.indexOf('held: ',);
-  if (start === (-1))
-    return message;
-  /**
-   Where the clause ends: the semicolon that follows its last length.
-   */
-  const end = message.indexOf(
-    ';',
-    start,
-  );
-  return (end === (-1))
-    ? message.slice(
-      0,
-      start,
-    )
-    : message.slice(
-      0,
-      start,
-    ) + message.slice(end + 1,);
-}
+// THE MEMORY IS WHAT THE WARNING IS ABOUT, NEVER ITS TEXT. The reading keeps one signature, the providers held and the
+// benches unmet (`WarnedState` in `run-seats-short-bench.ts`), and writes its no-wait line only when that changes. The
+// text carries the time each skipped hold has left and, with NeuralWatt dry, the distance to its return and the
+// figure past what the pass has left, all of which shrink between slices, so a memory of text writes a line per
+// slice. The hook forgets the signature when no hold runs, so a hold that comes back is said again.
 
 /**
  What a phase takes from one seat reading: the seating its slices run on, and
@@ -135,54 +97,13 @@ export function reseatHookFor<SeatingT,>(
    */
   const latest: { seating: SeatingT; } = { seating: unseated, };
   /**
-   Warnings already written under the holds now running, and which providers those holds are on; a later reading under
-   the same holds leaves them unsaid.
+   The state the last no-wait line was about, which the reading updates; empty when no hold has run since.
    */
-  const said = {
-    held: '',
-    warnings: new Set<string>(),
-  };
-  /**
-   The entry logger with a warning let through once per hold.
-   */
-  const heldLog: Logger = {
-    ...l,
-    warn: function warnOncePerHold(message: string,): void {
-      /**
-       The warning as the memory knows it.
-       */
-      const known = withoutHeldClause({ message, },);
-      if (said.warnings
-        .has(known,))
-        return;
-      said.warnings
-        .add(known,);
-      l.warn(message,);
-    },
-  };
+  const warned: WarnedState = { signature: '', };
   return async function reseatBeforeSlice(): Promise<SeatingT> {
-    /**
-     The holds running now, within what the pass has left.
-     */
-    const running = holdsWithinPass({ client, },);
-    if (shortestHold({ holds: running, },) === 0) {
-      said.held = '';
-      said.warnings
-        .clear();
+    if (shortestHold({ holds: holdsWithinPass({ client, },), },) === 0) {
+      warned.signature = '';
       return latest.seating;
-    }
-    /**
-     Which providers are held, in the order the roster names them.
-     */
-    const held = PROVIDER_ORDER.filter(function isHeld(provider,): boolean {
-      return running[provider] > 0;
-    },)
-      .join(',',);
-    // A new set of held providers is a new hold: what was said under the last one is said again.
-    if (held !== said.held) {
-      said.held = held;
-      said.warnings
-        .clear();
     }
     /**
      Benches as of this slice, the reading waiting out a named hold when a
@@ -192,7 +113,8 @@ export function reseatHookFor<SeatingT,>(
       client,
       phase,
       signal,
-      l: heldLog,
+      l,
+      warned,
     },);
     /**
      What this phase takes from that reading.
