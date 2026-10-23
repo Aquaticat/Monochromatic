@@ -555,7 +555,8 @@ named for that subject and listed here.
   a meter line that read a held provider differently from the router (B763),
   a model the owner's answer took off the lane-contest and consolidation benches
   after the grace cut 40 of its 95 streams (B815),
-  and a writing-bench floor that stopped an entry for want of a named return though NeuralWatt's return was 48 s away (B826).
+  a writing-bench floor that stopped an entry for want of a named return though NeuralWatt's return was 48 s away (B826),
+  and five phases judged against a bench their stage does not seat (B860).
 - [Audit ledger: probes that read one editor card](audit-ledger-editor-card-probes.md):
   An editor calibration with no flag naming a card (B870),
   a flag that confines the editing and not the spend (B871),
