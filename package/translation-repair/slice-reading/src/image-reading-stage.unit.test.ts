@@ -26,7 +26,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import type {
@@ -48,6 +51,60 @@ import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixtur
  Logger the stage writes its progress to.
  */
 const l = tagged({ tag: 'image-reading-stage-test', },);
+
+/**
+ Logger that tells the warning level from every other, for the cases that count warnings.
+
+ @param warned - array the warning lines land in
+
+ @param other - array every other line lands in
+
+ @returns Logger writing into them
+
+ @example
+ ```ts
+ const logger = levelledLogger({ warned: [], other: [], },);
+ ```
+ */
+function levelledLogger(
+  {
+    warned,
+    other,
+  }: {
+    readonly warned: string[];
+    readonly other: string[];
+  },
+): Logger {
+  /**
+   Keeps a warning line.
+
+   @param message - line as the code under test wrote it
+   */
+  function keepWarning(message: string,): void {
+    warned.push(message,);
+  }
+
+  /**
+   Keeps a line of any other level.
+
+   @param message - line as the code under test wrote it
+   */
+  function keepOther(message: string,): void {
+    other.push(message,);
+  }
+
+  return {
+    debug: keepOther,
+    error: keepOther,
+    fatal: keepOther,
+    flush: function flushNothing(): Promise<void> {
+      return Promise.resolve();
+    },
+    info: keepOther,
+    trace: keepOther,
+    warn: keepWarning,
+  };
+}
 
 /**
  Model that reads images, per the provider's own `input_modalities`.
@@ -293,6 +350,44 @@ await describe({
         expect(reading.reason,).toBe('empty-asset',);
         expect(isTransientReadingReason({ reason: reading.reason, },),).toBe(false,);
         expect(requests.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'WARNS ONCE FOR A PICTURE WITH NO BYTES (F6 of the re-check of fix round 6): the stage says it cannot send '
+        + 'the picture, and the error the encoder threw is logged under the tag of the function that caught it, '
+        + 'at the debug level, so a seat read leaves one warning and not two',
+      fn: async () => {
+        /**
+         Lines written at the warning level.
+         */
+        const warned: string[] = [];
+
+        /**
+         Lines written at every other level.
+         */
+        const other: string[] = [];
+        const { client, requests, } = replyingClient({ text: A_READING, },);
+        await readImageAsset({
+          client,
+          modelId: READER,
+          bytes: new Uint8Array(0,),
+          assetName: 'mittens.webp',
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
+          l: levelledLogger({
+            warned,
+            other,
+          },),
+        },);
+
+        expect(requests.length,).toBe(0,);
+        expect(warned.length,).toBe(1,);
+        expect(warned[0],).toContain('mittens.webp cannot be sent',);
+        expect(warned[0],).toContain('empty-asset',);
+        expect(other.some(function namesTheCaughtError(line,): boolean {
+          return line.includes('[readImageAsset] [encodedForReading] ',) && line.includes('has no bytes',);
+        },),).toBe(true,);
       },
     },),
 
