@@ -1,7 +1,7 @@
 /**
- Tests for the cost ceiling the editor fidelity probe prints before any call and refuses to pass: what one ask can
- cost at most, from the card's prices and the completion cap, how it adds up over the trials and the cards, and when
- the probe will not start.
+ Tests for the cost ceiling the editor fidelity probe prints before any call: what one ask can cost at most, from the
+ card's prices and the completion cap, and how it adds up over the trials and the cards. The amount the probe is held
+ to is the spend guard's, tested apart.
 
  @module
  */
@@ -13,10 +13,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { CLAUDE_COMPLETION_CAP, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
-  assertWithinCeiling,
   ceilingLine,
   editorCeilings,
   MAX_ASKS_PER_TRIAL,
@@ -128,55 +126,6 @@ await describe({
                 + 'priced at 2 USD in and 10 USD out per million tokens, 32000 output tokens an ask, one input token '
                 + 'to the character of the sheet',
             );
-          },
-        },),
-      ],
-    },),
-
-    describe({
-      name: assertWithinCeiling.name,
-      children: [
-        it({
-          name: 'PASSES a run whose first-pass ceiling, summed over its cards, is within the amount',
-          fn: async () => {
-            expect(function startsWithinAmount(): void {
-              assertWithinCeiling({
-                ceilings: editorCeilings({
-                  cardIds: [LOW_CARD,],
-                  sheetChars: [1_000, 3_000,],
-                },),
-                maxUsd: 0.65,
-              },);
-            },).not.toThrow();
-          },
-        },),
-
-        it({
-          name: 'REFUSES TO START a run whose ceiling passes the amount, naming both and what lowers it',
-          fn: async () => {
-            expect(statedRefusalMessage({
-              read: function startsOverAmount(): void {
-                assertWithinCeiling({
-                  ceilings: editorCeilings({
-                    cardIds: [LOW_CARD, HIGH_CARD,],
-                    sheetChars: [1_000, 3_000,],
-                  },),
-                  maxUsd: 1,
-                },);
-              },
-            },),).toBe(
-              'the ceiling of this run is 1.2960 USD against --max-usd 1.0000; lower --cap, name fewer cards or raise '
-                + '--max-usd, and nothing was asked',
-            );
-            expect(function isStated(): void {
-              assertWithinCeiling({
-                ceilings: editorCeilings({
-                  cardIds: [LOW_CARD,],
-                  sheetChars: [1_000,],
-                },),
-                maxUsd: 0,
-              },);
-            },).toThrow(StatedRefusalError,);
           },
         },),
       ],

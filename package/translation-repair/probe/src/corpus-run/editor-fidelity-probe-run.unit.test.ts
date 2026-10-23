@@ -1,7 +1,7 @@
 /**
  Tests for the editor fidelity probe's run over a scripted reference, client and clock: what it refuses before anything
- is read or spent, what a zero cap says, the ceiling it prints and will not pass, and what a run writes to disk and
- prints, with the model ids it asked.
+ is read or spent, what a zero cap says, the ceiling and the guard it prints, the arm it ends before a call that would
+ pass `--max-usd`, and what a run writes to disk and prints, with the model ids it asked.
 
  No model is called and no corpus clone is read: the reference reader and the client builder are handed in. The real
  reviewed manifest supplies the request's specifications, and the invented cat texts of the fixture module stand in
@@ -78,6 +78,16 @@ const SPEC: FidelityReferenceSpec = nonNullishOrThrow(REVIEWED_FIDELITY_REFERENC
     return damage.kind === 'alteration';
   },);
 },),);
+
+/**
+ What every scripted reply reports: two thousand prompt tokens and twenty thousand completion tokens, which cost
+ (2000 x 2.5 + 20000 x 10) / 1e6 = 0.205 USD at the Sonnet prices, the prompt priced at the higher of the input and
+ cache-write rates.
+ */
+const REPORTED_USAGE = {
+  prompt_tokens: 2_000,
+  completion_tokens: 20_000,
+} as const;
 
 /**
  Instant the first clock reading gives.
@@ -232,12 +242,14 @@ function fixingClient({ asked, silent, }: { readonly asked: string[]; readonly s
           kind: 'schema-mismatch',
           rawText: JSON.stringify(report,),
           detail: 'unreadable',
+          usage: REPORTED_USAGE,
         },);
       }
       return Promise.resolve({
         kind: 'ok',
         value: report,
         rawText: JSON.stringify(report,),
+        usage: REPORTED_USAGE,
       },);
     },
   };
@@ -501,22 +513,73 @@ await describe({
       name: 'the ceiling',
       children: [
         it({
-          name: 'PRINTS THE CEILING before any client exists and REFUSES TO START when it passes --max-usd, with no '
-            + 'directory made, no plan written and no client built',
+          name: 'PRINTS THE CEILING AND THE GUARD before any client exists, and does not refuse to start on the total: '
+            + 'a --max-usd under the first-pass ceiling still builds the client, since the guard holds each call to it',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: [...ONE_CARD, '--max-usd', '0.5',],
             },);
-            expect(seen.lines.some(function isCeiling(line,): boolean {
+            const ceilingAt = seen.lines.findIndex(function isCeiling(line,): boolean {
               return line.startsWith(`ceiling ${LOW_CARD}: 2 trials, one ask each, at most `,);
-            },),).toBe(true,);
-            expect(refusedWith({ seen, },),).toContain('against --max-usd 0.5000',);
-            expect(seen.readFor.length,).toBe(1,);
-            expect(seen.clientBuilds,).toStrictEqual([],);
-            expect(seen.runsAsked,).toStrictEqual([],);
-            expect(seen.asked,).toStrictEqual([],);
+            },);
+            expect(ceilingAt,).toBeGreaterThanOrEqual(0,);
+            expect(seen.lines[ceilingAt + 1],).toBe(
+              'spend guard: each call is refused, and the arm ends, when the spend measured from the replies so far plus '
+                + 'that call\'s ceiling would pass --max-usd 0.5000',
+            );
+            expect(seen.clientBuilds.length,).toBe(1,);
+            expect(seen.clientBuilds[0]?.planWasOnDisk,).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'STOPS THE ARM BEFORE THE CALL THAT WOULD PASS --max-usd: the first reply costs 0.2050 USD measured, the '
+            + 'second call\'s ceiling would take the total past 0.5, so the second is never made, the refusal names the '
+            + 'three figures, the finished row stays in its file and no kept line or document is written',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const seen = await probeIn({
+              runsDir: scratch.path,
+              typed: [...ONE_CARD, '--max-usd', '0.5',],
+            },);
+            expect(seen.asked,).toStrictEqual([LOW_CARD,],);
+            /**
+             What the refusal says.
+             */
+            const said = refusedWith({ seen, },);
+            expect(said.startsWith(
+              `the editor fidelity probe will not ask ${LOW_CARD}: the replies so far cost 0.2050 USD as measured, this call `
+                + 'can cost 0.3',
+            ),).toBe(true,);
+            expect(said.endsWith(
+              ' USD at most, and together they pass --max-usd 0.5000; the arm ends here, and the rows it finished stay in '
+                + 'their files',
+            ),).toBe(true,);
+            const [runName,] = (await readdir(scratch.path,)).filter(function isRun(name,): boolean {
+              return name.startsWith('editor-fidelity-',);
+            },);
+            const runDir = join(
+              scratch.path,
+              nonNullishOrThrow(runName,),
+            );
+            expect(
+              existsSync(join(
+                runDir,
+                'row-0.json',
+              ),),
+            ).toBe(true,);
+            expect(
+              existsSync(join(
+                runDir,
+                'row-1.json',
+              ),),
+            ).toBe(false,);
+            expect(seen.lines.some(function isKept(line,): boolean {
+              return line.startsWith('kept ',);
+            },),).toBe(false,);
+            expect(seen.written,).toBe('',);
           },
         },),
 
