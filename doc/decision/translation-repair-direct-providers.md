@@ -358,16 +358,30 @@ because the wait must sit outside any exchange:
 Known costs of the park:
 the attempt it interrupts is already counted in the attempt map,
 and its `TALLY` line says `PARKED`,
-with `returnsInMs=` and `returnsAt=` before the reason,
+with `returnsInMs=` and `returnsAt=`
+(an ISO 8601 time with `Z` for UTC,
+one token)
+before the reason,
 so the cap on the reason never cuts them,
 and not `ERROR` or `INCOMPLETE`.
-The status comes from the gate's answer for that entry's own failure (`parkedFor`),
-never from whether the gate happens to be parked.
+The status comes from the gate's answer for that entry's own failure (`parkedFor`):
+the gate keeps the failure it chose to park for and answers true for that very object only,
+never from whether the gate happens to be parked or from the class of the failure.
+When the budget ends the pass after the wait,
+the queue prints `NOT RESUMED <id>` for the entry the park cut short,
+so the log names the entry a later pass must resume.
 Nothing in the code reads the printed status:
 the scheduler works from the disposition it is returned,
 and the tests match lines by prefix,
 so the status is read by people and by the runbook only,
 and `PARKED` is neither a failure nor a settlement.
+A class tested with `instanceof` across packages is the same class only when the importing package lists its owner under
+`dependencies`,
+since a library build bundles every other workspace import
+and a copy is not an instance of the real class.
+`bundled-class-identity.unit.test.ts` in the source-scan package fails on a class test against a package the importer
+does not keep external,
+and slice-cache therefore asks stage's `isDryRefusal` rather than testing `EveryProviderDryError` itself.
 A long NeuralWatt hold also makes the per-slice re-seating (`pass-reseat-hook.ts`) read the seats on every slice
 while it runs,
 as it does for any hold.
