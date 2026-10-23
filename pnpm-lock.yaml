@@ -396,7 +396,7 @@ overrides:
   undici: '>=8.5.0'
   ws: '>=8.20.1'
 
-packageExtensionsChecksum: sha256-g/x347IgtLe7JbYTZmmzkexVh4T9vt4Z/H8jEOY7XZA=
+packageExtensionsChecksum: sha256-onQJy9Xlt5hAMM1FDOnqRo/3ySOQjDNLJEXqxAQJ45k=
 
 pnpmfileChecksum: sha256-dOfVZGd3PgqyGhu+cLLC0z4+BgwTPhg4M3E/NQ6ouhQ=
 
@@ -8328,6 +8328,10 @@ packages:
       '@deepseek-ai/dsh-app-boot': 0.2.1-rc.2
       '@deepseek-ai/dsh-hmr': 0.2.1-rc.2
     peerDependenciesMeta:
+      '@deepseek-ai/cordis-plugin-include':
+        optional: true
+      '@deepseek-ai/dsh-app-boot':
+        optional: true
       '@deepseek-ai/dsh-hmr':
         optional: true
 
@@ -8358,6 +8362,10 @@ packages:
       '@deepseek-ai/dsh-fs': 0.2.1-rc.2
     peerDependenciesMeta:
       '@deepseek-ai/cordis-plugin-loader':
+        optional: true
+      '@deepseek-ai/dsh-authorization':
+        optional: true
+      '@deepseek-ai/dsh-fs':
         optional: true
 
   '@deepseek-ai/dsh-llm@0.2.1-rc.2':
@@ -11361,7 +11369,6 @@ snapshots:
       '@deepseek-ai/dsh-attachment': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)(@deepseek-ai/dsh-brand@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))
       '@deepseek-ai/dsh-brand': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)
       '@deepseek-ai/dsh-credentials': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)
-      '@deepseek-ai/dsh-fs': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)(@deepseek-ai/dsh-brand@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))(@deepseek-ai/dsh-llm@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))(@deepseek-ai/dsh-sandbox@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)(@deepseek-ai/dsh-llm@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))(@deepseek-ai/dsh-session@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)(@deepseek-ai/dsh-scope@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))))
       '@deepseek-ai/dsh-launch-environment': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)
       '@deepseek-ai/dsh-llm': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)
       '@deepseek-ai/dsh-timeout': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)
@@ -11370,6 +11377,7 @@ snapshots:
       '@earendil-works/pi-ai': 1.4.0(undici@8.12.3)(zod@4.4.3)
     optionalDependencies:
       '@deepseek-ai/cordis-plugin-loader': 1.0.6(@deepseek-ai/cordis@4.0.5)
+      '@deepseek-ai/dsh-fs': 0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)(@deepseek-ai/dsh-brand@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))(@deepseek-ai/dsh-llm@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))(@deepseek-ai/dsh-sandbox@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)(@deepseek-ai/dsh-llm@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))(@deepseek-ai/dsh-session@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5)(@deepseek-ai/dsh-scope@0.2.1-rc.2(@deepseek-ai/cordis@4.0.5))))
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
