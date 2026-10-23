@@ -439,7 +439,7 @@ export async function readDrynessPastShortBench(
     if (waiting.shortest === 0)
       break;
   }
-  // A READING THAT WAITED CHANGED THE SITUATION, whatever it found after: the next one that finds a bench short says so.
+  // A READING THAT WAITED CHANGED THE SITUATION, whatever it found after: the next one to find a bench short says so.
   if (warned !== undefined)
     warned.signature = '';
   if (waiting.short

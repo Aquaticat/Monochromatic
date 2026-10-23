@@ -256,9 +256,9 @@ await describe({
         },),
 
         it({
-          name: 'SAYS THE PASS MAY PARK FOR THE RETURN, and names the other outcome: the gate parks only where the return '
-            + 'fits what the pass has left and its spent day was not already waited out, and otherwise the entry ends '
-            + 'as a failure a later pass resumes',
+          name: 'SAYS THE PASS MAY PARK FOR THE RETURN, and names the other outcome: the gate parks only where the '
+            + 'return fits what the pass has left and its spent day was not already waited out, and otherwise the '
+            + 'entry ends as a failure a later pass resumes',
           fn: async () => {
             const error = new WritingBenchUnreachableError({
               phase: 'lanes',

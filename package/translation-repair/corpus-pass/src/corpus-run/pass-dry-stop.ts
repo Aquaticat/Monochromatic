@@ -46,10 +46,9 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 // signal. The wait sits between entries, outside every exchange, so no call deadline cuts it, and it is for what is
 // left of the return when the queue asks (the return is stored as an instant on the gate's clock, counted from the read
 // that named it where the error carries the stamp, so a slice that unwinds late does not push the wait past the
-// return). A refusal that names
-// no return, or one past what the pass has left, trips as before and states the time. A refusal for the day start of a
-// park that has ended trips, since the account has then not rolled to the new day it should have: parking again would
-// wait a day in a loop.
+// return). A refusal that names no return, or one past what the pass has left, trips as before and states the time.
+// A refusal for the day start of a park that has ended trips, since the account has then not rolled to the new day it
+// should have: parking again would wait a day in a loop.
 //
 // A WRITING BENCH ERROR THAT CARRIES THE RETURN PARKS THE SAME WAY (round 5, open to the owner's veto). With a provider
 // still wet, a writing bench below its floor is the bench error and not the router's refusal; when NeuralWatt's return

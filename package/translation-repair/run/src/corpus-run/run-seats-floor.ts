@@ -134,8 +134,8 @@ export class WritingBenchUnreachableError extends Error {
     const returnSentence = (neuralwattReturnsInMs === undefined)
       ? 'no provider has named a return the pass can wait for, so the entry stops for a pass that has the bench'
       : `NeuralWatt's energy returns at ${neuralwattReturnsAt ?? 'its day start'}, which would reach the floor, `
-        + 'so the entry stops; the pass may park for it where the return fits what the pass has left, and otherwise the '
-        + 'entry ends as a failure a later pass resumes';
+        + 'so the entry stops; the pass may park for it where the return fits what the pass has left, and otherwise '
+        + 'the entry ends as a failure a later pass resumes';
     super(`writing bench unreachable at ${phase}: ${clauses.join('; ',)}; ${returnSentence}`,);
     this.name = 'WritingBenchUnreachableError';
     this.clauses = clauses;
