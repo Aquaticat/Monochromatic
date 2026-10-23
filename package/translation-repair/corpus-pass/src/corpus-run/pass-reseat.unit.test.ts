@@ -221,6 +221,19 @@ await describe({
           },
         },),
         it({
+          name: 'REPORTS NO HOLD LONGER THAN THE SHORT WINDOW A CASE CAN WAIT OUT, however long the case names it (the 300 s '
+            + 'sleep of the padded rig, measured at 300.3 s of the describe at f2f77b0701 and at the tip of the second '
+            + 'review): a view short of quorum under a running hold makes the reading sleep the hold on the real clock, so '
+            + 'the rig reports the hold it ends in this window',
+          fn: async () => {
+            /** Rig whose padded view is short of quorum, under the hold the router registers on a dry refusal. */
+            const rig = viewClient({ view: NEURALWATT_AND_BEDROCK, },);
+            rig.holds.synthetic = DRY_HOLD_MS;
+            expect(rig.client.providerHolds().synthetic,).toBeGreaterThan(0,);
+            expect(rig.client.providerHolds().synthetic,).toBeLessThanOrEqual(SHORT_HOLD_MS,);
+          },
+        },),
+        it({
           name: 'MARKS IN THE CHUNK LINE THE CHECKERS THAT ARE PADDING, ranked seats no wet provider serves, '
             + 'and says none when every checker is served (zheermao20: Qwen3.8-27B sat on the bench after '
             + 'Synthetic ran dry and neither line said so)',
