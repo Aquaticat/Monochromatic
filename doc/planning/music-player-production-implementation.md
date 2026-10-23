@@ -1287,15 +1287,19 @@ Read these before repeating them. Each one cost the human a correction.
   The e2e harness now seeds `{"auto_play_on_select":false}` into every scratch configuration except launches that pass
   `keepSettingsDefaults` (only the `auto-play` session), so the other sessions keep their select-only clicks; the
   `auto-play` session now checks default on, switch off, select-only, and off surviving a restart. The whole e2e run
-  on the release build: 123 passed, 0 failed, 1 not injectable, 254 s. Not yet released (no version bump); the
-  human has not been asked to merge anything else since this is already on `main`.
+  on the release build: 123 passed, 0 failed, 1 not injectable, 254 s. Released in 0.1.13 (run `39899963193`, 13
+  assets, 12 checksums OK, attestation OK, pre-release); the release APK was installed over the human's app on the
+  Pixel 6 (`versionName=0.1.13`, data kept). The debug build under `dev.monochromatic.musicplayer.duck` was removed
+  from the phone at the human's request (2026-10-23).
 - [ ] Android notification sounds pause the player instead of ducking (2026-10-22, reported by the human):
   cause read in `RustEngine.kt` (`setWillPauseWhenDucked(true)` plus the can-duck arm pausing), write-up in
   `doc/troubleshooting/music-player-android-pauses-instead-of-ducking-for-notification-sounds.md`. The human chose
   "duck, and pause only for real interruptions" and asked to find why pausing was chosen: the only record is commit
   `6ec84c8419` (2026-06-13), which says it mirrors what ExoPlayer gave the Media3 flavor and gives no compatibility
-  reason. Next: reproduce on the Pixel 6 (connected 2026-10-22) with a debug build, play a tone, post a notification
-  sound, and record with the host microphone; then implement a duck on the user volume and verify the same way.
+  reason. Done as D134 (commit `5c57f658aa`, released in 0.1.13): the Android source shows the framework never ducks
+  AAudio, so the flag stays and the listener ducks to a fifth of the volume. Not verified with sound: the human has
+  tenants and asked for no loudspeaker playback. Open: the human plays music and lets a message sound arrive, and
+  reports whether it ducks; a phone call must still pause it.
 - [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`):
 - `.github/workflows/music-player-release.yml`
   builds the desktop app for Windows, macOS (Apple silicon) and Linux and the Android app and creates one pre-release,
