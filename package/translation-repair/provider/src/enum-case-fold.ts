@@ -15,9 +15,12 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // the guard decides. A value the schema lists exactly is left alone.
 //
 // WHAT IT READS: a node's `enum` and `const` strings, under `properties` and `items`, along the reply's own shape. It
-// does not follow a `$ref` and does not read inside `anyOf` or `allOf`: no stage schema carries one (`claude-schema.ts`
-// accepts them, so a stage that adds one gets today's exact comparison until this reads it), and a reply left as it
-// came is the behaviour before this file, never a wrong value.
+// LEAVES SIX FORMS UNTOUCHED, and a value under any of them is read as it came: `anyOf`, `oneOf`, `allOf`, `$ref`, an
+// `additionalProperties` that is a schema, and `items` as a list of schemas (tuple form). No schema the route or a
+// stage sends carries one: `corpus-pass/src/claude-schemas.unit.test.ts` walks every producer's schema and fails when
+// one does, or lists an `enum` or `const` where this does not read. `claude-schema.ts` accepts `anyOf`, `allOf` and
+// `$ref`, so a stage that adds one would get the exact comparison it had before this file, and that test says so. A
+// reply left as it came is the behaviour before this file, never a wrong value.
 
 /**
  One value taken back to the schema's spelling.
