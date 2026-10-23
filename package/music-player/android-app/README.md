@@ -356,7 +356,7 @@ A Search result for a track follows the same rule (D127): `PlayerHost.openSearch
 the current track (`SearchActivation.SelectTrack`, through `activateRow`, so it also starts with the setting on) and
 toggles with `togglePlay` for the current one; `wiring/PlayerHostWiringTest` taps a result through the real host.
 The setting is stored by `SessionStore` in the `session` preferences under `auto_play_on_select`, outside `Session`
-(a missing key is off), and `AutoPlaySettingWiringTest` covers the switch row and the taps with it on and off.
+(a missing key is on, D133), and `AutoPlaySettingWiringTest` covers the switch row and the taps with it on and off.
 The desktop app follows the same rule.
 `PlayerControllerRowTest`, `PlayerControllerRowFailureTest` and `wiring/RowTapWiringTest` pin it.
 

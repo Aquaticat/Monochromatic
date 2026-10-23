@@ -37,7 +37,7 @@ pub struct Session {
     pub track_rows_template: Option<String>,
     /// Playing track template text the user edited, or None to use the default.
     pub playing_template: Option<String>,
-    /// Auto-play on select (D129): whether selecting a track also starts it. Off when the file has no such field.
+    /// Auto-play on select (D129): whether selecting a track also starts it. On when the file has no such field.
     pub auto_play_on_select: bool,
     /// Text size setting: one pixel size for each of four texts, written as four flat keys beginning `text_size_`.
     /// The defaults are the sizes the app drew before the setting existed.
@@ -92,7 +92,7 @@ impl Default for StoredSession {
             repeat_track: None,
             track_rows_template: None,
             playing_template: None,
-            auto_play_on_select: false,
+            auto_play_on_select: true,
             text_sizes: [None, None, None, None],
         };
     }
@@ -110,7 +110,7 @@ impl Default for Session {
             playback_mode: PlaybackMode::InOrder,
             track_rows_template: None,
             playing_template: None,
-            auto_play_on_select: false,
+            auto_play_on_select: true,
             text_sizes: TextSizes::default(),
         };
     }
@@ -244,7 +244,7 @@ impl Session {
         return session.save();
     }
 
-    /// What: `load_auto_play_on_select` reads the Auto-play on select setting; off when the file has none.
+    /// What: `load_auto_play_on_select` reads the Auto-play on select setting; on when the file has none.
     /// Why: the window starts from the saved choice (D129), and a session file written before the setting existed must
     /// keep loading, with the setting off.
     #[must_use]

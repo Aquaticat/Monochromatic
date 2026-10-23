@@ -477,7 +477,7 @@ fn the_shutdown_snapshot_keeps_the_ui_fields_of_the_stored_session() {
     let stored = Session {
         track_rows_template: Some("$mi(title)$".to_string()),
         playing_template: Some("$mi(track)$".to_string()),
-        auto_play_on_select: true,
+        auto_play_on_select: false,
         text_sizes: crate::text_size::TextSizes::default().with(crate::text_size::TextElement::FolderName, 21),
         ..Session::default()
     };
@@ -487,11 +487,11 @@ fn the_shutdown_snapshot_keeps_the_ui_fields_of_the_stored_session() {
         21,
         "a shutdown save must not reset the text sizes",
     );
-    assert!(snapshot.auto_play_on_select, "a shutdown save must not turn Auto-play on select off");
+    assert!(!snapshot.auto_play_on_select, "a shutdown save must not turn Auto-play on select on");
     assert_eq!(snapshot.track_rows_template.as_deref(), Some("$mi(title)$"));
     assert_eq!(snapshot.playing_template.as_deref(), Some("$mi(track)$"));
     let off = rig.controller.session_over(Session::default());
-    assert!(!off.auto_play_on_select, "and it must not turn it on either");
+    assert!(off.auto_play_on_select, "and it must not turn it off either");
 }
 
 #[cfg(target_os = "linux")]
@@ -501,11 +501,11 @@ fn the_shutdown_snapshot_reads_the_stored_session_of_the_config_home() {
     crate::session::use_disposable_config_home("snapshot_reads_config_home");
     let stored = Session {
         track_rows_template: Some("$mi(title)$".to_string()),
-        auto_play_on_select: true,
+        auto_play_on_select: false,
         ..Session::default()
     };
     stored.save().expect("the stored session is written to the disposable home");
     let snapshot = rig.controller.current_session();
-    assert!(snapshot.auto_play_on_select, "the snapshot keeps the stored setting");
+    assert!(!snapshot.auto_play_on_select, "the snapshot keeps the stored setting");
     assert_eq!(snapshot.track_rows_template.as_deref(), Some("$mi(title)$"));
 }

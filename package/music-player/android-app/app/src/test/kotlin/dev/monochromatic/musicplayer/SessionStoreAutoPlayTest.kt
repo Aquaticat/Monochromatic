@@ -14,8 +14,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * Pins how the Auto-play on select setting is stored (D129): off by default, off when an older preference file has no
- * such key, kept across a round trip, and never touched by the session save or the older keys.
+ * Pins how the Auto-play on select setting is stored (D129, D133): on by default, on when an older preference file has
+ * no such key, kept across a round trip, and never touched by the session save or the older keys.
  */
 @RunWith(RobolectricTestRunner::class)
 class SessionStoreAutoPlayTest {
@@ -35,16 +35,16 @@ class SessionStoreAutoPlayTest {
         return if (preferences.contains(KEY)) preferences.getBoolean(KEY, false) else null
     }
 
-    /** A first run, with no file at all, reads off. */
+    /** A first run, with no file at all, reads on. */
     @Test
-    fun theSettingIsOffByDefault() {
-        assertFalse(SessionStore.loadAutoPlayOnSelect(context))
+    fun theSettingIsOnByDefault() {
+        assertTrue(SessionStore.loadAutoPlayOnSelect(context))
         assertEquals("reading never writes the key", null, rawValue())
     }
 
-    /** A file written before the setting existed reads off and still loads its own values. */
+    /** A file written before the setting existed reads on and still loads its own values. */
     @Test
-    fun anOlderFileWithoutTheKeyReadsOffAndStillLoads() {
+    fun anOlderFileWithoutTheKeyReadsOnAndStillLoads() {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
             .putString("selected", "content://invented/alpha/3")
             .putLong("position_bits", 12.5.toRawBits())
@@ -52,7 +52,7 @@ class SessionStoreAutoPlayTest {
             .putString("playback_mode", "shuffle_all")
             .putString("template_TRACK_ROWS", "\$mi(title)\$")
             .commit()
-        assertFalse(SessionStore.loadAutoPlayOnSelect(context))
+        assertTrue(SessionStore.loadAutoPlayOnSelect(context))
         /** The session restored from the older file. */
         val session: Session = SessionStore.load(context)
         assertEquals("content://invented/alpha/3", session.selected)
@@ -62,24 +62,24 @@ class SessionStoreAutoPlayTest {
         assertEquals(null, rawValue())
     }
 
-    /** A saved on survives a read, a saved off replaces it, and the raw file holds the value. */
+    /** A saved off survives a read, a saved on replaces it, and the raw file holds the value. */
     @Test
     fun theSettingRoundTrips() {
-        SessionStore.saveAutoPlayOnSelect(context, enabled = true)
-        assertTrue(SessionStore.loadAutoPlayOnSelect(context))
-        assertEquals(true, rawValue())
         SessionStore.saveAutoPlayOnSelect(context, enabled = false)
         assertFalse(SessionStore.loadAutoPlayOnSelect(context))
         assertEquals(false, rawValue())
+        SessionStore.saveAutoPlayOnSelect(context, enabled = true)
+        assertTrue(SessionStore.loadAutoPlayOnSelect(context))
+        assertEquals(true, rawValue())
     }
 
     /** Saving the playback session, which the controller does often, leaves the setting as it was. */
     @Test
     fun savingTheSessionKeepsTheSetting() {
-        SessionStore.saveAutoPlayOnSelect(context, enabled = true)
+        SessionStore.saveAutoPlayOnSelect(context, enabled = false)
         SessionStore.save(context, Session(selected = "content://invented/alpha/1", positionSecs = 3.0))
-        assertTrue(SessionStore.loadAutoPlayOnSelect(context))
-        assertEquals(true, rawValue())
+        assertFalse(SessionStore.loadAutoPlayOnSelect(context))
+        assertEquals(false, rawValue())
         assertEquals("content://invented/alpha/1", SessionStore.load(context).selected)
     }
 
@@ -88,7 +88,7 @@ class SessionStoreAutoPlayTest {
     fun savingTheSettingKeepsTheTemplatesAndTheSession() {
         SessionStore.saveTemplate(context, TemplateKind.TRACK_ROWS, "\$mi(title)\$")
         SessionStore.save(context, Session(selected = "content://invented/alpha/2", volume = 0.25f))
-        SessionStore.saveAutoPlayOnSelect(context, enabled = true)
+        SessionStore.saveAutoPlayOnSelect(context, enabled = false)
         assertEquals("\$mi(title)\$", SessionStore.loadTemplate(context, TemplateKind.TRACK_ROWS))
         /** The session after the setting was saved. */
         val session: Session = SessionStore.load(context)
