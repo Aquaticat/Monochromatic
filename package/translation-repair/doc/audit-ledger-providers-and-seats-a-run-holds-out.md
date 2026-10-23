@@ -313,10 +313,30 @@ and with it whether the wide seats keep Qwen.
 ## B826: the writing-bench floor stopped an entry for want of a named return, though NeuralWatt's return was 48 s away
 
 Status:
-open,
+fixed on 2026-10-23 (UTC),
 found by the lead's read of `XingZ6019` on 2026-10-22 (UTC) (the brief's E2).
-A fix is in progress in the briefs the lead labelled D4 and E2 and has not landed;
-this entry records no design for it.
+The fix landed on main in `9eea0009d1`,
+the merge of the work the lead labelled D4 and E2 with its fix rounds 1 to 9;
+fix rounds 10 and 11 follow it on the branch that took that merge
+(round 10 ends at `e9d79e6f0d`).
+The design that landed
+(the decision doc `doc/decision/translation-repair-direct-providers.md` states it,
+open to the owner's veto):
+the seat reader waits for a hold only if it would cure a short bench,
+and no longer than the smaller of what the pass has left and what the entry's hard cap has left.
+A NeuralWatt return inside what the pass has left but past what the entry has left parks the pass between entries:
+the gate records a park instead of tripping,
+the queue puts the entry back at the front,
+and the gate waits for the return and resumes.
+The writing bench error carries the return,
+and so parks the pass,
+only when the return would lift the bench to its floor.
+The entry's `TALLY` line says `PARKED`,
+with `returnsInMs=` and `returnsAt=` taken from the park,
+which `parkedFor` answers for the failure the entry ended with,
+and never from that failure's own fields.
+When the budget ends the pass after the wait,
+the queue prints `NOT RESUMED <id>` for the entry the park cut short.
 The D4 of those briefs is the model-level dryness work of B822,
 not the D4 candidate of the `XingZ6018` read.
 
