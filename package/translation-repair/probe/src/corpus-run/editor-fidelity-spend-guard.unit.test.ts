@@ -629,7 +629,7 @@ await describe({
             },);
             await askJson({ client, modelId: HAIKU_CARD, signal: controller.signal, },);
             expect(asked,).toStrictEqual([HAIKU_CARD,],);
-            expect((client as ModelClient & { readonly providerHolds: string; }).providerHolds,).toBe('held',);
+            expect((client as unknown as { readonly providerHolds: string; }).providerHolds,).toBe('held',);
           },
         },),
 
