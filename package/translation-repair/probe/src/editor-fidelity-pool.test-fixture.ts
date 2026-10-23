@@ -1,4 +1,7 @@
-import { CORPUS_COMMIT_SHA, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  CORPUS_COMMIT_SHA,
+  type CorpusPin,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 
 //region Invented pages for the editor fidelity pool draw
 // An entry of three headed sections, English and Chinese, written for the tests: no corpus content. Each English section
@@ -8,7 +11,7 @@ import { CORPUS_COMMIT_SHA, } from '@monochromatic-dev/translation-repair-corpus
 /**
  Pin the draw tests run under; no clone is read.
  */
-export const DRAW_PIN = {
+export const DRAW_PIN: CorpusPin = {
   cloneDir: '/nonexistent/clone',
   commitSha: CORPUS_COMMIT_SHA,
 };
@@ -51,7 +54,7 @@ const CHINESE = '## 一\n灰猫每天下午在旧书店的窗边睡觉。\n\n## 
 /**
  The English page of the invented entry.
  */
-export const DRAW_ENGLISH = `${ENGLISH_ONE}\n\n${ENGLISH_TWO}\n\n${ENGLISH_THREE}\n`;
+export const DRAW_ENGLISH: string = `${ENGLISH_ONE}\n\n${ENGLISH_TWO}\n\n${ENGLISH_THREE}\n`;
 
 /**
  The Chinese page of the invented entry.

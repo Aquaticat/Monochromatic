@@ -12,7 +12,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  drawEntry,
+  drawPoolEntry,
   type FidelityReferenceSpec,
 } from '../../dist/final/node/index.mjs';
 import {
@@ -34,11 +34,11 @@ import {
  const drawn = await drawnAs({ entryId: 'tabby', },);
  ```
  */
-async function drawnAs({ entryId, }: { readonly entryId: string; },): ReturnType<typeof drawEntry> {
+async function drawnAs({ entryId, }: { readonly entryId: string; },): ReturnType<typeof drawPoolEntry> {
   const pages = readInventedEntry({ entryId, },);
   if ('unreadable' in pages)
     throw new Error('the invented entry is unreadable',);
-  return drawEntry({
+  return drawPoolEntry({
     entryId,
     zh: pages.zh,
     en: pages.en,
@@ -48,7 +48,7 @@ async function drawnAs({ entryId, }: { readonly entryId: string; },): ReturnType
 }
 
 await describe({
-  name: drawEntry.name,
+  name: drawPoolEntry.name,
   children: [
     it({
       name: 'TAKES THE FIRST SECTION WHOSE BORROWED-SENTENCE TWIN BUILDS FOR THE INSERTION and the first other section '

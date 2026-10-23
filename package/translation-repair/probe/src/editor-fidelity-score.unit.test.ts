@@ -18,6 +18,7 @@ import {
   EDITOR_DAMAGE_KINDS,
   type EditorFidelityTrial,
   editorFidelityTrials,
+  patchedWith,
   scoreEditedText,
 } from '../dist/final/node/index.mjs';
 import {
@@ -50,37 +51,6 @@ const INSERTION: EditorFidelityTrial = nonNullishOrThrow(TRIALS.find(function is
 const ALTERATION: EditorFidelityTrial = nonNullishOrThrow(TRIALS.find(function isAlteration(trial,): boolean {
   return trial.damageKind === 'alteration';
 },),);
-
-/**
- The damaged text with its region replaced, which is what the apply gate makes of one edit.
-
- @param trial - trial whose region is replaced
-
- @param replacement - text the region becomes
-
- @returns The patched text
-
- @example
- ```ts
- const patched = patchedWith({ trial: INSERTION, replacement: '', },);
- ```
- */
-function patchedWith(
-  {
-    trial,
-    replacement,
-  }: {
-    readonly trial: EditorFidelityTrial;
-    readonly replacement: string;
-  },
-): string {
-  return trial.damagedText.slice(
-    0,
-    trial.region.startOffset,
-  )
-    + replacement
-    + trial.damagedText.slice(trial.region.endOffset,);
-}
 
 /**
  A trial whose inserted sentence closes the section, as the last sentence of a reviewed reference can: the clean text

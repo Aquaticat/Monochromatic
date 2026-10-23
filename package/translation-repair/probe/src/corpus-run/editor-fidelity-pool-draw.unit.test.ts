@@ -1,6 +1,8 @@
 /**
- Tests for the draw of the whole editor fidelity pool: the seeded order entries are visited in, where the draw stops,
- and what it counts. Entries are invented; no clone is read.
+ Tests for the compiled `editor-fidelity-pool-draw` command's paths that touch no corpus: the requests it refuses before
+ it reads anything, with which exit status and stderr.
+
+ Each run is the built command in an owned empty directory with no provider key set, so no case can read a clone or spend.
 
  @module
  */
@@ -11,145 +13,84 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  drawPool,
-  seededEntryOrder,
-} from '../../dist/final/node/index.mjs';
-import {
-  DRAW_PIN,
-  readInventedEntry,
-} from '../editor-fidelity-pool.test-fixture.ts';
+import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
+import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 
 /**
- Entry ids the draws below list: seven that can be drawn, one that is not a plain id, one unreadable, one of unequal
- shape.
+ Exit status the command gives a refusal it states in its own words.
  */
-const ENTRY_IDS: readonly string[] = [
-  'Acorn',
-  'Briar',
-  'Cinder',
-  'Dapple',
-  'Ember',
-  'Fennel',
-  'Ginger',
-  'bad id!',
-  'ghost',
-  'lopsided',
-];
+const REFUSED_AS_STATED = 6;
 
 /**
- Draws the invented entries.
+ What a run left behind.
+ */
+type BuiltRun = {
+  /**
+   Exit status, zero for an accepted request.
+   */
+  readonly code: number;
 
- @param seed - seed of the draw
+  /**
+   Standard error, one entry per line.
+   */
+  readonly stderr: readonly string[];
+};
 
- @param want - trials wanted in all
+/**
+ Runs the built command with the arguments given, in an owned empty directory that is also the corpus clone.
 
- @returns The draw
+ @param args - every argument after the script path
+
+ @returns Exit status and standard error, one entry per line
 
  @example
  ```ts
- const draw = await drawnWith({ seed: 'a', want: 5, },);
+ const run = await runAsBuilt({ args: ['--check',], },);
  ```
  */
-function drawnWith({ seed, want, }: { readonly seed: string; readonly want: number; },): ReturnType<typeof drawPool> {
-  return drawPool({
-    entryIds: ENTRY_IDS,
-    readEntry: function readEntry({ entryId, },) {
-      return Promise.resolve(readInventedEntry({ entryId, },),);
-    },
-    seed,
-    want,
-    reviewedTrials: 0,
-    reviewedEntryIds: [],
-    corpusSha: DRAW_PIN.commitSha,
-    reviewedOn: '2026-10-23',
+async function runAsBuilt({ args, }: { readonly args: readonly string[]; },): Promise<BuiltRun> {
+  await using owned = await scratchDir({ prefix: 'editor-fidelity-pool-draw-as-built-', },);
+  /**
+   What the built command did, whatever its exit code.
+   */
+  const run = await runBuiltCommand({
+    command: 'editor-fidelity-pool-draw',
+    packageEntry: PROBE_ENTRY,
+    args,
+    cwd: owned.path,
+    env: { TRANSLATION_REPAIR_CORPUS_CLONE_DIR: owned.path, },
   },);
+  return {
+    code: run.code,
+    stderr: run.stderr.split('\n',)
+      .filter(function present(line,): boolean {
+        return line !== '';
+      },),
+  };
 }
 
 await describe({
-  name: drawPool.name,
+  name: 'editor-fidelity-pool-draw as built',
   children: [
     it({
-      name: 'STOPS AFTER THE ENTRY THAT TAKES THE POOL TO THE TRIALS WANTED, visiting entries in the seeded order and '
-        + 'taking two trials of each, and counts every entry that could have been drawn, not only those it took',
+      name: 'REFUSES A CHECK WITH NO DIRECTORY at exit six with one line, before it reads the clone',
       fn: async () => {
-        const draw = await drawnWith({
-          seed: 'a seed',
-          want: 5,
-        },);
-        /**
-         The plain, readable, equal-shape entries in the order the seed visits them.
-         */
-        const order = seededEntryOrder({
-          entryIds: ENTRY_IDS.filter(function drawable(id,): boolean {
-            return !['bad id!', 'ghost', 'lopsided',].includes(id,);
-          },),
-          seed: 'a seed',
-        },);
-        expect(draw.drawnEntries,).toStrictEqual(order.slice(0, 3,),);
-        expect(draw.trials,).toBe(6,);
-        expect(draw.eligibleEntries,).toBe(7,);
-        expect(draw.kinds,).toStrictEqual({
-          insertion: 3,
-          alteration: 3,
-        },);
+        const run = await runAsBuilt({ args: ['--check',], },);
+        expect(run.code,).toBe(REFUSED_AS_STATED,);
+        expect(run.stderr,).toStrictEqual([
+          'editor-fidelity-pool-draw: --check compares the draw with the files in --out, and --out was not written; '
+            + 'write the directory the drawn files sit in',
+        ],);
       },
     },),
 
     it({
-      name: 'COUNTS THE REVIEWED TRIALS toward the pool and leaves the reviewed entries out of the draw',
+      name: 'REFUSES A FLAG IT DOES NOT DECLARE at exit six, naming the command',
       fn: async () => {
-        const draw = await drawPool({
-          entryIds: ENTRY_IDS,
-          readEntry: function readEntry({ entryId, },) {
-            return Promise.resolve(readInventedEntry({ entryId, },),);
-          },
-          seed: 'a seed',
-          want: 5,
-          reviewedTrials: 4,
-          reviewedEntryIds: ['Acorn',],
-          corpusSha: DRAW_PIN.commitSha,
-          reviewedOn: '2026-10-23',
-        },);
-        expect(draw.trials,).toBe(2,);
-        expect(draw.drawnEntries.includes('Acorn',),).toBe(false,);
-        expect(draw.eligibleEntries,).toBe(6,);
-      },
-    },),
-
-    it({
-      name: 'SAYS WHY ENTRIES WERE LEFT OUT, each reason with how many entries it took',
-      fn: async () => {
-        const draw = await drawnWith({
-          seed: 'a seed',
-          want: 5,
-        },);
-        expect(draw.skipped,).toStrictEqual({
-          'entry id not plain': 1,
-          'entry unreadable': 1,
-          'entry not equal shape': 1,
-        },);
-      },
-    },),
-
-    it({
-      name: 'VISITS ENTRIES IN ANOTHER ORDER FOR ANOTHER SEED and so can draw other entries, and draws the same ones '
-        + 'again for the same seed',
-      fn: async () => {
-        const first = await drawnWith({
-          seed: 'a seed',
-          want: 5,
-        },);
-        const again = await drawnWith({
-          seed: 'a seed',
-          want: 5,
-        },);
-        const other = await drawnWith({
-          seed: 'another seed',
-          want: 5,
-        },);
-        expect(again.specs,).toStrictEqual(first.specs,);
-        expect(other.drawnEntries,).not.toStrictEqual(first.drawnEntries,);
+        const run = await runAsBuilt({ args: ['--clone', 'elsewhere',], },);
+        expect(run.code,).toBe(REFUSED_AS_STATED,);
+        expect(run.stderr[0],).toContain('editor-fidelity-pool-draw: ',);
       },
     },),
   ],

@@ -25,7 +25,7 @@ const l = tagged({ tag: 'editor-fidelity-scripted-client', },);
 /**
  What a scripted client was asked.
  */
-export type Asked = {
+type Asked = {
   /**
    Model ids asked, in order.
    */
@@ -69,7 +69,7 @@ function unusedQuotas(): never {
  const client = scriptedClient({ report: { edits: [], }, asked, },);
  ```
  */
-export function scriptedClient(
+function scriptedClient(
   {
     report,
     asked,

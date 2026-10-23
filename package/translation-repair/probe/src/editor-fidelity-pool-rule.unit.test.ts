@@ -24,7 +24,7 @@ import {
 const IDS: readonly string[] = ['Acorn', 'Briar', 'Cinder', 'Dapple', 'Ember', 'Fennel', 'Ginger', 'Heron',];
 
 await describe({
-  name: isPlainEntryId.name,
+  name: 'editor fidelity pool rule',
   children: [
     it({
       name: 'TAKES AN ID OF LETTERS, DIGITS, UNDERSCORES, DOTS AND HYPHENS that does not begin with a dot, because the '
@@ -42,12 +42,7 @@ await describe({
           expect(isPlainEntryId({ entryId, },),).toBe(false,);
       },
     },),
-  ],
-},);
 
-await describe({
-  name: seededEntryOrder.name,
-  children: [
     it({
       name: 'VISITS THE SAME ENTRIES IN THE SAME ORDER FOR THE SAME SEED, whatever order the ids are listed in, so the '
         + 'draw is reproducible from the seed alone',
@@ -90,12 +85,7 @@ await describe({
         expect(second,).not.toStrictEqual(IDS,);
       },
     },),
-  ],
-},);
 
-await describe({
-  name: furthestFirst.name,
-  children: [
     it({
       name: 'OFFERS THE FURTHEST SECTION FIRST and, between two equally far, the later one first, so a donor is as '
         + 'far from the damaged section as the page allows',

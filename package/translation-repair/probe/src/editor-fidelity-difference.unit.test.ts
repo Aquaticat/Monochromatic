@@ -17,7 +17,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 await describe({
-  name: differingMiddle.name,
+  name: 'editor fidelity difference',
   children: [
     it({
       name: 'FINDS WHERE THE TEXTS STOP AGREEING from the start and from the end, and where the differing middle ends '
@@ -48,12 +48,7 @@ await describe({
         },);
       },
     },),
-  ],
-},);
 
-await describe({
-  name: digitRunAround.name,
-  children: [
     it({
       name: 'WIDENS A DIFFERING LAST DIGIT BACK TO THE START OF ITS NUMBER and a differing first digit forward to its '
         + 'end, so a number is read whole and not by the one digit that differs',

@@ -124,7 +124,7 @@ await describe({
       name: 'TAKES ONLY THE SENTENCE AFTER when the inserted one opens its line, and never reaches across a line break',
       fn: async () => {
         /**
-         A heading line above, a line of two sentences below it.
+         A heading line, then a line of two sentences.
          */
         const text = 'The heading\nA winter trip was taken. The cat ate.\nThe cat slept.';
         const { region, neighbours, } = widenedAround({
