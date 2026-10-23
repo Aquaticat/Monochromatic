@@ -180,6 +180,8 @@ const ALLOWED_KEYWORDS: ReadonlySet<string> = new Set([
   'definitions',
   'default',
   'format',
+  'pattern',
+  'minItems',
   'additionalProperties',
   'description',
   'title',

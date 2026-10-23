@@ -52,7 +52,7 @@ await describe({
 
     it({
       name: 'DROPS EACH BOUND THE FEATURE DOES NOT SUPPORT, numeric, string and array, and keeps the keywords it does '
-        + 'support: type, enum, const, required, description and format',
+        + 'support: type, enum, const, required, description, format and a minItems of 1',
       fn: async () => {
         expect(claudeSchemaOf({
           schema: {
@@ -76,7 +76,8 @@ await describe({
             toys: {
               type: 'array',
               items: { type: 'string', enum: ['yarn', 'mouse',], },
-              description: '{minItems: 1, maxItems: 5, uniqueItems: true}',
+              minItems: 1,
+              description: '{maxItems: 5, uniqueItems: true}',
             },
             kind: { const: 'tabby', },
           },
@@ -141,7 +142,7 @@ await describe({
 
     it({
       name: 'REFUSES A KEYWORD THE FEATURE DOES NOT SUPPORT AND NO SDK STRIPS (R10), by a named error that names the '
-        + 'keyword and where it sits, so a stage schema that writes oneOf, not, if, pattern, '
+        + 'keyword and where it sits, so a stage schema that writes oneOf, not, if, '
         + 'patternProperties, contains or prefixItems fails when its body is built and not with HTTP 400 '
         + 'at the first live call',
       fn: async () => {
@@ -167,11 +168,6 @@ await describe({
             keyword: 'if',
             schema: { type: 'object', properties: { bowl: { if: { type: 'string', }, }, }, },
             path: 'root.bowl',
-          },
-          {
-            keyword: 'pattern',
-            schema: { type: 'object', properties: { name: { type: 'string', pattern: '^[a-z]+$', }, }, },
-            path: 'root.name',
           },
           {
             keyword: 'prefixItems',
@@ -245,10 +241,10 @@ await describe({
         + 'accepted: it stays on the node beside its type and gains no description',
       fn: async () => {
         expect(claudeSchemaOf({
-          schema: { type: 'object', properties: { name: { type: 'string', pattern: '^[a-z]+(\\d{1,3})?$', }, }, },
+          schema: { type: 'object', properties: { name: { type: 'string', pattern: String.raw`^[a-z]+(\d{1,3})?$`, }, }, },
         },),).toEqual({
           type: 'object',
-          properties: { name: { type: 'string', pattern: '^[a-z]+(\\d{1,3})?$', }, },
+          properties: { name: { type: 'string', pattern: String.raw`^[a-z]+(\d{1,3})?$`, }, },
           additionalProperties: false,
         },);
       },
@@ -263,13 +259,13 @@ await describe({
          Patterns the page refuses, each with the text the error must carry.
          */
         const refused: readonly (readonly [string, string])[] = [
-          ['^(a)\\1$', 'backreference',],
+          [String.raw`^(a)\1$`, 'backreference',],
           ['^a(?=b)', 'lookahead',],
           ['^a(?!b)', 'lookahead',],
           ['(?<=a)b', 'lookbehind',],
           ['(?<!a)b', 'lookbehind',],
-          ['\\bcat\\b', 'word boundary',],
-          ['\\Bcat', 'word boundary',],
+          [String.raw`\bcat\b`, 'word boundary',],
+          [String.raw`\Bcat`, 'word boundary',],
         ];
         refused.forEach(function refuses([pattern, construct,],): void {
           /**
@@ -293,7 +289,7 @@ await describe({
           claudeSchemaOf({
             schema: {
               type: 'object',
-              properties: { name: { type: 'string', pattern: '^[\\b]\\\\1(?:a|b)(?<kind>c)$', }, },
+              properties: { name: { type: 'string', pattern: String.raw`^[\b]\\1(?:a|b)(?<kind>c)$`, }, },
             },
           },)).not.toThrow();
       },

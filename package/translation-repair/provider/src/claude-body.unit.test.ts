@@ -296,7 +296,8 @@ await describe({
                 hours: { type: 'integer', description: '{minimum: 1, maximum: 24, multipleOf: 1}', },
                 naps: {
                   type: 'array',
-                  description: '{minItems: 1, maxItems: 9, uniqueItems: true}',
+                  minItems: 1,
+                  description: '{maxItems: 9, uniqueItems: true}',
                   items: {
                     type: 'object',
                     properties: {
