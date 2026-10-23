@@ -631,6 +631,54 @@ await describe({
     },),
 
     it({
+      name: 'ANSWERS FOR EVERY PARKING FAILURE IT SAW DURING THE PARK, since a layer above the guard may rethrow any of '
+        + 'them: two distinct refusals handed to it are both the park\'s, an ordinary failure and a bench error with no '
+        + 'return are not, and none is once the park has ended',
+      fn: async () => {
+        const dryStop = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
+        /**
+         The refusal that parks the pass.
+         */
+        const first = spentDayRefusal({ dayStart: DAY_ONE, },);
+        /**
+         A second parking failure of the same entry, met after the park began and rethrown by a layer above the guard.
+         */
+        const second = benchErrorBefore({ returnsInMs: 301_000, },);
+        /**
+         An ordinary failure of the same entry.
+         */
+        const ordinary = new Error('connection reset',);
+        /**
+         A bench error that carries no return, so the gate does not act on it.
+         */
+        const noReturn = benchErrorBefore({},);
+        /**
+         A parking failure the gate never saw.
+         */
+        const unseen = benchErrorBefore({ returnsInMs: 301_000, },);
+        dryStop.trip({ error: first, },);
+        dryStop.trip({ error: second, },);
+        dryStop.trip({ error: ordinary, },);
+        dryStop.trip({ error: noReturn, },);
+        expect(dryStop.parkedFor({ error: first, },),).toBe(true,);
+        expect(dryStop.parkedFor({ error: second, },),).toBe(true,);
+        expect(dryStop.parkedFor({ error: ordinary, },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: noReturn, },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: unseen, },),).toBe(false,);
+
+        await dryStop.awaitPark();
+        /**
+         A refusal for the spent day the park waited out, handed in after the park ended: it trips the gate instead.
+         */
+        const late = spentDayRefusal({ dayStart: DAY_ONE, },);
+        dryStop.trip({ error: late, },);
+        expect(dryStop.parkedFor({ error: first, },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: second, },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: late, },),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'LEAVES A WRITING BENCH ERROR ALONE when it carries no return, or one past what the pass has left, or the '
         + 'day start of a park that has ended: the entry ends as before, the pass is neither parked nor tripped, and '
         + 'no stop line is written',
