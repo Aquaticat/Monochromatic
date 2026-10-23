@@ -330,7 +330,9 @@ because the wait must sit outside any exchange:
 3. The gate waits for what is left of the return,
    stored as an instant on its monotonic clock,
    counted from the read that named the return where the error carries that stamp
-   (the bench error does, as `neuralwattReadAtMs`, so slices that unwind late do not push the wait past the return)
+   (the bench error does,
+   as `neuralwattReadAtMs`,
+   so slices that unwind late do not push the wait past the return)
    and from the moment the refusal arrived otherwise,
    logs the end,
    and gives the pass a fresh signal.
