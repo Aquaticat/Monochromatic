@@ -81,8 +81,8 @@ function scriptedClient({ script, }: { readonly script: Script; },): ModelClient
       /**
        Rendering this model was scripted to give.
        */
-      const scripted = script[request.modelId];
-      if (scripted === undefined)
+      const rendering = script[request.modelId];
+      if (rendering === undefined)
         return Promise.resolve({
           kind: 'schema-mismatch',
           rawText: '',
@@ -92,7 +92,7 @@ function scriptedClient({ script, }: { readonly script: Script; },): ModelClient
       /**
        Wire value carrying it.
        */
-      const value: unknown = { translation: scripted, };
+      const value: unknown = { translation: rendering, };
       if (!request.validate(value,))
         return Promise.reject(new Error('scripted reply failed the wire guard',),);
       return Promise.resolve({
@@ -307,7 +307,18 @@ await describe({
                 'people/Mittens/page.en.md': TARGET_PAGE,
               },
               newClient: function claudeVoice(): ModelClient {
-                return createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, },);
+                /**
+                 Claude client whose calls the case reads.
+                 */
+                const { chatText, chatJson, } = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, },);
+                return {
+                  chatText,
+                  chatJson,
+                  // The probe reads no quota, and a Claude client has no quota view to hand it.
+                  quotas: async () => {
+                    throw new Error('quotas unused',);
+                  },
+                };
               },
               roster: ['claude-sonnet-5-5',],
               sinon: ctx.sinon,
