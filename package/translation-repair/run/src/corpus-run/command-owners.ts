@@ -36,6 +36,7 @@ export const COMMAND_OWNERS: Readonly<Record<CommandName, string>> = {
   'displacement-probe': 'bench',
   'draw-sample': 'probe',
   'editor-calibrate': 'bench',
+  'editor-fidelity-pool-draw': 'probe',
   'editor-fidelity-probe': 'probe',
   'editor-standing-read': 'bench',
   'editor-width-probe': 'bench',

@@ -1,4 +1,8 @@
 import { CARD_PROVIDERS, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  EDITOR_FIDELITY_COMMAND_LINES,
+  type EditorFidelityCommandLines,
+} from './editor-fidelity-command-line.ts';
 import { REQUIRABLE_PROVIDERS, } from './requirable-providers.ts';
 import type {
   CommandLineFor,
@@ -36,7 +40,7 @@ import type {
  const pass: CommandLines['corpus-pass'] = COMMAND_LINES['corpus-pass'];
  ```
  */
-export type CommandLines = {
+export type CommandLines = EditorFidelityCommandLines & {
   readonly 'audit-sensitivity': CommandLineSpec<never, never, never>;
   readonly 'budget-sample': CommandLineSpec<never, never, never>;
   readonly 'cache-account-audit': CommandLineSpec<never, 'runs-under', never>;
@@ -50,11 +54,6 @@ export type CommandLines = {
   readonly 'displacement-probe': CommandLineSpec<never, never, never>;
   readonly 'draw-sample': CommandLineSpec<never, never, 'final'>;
   readonly 'editor-calibrate': CommandLineSpec<'candidates', never, 'candidates-alone'>;
-  readonly 'editor-fidelity-probe': CommandLineSpec<
-    'only' | 'cap' | 'damage' | 'candidates' | 'max-usd' | 'bench-spent-usd',
-    never,
-    'candidates-alone'
-    >;
   readonly 'editor-standing-read': CommandLineSpec<never, never, never>;
   readonly 'editor-width-probe': CommandLineSpec<never, never, never>;
   readonly 'judge-fidelity-probe': CommandLineSpec<
@@ -211,18 +210,7 @@ export const COMMAND_LINES: CommandLines = {
     switches: { 'candidates-alone': true, },
     positionals: SLICE_COUNT,
   },
-  'editor-fidelity-probe': {
-    ...NO_ARGUMENTS,
-    valued: {
-      only: ENTRY_IDS,
-      cap: COUNT,
-      damage: 'insertion|alteration',
-      candidates: SEATABLE_IDS,
-      'max-usd': 'dollars',
-      'bench-spent-usd': 'dollars',
-    },
-    switches: { 'candidates-alone': true, },
-  },
+  ...EDITOR_FIDELITY_COMMAND_LINES,
   'editor-standing-read': {
     ...NO_ARGUMENTS,
     positionals: {

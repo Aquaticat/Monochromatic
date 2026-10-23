@@ -701,6 +701,12 @@ const NAMED_OMISSIONS: readonly NamedOmission[] = [
       + '(corpus-run/pass-prepare.ts)',
   },
   {
+    omission: 'probe/editor-fidelity-context.ts#editorSheetContextOf -> prepareDocumentPair: omits [attestedDetails, referenceContext]',
+    why: 'the editor fidelity probe slices the pair only to read the sections either side of a seeded passage and the '
+      + 'declared names; cited references and attestations need keyed web lookups the probe does not make, and its '
+      + 'report states that limit (editor-fidelity-context.ts header)',
+  },
+  {
     omission: 'lane-contest/seed-detection.ts#gradeSeedDetection -> prepareDocumentPair: omits [attestedDetails, referenceContext]',
     why: 'grading a seeded-error benchmark reads the pair and the seeds alone',
   },

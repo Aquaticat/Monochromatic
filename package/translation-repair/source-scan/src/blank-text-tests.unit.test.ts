@@ -1211,10 +1211,26 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SETTING,
   },
-  'probe/editor-fidelity-score.ts#fixesDefect': {
+  'probe/corpus-run/editor-fidelity-pool-draw-entry.ts#checkedAttempt': {
     tests: 1,
-    why: 'an editor\'s replacement of one region of the translation, where blank is the sentence removed and any other '
-      + 'byte, an invisible one among them, is text the patch left in place',
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-pool-draw-run.ts#failed': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'probe/corpus-run/editor-fidelity-spend-guard.ts#deliveredNothing': {
+    tests: 1,
+    why: 'the opening of a provider\'s reply body, empty when the provider sent no body with an error status, which is '
+      + 'what shows that no billable reply was delivered',
+  },
+  'probe/editor-fidelity-pool-rule.ts#isPlainEntryId': {
+    tests: 1,
+    why: 'an entry id listed from the pinned clone, refused when empty before it becomes a path or a specification id',
+  },
+  'probe/editor-fidelity-region.ts#sayingOnLine': {
+    tests: 1,
+    why: SCANNER,
   },
   'probe/editor-fidelity-score.ts#isBlank': {
     tests: 1,

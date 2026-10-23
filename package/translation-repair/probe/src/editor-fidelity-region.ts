@@ -97,7 +97,7 @@ function sayingOnLine(
 }
 
 /**
- The region of an inserted sentence widened by the sentence before it and the sentence after it, on its line.
+ The region of an inserted sentence widened by the sentence that precedes it and the one that follows it, on its line.
 
  @param text - the damaged text
 
@@ -158,7 +158,13 @@ export function insertionRegionWithNeighbours(
           .endOffset
         : region.endOffset,
     },
-    neighbours: Number(before.present,) + Number(after.present,),
+    neighbours: [
+      before,
+      after,
+    ].filter(function isPresent(side,): boolean {
+      return side.present;
+    },)
+      .length,
   };
 }
 

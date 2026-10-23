@@ -109,6 +109,12 @@ depends = ["build"]
 env.TRANSLATION_REPAIR_STARTED_BY = "editor-fidelity-probe"
 run = "node dist/final/node/editor-fidelity-probe.mjs"
 
+[tasks."editor-fidelity-pool-draw"]
+description = "Draw the editor fidelity pool from the pinned corpus clone by a seeded rule, keyless: writes only ids, offsets and hashes (pass --seed text, --want trials, --out directory, --check to compare the files in --out with a fresh draw and replay the committed pool against the clone, after --)"
+depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "editor-fidelity-pool-draw"
+run = "node dist/final/node/editor-fidelity-pool-draw.mjs"
+
 [tasks."damage-sample"]
 description = "Draw shipped regions at random and ask a human the same source-anchored damage question the probe asks, with the probe's verdict kept in the manifest"
 depends = ["build"]

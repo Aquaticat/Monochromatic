@@ -95,6 +95,10 @@ export const nodeEntries: ReadonlyMap<string, string> = new Map([
     'editor-fidelity-probe',
     './src/corpus-run/editor-fidelity-probe.ts',
   ],
+  [
+    'editor-fidelity-pool-draw',
+    './src/corpus-run/editor-fidelity-pool-draw.ts',
+  ],
 ],);
 
 //endregion Build entries
