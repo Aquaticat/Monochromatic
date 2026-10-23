@@ -5998,6 +5998,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
+      '@monochromatic-dev/translation-repair-source-scan':
+        specifier: workspace:*
+        version: link:../source-scan
       '@monochromatic-dev/translation-repair-test-fixture':
         specifier: workspace:*
         version: link:../test-fixture
