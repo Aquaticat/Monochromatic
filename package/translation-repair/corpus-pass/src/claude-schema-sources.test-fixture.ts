@@ -214,57 +214,6 @@ function builderOf(declared: SchemaBuilder,): SchemaBuilder {
 }
 
 /**
- The functions that write a `json_schema` response format inside their body, and the wrappers of them that return a
- builder's result, so each call can make a different schema.
-
- @param parsed - files searched
-
- @param notStageSchemas - paths of files that write the format without building a stage's answer schema
-
- @returns One entry per function, in the order of the sources, the wrappers after the functions they wrap
-
- @example
- ```ts
- const builders = buildersIn({ parsed, notStageSchemas: new Set(), },);
- ```
- */
-function buildersIn(
-  {
-    parsed,
-    notStageSchemas,
-  }: {
-    readonly parsed: readonly ParsedSource[];
-    readonly notStageSchemas: ReadonlySet<string>;
-  },
-): readonly SchemaBuilder[] {
-  /**
-   Every function the searched files declare, with its file and imports.
-   */
-  const declared = parsed
-    .filter(function isSearched(source,): boolean {
-      return !notStageSchemas.has(source.file,);
-    },)
-    .flatMap(function functionsOf(source,): readonly DeclaredFunction[] {
-      return source.functions
-        .map(function withFile(declaration,): DeclaredFunction {
-          return {
-            ...declaration,
-            file: source.file,
-            imports: source.imports,
-          };
-        },);
-    },);
-  return withWrappers({
-    declared,
-    known: declared
-      .filter(function writesFormat({ text, },): boolean {
-        return text.includes(FORMAT_TEXT,);
-      },)
-      .map(builderOf,),
-  },);
-}
-
-/**
  The builders and every function that returns one of their results, and so on until no function is added.
 
  @param declared - every function the searched files declare
@@ -325,6 +274,57 @@ function withWrappers(
         ...wrappers,
       ],
     },);
+}
+
+/**
+ The functions that write a `json_schema` response format inside their body, and the wrappers of them that return a
+ builder's result, so each call can make a different schema.
+
+ @param parsed - files searched
+
+ @param notStageSchemas - paths of files that write the format without building a stage's answer schema
+
+ @returns One entry per function, in the order of the sources, the wrappers after the functions they wrap
+
+ @example
+ ```ts
+ const builders = buildersIn({ parsed, notStageSchemas: new Set(), },);
+ ```
+ */
+function buildersIn(
+  {
+    parsed,
+    notStageSchemas,
+  }: {
+    readonly parsed: readonly ParsedSource[];
+    readonly notStageSchemas: ReadonlySet<string>;
+  },
+): readonly SchemaBuilder[] {
+  /**
+   Every function the searched files declare, with its file and imports.
+   */
+  const declared = parsed
+    .filter(function isSearched(source,): boolean {
+      return !notStageSchemas.has(source.file,);
+    },)
+    .flatMap(function functionsOf(source,): readonly DeclaredFunction[] {
+      return source.functions
+        .map(function withFile(declaration,): DeclaredFunction {
+          return {
+            ...declaration,
+            file: source.file,
+            imports: source.imports,
+          };
+        },);
+    },);
+  return withWrappers({
+    declared,
+    known: declared
+      .filter(function writesFormat({ text, },): boolean {
+        return text.includes(FORMAT_TEXT,);
+      },)
+      .map(builderOf,),
+  },);
 }
 
 /**
