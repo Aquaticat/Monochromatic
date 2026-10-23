@@ -1837,6 +1837,31 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `//package/desktop-app/ide:fetch`), under the standing owner authorization. Run `39905451031` (push event),
     watch log `~/temp/agent/rel-watch.log`. On green: release page `ide-v0.1.1` has four assets and is a pre-release,
     `gh attestation verify` of each, sha256 compare; then verify `ide-v0.1.0` the same way.
+    RELEASED `ide-v0.1.1` (run `39905451031` green, tag target `ec2dec4e0d`): immutable pre-release with
+    `ide-0.1.1-linux-arm64.tar.gz` (23,869,002 bytes), `ide-0.1.1-linux-x64.tar.gz`, `ide-0.1.1-third-party-licenses.txt`
+    and `SHA256SUMS`; I downloaded it, `sha256sum --check` OK for all three files, and `gh attestation verify
+    --repo Aquaticats/Monochromatic` exited 0 for all four files; same for `ide-v0.1.0` (three files, exit 0). The arm64
+    binary is verified as a real aarch64 ELF but has never been run on ARM64 hardware. Not done: the installed IDE
+    on this host is still the minimap build (prints 0.1.0); reinstall from the next product change.
+    GUARD SWEEP CLOSED: agent `a0207c18495764475` repaired four guards, merged by me (`90ed2bd2d1` on `origin/main`,
+    test-only: `tall_window_tests.rs`, `wrap_resize_tests.rs`, `bin/inspect-source-guards.ts`). I re-ran
+    `tall-window-edge`, `rewrap-view-past-cap`, `refused-tile-keeps-image`, `minimap-chunk-size` and `clip-rounding` on
+    the merged tree: baseline, removed and restored all accepted; gates once on that snapshot: lint 0, `test:native`
+    290 passed 5 skipped, `test` 803 passed, `test:bin`, renderer gate 0. What each repair was:
+    - `tall-window-edge`: heights now come from `tile_cap` (85 and 95 percent) with `long_text(1500)`, and two
+      asserts prove the case is reached; the removed run takes about 90 s (waits out `Waiting::slow()`).
+    - `rewrap-view-past-cap`: the step counters recorded nothing when a measurement ran out of its allowance, so
+      the assert reads the shaper's own counters; `failure` text is now `brought in lines for a view past the cap`.
+    - `refused-tile-keeps-image`: the mutation submits an empty one-texture `TileStack` to the GPU instead of the removed
+      `set_source_image`.
+    - `minimap-chunk-size`: `after` is now 8192 (the test passes up to 4096 rows and fails from 5120).
+    Open from the agent: the `CHUNK_ROWS` doc comment in `src/minimap/plan.rs` is stale against these measurements
+    (2,048 rows overflow, 4,096 fit since `e5787ebfae`); the test `the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds`
+    fails at 4096 but has no guard of its own (candidate: add one). The reason for exactly 512 was not found.
+    Cleanup done: agent worktrees, `land-*` trees, branches `fix/ide-stale-source-guards-2`,
+    `worktree-agent-a0207c18495764475`, `feat/ide-release-linux-arm64` (local and remote, tips verified in `origin/main`),
+    sweep scratch and `ide-source-guard-*` dirs removed. Other sessions' worktrees (`agent-a563e0c526d53df51`,
+    `tr-*`) were left alone.
     Committed `clip-rounding` test strengthening (`1b57f960de`, merge `3f220bd444`).
     Sweep re-run of the three environment failures: `frame-fit` and `tile-stamp-names-its-clip` accepted in all three
     phases; `refused-tile-keeps-image` is a fourth real stale guard (its `after` injects
