@@ -1763,6 +1763,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     main -f dry-run=false`, run `39882469329`, from `main` at `461c8c62b6`; watched by a bounded background `gh run
     watch`. On its end: `gh release view ide-v0.1.0`, download the assets, `gh attestation verify` each file,
     compare `SHA256SUMS`, run the extracted binary; record the result here and in `doc/decision/ide-releases.md`.
+    RESULT, run `39882469329`: the release was created before I could cancel it: pre-release `ide-v0.1.0` (tag
+    `ide-v0.1.0`, target `461c8c62b6`, immutable, 3 assets: `ide-0.1.0-linux-x64.tar.gz` 23,457,040 bytes,
+    `ide-0.1.0-third-party-licenses.txt` 581,554 bytes, `SHA256SUMS`). The owner then said (mid-turn) "Must also
+    support Linux ARM64"; I tried `gh run cancel` and it answered "Cannot cancel a workflow run that is completed",
+    so v0.1.0 is x86_64 only and cannot be amended (immutable); I did not delete it. ARM64 ships from the next
+    version. Not yet done for v0.1.0: `gh attestation verify` of the three published files and a download compare.
+    STANDING OWNER AUTHORIZATION (mid-turn message, 2026-10-23): "You may do new releases of the IDE and the nested
+    compositor whenever you want w/o my approval every time." So a version bump and a real release of either
+    product needs no further question, but each still follows the dry run first and the runbooks.
+    ARM64 agent `aaae391ccfc296421` (fresh Sonnet agent in its own worktree, branch push only; the earlier workflow
+    agent could not be resumed because its worktree was gone): matrix `ubuntu-24.04` and `ubuntu-24.04-arm`, audit
+    of the x86_64-only assumptions, no version bump. On its report: review the diff, merge in a scratch tree,
+    `actionlint`, land, dispatch the dry run, check both archives, then bump the IDE version to 0.1.1 and release.
     Guard sweep: not started yet; needs a built target directory (the scratch trees that held one were removed), so
     build one first in a capped unit, then run all 168 cases in a capped unit and repair broken guards like
     `clip-chosen`.
