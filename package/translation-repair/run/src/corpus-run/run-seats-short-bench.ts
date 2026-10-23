@@ -134,7 +134,8 @@ function wetWhenUnread(): boolean {
  @param warned - memory of the no-wait line last written, which the reading reads and updates so the same held
  providers and the same unmet benches are said once; absent for a caller that reads once
 
- @mutates warned - holds the signature of the state this reading found
+ @mutates warned - holds the signature of the state this reading found, and forgets it when a reading finds no unmet
+ bench or has waited
 
  @returns Dryness the phase seats on, how long was waited for it, and one clause
  for each writing bench of a phase that goes on without its writers that is below
@@ -232,6 +233,9 @@ export async function readDrynessPastShortBench(
    */
   const goesOn = PHASES_WITHOUT_WRITER_STOP.has(phase,);
   if ((short.length === 0) && (unreachable.length === 0)) {
+    // A CLEAN READING ENDS THE STATE the last warning was about: a bench that falls short again is said again.
+    if (warned !== undefined)
+      warned.signature = '';
     return {
       dry: first,
       waitMs: 0,
@@ -435,6 +439,9 @@ export async function readDrynessPastShortBench(
     if (waiting.shortest === 0)
       break;
   }
+  // A READING THAT WAITED CHANGED THE SITUATION, whatever it found after: the next one that finds a bench short says so.
+  if (warned !== undefined)
+    warned.signature = '';
   if (waiting.short
     .length
     > 0) {
