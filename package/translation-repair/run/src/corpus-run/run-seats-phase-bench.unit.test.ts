@@ -4,11 +4,14 @@
  THE SHAPE, from the re-check of fix round 9 of the Claude route: the lane contest's row read the wide bench while
  the contest judges with the late bench (`seats.lateJudges`), and Haiku is on the wide bench only, so a Claude hold
  was waited out for a quorum the contest never gained. The same mismatch stood in the other rows that read a bench
- the stage does not seat: the preparation and the insertion admission ask the whole roster (`seats.roster`), the
- page consistency pass and the consolidation gate ask the late bench, and the lanes phase seats the slate select
- judges (`seats.selectJudges`) beside the wide bench. Each case reads one phase over a view where the bench the stage
- seats stands short and the bench the row used to read does not, with no hold running, so the reading takes one
- dryness read and writes the shortfall warning, which names the bench.
+ the stage does not seat: the preparation and the insertion admission ask the whole roster (`seats.roster`), and the
+ page consistency pass and the consolidation gate ask the late bench. Each case reads one phase over a view where the
+ bench the stage seats stands short and the bench the row used to read does not, with no hold running, so the
+ reading takes one dryness read and writes the shortfall warning, which names the bench.
+
+ THE LANES ROW IS RIGHT IN EFFECT: the lanes seat the slate judges of both lanes from the select judges, which the row
+ does not name, but across all 256 dryness views the select judges stand short only where the wide bench does, so the
+ row never starts a phase past a short select bench. The last case checks that over every view.
 
  Fixtures are cat-themed invention; every view is scripted and no HTTP is made.
 
@@ -29,37 +32,28 @@ import {
 import {
   metersAllWet,
 } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
-import { type JudgeSeatPhase, readJudgeSeats, } from '../../dist/final/node/index.mjs';
+import {
+  benchesOf,
+  type JudgeSeatPhase,
+  judgeSeatsFor,
+  readJudgeSeats,
+  shortBenches,
+} from '../../dist/final/node/index.mjs';
 import { shortWarningOf, } from './run-seats-short-warning.test-fixture.ts';
 
 /**
- Synthetic, Bedrock, DeepSeek and Xiaomi wet and the rest dry: the wide bench is 5 of 8 reachable against a quorum of
- 4, and the roster is 5 of 10 against a quorum of 6.
+ Bedrock, DeepSeek, Xiaomi and the Claude key wet and the rest dry: the wide bench is 4 of 8 reachable against a quorum
+ of 4, and the roster is 4 of 10 against a quorum of 5.
  */
 const ROSTER_SHORT: BudgetView = {
   neuralwatt: true,
-  synthetic: false,
+  synthetic: true,
   bedrock: false,
   deepseek: false,
   xiaomi: false,
-  anthropic: true,
+  anthropic: false,
   hyper: true,
   openrouter: true,
-};
-
-/**
- NeuralWatt, DeepSeek, Xiaomi and OpenRouter wet and the rest dry: the wide bench is 4 of 7 against a quorum of 4, the
- select judges are 4 of 8 against a quorum of 5, and the editors, refiners and translators are each at their quorum.
- */
-const SELECT_SHORT: BudgetView = {
-  neuralwatt: false,
-  synthetic: true,
-  bedrock: true,
-  deepseek: false,
-  xiaomi: false,
-  anthropic: true,
-  hyper: true,
-  openrouter: false,
 };
 
 /**
@@ -76,6 +70,30 @@ const GATE_SHORT: BudgetView = {
   hyper: true,
   openrouter: true,
 };
+
+/**
+ Every dryness view of the eight providers, 256 of them.
+
+ @returns One view per subset of dry providers
+
+ @example
+ ```ts
+ const views = allViews();
+ ```
+ */
+function allViews(): readonly BudgetView[] {
+  /**
+   Providers in the order the bits of a view's number name them.
+   */
+  const providers = Object.keys(ROSTER_SHORT,) as (keyof BudgetView)[];
+  return Array.from({ length: 2 ** providers.length, }, function viewOf(_, number,): BudgetView {
+    return providerRecord({
+      of: function dryIn(provider,): boolean {
+        return (number & (1 << providers.indexOf(provider,))) !== 0;
+      },
+    },);
+  },);
+}
 
 /**
  Reads one phase's seats over a scripted view with no hold running.
@@ -131,10 +149,11 @@ await describe({
   children: [
     it({
       name: 'READS THE ROSTER IN THE PREPARATION, which pairs blocks and reviews the archive with `seats.roster`: '
-        + 'the wide bench is 5 of 8 and fine, the roster is 5 of 10 against a quorum of 6, and the warning says so',
+        + 'the wide bench is 4 of 8 and at its quorum, the roster is 4 of 10 against a quorum of 5, and the warning '
+        + 'says so',
       fn: async () => {
         const { lines, } = await readOver({ phase: 'preparation', view: ROSTER_SHORT, },);
-        expect(shortWarningOf({ lines, phase: 'preparation', },),).toContain('roster 5 of 10 reachable, quorum 6',);
+        expect(shortWarningOf({ lines, phase: 'preparation', },),).toContain('roster 4 of 10 reachable, quorum 5',);
       },
     },),
 
@@ -144,18 +163,28 @@ await describe({
       fn: async () => {
         const { lines, } = await readOver({ phase: 'insertion admission', view: ROSTER_SHORT, },);
         expect(shortWarningOf({ lines, phase: 'insertion admission', },),).toContain(
-          'roster 5 of 10 reachable, quorum 6',
+          'roster 4 of 10 reachable, quorum 5',
         );
       },
     },),
 
     it({
-      name: 'READS THE SELECT JUDGES IN THE LANES PHASE, whose repair and translate lanes slate-judge with '
-        + '`seats.selectJudges`: the wide bench is 4 of 7 and at its quorum, the select judges are 4 of 8 against a '
-        + 'quorum of 5, and the warning says so',
+      name: 'LEAVES THE SELECT JUDGES OUT OF THE LANES ROW BECAUSE THEY STAND SHORT ONLY WHERE THE WIDE BENCH DOES: '
+        + 'over all 256 dryness views, no view has the select judges short of their quorum with the wide bench at '
+        + 'its own',
       fn: async () => {
-        const { lines, } = await readOver({ phase: 'lanes', view: SELECT_SHORT, },);
-        expect(shortWarningOf({ lines, phase: 'lanes', },),).toContain('select 4 of 8 reachable, quorum 5',);
+        /**
+         Views where the select judges are short and the wide bench is not.
+         */
+        const unmatched = allViews().filter(function selectOnlyShort(dry,): boolean {
+          /**
+           Benches as derived for this view.
+           */
+          const benches = benchesOf({ seats: judgeSeatsFor({ dry, },), },);
+          return (shortBenches({ benches, names: ['select',], dry, },).length > 0)
+            && (shortBenches({ benches, names: ['wide',], dry, },).length === 0);
+        },);
+        expect(unmatched,).toEqual([],);
       },
     },),
 

@@ -21,6 +21,7 @@ import {
 import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import { rosterQuorumSize, } from '@monochromatic-dev/translation-repair-stage';
 import {
+  benchesOf,
   judgeSeatsFor,
   phaseBenches,
   reachableSeats,
@@ -114,16 +115,7 @@ const HYPER_ALONE: BudgetView = {
 function benchesUnder(
   { dry, }: { readonly dry: BudgetView; },
 ) {
-  const seats = judgeSeatsFor({ dry, },);
-  return {
-    wide: seats.wideSeats,
-    select: seats.selectJudges,
-    slate: seats.slateJudges,
-    editors: seats.repairModels.editorModelIds,
-    refiners: seats.repairModels.refinerModelIds,
-    translators: seats.translators,
-    readers: seats.readers,
-  };
+  return benchesOf({ seats: judgeSeatsFor({ dry, },), },);
 }
 
 await describe({
@@ -342,14 +334,14 @@ await describe({
               'page consistency',
             ] as const;
             expect(
-              Object.fromEntries(phases.map(function benchesOf(phase,) {
+              Object.fromEntries(phases.map(function benchesOfPhase(phase,) {
                 return [phase, phaseBenches({ phase, },),];
               },),),
             ).toEqual({
               preparation: ['roster',],
               pictures: ['readers',],
               'insertion admission': ['roster',],
-              lanes: ['wide', 'select', 'editors', 'refiners', 'translators',],
+              lanes: ['wide', 'editors', 'refiners', 'translators',],
               'translate lane': ['translators', 'select',],
               'lane contest': ['late',],
               consolidation: ['slate', 'late',],
