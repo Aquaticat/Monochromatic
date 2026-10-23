@@ -46,17 +46,20 @@ const NOT_A_LABEL = 'not-a-label-of-any-vocabulary';
 /**
  Reads the labels a schema lists for one member.
 
- @param schema - the `properties` of a contest format, as the format holds them
+ @param schema - `properties` of a contest format, as the format holds them
 
  @param member - member whose `enum` is read
 
- @returns The listed labels
+ @returns Listed labels
 
  @throws {@link TypeError} where the member lists none, so a check over the labels cannot pass for want of any
 
  @example
  ```ts
- const labels = listedLabels({ schema: LANE_CONTEST_RESPONSE_FORMAT.json_schema.schema.properties, member: 'verdict', },);
+ const labels = listedLabels({
+   schema: LANE_CONTEST_RESPONSE_FORMAT.json_schema.schema.properties,
+   member: 'verdict',
+ },);
  ```
  */
 function listedLabels(
@@ -123,7 +126,9 @@ await describe({
         /**
          Ballot read from a reply whose archive verdict is no label.
          */
-        const unreadArchive = readLaneContestBallot({ wire: wireOf(CANDIDATE_NAMES[0] ?? '', NOT_A_LABEL,) as never, },);
+        const unreadArchive = readLaneContestBallot({
+          wire: wireOf(CANDIDATE_NAMES[0] ?? '', NOT_A_LABEL,) as never,
+        },);
         expect(unreadArchive.archive,).toBeUndefined();
       },
     },),

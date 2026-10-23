@@ -190,7 +190,8 @@ await describe({
               WRITER_GRACE_BUILT_IN,
               pinLine({ clone, },),
               'CAP TOO TIGHT: an attempt runs 60000ms, which is not longer than the 460000ms one model '
-                + 'exchange is allowed (360000ms by default, 460000ms for a Claude exchange). Attempts are cut before an exchange can return, so no slice caches, every '
+                + 'exchange is allowed (360000ms by default, 460000ms for a Claude exchange). Attempts are cut before '
+                + 'an exchange can return, so no slice caches, every '
                 + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
                 + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
                 + 'path deliberately.',

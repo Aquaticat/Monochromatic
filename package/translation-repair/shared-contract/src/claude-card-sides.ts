@@ -112,10 +112,10 @@ export const CLAUDE_COMPLETION_CAP = 32_000;
  Slowest whole-call output rate a Claude call is sized for, in tokens a second, thinking counted.
 
  MEASURED, 2026-10-22 22:02 to 22:03 UTC, by the lead's live probe (the figures are kept in
- `doc/claude-route-probe-figures-and-review-handles.md`): Haiku 5.5 170.2 and 152.6 tokens a second, Sonnet 5.5
- 113.8 and 101.3, two short-prompt samples each with no spread measured. 80 sits about a fifth under the slowest
- measured call, Sonnet's 101.3. A FLOOR TO SIZE A DEADLINE BY, NOT A PREDICTION: the first corpus pass's `SPEND` lines and elapsed times say whether a longer prompt
- or a loaded hour runs slower.
+ `package/translation-repair/doc/claude-route-probe-figures-and-review-handles.md`): Haiku 5.5 170.2 and 152.6 tokens a
+ second, Sonnet 5.5 113.8 and 101.3, two short-prompt samples each with no spread measured. 80 sits about a fifth under
+ the slowest measured call, Sonnet's 101.3. A FLOOR TO SIZE A DEADLINE BY, NOT A PREDICTION: the first corpus pass's
+ `SPEND` lines and elapsed times say whether a longer prompt or a loaded hour runs slower.
  */
 export const CLAUDE_FLOOR_TOKENS_PER_SECOND = 80;
 

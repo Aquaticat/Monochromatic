@@ -333,7 +333,7 @@ type LateClaudeProbe = {
  @param waitForEnd - whether to wait for the probe to end once the ticking is done, which a probe meant to outlast the
  ticking does not
 
- @param sinon - the case's own sandbox
+ @param sinon - case's own sandbox
 
  @returns What the probe printed and what the transport saw
 
@@ -414,8 +414,8 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'ARMS NO CALLER-SIDE TIMEOUT SIGNAL (F1 of the re-check of the second fix round): a signal that aborts at the '
-        + 'per-call figure cuts a Claude call at 360,000 ms whatever deadline the client arms inside',
+      name: 'ARMS NO CALLER-SIDE TIMEOUT SIGNAL (F1 of the re-check of the second fix round): a signal that aborts at '
+        + 'the per-call figure cuts a Claude call at 360,000 ms whatever deadline the client arms inside',
       fn: async (ctx) => {
         const timeoutSignal = ctx.sinon.spy(
           AbortSignal,
@@ -438,7 +438,8 @@ await describe({
       },
     },),
     it({
-      name: 'ARMS A CLAUDE SEAT AT THE CLAUDE DEADLINE, 460,000 MS, WHICH THE PROBE\'S OWN PER-CALL FIGURE DOES NOT REACH',
+      name: 'ARMS A CLAUDE SEAT AT THE CLAUDE DEADLINE, 460,000 MS, WHICH THE PROBE\'S OWN PER-CALL FIGURE DOES NOT '
+        + 'REACH',
       fn: async (ctx) => {
         const { transport, } = scripted({
           replies: [{
@@ -490,8 +491,8 @@ await describe({
     },),
     it({
       name: 'CUTS A CLAUDE REPLY THAT LANDS AT 500,000 MS AT 460,000 MS, not before (the positive control of N4): the '
-        + 'rig shows the client\'s own deadline firing, so the heard reply at 400,000 ms is a measurement and not a rig '
-        + 'that cannot cut',
+        + 'rig shows the client\'s own deadline firing, so the heard reply at 400,000 ms is a measurement and not a '
+        + 'rig that cannot cut',
       fn: async (ctx) => {
         const probed = await probeClaudeLandingAfter({ landMs: 500_000,
           ticks: [CLAUDE_DEADLINE_MS - 1, 1,],

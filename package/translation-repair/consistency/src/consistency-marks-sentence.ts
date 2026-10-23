@@ -1,7 +1,7 @@
 //region Consistency marks sentence
-// The marks are chosen against every text a call shows, so a text that holds a run of them lengthens them for that call.
-// The sentence naming them is therefore a value of the call and opens the user turn; the rules in the system prompt are
-// the same text on every call and so are written once into the cache.
+// The marks are chosen against every text a call shows, so a text that holds a run of them lengthens them for that
+// call. The sentence naming them is therefore a value of the call and opens the user turn; the rules in the system
+// prompt are the same text on every call and so are written once into the cache.
 
 /**
  The sentence that tells the judge or the writer which marks enclose the repeated wording, for the head of a user turn.
@@ -29,7 +29,8 @@ export function marksSentenceOf(
     readonly shown: 'ORIGINAL' | 'paragraph';
   },
 ): string {
-  return `In each ${shown} the repeated wording is enclosed between ${marks.open} and ${marks.close}; the marks are not part of the text.`;
+  return `In each ${shown} the repeated wording is enclosed between ${marks.open} and ${marks.close}; `
+    + 'the marks are not part of the text.';
 }
 
 //endregion Consistency marks sentence

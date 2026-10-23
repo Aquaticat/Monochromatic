@@ -75,7 +75,8 @@ function renderingBreakLine(rendering: BreakRendering,): string {
 
  @param syntax - metadata uses a different grammar and never gets this body rule
 
- @returns One count per source block, or none where the rule does not apply (a source with an explicit break always has blocks)
+ @returns One count per source block, or none where the rule does not apply (a source with an explicit break always
+ has blocks)
 
  @example
  ```ts

@@ -315,13 +315,15 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 
  The answer schemas of the range ride inside this number, checked on 2026-10-22 (F6 of the re-check of the second fix
  round) and not assumed: the lane contest's ballot (`lane-contest/src/contest-ballot-wire.ts`, through
- `contestResponseFormat`) lists its verdicts as an enum built from the constant its guard reads (P1, `f9e4fc3097`).
- The key hashes the version, the shape of the run and the texts, not the schema, so only the number retires a record.
- `f9e4fc3097` is an ancestor of `33ca9974f2`, which set this number (`git merge-base --is-ancestor`), and it is not
- an ancestor of `8864316eb2`, the tip of runs zheermao23 and XingZ6018, so no record written by code without it can
- stand at this number. `git branch --all --contains 33ca9974f2` finds no branch and no worktree but this one, so no
- build, and no record, holds the number anywhere else. The one bump covers both the system text and the schemas, and
- the number does not move twice for one release.
+ `contestResponseFormat`) lists its verdicts as an enum built from the constant its guard reads (P1, `f9e4fc3097`). The
+ key hashes the version, the shape of the run and the texts, not the schema, so only the number retires a record.
+ `f9e4fc3097` is an ancestor of `33ca9974f2`, which set this number (`git merge-base --is-ancestor`), and it is not an
+ ancestor of `8864316eb2`, the tip of runs zheermao23 and XingZ6018, so no record written by code without it can stand
+ at this number. `git branch --all --contains 33ca9974f2` lists no branch (it lists branches only), and checking each
+ entry of `git worktree list` with `git merge-base --is-ancestor` finds the commit in `tr-w289` and `tr-w305` alone,
+ both at detached heads (checked 2026-10-23), so no build outside those two worktrees, and no record such a build wrote,
+ holds the number. The one bump covers both the system text and the schemas, and the number does not move twice for one
+ release.
  */
 export const LANE_CONTEST_CACHE_VERSION = 17;
 

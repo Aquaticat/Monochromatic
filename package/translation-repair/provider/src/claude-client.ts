@@ -549,12 +549,12 @@ export function createClaudeClient(
         maxTokens,
       },),);
 
-      // THE CALLER'S DEADLINE IS A FLOOR UNDER A CLAUDE CALL'S OWN (R1 of the second review of the Claude route, kept in
-      // `doc/claude-route-probe-figures-and-review-handles.md`). The
-      // run hands every call 360,000 ms (`RUN_PER_CALL_TIMEOUT_MS`), and a completion of the 32,000-token cap needs
-      // 460,000 ms at the floor rate of 80 tokens a second (`claudeCallDeadlineMs`), so below 89 tokens a second a call
-      // that thinks up to the cap would be cut, billed for what it generated and answer nothing. The larger of the two
-      // is armed: a caller's longer deadline stands, and a caller that set none still gets none, as in every client.
+      // THE CALLER'S DEADLINE IS A FLOOR UNDER A CLAUDE CALL'S OWN (R1 of the second review of the Claude route, kept
+      // in `package/translation-repair/doc/claude-route-probe-figures-and-review-handles.md`). The run hands every call
+      // 360,000 ms (`RUN_PER_CALL_TIMEOUT_MS`), and a completion of the 32,000-token cap needs 460,000 ms at the floor
+      // rate of 80 tokens a second (`claudeCallDeadlineMs`), so below 89 tokens a second a call that thinks up to the
+      // cap would be cut, billed for what it generated and answer nothing. The larger of the two is armed: a caller's
+      // longer deadline stands, and a caller that set none still gets none, as in every client.
       /**
        Per-exchange deadline armed inside the slot, absent when the caller set none.
        */

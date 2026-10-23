@@ -23,8 +23,12 @@ import {
   claudeStreamOf,
   PLAIN_USAGE,
 } from '@monochromatic-dev/translation-repair-provider/ts/claude-client.test-fixture.ts';
-import { transportLandingAfter, } from '@monochromatic-dev/translation-repair-provider/ts/delayed-transport.test-fixture.ts';
-import { walkOnFakeClock, } from '@monochromatic-dev/translation-repair-test-fixture/ts/fake-clock-walk.test-fixture.ts';
+import {
+  transportLandingAfter,
+} from '@monochromatic-dev/translation-repair-provider/ts/delayed-transport.test-fixture.ts';
+import {
+  walkOnFakeClock,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/fake-clock-walk.test-fixture.ts';
 import { askModelHealth, } from '../../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
@@ -118,7 +122,7 @@ const LONGEST_TICKING_MS = 520_000;
  @param waitForEnd - whether to wait for the probe to end once the ticking is done, which a probe meant to outlast the
  ticking does not
 
- @param sinon - the case's own sandbox
+ @param sinon - case's own sandbox
 
  @returns Lines logged, the reasons exchanges were cut for, the cuts counted after each tick, whether the probe ended by
  itself, and what the probe threw
@@ -202,7 +206,8 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'ARMS NO CALLER-SIDE TIMEOUT SIGNAL (F1 of the re-check of the second fix round): the client arms the deadline '
+      name: 'ARMS NO CALLER-SIDE TIMEOUT SIGNAL (F1 of the re-check of the second fix round): the client arms the '
+        + 'deadline '
         + 'from `exchangeTimeoutMs`, and a signal that aborts at the same figure would cut a Claude call before the '
         + 'Claude deadline',
       fn: async (ctx) => {
@@ -238,7 +243,12 @@ await describe({
       name: 'CUTS A CLAUDE REPLY THAT LANDS AT 500,000 MS AT 460,000 MS, not before (the positive control of N4): the '
         + 'rig shows the client\'s own deadline firing, so the heard reply at 400,000 ms is a measurement',
       fn: async (ctx) => {
-        const asked = await askClaudeLandingAfter({ landMs: 500_000, ticks: [CLAUDE_DEADLINE_MS - 1, 1,], waitForEnd: false, sinon: ctx.sinon, },);
+        const asked = await askClaudeLandingAfter({
+          landMs: 500_000,
+          ticks: [CLAUDE_DEADLINE_MS - 1, 1,],
+          waitForEnd: false,
+          sinon: ctx.sinon,
+        },);
 
         expect(asked.cutsAfterEachTick,).toEqual([0, 1,],);
       },

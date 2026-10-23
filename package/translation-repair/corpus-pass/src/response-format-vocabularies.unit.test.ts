@@ -82,8 +82,8 @@ function screenKnowsVerdict({ value, }: { readonly value: string; },): boolean {
 }
 
 /**
- Whether the rendering-audit screen takes a category as one it knows: a finding of it is dropped for its quotes or not at
- all, and never as an `unknown-category`.
+ Whether the rendering-audit screen takes a category as one it knows: a finding of it is dropped for its quotes or not
+ at all, and never as an `unknown-category`.
 
  @param value - category an auditor wrote
 

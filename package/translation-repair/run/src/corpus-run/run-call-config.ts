@@ -140,9 +140,9 @@ export function runCallConfigOf(
  The pool it labels is deliberately MIXED, by a decision the user made twice:
  keep already-settled entries rather than discard the compute.
 
- An earlier version of this note promised more than the stamp can deliver: it
+ The version of this note in commit `e819e7ff2e` (2026-07-26) promised more than the stamp can deliver: it
  said precision could be split by cohort at analysis time, turning the
- confound into a number. RETRACTED, because the arithmetic does not support
+ confound into a number. RETRACTED in commit `6173cb82d1` (2026-07-27), because the arithmetic does not support
  it. The graded sample is 50 items and the pool at the coverage bar is about
  30 entries split near evenly between cohorts, so a per-cohort precision
  estimate rests on roughly 25 graded items and carries a standard error near

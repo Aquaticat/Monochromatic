@@ -165,7 +165,8 @@ ${
 
 `
       : ''
-  }Your task is to choose the candidate that renders the ORIGINAL best under the house rules while rendering the repeated wording as the CHOSEN RENDERING renders it in every receiving place.
+  }Your task is to choose the candidate that renders the ORIGINAL best under the house rules while rendering the \
+repeated wording as the CHOSEN RENDERING renders it in every receiving place.
 
 The words of the current paragraph that now render the repeated wording in each receiving place are shown as THE WORDS TO REPLACE (numbered, one for each receiving place, when there are several); they are what a candidate replaces.
 

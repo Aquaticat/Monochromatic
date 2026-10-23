@@ -1069,8 +1069,8 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  @param off - providers left off, whose keys are read as unset; the owner's rulings by
  default (`PROVIDERS_LEFT_OFF`), an empty list in a case that exercises an off provider's client
 
- @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out (REQUIRED, so no client runs with an
- unbounded hold)
+ @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out (REQUIRED, so no client runs with
+ an unbounded hold)
 
  @returns Ready client, routed across configured providers and counted per seat
 
@@ -1225,7 +1225,7 @@ export function runClientFrom(
  transport, handed to `runClientFrom`. The one place those two are named for
  every runner, so no library function or test reaches them by default.
 
- @param options - the longest hold a stated wait may set, which is required: the runner's hard cap, or the probe bound
+ @param options - longest hold a stated wait may set, which is required: the runner's hard cap, or the probe bound
  where its command has none; and the payload checkpoint, when the runner keeps one
 
  @returns Ready client, routed across configured providers and counted per seat

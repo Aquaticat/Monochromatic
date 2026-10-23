@@ -586,8 +586,16 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: 'production\'s built-in cap of 420 minutes, read back in the launch lines',
   },
-  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 400_000': { count: 1, bound: 'read back', reason: PRINTED, },
-  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 510_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 400_000': {
+    count: 1,
+    bound: 'read back',
+    reason: PRINTED,
+  },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 510_000': {
+    count: 1,
+    bound: 'read back',
+    reason: PRINTED,
+  },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 600_000': { count: 1, bound: 'read back', reason: PRINTED, },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 60_000': { count: 1, bound: 'read back', reason: PRINTED, },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 90_000': { count: 1, bound: 'read back', reason: PRINTED, },
@@ -641,14 +649,14 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'bench/corpus-run/model-health-probe.unit.test.ts#askOnce: timeoutMs: RUN_PER_CALL_MS': {
     count: 1,
     bound: 'other',
-    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at it '
-      + 'is the finding (N4 of the re-check of fix rounds 3 and 4)',
+    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at '
+      + 'it is the finding (N4 of the re-check of fix rounds 3 and 4)',
   },
   'bench/corpus-run/translate-probe-run.unit.test.ts#probeClaudeLandingAfter: perCallTimeoutMs: RUN_PER_CALL_MS': {
     count: 1,
     bound: 'other',
-    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at it '
-      + 'is the finding (N4 of the re-check of fix rounds 3 and 4)',
+    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at '
+      + 'it is the finding (N4 of the re-check of fix rounds 3 and 4)',
   },
   'bench/corpus-run/translate-probe-run.unit.test.ts#walkOnce: perCallTimeoutMs: perCallTimeoutMs': {
     count: 1,
@@ -664,7 +672,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'test-fixture/fake-clock-walk.test-fixture.ts#timeoutOnFakeClock: setTimeout ms': {
     count: 1,
     bound: 'other',
-    reason: 'the figure a signal factory call was handed, put on the fake clock so the signal aborts at it in fake time',
+    reason: 'the figure a signal factory call was handed, put on the fake clock so the signal aborts at it in fake '
+      + 'time',
   },
   'corpus-pass/corpus-run/pass-entry.unit.test.ts#entryClient: wait of module-async-time 10': {
     count: 1,
@@ -687,9 +696,21 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: CUT_TO_SHORT_WINDOW,
   },
   'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 360_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
-  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 900_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
-  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamFirstContentMs: 120_000': { count: 3, bound: 'other', reason: PURE_BOUND_CHECK, },
-  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamIdleMs: 90_000': { count: 3, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 900_000': {
+    count: 1,
+    bound: 'other',
+    reason: PURE_BOUND_CHECK,
+  },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamFirstContentMs: 120_000': {
+    count: 3,
+    bound: 'other',
+    reason: PURE_BOUND_CHECK,
+  },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamIdleMs: 90_000': {
+    count: 3,
+    bound: 'other',
+    reason: PURE_BOUND_CHECK,
+  },
   'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: perCallTimeoutMs: 360_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
   'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: streamFirstContentMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
   'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: streamIdleMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
@@ -804,8 +825,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'markup/monotonic-clock.unit.test.ts#<module>: wait of module-async-time 5': {
     count: 1,
     bound: 'other',
-    reason: 'a real wait the case crosses, after which it asserts only that the reading has not gone back, which '
-      + 'load cannot break',
+    reason: 'a real wait the case crosses, after which it asserts only that the reading has not gone back, which load '
+      + 'cannot break',
   },
   'provider/neuralwatt-routing.unit.test.ts#<module>: freshForMs: 0': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
   'provider/openrouter-abandoned-spend.unit.test.ts#<module>: firstByteMs: 500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
@@ -999,8 +1020,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'provider/stream-bound.unit.test.ts#<module>: wait of module-async-time SHORT_BOUND_MS * 2': {
     count: 1,
     bound: 'reached',
-    reason: 'the wait that must outlast a bound armed before it and half its length, so the bound fires first on '
-      + 'any machine',
+    reason: 'the wait that must outlast a bound armed before it and half its length, so the bound fires first on any '
+      + 'machine',
   },
   'provider-stream/stream-cut.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/stream-cut.unit.test.ts#<module>: firstContentMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },

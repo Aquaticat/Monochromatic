@@ -724,7 +724,11 @@ await describe({
             /**
              Client under test, whose first provider rejects its credential.
              */
-            const client = runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport: refuseFirstProviderCredential, },);
+            const client = runClientFrom({
+              maxHoldMs: TEST_MAX_HOLD_MS,
+              env: TWO_KEYS,
+              transport: refuseFirstProviderCredential,
+            },);
             const { signal, } = new AbortController();
 
             /**
@@ -930,7 +934,11 @@ await describe({
              What the second provider's seat came to on a client keyed for the first alone.
              */
             const came = await askSeat({
-              client: runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', }, transport, },),
+              client: runClientFrom({
+                maxHoldMs: TEST_MAX_HOLD_MS,
+                env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', },
+                transport,
+              },),
               modelId: SECOND_ONLY_SEAT,
             },);
 

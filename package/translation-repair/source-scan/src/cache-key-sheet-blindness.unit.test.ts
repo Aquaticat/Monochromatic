@@ -1,7 +1,7 @@
 /**
- Guards the premise of ledger M28 for the five prompt-keyed caches (R4 of the third review of the Claude route): the key of
- a stored record hashes a version, the shape of the run and the texts, and reads no sheet builder, so a change to a sheet's
- wording moves no key and only the version number retires a record written under the old wording.
+ Guards the premise of ledger M28 for the five prompt-keyed caches (R4 of the third review of the Claude route): the key
+ of a stored record hashes a version, the shape of the run and the texts, and reads no sheet builder, so a change to a
+ sheet's wording moves no key and only the version number retires a record written under the old wording.
 
  The census is the imports of the five key files. A key file that began to import a wire or sheet module would hash the
  sheet itself, and the hand bump this change makes would stop being the only way to retire a record; the case then fails
@@ -91,8 +91,8 @@ await describe({
   children: [
     ...KEY_FILES.map(function caseOf({ path, constant, },) {
       return it({
-        name: `READ NO SHEET OR WIRE MODULE in ${path}, which hashes ${constant}: a change to the sheets' wording moves `
-          + 'no key, so the number is moved by hand (ledger M28)',
+        name: `READ NO SHEET OR WIRE MODULE in ${path}, which hashes ${constant}: a change to the sheets' wording `
+          + `moves no key, so the number is moved by hand (ledger M28)`,
         fn: async () => {
           /**
            The key file's text.
@@ -102,16 +102,20 @@ await describe({
             'utf8',
           );
           expect(sheetImportsOf({ text, },),).toEqual([],);
-          // THE VERSION IS KEY INPUT, which is what makes a moved number retire a record: the constant is read inside the file.
+          // THE VERSION IS KEY INPUT, which is what makes a moved number retire a record: the constant is read inside
+          // the file.
           expect(text.includes(`${constant},`,),).toBe(true,);
         },
       },);
     },),
 
     it({
-      name: 'FINDS A KEY FILE THAT IMPORTS A WIRE (the positive control): the filter can tell a sheet import from a plain one',
+      name: 'FINDS A KEY FILE THAT IMPORTS A WIRE (the positive control): the filter can tell a sheet import from a '
+        + 'plain one',
       fn: async () => {
-        expect(sheetImportsOf({ text: 'import { a, } from \'./candidate-select-wire.ts\';\nimport { b, } from \'./b.ts\';', },),).toEqual([
+        expect(sheetImportsOf({
+          text: 'import { a, } from \'./candidate-select-wire.ts\';\nimport { b, } from \'./b.ts\';',
+        },),).toEqual([
           './candidate-select-wire.ts',
         ],);
       },

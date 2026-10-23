@@ -188,7 +188,11 @@ await describe({
       name: 'COUNTS A MEMBER THAT USES anyOf OR A TYPE ARRAY AS A UNION, and refuses past 16 where 16 stands',
       fn: async () => {
         expect(structuralRefusalOf({
-          schema: membersOf({ names: catNames({ count: 17, },), required: 17, member: { type: ['string', 'null',], }, },),
+          schema: membersOf({
+            names: catNames({ count: 17, },),
+            required: 17,
+            member: { type: ['string', 'null',], },
+          },),
         },),).toEqual([{
           refusedKeyword: '17 parameters that use a union type, where the page allows 16 in one request',
           schemaPath: 'root',
@@ -201,7 +205,11 @@ await describe({
           },),
         },).length,).toBe(1,);
         expect(structuralRefusalOf({
-          schema: membersOf({ names: catNames({ count: 16, },), required: 16, member: { type: ['string', 'null',], }, },),
+          schema: membersOf({
+            names: catNames({ count: 16, },),
+            required: 16,
+            member: { type: ['string', 'null',], },
+          },),
         },),).toEqual([],);
         expect(structuralRefusalOf({
           schema: { type: 'object', properties: { spot: true, }, required: ['spot',], },
@@ -210,14 +218,19 @@ await describe({
     },),
 
     it({
-      name: 'REPORTS ONE REFUSAL, A NODE\'S OWN BEFORE A CYCLE BEFORE A COUNT, so the message names the first thing to mend',
+      name: 'REPORTS ONE REFUSAL, A NODE\'S OWN BEFORE A CYCLE BEFORE A COUNT, so the message names the first thing to '
+        + 'mend',
       fn: async () => {
         expect(structuralRefusalOf({
           schema: {
             ...membersOf({ names: catNames({ count: 25, },), required: 0, member: { type: 'string', }, },),
             $defs: { loop: { $ref: '#/$defs/loop', }, },
             properties: {
-              ...(membersOf({ names: catNames({ count: 25, },), required: 0, member: { type: 'string', }, },).properties as object),
+              ...(membersOf({
+                names: catNames({ count: 25, },),
+                required: 0,
+                member: { type: 'string', },
+              },).properties as object),
               away: { $ref: 'http://example.test/away.json', },
             },
           },

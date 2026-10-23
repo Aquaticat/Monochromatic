@@ -326,7 +326,7 @@ function nothingWatched(): Watched {
  A producer of one answer schema that writes `oneOf`, which the Claude route cannot send.
 
  @param file - file the producer stands for
- @param name - the schema's own name
+ @param name - schema's own name
 
  @returns Producer of that one schema
 

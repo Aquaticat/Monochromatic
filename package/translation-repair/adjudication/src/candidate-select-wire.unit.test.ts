@@ -73,8 +73,10 @@ await describe({
         },),
 
         it({
-          name: 'STATES THE FENCE LENGTH IN THE USER TURN AND NOT THE SYSTEM TEXT (R4 of the second review of the Claude '
-            + 'route): five signs for a text holding a run of four, six for a run of five, so the system text is the same '
+          name: 'STATES THE FENCE LENGTH IN THE USER TURN AND NOT THE SYSTEM TEXT (R4 of the second review of the '
+            + 'Claude '
+            + 'route): five signs for a text holding a run of four, six for a run of five, so the system text is the '
+            + 'same '
             + 'for every call and the model is still told the true length',
           fn: async () => {
             /**
@@ -123,8 +125,12 @@ await describe({
             const five = exchangeWith(5,);
             expect(four.system,).toBe(five.system,);
             expect(four.system.includes('equals signs',),).toBe(false,);
-            expect(four.user.startsWith('Every block below opens and closes with a line of 5 equals signs.',),).toBe(true,);
-            expect(five.user.startsWith('Every block below opens and closes with a line of 6 equals signs.',),).toBe(true,);
+            expect(
+              four.user.startsWith('Every block below opens and closes with a line of 5 equals signs.',),
+            ).toBe(true,);
+            expect(
+              five.user.startsWith('Every block below opens and closes with a line of 6 equals signs.',),
+            ).toBe(true,);
           },
         },),
       ],

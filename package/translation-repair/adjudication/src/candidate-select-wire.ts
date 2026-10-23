@@ -501,8 +501,8 @@ export function buildCandidateSelectMessages(
     : `${evidenceBlock}\n\n${block}\n\n${communityBlock.join('\n',)}`;
 
   // THE FENCE LENGTH IS STATED IN THE USER TURN, NOT THE SYSTEM TEXT (R4 of the second review of the Claude route). The
-  // fence grows past any run of equals signs a shown text holds, so a sentence naming its length in the system text made
-  // that text differ from call to call, and the Claude body marks the system field for the five-minute cache. The
+  // fence grows past any run of equals signs a shown text holds, so a sentence naming its length in the system text
+  // made that text differ from call to call, and the Claude body marks the system field for the five-minute cache. The
   // length stays exact and stays at the head of the turn the blocks are in, because it is the defence against a shown
   // text closing its own block: the model is told the true length.
   /**

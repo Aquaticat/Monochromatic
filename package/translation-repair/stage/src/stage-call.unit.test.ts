@@ -215,8 +215,8 @@ await describe({
     it({
       name: 'RETHROWS A REQUEST THE ROUTE REFUSED AS MALFORMED, unlogged as a lost voice (F5 of the re-check of the '
         + 'second fix round): a schema keyword the Claude route cannot send, a conversation that ends on an assistant '
-        + 'turn or holds no turn to answer, and a seat that is no Claude card are faults of our own stage code, which a '
-        + 'lost voice would hide behind one warn line for every call of the stage',
+        + 'turn or holds no turn to answer, and a seat that is no Claude card are faults of our own stage code, which '
+        + 'a lost voice would hide behind one warn line for every call of the stage',
       fn: async () => {
         /**
          Faults the route raises before any exchange, one of each class.
@@ -249,10 +249,10 @@ await describe({
     },),
 
     it({
-      name: 'RETHROWS A SEAT HANDED TO A CLIENT THAT DOES NOT SERVE IT, AND A SCHEMA NAME THE PROTOCOL REJECTS (N1 of the '
-        + 're-check of fix rounds 3 and 4): each is thrown from local state, the roster lookup of one of the eight '
-        + 'clients or the name of the stage\'s own schema, before any exchange, so it recurs on every call of the '
-        + 'stage like the four classes before it',
+      name: 'RETHROWS A SEAT HANDED TO A CLIENT THAT DOES NOT SERVE IT, AND A SCHEMA NAME THE PROTOCOL REJECTS (N1 of '
+        + 'the re-check of fix rounds 3 and 4): each is thrown from local state, the roster lookup of one of the '
+        + 'eight clients or the name of the stage\'s own schema, before any exchange, so it recurs on every call of '
+        + 'the stage like the four classes before it',
       fn: async () => {
         /**
          Faults the clients and the request builder raise before any exchange, one of each class.
@@ -348,10 +348,9 @@ await describe({
     },),
 
     it({
-      name: 'NAMES THE SUB-KIND when a schema mismatch loses a voice, because '
-        + 'schema-mismatch covers truncated thinking, unparseable content and '
-        + 'a rejected guard, which need three different fixes and read '
-        + 'identically without it',
+      name: 'NAMES THE SUB-KIND when a schema mismatch loses a voice, because schema-mismatch covers truncated '
+        + 'thinking, unparseable content and a rejected guard, which need three different fixes and read identically '
+        + 'without it',
       fn: async () => {
         const warnings: string[] = [];
         const logger = warningRecordingLogger({ base: l, warnings, },);

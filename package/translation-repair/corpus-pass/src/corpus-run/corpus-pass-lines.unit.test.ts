@@ -203,7 +203,8 @@ await describe({
               'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 1 minute rather than '
                 + 'the built-in 420',
               'CAP TOO TIGHT: an attempt runs 60000ms, which is not longer than the 460000ms one model exchange is '
-                + 'allowed (360000ms by default, 460000ms for a Claude exchange). Attempts are cut before an exchange can return, so no slice caches, every attempt '
+                + 'allowed (360000ms by default, 460000ms for a Claude exchange). Attempts are cut before an exchange '
+                + 'can return, so no slice caches, every attempt '
                 + 'reports no progress, and the queue drops the entry as stalled after its second try. Raise the '
                 + 'ceiling above one exchange to buy anything, or keep it here to exercise the stall path '
                 + 'deliberately.',
@@ -220,7 +221,8 @@ await describe({
               claudeCallMs: 25_200_000,
             },),).toEqual([
               'CAP TOO TIGHT: an attempt runs 25200000ms, which is not longer than the 25200000ms one model '
-                + 'exchange is allowed (25200000ms by default, 25200000ms for a Claude exchange). Attempts are cut before an exchange can return, so no slice caches, every '
+                + 'exchange is allowed (25200000ms by default, 25200000ms for a Claude exchange). Attempts are cut '
+                + 'before an exchange can return, so no slice caches, every '
                 + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
                 + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
                 + 'path deliberately.',

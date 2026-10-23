@@ -647,9 +647,10 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  Both `3604fd00c3` and `66eb3f15e4` are ancestors of `33ca9974f2`, which set this number
  (`git merge-base --is-ancestor`), and neither is an ancestor of `8864316eb2`, the tip of runs zheermao23 and
  XingZ6018, so no record written by code without them can stand at this number.
- `git branch --all --contains 33ca9974f2` finds no branch and no worktree but this one, so no build, and no record,
- holds the number anywhere else. The one bump covers both the system text and the schemas, and the number does not
- move twice for one release.
+ `git branch --all --contains 33ca9974f2` lists no branch (it lists branches only), and checking each entry of `git
+ worktree list` with `git merge-base --is-ancestor` finds the commit in `tr-w289` and `tr-w305` alone, both at detached
+ heads (checked 2026-10-23), so no build outside those two worktrees, and no record such a build wrote, holds the
+ number. The one bump covers both the system text and the schemas, and the number does not move twice for one release.
  */
 export const SLICE_CACHE_VERSION = 44;
 /**

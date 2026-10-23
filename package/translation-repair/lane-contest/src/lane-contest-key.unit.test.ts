@@ -82,9 +82,10 @@ await describe({
   name: laneContestSliceKey.name,
   children: [
     it({
-      name: `IS AT VERSION 17 (R4 of the third review): the system text of the selection slates, the writers and the gates moved `
-        + 'in this change (fence length, rendered-break counts), and the key hashes the version, the shape of the run and the texts, '
-        + 'not the sheet, so only this number retires a record written under the sheet before',
+      name: `IS AT VERSION 17 (R4 of the third review): the system text of the selection slates, the writers and the `
+        + `gates moved in this change (fence length, rendered-break counts), and the key hashes the version, the `
+        + `shape of the run and the texts, not the sheet, so only this number retires a record written under the `
+        + `sheet before`,
       fn: async () => {
         expect(LANE_CONTEST_CACHE_VERSION,).toBe(17,);
       },
@@ -298,9 +299,8 @@ await describe({
       },
     },),
     it({
-      name: 'SEPARATES a question asked with a dispute note against the archive from one asked without, '
-        + 'and two different notes from each other, since the judges read the note as evidence (class one '
-        + 'hundred eight)',
+      name: 'SEPARATES a question asked with a dispute note against the archive from one asked without, and two '
+        + 'different notes from each other, since the judges read the note as evidence (class one hundred eight)',
       fn: async () => {
         /**
          Key for the slice asked with one note against its archive rendering.

@@ -6,8 +6,8 @@ import { runClientFrom, } from './run-config.ts';
 import type { RunClient, } from './run-client-contract.ts';
 
 //region Probe run client
-// THE RUN CLIENT A PROBE COMMAND BUILDS, with the hold bound its command lacks. The corpus pass has a hard cap and hands
-// it to the budgets as the longest a stated wait can matter; a probe, a bench or a census has none, and a budgets
+// THE RUN CLIENT A PROBE COMMAND BUILDS, with the hold bound its command lacks. The corpus pass has a hard cap and
+// hands it to the budgets as the longest a stated wait can matter; a probe, a bench or a census has none, and a budgets
 // instance built without a bound once held a provider out for as long as a refusal stated (N6 of the re-check of fix
 // rounds 3 and 4): `Retry-After: 99999999999` is about 3,170 years, and the wait for the hold polls once a second.
 

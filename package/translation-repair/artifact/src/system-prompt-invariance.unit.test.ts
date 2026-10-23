@@ -267,14 +267,15 @@ await describe({
   children: [
     ...STAGES.map(function caseOf(stage,) {
       return it({
-        name: `IS THE SAME TEXT FOR FOUR SUBJECTS, ONE FORCING A LONGER FENCE AND ONE LONGER MARKS, IN THE ${stage.name.toUpperCase()} SHEET (R4): the cache breakpoint on `
+        name: `IS THE SAME TEXT FOR FOUR SUBJECTS, ONE FORCING A LONGER FENCE AND ONE LONGER MARKS, IN THE `
+          + `${stage.name.toUpperCase()} SHEET (R4): the cache breakpoint on `
           + 'the system block is written once and read on every later call, never rewritten for each subject',
         fn: async () => {
           const { cat, dog, fenced, marked, } = systemTextsOf({ stage, },);
           expect(cat.length,).toBeGreaterThan(0,);
           expect(dog,).toBe(cat,);
-          // A SUBJECT WHOSE TEXTS FORCE A LONGER FENCE gets the same system text: the fence and its length are stated in
-          // the user turn, so a text holding a run of equals signs writes no second cache entry.
+          // A SUBJECT WHOSE TEXTS FORCE A LONGER FENCE gets the same system text: the fence and its length are stated
+          // in the user turn, so a text holding a run of equals signs writes no second cache entry.
           expect(fenced,).toBe(cat,);
           // A SUBJECT WHOSE TEXTS HOLD A STRAY RUN OF THE CONSISTENCY MARKS gets the same system text: the marks are
           // stated in the user turn too.
@@ -305,10 +306,13 @@ await describe({
     },)
       .map(function fenceCaseOf(stage,) {
         return it({
-          name: `STATES IN THE USER TURN THE FENCE LENGTH THE ${stage.name.toUpperCase()} BLOCKS USE (R4): the sentence opens the user `
-            + 'turn with the true length, including for a text holding a run of equals signs',
+          name: `STATES IN THE USER TURN THE FENCE LENGTH THE ${stage.name.toUpperCase()} BLOCKS USE (R4): the `
+            + `sentence opens the user turn with the true length, including for a text holding a run of equals signs`,
           fn: async () => {
-            expect(fenceStatedBy({ stage, subject: CAT_SUBJECT, },),).toEqual({ stated: PLAIN_FENCE, longestFenceLine: PLAIN_FENCE, },);
+            expect(fenceStatedBy({
+              stage,
+              subject: CAT_SUBJECT,
+            },),).toEqual({ stated: PLAIN_FENCE, longestFenceLine: PLAIN_FENCE, },);
             expect(fenceStatedBy({ stage, subject: FENCED_SUBJECT, },),).toEqual({
               stated: FORCED_FENCE,
               longestFenceLine: FORCED_FENCE,
@@ -322,11 +326,15 @@ await describe({
     },)
       .map(function marksCaseOf(stage,) {
         return it({
-          name: `STATES IN THE USER TURN THE MARKS THE ${stage.name.toUpperCase()} PARAGRAPHS CARRY (R4): the sentence naming the `
-            + 'marks is in the user turn with the true marks, including for a text holding a stray run of them',
+          name: `STATES IN THE USER TURN THE MARKS THE ${stage.name.toUpperCase()} PARAGRAPHS CARRY (R4): the `
+            + `sentence naming the marks is in the user turn with the true marks, including for a text holding a `
+            + `stray run of them`,
           fn: async () => {
             expect(marksStatedBy({ stage, subject: CAT_SUBJECT, },),).toEqual({ open: '⟦', close: '⟧', },);
-            expect(marksStatedBy({ stage, subject: MARKED_SUBJECT, },),).toEqual({ open: FORCED_MARK_OPEN, close: FORCED_MARK_CLOSE, },);
+            expect(marksStatedBy({
+              stage,
+              subject: MARKED_SUBJECT,
+            },),).toEqual({ open: FORCED_MARK_OPEN, close: FORCED_MARK_CLOSE, },);
           },
         },);
       },),
@@ -336,8 +344,9 @@ await describe({
     },)
       .map(function breaksCaseOf(stage,) {
         return it({
-          name: `KEEPS THE BREAK COUNTS OUT OF THE SYSTEM TEXT OF THE ${stage.name.toUpperCase()} SHEET AND IN THE USER TURN (R4): the `
-            + 'fixed instruction is cached, and the measured counts of the call follow the text they measure',
+          name: `KEEPS THE BREAK COUNTS OUT OF THE SYSTEM TEXT OF THE ${stage.name.toUpperCase()} SHEET AND IN THE `
+            + `USER TURN (R4): the fixed instruction is cached, and the measured counts of the call follow the text `
+            + `they measure`,
           fn: async () => {
             /**
              Words that open every measured line of the facts.

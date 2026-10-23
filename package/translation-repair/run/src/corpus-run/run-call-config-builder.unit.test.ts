@@ -62,7 +62,8 @@ await describe({
     },),
 
     it({
-      name: 'STAMPS THE LARGER OF THE CALLER\'S DEADLINE AND THE CLAUDE DEADLINE as the one a Claude call runs under (F2 '
+      name: 'STAMPS THE LARGER OF THE CALLER\'S DEADLINE AND THE CLAUDE DEADLINE as the one a Claude call runs under '
+        + '(F2 '
         + 'of the re-check of the second fix round)',
       fn: async () => {
         await Promise.resolve();

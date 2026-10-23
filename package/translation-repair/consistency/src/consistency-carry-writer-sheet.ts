@@ -201,7 +201,9 @@ function writerRules(
 
 One Chinese wording is repeated in several places of one page. The English of the page was settled one passage at a time, so the places render it differently, and a reader who meets all of them reads the difference as a mistake. A panel of judges has chosen which place's rendering the whole page should follow: the CHOSEN RENDERING. Your task is to make ${places} follow it.
 
-Rewrite the CURRENT ENGLISH PARAGRAPH and return the whole paragraph. The words that now render the repeated wording in ${places} (${toReplace}) must come out rendered as the CHOSEN RENDERING renders it, so that the same Chinese wording reads as the same English in every place.
+Rewrite the CURRENT ENGLISH PARAGRAPH and return the whole paragraph. The words that now render the repeated wording \
+in ${places} (${toReplace}) must come out rendered as the CHOSEN RENDERING renders it, so that the same Chinese \
+wording reads as the same English in every place.
 
 Rules:
 - Change only the words that render the repeated wording. Every other word of the CURRENT ENGLISH PARAGRAPH stays exactly as it is: its names, its tense, its punctuation, its line breaks and its Markdown, apart from what the next rules allow.

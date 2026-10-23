@@ -77,9 +77,10 @@ await describe({
   name: consolidateSliceKey.name,
   children: [
     it({
-      name: `IS AT VERSION 33 (R4 of the third review): the system text of the selection slates, the writers and the gates moved `
-        + 'in this change (fence length, rendered-break counts), and the key hashes the version, the shape of the run and the texts, '
-        + 'not the sheet, so only this number retires a record written under the sheet before',
+      name: `IS AT VERSION 33 (R4 of the third review): the system text of the selection slates, the writers and the `
+        + `gates moved in this change (fence length, rendered-break counts), and the key hashes the version, the `
+        + `shape of the run and the texts, not the sheet, so only this number retires a record written under the `
+        + `sheet before`,
       fn: async () => {
         expect(CONSOLIDATE_CACHE_VERSION,).toBe(33,);
       },
@@ -472,11 +473,10 @@ await describe({
     },),
 
     it({
-      name: 'KEYS NO READINGS AND AN EMPTY READING ALIKE, which the driver depends on: it folds a '
-        + 'slice its map never mentions into the empty string so the sheet and the key cannot '
-        + 'disagree about which spelling the caller used. Were these two keys, every slice near no '
-        + 'readable picture would be re-bought the first time a caller changed its mind about how to '
-        + 'say nothing',
+      name: 'KEYS NO READINGS AND AN EMPTY READING ALIKE, which the driver depends on: it folds a slice its map never '
+        + 'mentions into the empty string so the sheet and the key cannot disagree about which spelling the caller '
+        + 'used. Were these two keys, every slice near no readable picture would be re-bought the first time a caller '
+        + 'changed its mind about how to say nothing',
       fn: async () => {
         expect(consolidateSliceKey({ ...SLICE, pictureContext: '', },),).toBe(
           consolidateSliceKey(SLICE,),

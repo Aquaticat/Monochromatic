@@ -76,7 +76,8 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'CUTS A STATED WAIT PAST THE CAP TO THE CAP, and logs the stated value once however often the provider refuses',
+      name: 'CUTS A STATED WAIT PAST THE CAP TO THE CAP, and logs the stated value once however often the provider '
+        + 'refuses',
       fn: async ctx => {
         /**
          Hold left on the provider after two refusals that each state the huge wait.

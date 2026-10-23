@@ -425,7 +425,12 @@ await describe({
          Clock the budgets read.
          */
         const clock = { now: 10_000, };
-        const budgets = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, anthropic: client, freshForMs: 1_000, now: () => clock.now, },);
+        const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
+          anthropic: client,
+          freshForMs: 1_000,
+          now: () => clock.now,
+        },);
         await budgets.markRefused({
           provider: 'anthropic',
           signal: new AbortController().signal,
@@ -436,10 +441,10 @@ await describe({
     },),
 
     it({
-      name: 'NEVER ARMS A TIMER WITH A HEADER-STATED WAIT PAST THE TIMER\'S RANGE (R7): a retry-after of 99,999,999,999 '
-        + 'seconds ends the ladder on its first reply instead of sleeping or firing at once (a delay over '
-        + '2,147,483,647 ms is clamped to 1 ms by Node), and the hold the budgets keep is the whole stated wait, read '
-        + 'by timestamp',
+      name: 'NEVER ARMS A TIMER WITH A HEADER-STATED WAIT PAST THE TIMER\'S RANGE (R7): a retry-after of '
+        + '99,999,999,999 seconds ends the ladder on its first reply instead of sleeping or firing at once (a delay '
+        + 'over 2,147,483,647 ms is clamped to 1 ms by Node), and the hold the budgets keep is the whole stated wait, '
+        + 'read by timestamp',
       fn: async () => {
         /**
          Rate-limit reply naming a wait no timer can hold, and nothing in its body.
@@ -640,9 +645,9 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A SCHEMA THAT WRITES oneOf WITH ClaudeSchemaKeywordError AND MAKES NO EXCHANGE (F4 of the re-check of '
-        + 'the second fix round): the refusal leaves chatText as the named class, so the caller sees a programming fault '
-        + 'and not an HTTP 400',
+      name: 'REFUSES A SCHEMA THAT WRITES oneOf WITH ClaudeSchemaKeywordError AND MAKES NO EXCHANGE (F4 of the '
+        + 're-check of the second fix round): the refusal leaves chatText as the named class, so the caller sees a '
+        + 'programming fault and not an HTTP 400',
       fn: async () => {
         const { transport, exchanges, } = scripted({ replies: [{ status: 200, bodyText: '', },], },);
         const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);

@@ -17,7 +17,9 @@ import {
   buildConsolidateMessages,
 } from '@monochromatic-dev/translation-repair-consolidate';
 import { buildLaneContestMessages, } from '@monochromatic-dev/translation-repair-lane-contest';
-import type { PromptStage, } from '@monochromatic-dev/translation-repair-repair/ts/system-prompt-subject.test-fixture.ts';
+import type {
+  PromptStage,
+} from '@monochromatic-dev/translation-repair-repair/ts/system-prompt-subject.test-fixture.ts';
 import { buildTranslateMessages, } from '@monochromatic-dev/translation-repair-translate-floor';
 
 //region Break-bearing stages

@@ -19,8 +19,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { HOLD_POLL_MS, } from '@monochromatic-dev/translation-repair-provider';
-import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
-import { withFreshRunSeats, } from '@monochromatic-dev/translation-repair-stage/ts/corpus-run/fresh-run-seats.test-fixture.ts';
+import {
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import {
+  withFreshRunSeats,
+} from '@monochromatic-dev/translation-repair-stage/ts/corpus-run/fresh-run-seats.test-fixture.ts';
 import {
   PROBE_MAX_HOLD_MS,
   probeRunClientFrom,
@@ -59,7 +63,7 @@ async function refusingWithAHugeWait(): Promise<{ readonly status: number; reado
  hold is read; a client that holds the provider out for the whole stated wait would otherwise never let the call end.
 
  @param client - client under test
- @param sinon - the case's own sandbox, which restores the clock when the case ends
+ @param sinon - case's own sandbox, which restores the clock when the case ends
 
  @returns Milliseconds Synthetic is held out for after the first refusal
 

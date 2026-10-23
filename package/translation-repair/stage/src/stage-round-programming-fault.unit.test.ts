@@ -28,7 +28,9 @@ import {
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runGatherRound, } from '../dist/final/node/index.mjs';
-import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
+import {
+  capturingLogger,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -167,8 +169,8 @@ await describe({
       },
     },),
     it({
-      name: 'ENDS WITH THE ROUTE\'S REFUSAL EVEN AFTER QUORUM STANDS, where the straggler window would otherwise settle '
-        + 'the seat quietly as a voice it stopped waiting for',
+      name: 'ENDS WITH THE ROUTE\'S REFUSAL EVEN AFTER QUORUM STANDS, where the straggler window would otherwise '
+        + 'settle the seat quietly as a voice it stopped waiting for',
       fn: async () => {
         const said: string[] = [];
         const refusal = await roundWith({ failing: SCHEMA_REFUSAL, heardNeeded: 1, said, },);

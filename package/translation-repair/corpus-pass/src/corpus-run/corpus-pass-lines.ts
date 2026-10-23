@@ -85,7 +85,17 @@ export function passIncompleteLine({ gap, }: { readonly gap: IncompleteEntry; },
 
  @example
  ```ts
- const facts: PassStartFacts = { tip, pipelineDigest, fileCount: 189, pending: 2, done: 0, softBudgetMs: 259_200_000, hardCapMs: 25_200_000, perCallMs: 360_000, claudeCallMs: 460_000, };
+ const facts: PassStartFacts = {
+   tip,
+   pipelineDigest,
+   fileCount: 189,
+   pending: 2,
+   done: 0,
+   softBudgetMs: 259_200_000,
+   hardCapMs: 25_200_000,
+   perCallMs: 360_000,
+   claudeCallMs: 460_000,
+ };
  ```
  */
 export type PassStartFacts = {
@@ -181,7 +191,16 @@ export function passStartLine({ facts, }: { readonly facts: PassStartFacts; },):
 
  @example
  ```ts
- const lines = passLaunchLines({ hardCapMs, builtInCapMinutes: 420, perCallMs, claudeCallMs, spendCeilingUsd, graceNote, writerNote, pinSetting, },);
+ const lines = passLaunchLines({
+   hardCapMs,
+   builtInCapMinutes: 420,
+   perCallMs,
+   claudeCallMs,
+   spendCeilingUsd,
+   graceNote,
+   writerNote,
+   pinSetting,
+ },);
  ```
  */
 export function passLaunchLines(

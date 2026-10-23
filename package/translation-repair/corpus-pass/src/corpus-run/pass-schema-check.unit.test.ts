@@ -26,8 +26,8 @@ import {
 /**
  A response format over the given object schema.
 
- @param name - the schema's own name
- @param schema - the schema
+ @param name - schema's own name
+ @param schema - schema under test
 
  @returns Format a stage would send
 
@@ -60,7 +60,7 @@ function formatOf(
 
  @param producers - producers handed to the check
 
- @returns The thrown value as a list of zero or one
+ @returns Thrown value as a list of zero or one
 
  @example
  ```ts
@@ -105,12 +105,18 @@ await describe({
           },
           {
             file: 'cat/src/nap-wire.ts',
-            formats: [formatOf({ name: 'nap', schema: { type: 'object', properties: { spot: { type: 'string', }, }, }, },),],
+            formats: [formatOf({
+              name: 'nap',
+              schema: { type: 'object', properties: { spot: { type: 'string', }, }, },
+            },),],
           },
           {
             file: 'cat/src/bowl-wire.ts',
             formats: [
-              formatOf({ name: 'bowl_plain', schema: { type: 'object', properties: { fish: { type: 'string', }, }, }, },),
+              formatOf({
+                name: 'bowl_plain',
+                schema: { type: 'object', properties: { fish: { type: 'string', }, }, },
+              },),
               formatOf({ name: 'bowl_loop', schema: { type: 'object', properties: { next: { $ref: '#', }, }, }, },),
             ],
           },
@@ -120,7 +126,9 @@ await describe({
         expect(thrown,).toBeInstanceOf(UnsendableSchemasError,);
         expect((thrown as Error).message,).toContain('2 stage schema(s)',);
         expect((thrown as Error).message,).toContain('cat/src/pick-wire.ts (pick): "oneOf" at root.pick',);
-        expect((thrown as Error).message,).toContain('cat/src/bowl-wire.ts (bowl_loop): "a recursive $ref" at root.next',);
+        expect((thrown as Error).message,).toContain(
+          'cat/src/bowl-wire.ts (bowl_loop): "a recursive $ref" at root.next',
+        );
         expect((thrown as Error).message,).not.toContain('nap-wire',);
         expect((thrown as Error).message,).not.toContain('bowl_plain',);
         expect((thrown as Error).name,).toBe('UnsendableSchemasError',);

@@ -431,8 +431,8 @@ export const DOG_SUBJECT: PromptSubject = subjectOf({
 },);
 
 /**
- A third subject whose every text holds a line of eleven equals signs, so a sheet that fences its blocks chooses a fence of
- twelve where the cat and the dog get five.
+ A third subject whose every text holds a line of eleven equals signs, so a sheet that fences its blocks chooses a
+ fence of twelve where the cat and the dog get five.
  */
 export const FENCED_SUBJECT: PromptSubject = subjectOf({
   words: {
@@ -450,8 +450,8 @@ export const FENCED_SUBJECT: PromptSubject = subjectOf({
 },);
 
 /**
- A fourth subject whose texts hold a stray run of two of the marks the consistency sheets enclose repeated wording in, so a
- sheet that chooses its marks against the shown texts chooses three where the cat gets one.
+ A fourth subject whose texts hold a stray run of two of the marks the consistency sheets enclose repeated wording in,
+ so a sheet that chooses its marks against the shown texts chooses three where the cat gets one.
  */
 export const MARKED_SUBJECT: PromptSubject = subjectOf({
   words: {

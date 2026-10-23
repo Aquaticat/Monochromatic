@@ -127,9 +127,10 @@ await describe({
   name: translateSliceKey.name,
   children: [
     it({
-      name: `IS AT VERSION 26 (R4 of the third review): the system text of the selection slates, the writers and the gates moved `
-        + 'in this change (fence length, rendered-break counts), and the key hashes the version, the shape of the run and the texts, '
-        + 'not the sheet, so only this number retires a record written under the sheet before',
+      name: `IS AT VERSION 26 (R4 of the third review): the system text of the selection slates, the writers and the `
+        + `gates moved in this change (fence length, rendered-break counts), and the key hashes the version, the `
+        + `shape of the run and the texts, not the sheet, so only this number retires a record written under the `
+        + `sheet before`,
       fn: async () => {
         expect(TRANSLATE_SLICE_CACHE_VERSION,).toBe(26,);
       },
@@ -287,10 +288,9 @@ await describe({
       },
     },),
     it({
-      name: 'HASHES A WINDOWLESS SLICE TO A PINNED STRING, which is what stands between a change '
-        + 'to this serialization and the silent rebuying of every settled slice in the corpus. '
-        + 'A deliberate cache-version bump moves this value and should; an accidental one is what '
-        + 'this catches',
+      name: 'HASHES A WINDOWLESS SLICE TO A PINNED STRING, which is what stands between a change to this '
+        + 'serialization and the silent rebuying of every settled slice in the corpus. A deliberate cache-version '
+        + 'bump moves this value and should; an accidental one is what this catches',
       fn: async () => {
         expect(keyFor({},),).toBe(LEGACY_WINDOWLESS_KEY,);
       },

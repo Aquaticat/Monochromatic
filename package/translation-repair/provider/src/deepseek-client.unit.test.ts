@@ -164,7 +164,12 @@ await describe({
          Clock the budgets read.
          */
         const clock = { now: 10_000, };
-        const budgets = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, deepseek: client, freshForMs: FRESH_MS, now: () => clock.now, },);
+        const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
+          deepseek: client,
+          freshForMs: FRESH_MS,
+          now: () => clock.now,
+        },);
         expect((await budgets.read({ signal: SIGNAL, },)).deepseek,).toBe(false,);
 
         const failure: unknown = await rejectionOf(

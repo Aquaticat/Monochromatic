@@ -267,7 +267,7 @@ const WET_METERS = {
 
  @param view - dryness the meters give before any hold
 
- @returns The run client's three budget reads, and the budgets a case marks refusals on
+ @returns Run client's three budget reads, and the budgets a case marks refusals on
 
  @throws {@link Error} when the view reads a provider wet that this file has no wet meter for
 
@@ -329,10 +329,10 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'RE-SEATS THE REPAIR LANE before a chunk while a hold runs, so the checker seats a dry-out took '
-            + 'are filled by the next measured checkers a wet provider serves (class one hundred three, '
-            + 'zheermao7, 2026-09-23: ten of twelve checker rounds on one voice after Synthetic ran dry two '
-            + 'minutes into the lane)',
+          name: 'RE-SEATS THE REPAIR LANE before a chunk while a hold runs, so the checker seats a dry-out took are '
+            + 'filled by the next measured checkers a wet provider serves (class one hundred three, zheermao7, '
+            + '2026-09-23: ten of twelve checker rounds on one voice after Synthetic ran dry two minutes into the '
+            + 'lane)',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
             rig.holds.synthetic = DRY_HOLD_MS;
@@ -356,10 +356,10 @@ await describe({
           },
         },),
         it({
-          name: 'TESTS THE RIG, NOT PRODUCTION: viewClient REPORTS NO HOLD LONGER THAN THE SHORT WINDOW A CASE CAN WAIT '
-            + 'OUT, however long the case names it (the 300 s sleep of the padded rig, measured at 300.3 s of the '
-            + 'describe at f2f77b0701 and at the tip of the second review); this guards the fixture against a later edit '
-            + 'and the case that waits a 300 s hold out in production code is the one on a fake clock',
+          name: 'TESTS THE RIG, NOT PRODUCTION: viewClient REPORTS NO HOLD LONGER THAN THE SHORT WINDOW A CASE CAN '
+            + 'WAIT OUT, however long the case names it (the 300 s sleep of the padded rig, measured at 300.3 s of '
+            + 'the describe at f2f77b0701 and at the tip of the second review); this guards the fixture against a '
+            + 'later edit and the case that waits a 300 s hold out in production code is the one on a fake clock',
           fn: async () => {
             /** Rig whose padded view is short of quorum, under the hold the router registers on a dry refusal. */
             const rig = viewClient({ view: NEURALWATT_AND_BEDROCK, },);
@@ -413,10 +413,10 @@ await describe({
           },
         },),
         it({
-          name: 'SEATS THE WIDE BENCH AT ITS QUORUM WITH THE CLAUDE KEY WET AND SHORT OF IT WITH THE KEY DRY, as the live '
-            + 'roster seats Haiku 5.5 (the fleet models the Claude provider in both of its states): the padded view with '
-            + 'the key wet reads 4 of 8 wide seats and waits for nothing, and with the key dry reads 3 of 8 against a quorum of 4, '
-            + 'waits the hold out once and seats what it reads',
+          name: 'SEATS THE WIDE BENCH AT ITS QUORUM WITH THE CLAUDE KEY WET AND SHORT OF IT WITH THE KEY DRY, as the '
+            + 'live roster seats Haiku 5.5 (the fleet models the Claude provider in both of its states): the padded '
+            + 'view with the key wet reads 4 of 8 wide seats and waits for nothing, and with the key dry reads 3 of 8 '
+            + 'against a quorum of 4, waits the hold out once and seats what it reads',
           fn: async () => {
             /** Rig of the padded view with the Claude key wet, under a running Synthetic hold. */
             const wet = viewClient({ view: { ...NEURALWATT_AND_BEDROCK, anthropic: false, }, },);
@@ -445,16 +445,20 @@ await describe({
             /**
              The lines either hook wrote that say a bench was short of its quorum.
              */
-            const shortLines = (lines: readonly string[],): readonly string[] => lines.filter(function isShort(line,): boolean {
-              return line.includes('short of quorum',);
-            },);
+            const shortLines = (lines: readonly string[],): readonly string[] => lines.filter(
+              function isShort(line,): boolean {
+                return line.includes('short of quorum',);
+              },
+            );
 
             expect(shortLines(wetLines,),).toEqual([],);
             expect(shortLines(dryLines,),).toHaveLength(1,);
             expect(shortLines(dryLines,)[0],).toContain('wide 3 of 8 reachable, quorum 4',);
-            expect(shortLines(dryLines,)[0],).toContain(`waiting ${String(SHORT_HOLD_MS,)}ms for the shortest hold to end`,);
-            // THE CLAUDE KEY IS NOT THE HOLD: the hold waited out is Synthetic's, and the dry arm seats the same bench after it,
-            // with Haiku 5.5 unserved, where the wet arm seats Haiku first.
+            expect(shortLines(dryLines,)[0],).toContain(
+              `waiting ${String(SHORT_HOLD_MS,)}ms for the shortest hold to end`,
+            );
+            // THE CLAUDE KEY IS NOT THE HOLD: the hold waited out is Synthetic's, and the dry arm seats the same bench
+            // after it, with Haiku 5.5 unserved, where the wet arm seats Haiku first.
             expect(wetSeating.repairModels?.checkerModelIds,).toEqual([
               'claude-haiku-5-5',
               'google.gemma-4-31b',
@@ -505,9 +509,9 @@ await describe({
         },),
         it({
           name: 'DROPS HAIKU 5.5 FROM THE NEXT SEATING WHEN THE CLAUDE KEY GOES FROM WET TO HELD (R3 of the second '
-            + 'review): the first seating, with the key wet, takes Haiku as the fourth of the order, and once '
-            + 'the production budgets mark the key refused the router reads the key dry and the next seating has no Haiku in the repair '
-            + 'checker bench; the same rig with no hold on the key seats Haiku again',
+            + 'review): the first seating, with the key wet, takes Haiku as the fourth of the order, and once the '
+            + 'production budgets mark the key refused the router reads the key dry and the next seating has no Haiku '
+            + 'in the repair checker bench; the same rig with no hold on the key seats Haiku again',
           fn: async () => {
             /** Rig over the production budgets, so a hold folds into the view as the router folds it. */
             const rig = budgetsClient({ view: MIMO_UNSERVED_CLAUDE_WET, },);
@@ -658,9 +662,9 @@ await describe({
         },),
         it({
           name: 'READS EACH LANE UNDER ITS OWN PHASE: with Hyper and OpenRouter dry and Hyper held, the editors and '
-            + 'refiners the lanes phase leans on are short while the translate lane\'s translators and select '
-            + 'judges are not, so the translate lane seats on one read and the repair lane waits the hold out '
-            + 'and stops the entry',
+            + 'refiners the lanes phase leans on are short while the translate lane\'s translators and select judges '
+            + 'are not, so the translate lane seats on one read and the repair lane waits the hold out and stops the '
+            + 'entry',
           fn: async () => {
             const rig = viewClient({ view: HYPER_AND_OPENROUTER_DRY, },);
             rig.holds.hyper = SHORT_HOLD_MS;
@@ -700,8 +704,8 @@ await describe({
       children: [
         it({
           name: 'RE-SEATS THE CONSOLIDATION before a slice while a hold runs, as it does both lanes, handing the '
-            + 'slice the reading\'s writers, slate judges and naturalness roles, and keeps that roster once the '
-            + 'hold has ended',
+            + 'slice the reading\'s writers, slate judges and naturalness roles, and keeps that roster once the hold '
+            + 'has ended',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
             rig.holds.synthetic = DRY_HOLD_MS;
@@ -822,8 +826,8 @@ await describe({
           },
         },),
         it({
-          name: 'COSTS NOTHING while nothing is held: no dryness read and no judges, so the slice keeps those '
-            + 'the contest started on',
+          name: 'COSTS NOTHING while nothing is held: no dryness read and no judges, so the slice keeps those the '
+            + 'contest started on',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
             const hooks = contestHooksFor({
@@ -884,8 +888,8 @@ await describe({
           },
         },),
         it({
-          name: 'COSTS NOTHING while nothing is held: no dryness read and no readers, so the picture keeps those '
-            + 'the readings started on',
+          name: 'COSTS NOTHING while nothing is held: no dryness read and no readers, so the picture keeps those the '
+            + 'readings started on',
           fn: async () => {
             const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
             const hooks = picturesHooksFor({
@@ -1030,9 +1034,9 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'WAITS A 300 S HOLD OUT THROUGH THE PRODUCTION WAIT AND NO SOONER (N9 of the re-check of fix rounds 3 and 4): '
-            + 'a view short of quorum under a Synthetic hold of 300,000 ms sleeps the hold in slices on a fake clock, is '
-            + 'still waiting a millisecond before it ends, and reads again and seats once it has',
+          name: 'WAITS A 300 S HOLD OUT THROUGH THE PRODUCTION WAIT AND NO SOONER (N9 of the re-check of fix rounds 3 '
+            + 'and 4): a view short of quorum under a Synthetic hold of 300,000 ms sleeps the hold in slices on a '
+            + 'fake clock, is still waiting a millisecond before it ends, and reads again and seats once it has',
           fn: async (ctx) => {
             /** The fake clock the production wait sleeps on. */
             const clock = ctx.sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout',], },);

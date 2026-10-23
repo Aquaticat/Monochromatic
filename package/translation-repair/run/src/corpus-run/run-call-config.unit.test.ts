@@ -63,7 +63,9 @@ await describe({
         + 'this stamp does not read a Claude timeout line as a cut at 360,000 ms',
       fn: async () => {
         await Promise.resolve();
-        expect(RUN_CALL_CONFIG.claudeCallTimeoutMs,).toBe(claudeCallDeadlineMs({ maxTokens: CLAUDE_COMPLETION_CAP, },),);
+        expect(RUN_CALL_CONFIG.claudeCallTimeoutMs,).toBe(claudeCallDeadlineMs({
+          maxTokens: CLAUDE_COMPLETION_CAP,
+        },),);
         expect(RUN_CALL_CONFIG.claudeCallTimeoutMs,).toBe(460_000,);
         expect(RUN_CALL_CONFIG.perCallTimeoutMs,).toBe(RUN_PER_CALL_TIMEOUT_MS,);
       },

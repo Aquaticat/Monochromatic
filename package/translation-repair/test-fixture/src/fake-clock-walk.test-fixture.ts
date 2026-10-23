@@ -34,7 +34,7 @@ export type FakeClockWalk = {
 /**
  Runs a walk on a fake clock, ticks it by the steps handed, then releases the transport so the walk always ends.
 
- @param sinon - the case's own sandbox, which restores the clock and the signal factory when the case ends
+ @param sinon - case's own sandbox, which restores the clock and the signal factory when the case ends
 
  @param walkOnce - starts the walk and settles when it ends
 
@@ -57,7 +57,15 @@ export type FakeClockWalk = {
 
  @example
  ```ts
- const { endedByItself, } = await walkOnFakeClock({ sinon, walkOnce, firstCall, release, ticks: [520_000,], cutCount, waitForEnd: true, },);
+ const { endedByItself, } = await walkOnFakeClock({
+   sinon,
+   walkOnce,
+   firstCall,
+   release,
+   ticks: [520_000,],
+   cutCount,
+   waitForEnd: true,
+ },);
  ```
  */
 export async function walkOnFakeClock(
