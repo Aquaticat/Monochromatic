@@ -35,7 +35,11 @@ import type {
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import {
+  noteRunSpend,
+  resetRunSpend,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   EDITOR_DAMAGE_KINDS,
   EDITOR_FIDELITY_POOL,
@@ -89,6 +93,11 @@ const REPORTED_USAGE = {
   prompt_tokens: 2_000,
   completion_tokens: 20_000,
 } as const;
+
+/**
+ What one scripted reply costs on the run meter, as the Claude client's SPEND line would put it there.
+ */
+const REPLY_USD = 0.205;
 
 /**
  Instant the first clock reading gives.
@@ -198,6 +207,8 @@ function fixingClient({ asked, silent, }: { readonly asked: string[]; readonly s
     quotas: () => Promise.reject(new Error('quotas unused by the editor',),),
     chatJson: <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
       asked.push(request.modelId,);
+      // THE CLAUDE CLIENT PUTS EACH PRICED REPLY ON THE RUN METER; the guard reads the meter.
+      noteRunSpend({ provider: 'anthropic', costUsd: REPLY_USD, },);
       /**
        The sheet's user message, which holds the region's current text.
        */
@@ -283,6 +294,8 @@ async function probeIn(
     readonly silent?: boolean;
   },
 ): Promise<ProbeRunSeen> {
+  // The guard reads the process-wide run meter, so every run starts from a clean one.
+  resetRunSpend();
   /**
    Lines the run logged.
    */
@@ -414,6 +427,8 @@ const ONE_CARD = [
 
 await describe({
   name: runEditorFidelityProbe.name,
+  // SEQUENTIAL: the spend guard reads the process-wide run meter, so runs must not overlap.
+  concurrency: 1,
   children: [
     describe({
       name: 'refusals before anything is read',
@@ -582,8 +597,10 @@ await describe({
             },);
             expect(ceilingAt,).toBeGreaterThanOrEqual(0,);
             expect(seen.lines[ceilingAt + 1],).toBe(
-              'spend guard: each call is refused, and the arm ends, when the spend measured from the replies so far plus '
-                + 'that call\'s ceiling would pass --max-usd 0.5000',
+              'spend guard: each call is refused, and the arm ends, when the spend so far plus that call\'s ceiling '
+                + 'would pass --max-usd 0.5000; the spend so far is every SPEND line the client wrote, the attempts it '
+                + 'abandoned included, and a call that throws, or a reply that reports no usage, is counted at its '
+                + 'ceiling',
             );
             expect(seen.clientBuilds.length,).toBe(1,);
             expect(seen.clientBuilds[0]?.planWasOnDisk,).toBe(true,);
@@ -606,7 +623,7 @@ await describe({
              */
             const said = refusedWith({ seen, },);
             expect(said.startsWith(
-              `the editor fidelity probe will not ask ${LOW_CARD}: the replies so far cost 0.2050 USD as measured, this call `
+              `the editor fidelity probe will not ask ${LOW_CARD}: the spend so far is 0.2050 USD, this call `
                 + 'can cost 0.3',
             ),).toBe(true,);
             expect(said.endsWith(
@@ -636,6 +653,31 @@ await describe({
               return line.startsWith('kept ',);
             },),).toBe(false,);
             expect(seen.written,).toBe('',);
+          },
+        },),
+
+        it({
+          name: 'SAYS WHAT THE GUARD COUNTED when the arm ends, finished or stopped: two replies of 0.2050 USD are '
+            + 'GUARD total=0.410000 calls=2 atCeiling=0, and the stopped arm of one reply says '
+            + 'GUARD total=0.205000 calls=1 atCeiling=0 although the run refuses',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const finished = await probeIn({
+              runsDir: scratch.path,
+              typed: ONE_CARD,
+            },);
+            expect(finished.failures,).toStrictEqual([],);
+            expect(finished.lines.filter(function isGuardTotal(line,): boolean {
+              return line.startsWith('GUARD total=',);
+            },),).toStrictEqual(['GUARD total=0.410000 calls=2 atCeiling=0',],);
+            const stopped = await probeIn({
+              runsDir: scratch.path,
+              typed: [...ONE_CARD, '--max-usd', '0.5',],
+            },);
+            expect(stopped.failures.length,).toBe(1,);
+            expect(stopped.lines.filter(function isGuardTotal(line,): boolean {
+              return line.startsWith('GUARD total=',);
+            },),).toStrictEqual(['GUARD total=0.205000 calls=1 atCeiling=0',],);
           },
         },),
 
