@@ -357,3 +357,106 @@ Code:
   and no test shows which stages are which.
   The `cached=` field of the first live `SPEND` lines settles it.
 - The effort bench and the rotation sweep were not run.
+
+## Addendum: the keyed Claude probes (2026-10-23)
+
+The lead ran `probe3.ts` against the owner's Claude key with `claude-haiku-5-5`,
+twice,
+26 calls on 2026-10-22 and 34 calls on 2026-10-23 (estimated 0.0023 USD for the second).
+The probe sits outside this repository,
+so this record holds what it measured.
+The route's source comments cite this section.
+
+### What the probe shows
+
+Each accepted control was sent twice,
+once with the keyword and once as a baseline with the keyword removed from the schema.
+The ask told the model to break the keyword in both.
+
+- `pattern` (three capital letters):
+  with the keyword the reply was `{"code":"CAT"}`,
+  without it `{"code":"cat"}`.
+- A 25-label `enum`:
+  with it the reply was `LABEL_25`,
+  and its `reason` text said the asked-for `OTHER` was not among the allowed values;
+  without it the reply was `OTHER`.
+- `minItems` 1:
+  with it the reply held one item,
+  without it `{"items":[]}`.
+- A listed `format` (`date-time`):
+  with it the reply was `7681-07-01T00:00:00Z`,
+  without it `banana`.
+- `minItems` 2 and an unlisted `format` (`color`) were sent raw,
+  and each was refused with HTTP 400 and `invalid_request_error`.
+  The `minItems` message was
+  `output_config.format.schema: For 'array' type, 'minItems' values other than 0 or 1 are not supported (got: [2, 5])`.
+  The `format` message was
+  `output_config.format.schema: For 'string' type, format 'color' is not supported`.
+  Both refusals agree with the page,
+  and neither reached a model.
+- All 24 formats of the closed-vocabulary census answered HTTP 200.
+  The probe's validator was a plain object check and not the stage guards.
+
+So a keyword changes the reply.
+That is all the probe shows.
+
+### What it cannot show
+
+The probe cannot tell a compiled grammar from the model reading the keyword.
+The input tokens of each control exceeded those of its baseline.
+The excess was 20 for `pattern`,
+261 for the 25-label `enum`,
+9 for `minItems` 1 and
+10 for `format`.
+A grammar adds no input tokens,
+so the schema text reaches the model,
+and the model reading it explains every reply in the list of results without any grammar.
+The reason text of the `enum` reply is the model quoting the schema.
+The probe therefore does not show that the API enforces any keyword.
+A reply that obeys a keyword once is no guarantee for the next reply,
+and the stage guards remain the check.
+
+### The documented mechanism
+
+<https://platform.claude.com/docs/en/build-with-claude/structured-outputs>,
+read 2026-10-23.
+Quoted:
+
+- "Structured outputs guarantee schema-compliant responses through constrained decoding"
+  (section "Why use structured outputs").
+- "Structured outputs use constrained sampling with compiled grammar artifacts."
+  (section "Grammar compilation and caching").
+- "When using structured outputs,
+  Claude automatically receives an additional system prompt explaining the expected output format."
+  and "Your input token count is slightly higher."
+  (section "Prompt modification and token costs").
+  This is the page's own account of the token excess.
+- "Although structured outputs guarantee schema compliance in most cases,
+  there are scenarios where the output might not match your schema"
+  (section "Invalid outputs"),
+  which names refusals and the token limit.
+- "Structured outputs don't guarantee the capitalization of string `enum` and `const` values:
+  Claude might return a value that differs from your schema only in capitalization,
+  typically in the first letter of a word following a space."
+  "The response completes normally,
+  with no error and no special `stop_reason`."
+  "Compare enum values case-insensitively,
+  and avoid enum values that differ only in capitalization."
+  (section "Invalid outputs").
+
+The mechanism is the documented grammar,
+and the probe is consistent with it and does not prove it.
+
+### What the route does with this
+
+- Source comments that cited the probe say a keyword "changes the reply" or "is accepted",
+  and say "enforced" only of the stage guards,
+  which are our own code.
+- The page's capitalization caveat is why `foldEnumCase` (`provider/src/enum-case-fold.ts`) takes the schema's spelling
+  when exactly one listed value matches case-insensitively.
+  It logs a warning naming the field,
+  the value received and the value taken,
+  and leaves the refusal in place when none or several match.
+  The fold runs in `readJsonOutcome` for the four sites that read a reply under a response format.
+- No troubleshooting document under `doc/troubleshooting/` is cited by the Claude route's source or notes,
+  so this section is the one record of the keyed result.

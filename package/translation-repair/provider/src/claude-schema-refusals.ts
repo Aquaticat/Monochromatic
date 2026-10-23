@@ -13,6 +13,10 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // is not in the schema, so there is nothing for the grammar to be built from, and a refusal at the node that holds
 // the reference costs no call. That the live API would answer 400 is not measured here.
 //
+// A LIMIT OF THAT REFUSAL: a pointer is read as written and its fragment is not percent-decoded, so `#/$defs/a%20b`
+// for a definition named `a b` is refused as naming nothing, where it passed before this refusal existed. No stage
+// schema writes a pointer with an escape other than `~0` and `~1`, which are decoded.
+//
 // THE COMPLEXITY LIMITS, quoted from the page: "Strict tools per request: 20", "Optional parameters: 24 (total
 // optional parameters across all strict tool schemas and JSON output schemas. Each parameter not listed in `required`
 // counts toward this limit)" and "Parameters with union types: 16 (total parameters that use `anyOf` or type arrays
@@ -371,8 +375,8 @@ function cyclesIn(
       root,
       ref,
     },);
-    // A Boolean schema is a schema and ends the chain; anything else that is not a record names no schema, and the
-    // page answers the first call with an HTTP 400.
+    // A Boolean schema is a schema and ends the chain; anything else that is not a record names no schema, so no
+    // grammar can be built from the reference (that the live API would answer 400 is not measured, see the header).
     if ((typeof target) === 'boolean')
       continue;
     if (!isJsonRecord(target,))

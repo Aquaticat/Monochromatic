@@ -43,12 +43,22 @@ estimated cost 0.0020 USD.
 All 24 formats of the closed-vocabulary census answered HTTP 200 with stop reason `end_turn` and client outcome `ok`.
 The probe's validator was a plain object check and not the stage guards.
 The `pattern` control and the 25-label enum control answered HTTP 200.
-HTTP 200 shows the schema was accepted and not that a keyword is enforced.
+HTTP 200 shows the schema was accepted and not that a keyword changes the reply.
 
-Round 4 added four controls to the probe script for the lead's next keyed run:
+Round 4 added four controls to the probe script for the keyed run that followed:
 `minItems` 1,
 `minItems` 2 sent raw,
 a listed `format` and an unlisted `format` sent raw.
+
+That run,
+on 2026-10-23,
+made 34 calls for an estimated 0.0023 USD,
+and sent a baseline for each accepted control,
+the same ask with the keyword removed.
+Its result is in `doc/decision/translation-repair-direct-providers.md`,
+in the addendum on the keyed Claude probes.
+Each keyword changed the reply,
+and the probe cannot tell the compiled grammar from the model reading the schema text.
 
 ### Structured outputs page
 

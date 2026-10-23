@@ -364,8 +364,8 @@ import type {
  detached head (`* (no branch)`) and no branch name, and checking the heads of the 86 entries of `git worktree list`
  with `git merge-base --is-ancestor` finds the commit in `tr-w289`, `tr-w305` and `tr-w314`, all at detached heads
  (`tr-w314` is a review worktree at `c98d140b3f`). That set is a reading at that time and grows with each review
- worktree, so the argument that holds is the one before it: no record written by code without the commit can stand at
- this number. The one bump covers both the system text and the schemas, and the number does not move twice
+ worktree, so the argument that holds is the ancestry argument: no record written by code without the commit can stand
+ at this number. The one bump covers both the system text and the schemas, and the number does not move twice
  for one release.
  */
 export const REFINE_CACHE_VERSION = 15;
