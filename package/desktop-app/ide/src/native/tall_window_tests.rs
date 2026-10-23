@@ -314,7 +314,8 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
     assert!(holdable_cases > 0, "no case had a view one raster can hold");
 }
 
-/// A window nearly as tall as the tallest stack of textures a tile may be, over wrapped text:
+/// A window nearly as tall as the tallest stack of textures a tile may be,
+/// over wrapped text:
 /// the tile the worker builds is cut to the raster limit,
 /// the window accepts it as holding the view,
 /// and the measurement pass finishes.

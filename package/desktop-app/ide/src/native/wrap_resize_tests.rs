@@ -1182,7 +1182,8 @@ fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
 /// The headless renderer cannot draw a window that large,
 /// so the size is reported without a
 ///  frame.
-/// The lines are long, so each of them is broken again at the new width,
+/// The lines are long,
+/// so each of them is broken again at the new width,
 /// and the work is read from the shaper's own counters:
 /// the step's counters only record a measurement that ended within its allowance,
 /// and one that ran out of it has broken lines by then and records none.
