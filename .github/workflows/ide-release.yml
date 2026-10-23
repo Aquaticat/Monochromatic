@@ -24,7 +24,7 @@ name: ide-release
 # - Gates before upload (each leg): the program prints its own version; the single executable embeds its runtime files
 #   and license texts byte for byte (inspect:bundle, the checks that need no window); no software renderer is linked
 #   for either target (inspect:no-software-renderer); Cargo.lock is unchanged by the build; the glibc floor, the
-#   dynamic loader and the shared libraries are the ones INSTALL.txt names. The runner has no display and no GPU, so
+#   shared libraries are the ones INSTALL.txt names (the list is per architecture). The runner has no display and no GPU, so
 #   no window is opened; the decision lists the checks left out.
 # - Licenses: the program embeds its license notices and prints them with --licenses; the archive ships them as
 #   THIRD-PARTY-LICENSES.txt and the release carries them as a file of their own, byte for byte what the verified
@@ -186,16 +186,19 @@ jobs:
         # The runners are named, not ubuntu-latest: GitHub moves that label to Ubuntu 26.04 (glibc 2.43) in November
         # 2026, which would raise the glibc floor of every archive. The arm64 runner is Ubuntu 24.04 for the same glibc
         # (cargo-publish.yml, job nws-build-binary, does the same).
-        # arch is the spelling of the asset names (music-player-release.yml uses it too); machine is `uname -m`; loader
-        # is the dynamic loader the executable names in its dynamic section.
+        # arch is the spelling of the asset names (music-player-release.yml uses it too); machine is `uname -m`; needed
+        # is the exact sorted list of shared libraries in the dynamic section of the executable (INSTALL.txt names them).
+        # The lists differ by architecture: the x86_64 executable also names its dynamic loader (first dry run), while
+        # the aarch64 helper binary ide-runtime, linked in the arm64 build image on 2026-10-22, names only
+        # libgcc_s.so.1 and libc.so.6 and not ld-linux-aarch64.so.1.
         - arch: x64
           runner: ubuntu-24.04
           machine: x86_64
-          loader: ld-linux-x86-64.so.2
+          needed: ld-linux-x86-64.so.2 libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6
         - arch: arm64
           runner: ubuntu-24.04-arm
           machine: aarch64
-          loader: ld-linux-aarch64.so.1
+          needed: libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6
     runs-on: ${{ matrix.runner }}
     # The first dry run took 15 min 37 s up to the renderer gate (doc/decision/ide-releases.md, "First dry run").
     timeout-minutes: 150
@@ -208,7 +211,7 @@ jobs:
       VERSION: ${{ needs.detect.outputs.version }}
       ARCH: ${{ matrix.arch }}
       MACHINE: ${{ matrix.machine }}
-      LOADER: ${{ matrix.loader }}
+      EXPECTED_NEEDED: ${{ matrix.needed }}
       # The runner has 4 vCPUs and 16 GB (as music-player-release.yml notes for its Alpine jobs, on both architectures).
       # The task bound (package/desktop-app/ide/bin/container-bounds.ts) would take 90 percent of both; these leave the
       # runner room for podman and the runner processes. container-bounds.ts reads exactly these variable names.
@@ -362,9 +365,8 @@ jobs:
         file "$PROGRAM"
         needed=$(objdump -p "$PROGRAM" | awk '$1 == "NEEDED" { print $2 }' | LC_ALL=C sort | tr '\n' ' ')
         echo "needed: $needed"
-        # The dynamic loader is the one library whose name depends on the architecture (LOADER, from the matrix); it
-        # sorts first under LC_ALL=C because "ld-" comes before "lib".
-        expected="${LOADER} libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6 "
+        # The list comes from the matrix entry of this architecture. The trailing space is the one tr leaves.
+        expected="${EXPECTED_NEEDED} "
         if [ "$needed" != "$expected" ]; then
           echo "::error::The ${ARCH} executable needs '$needed', INSTALL.txt names '$expected'."
           exit 1
