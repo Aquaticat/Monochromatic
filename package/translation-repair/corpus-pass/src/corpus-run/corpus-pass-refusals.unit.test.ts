@@ -246,6 +246,36 @@ await describe({
         },),
 
         it({
+          name: 'KEEPS A POSITIVE CAP FINER THAN A MILLISECOND AT ONE MILLISECOND, so a cap an operator wrote as '
+            + 'positive never reaches the hold bound as zero',
+          fn: async () => {
+            await using clone = await makeCorpusPassClone({ entries: ENTRIES, },);
+            await using runs = await scratchDir({ prefix: 'corpus-pass-runs-', },);
+            await using cache = await scratchDir({ prefix: 'corpus-pass-cache-', },);
+
+            /**
+             What the command wrote with the cap at 0.0000001 minutes, which is 0.006 milliseconds.
+             */
+            const run = await runPass({
+              args: [],
+              runsDir: runs.path,
+              cacheDir: cache.path,
+              clone,
+              settings: { TRANSLATION_REPAIR_HARD_CAP_MINUTES: '0.0000001', },
+            },);
+
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stdout,).toContain(
+              await startLine({
+                pending: 2,
+                hardMs: 1,
+              },),
+            );
+            expect(run.stderr,).toBe(NO_KEY_REFUSAL,);
+          },
+        },),
+
+        it({
           name: 'REFUSES AN ARTIFACT NOTHING CAN PLACE at exit 6 with its message alone and no frames, since it is an '
             + 'operator\'s refusal and no fault of the command',
           fn: async () => {
