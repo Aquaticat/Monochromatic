@@ -497,6 +497,17 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  consistency version stays because its key digests the exact sheet, and the page title and pairing versions stay
  because their sheets name no fence length, no break count and no marks. No record has been written at the new number,
  which this change sets first.
+
+ The answer schemas of the range ride inside this number, checked on 2026-10-22 (F6 of the re-check of the second fix
+ round) and not assumed: the consolidation gate and the polish gate (`consolidate/src/consolidate-gate-stage.ts`,
+ `consolidate/src/consolidation-polish-gate-stage.ts`, both through `contestResponseFormat`) list their verdicts as
+ an enum built from the constant their guard reads (P1, `f9e4fc3097`). The key hashes the version, the shape of the
+ run and the texts, not the schema, so only the number retires a record. `f9e4fc3097` is an ancestor of `33ca9974f2`,
+ which set this number (`git merge-base --is-ancestor`), and it is not an ancestor of `8864316eb2`, the tip of runs
+ zheermao23 and XingZ6018, so no record written by code without it can stand at this number.
+ `git branch --all --contains 33ca9974f2` finds no branch and no worktree but this one, so no build, and no record,
+ holds the number anywhere else. The one bump covers both the system text and the schemas, and the number does not
+ move twice for one release.
  */
 export const CONSOLIDATE_CACHE_VERSION = 33;
 

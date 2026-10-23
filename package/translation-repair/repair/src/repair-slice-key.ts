@@ -634,6 +634,22 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  stand at the previous number and the change cannot ride inside it. The consistency version stays because its key
  digests the exact sheet, and the page title and pairing versions stay because their sheets name no fence length, no
  break count and no marks. No record has been written at the new number, which this change sets first.
+
+ The answer schemas of the range ride inside this number, checked on 2026-10-22 (F6 of the re-check of the second fix
+ round) and not assumed: the critic (`adjudication/src/critic-wire.ts`: category, severity), the panel
+ (`adjudication/src/adjudicate-wire.ts`: vote, severity), the resolution check
+ (`adjudication/src/resolution-wire.ts`: verdict) and the introduced-defect check
+ (`adjudication/src/introduced-defect-format.ts`: verdict) list their labels as an enum built from the constant their
+ guard reads (P1, `3604fd00c3`). The derivability and restoration schemas moved the same way and feed
+ `repair/src/repair-benchmark.ts` alone, whose output no slice record holds. The Claude body's description text for a
+ stripped bound and its allowlist of keywords (R6 and R10, `66eb3f15e4`) change the request to one route only. The
+ key hashes the version, the shape of the run and the texts, not the schema, so only the number retires a record.
+ Both `3604fd00c3` and `66eb3f15e4` are ancestors of `33ca9974f2`, which set this number
+ (`git merge-base --is-ancestor`), and neither is an ancestor of `8864316eb2`, the tip of runs zheermao23 and
+ XingZ6018, so no record written by code without them can stand at this number.
+ `git branch --all --contains 33ca9974f2` finds no branch and no worktree but this one, so no build, and no record,
+ holds the number anywhere else. The one bump covers both the system text and the schemas, and the number does not
+ move twice for one release.
  */
 export const SLICE_CACHE_VERSION = 44;
 /**
