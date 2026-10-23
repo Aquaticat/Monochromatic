@@ -2,10 +2,14 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
-import type {
-  ChatJsonOutcome,
-  JsonSchemaResponseFormat,
-  ModelClient,
+import {
+  type ChatJsonOutcome,
+  ClaudeModelNotServedError,
+  ClaudePrefillError,
+  ClaudeSchemaKeywordError,
+  EmptyConversationError,
+  type JsonSchemaResponseFormat,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
@@ -242,6 +246,30 @@ function lostVoiceCause(
 }
 
 /**
+ Whether an error is the route refusing a request our own stage code built wrong, before any exchange was made.
+
+ The four classes are a schema keyword the Claude route cannot send, a conversation that ends on an assistant turn,
+ a conversation that holds no turn to answer, and a seat that is no Claude card. None of them is a thing a model did
+ or a transport lost, and each recurs on every call of the stage until the code is changed.
+
+ @param error - caught value, of unknown type by construction
+
+ @returns Whether the error is one of the four
+
+ @example
+ ```ts
+ if (isRequestFault({ error, },))
+   throw error;
+ ```
+ */
+export function isRequestFault({ error, }: { readonly error: unknown; },): boolean {
+  return (error instanceof ClaudeSchemaKeywordError)
+    || (error instanceof ClaudePrefillError)
+    || (error instanceof EmptyConversationError)
+    || (error instanceof ClaudeModelNotServedError);
+}
+
+/**
  Runs one schema-validated exchange for a pipeline stage.
 
  @param client - injected model client
@@ -269,7 +297,18 @@ function lostVoiceCause(
  seat on the bench; absent on a stage that has none, which loses that
  seat's voice rather than asking it for prose
 
- @returns Voice as data; a lost voice never throws unless the caller aborted
+ @returns Voice as data; a lost voice never throws unless the caller aborted or the route refused the request as
+ malformed
+
+ @throws Whatever the caller's abort carried, once the caller aborted
+
+ @throws {@link ClaudeSchemaKeywordError} when the response format carries a keyword the Claude route cannot send
+
+ @throws {@link ClaudePrefillError} when the conversation ends on an assistant turn
+
+ @throws {@link EmptyConversationError} when the conversation holds no turn to answer
+
+ @throws {@link ClaudeModelNotServedError} when the seat is no Claude card
 
  @example
  ```ts
@@ -360,6 +399,15 @@ export async function attemptStageCall<ValueT,>(
   catch (error) {
     // Aborts must always win so user steering can stop a fan-out.
     if (signal.aborted)
+      throw error;
+
+    // A REQUEST THE ROUTE REFUSED AS MALFORMED IS NOT A LOST VOICE. It is a
+    // fault in our own stage code that every later call of the stage meets
+    // again, so counting it as a seat that failed would carry the pass on
+    // without the seat, with one warn line for each call, in place of the
+    // refusal at build time that exists to stop it (F5 of the re-check of the
+    // second fix round).
+    if (isRequestFault({ error, },))
       throw error;
     /**
      Whether the router refused the call because no wet provider serves the

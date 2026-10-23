@@ -110,6 +110,7 @@ export {
 } from './seat-tally.ts';
 export {
   attemptStageCall,
+  isRequestFault,
   type StageVoice,
 } from './stage-call.ts';
 export {
