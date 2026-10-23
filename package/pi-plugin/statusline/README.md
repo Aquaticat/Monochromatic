@@ -57,6 +57,12 @@ new,
  that means `rollingFiveHourLimit` and legacy `subscription` data are ignored because
 `@aliou/pi-synthetic` does not model them as pace-projectable windows.
 
+The Synthetic weekly credit block is read under `weeklyTokenLimit` or `planWeeklyLimit`;
+Synthetic delivered the second name in its keyed quota reading of 2026-10-23 03:28 UTC.
+A body that carries both names is read when the two blocks agree on `percentRemaining` and `nextRegenAt`,
+and the weekly window is skipped when they differ, when either is no readable block,
+or when neither name is present.
+
 ## Colors
 
 Provider usage pressure uses Pi theme colors:

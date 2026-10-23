@@ -104,6 +104,138 @@ function parseSyntheticQuotasHeader(
 }
 
 /**
+ Weekly block key names Synthetic has delivered, in the order they were first seen.
+ 
+ `weeklyTokenLimit` until the keyed reading of 2026-10-22 19:32 UTC and `planWeeklyLimit` from the keyed reading of
+ 2026-10-23 03:28 UTC. Whether the rename is permanent or tied to a spent weekly credit is not known, so both are read.
+ */
+const SYNTHETIC_WEEKLY_BLOCK_NAMES = [
+  'weeklyTokenLimit',
+  'planWeeklyLimit',
+] as const;
+
+/**
+ Weekly credit fields this extension projects from one weekly block.
+ */
+type SyntheticWeeklyReading = Readonly<{
+  percentRemaining: number;
+  resetAtMs: number;
+}>;
+
+/**
+ Reads the projected fields of one weekly block.
+ 
+ @param block - weekly block object under either name
+ 
+ @returns {@link SyntheticWeeklyReading}, or invalid sentinel when a field is missing or mistyped
+ 
+ @example
+ ```ts
+ readSyntheticWeeklyBlock({ percentRemaining: 80, nextRegenAt: '2026-10-23T05:03:47.000Z' });
+ ```
+ */
+function readSyntheticWeeklyBlock(block: UnknownRecord,): SyntheticWeeklyReading | InvalidValue {
+  /**
+   Remaining weekly credits as percentage.
+   */
+  const percentRemaining = readNumberProperty({
+    record: block,
+    key: 'percentRemaining',
+  },);
+  /**
+   Next daily regeneration timestamp.
+   */
+  const resetAtMs = readResetProperty({
+    record: block,
+    key: 'nextRegenAt',
+  },);
+  if ((percentRemaining === INVALID_VALUE) || (resetAtMs === INVALID_VALUE))
+    return INVALID_VALUE;
+
+  return {
+    percentRemaining,
+    resetAtMs,
+  };
+}
+
+/**
+ Reads the weekly reading from whichever key a quotas object carries it under.
+ 
+ Both keys present and reading the same is accepted; both present and reading differently is refused, since which one
+ to believe is then unknowable. A key present that is no readable block is refused even beside a readable other, and
+ neither key present is refused.
+ 
+ @param quotas - Synthetic quotas response object
+ 
+ @returns {@link SyntheticWeeklyReading}, or invalid sentinel when refused
+ 
+ @example
+ ```ts
+ readSyntheticWeeklyReading({ planWeeklyLimit: { percentRemaining: 0, nextRegenAt: '2026-10-23T05:03:47.000Z' } });
+ ```
+ */
+function readSyntheticWeeklyReading(quotas: UnknownRecord,): SyntheticWeeklyReading | InvalidValue {
+  /**
+   Function-scoped logger tagged by function name.
+   */
+  const log = tagged({
+    tag: readSyntheticWeeklyReading.name,
+    l: syntheticQuotaHeadersLogger,
+  },);
+  /**
+   Weekly block names this quotas object carries.
+   */
+  const present = SYNTHETIC_WEEKLY_BLOCK_NAMES.filter(function carried(name,): boolean {
+    return Object.hasOwn(
+      quotas,
+      name,
+    );
+  },);
+  if (present.length === 0) {
+    log.debug(`refusing quotas without ${SYNTHETIC_WEEKLY_BLOCK_NAMES.join(' or ',)}`,);
+    return INVALID_VALUE;
+  }
+
+  /**
+   One reading per carried block, with the invalid sentinel for an unreadable block.
+   */
+  const readings = present.map(function readCarried(name,): SyntheticWeeklyReading | InvalidValue {
+    /**
+     Block under this name as delivered.
+     */
+    const block = readRecordProperty({
+      record: quotas,
+      key: name,
+    },);
+    if (block === INVALID_VALUE) {
+      log.debug(`refusing quotas whose ${name} is not an object`,);
+      return INVALID_VALUE;
+    }
+
+    return readSyntheticWeeklyBlock(block,);
+  },);
+  /**
+   First carried block, and the second where the quotas object carries both names.
+   */
+  const [first, second,] = readings;
+  if ((first === undefined) || (first === INVALID_VALUE))
+    return INVALID_VALUE;
+
+  if (second === undefined)
+    return first;
+
+  if (second === INVALID_VALUE)
+    return INVALID_VALUE;
+
+  if ((first.percentRemaining !== second.percentRemaining) || (first.resetAtMs !== second.resetAtMs)) {
+    log.debug(`refusing quotas whose ${present.join(' and ',)} are both present and read differently`,);
+    return INVALID_VALUE;
+  }
+
+  return first;
+}
+
+/**
  Parses Synthetic weekly credit quota into a projectable snapshot.
  
  @param quotas - Synthetic quotas response object
@@ -125,41 +257,17 @@ function parseSyntheticWeeklySnapshot({
   nowMs: number;
 }>,): RateLimitSnapshot | InvalidRateLimitSnapshot {
   /**
-   Synthetic weekly token limit object.
+   Weekly credit reading from either block name.
    */
-  const weeklyTokenLimit = readRecordProperty({
-    record: quotas,
-    key: 'weeklyTokenLimit',
-  },);
-  if (weeklyTokenLimit === INVALID_VALUE)
+  const reading = readSyntheticWeeklyReading(quotas,);
+  if (reading === INVALID_VALUE)
     return INVALID_RATE_LIMIT_SNAPSHOT;
 
   /**
-
-   Remaining weekly credits as percentage.
-
-   */
-  const percentRemaining = readNumberProperty({
-    record: weeklyTokenLimit,
-    key: 'percentRemaining',
-  },);
-  /**
-   Next daily regeneration timestamp.
-   */
-  const resetAtMs = readResetProperty({
-    record: weeklyTokenLimit,
-    key: 'nextRegenAt',
-  },);
-  if ((percentRemaining === INVALID_VALUE) || (resetAtMs === INVALID_VALUE))
-    return INVALID_RATE_LIMIT_SNAPSHOT;
-
-  /**
-
    Used weekly credits percentage.
-
    */
   const usedPercent = PERCENT_BASE - clampNumber({
-    value: percentRemaining,
+    value: reading.percentRemaining,
     min: 0,
     max: PERCENT_BASE,
   },);
@@ -167,7 +275,7 @@ function parseSyntheticWeeklySnapshot({
   return createRateLimitSnapshot({
     key: 'synthetic:week',
     label: 'synthetic week',
-    resetAtMs,
+    resetAtMs: reading.resetAtMs,
     windowSeconds: SECONDS_PER_DAY,
     paceScale: SYNTHETIC_WEEKLY_PACE_SCALE,
     sampledAtMs: nowMs,
