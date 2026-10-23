@@ -159,6 +159,40 @@ async function callWith(
   },);
 }
 
+/**
+ Runs one call for each fault, the client throwing that fault, and hands back what each call rejected with.
+
+ @param faults - errors the scripted client throws, one call for each
+
+ @param logger - logger the calls write to
+
+ @returns What each call rejected with, in the order of the faults
+
+ @example
+ ```ts
+ const refusals = await refusalsOf({ faults: [new ClaudePrefillError(),], logger, },);
+ ```
+ */
+async function refusalsOf(
+  {
+    faults,
+    logger,
+  }: {
+    readonly faults: readonly Error[];
+    readonly logger: typeof l;
+  },
+): Promise<readonly unknown[]> {
+  return await Promise.all(faults.map(async function refusalOf(thrown,): Promise<unknown> {
+    return await rejectionOf(async function asked(): Promise<unknown> {
+      return await callWith({
+        client: scriptedClient({ thrown, },),
+        signal: new AbortController().signal,
+        logger,
+      },);
+    },);
+  },),);
+}
+
 await describe({
   name: attemptStageCall.name,
   children: [
@@ -199,15 +233,7 @@ await describe({
         /**
          What each call rejected with, in the order of the faults.
          */
-        const refusals = await Promise.all(faults.map(async function refusalOf(thrown,): Promise<unknown> {
-          return await rejectionOf(async function asked(): Promise<unknown> {
-            return await callWith({
-              client: scriptedClient({ thrown, },),
-              signal: new AbortController().signal,
-              logger,
-            },);
-          },);
-        },),);
+        const refusals = await refusalsOf({ faults, logger, },);
 
         expect(refusals,).toEqual(faults,);
         expect(refusals.map(function nameOf(refusal,): string {
@@ -247,15 +273,7 @@ await describe({
         /**
          What each call rejected with, in the order of the faults.
          */
-        const refusals = await Promise.all(faults.map(async function refusalOf(thrown,): Promise<unknown> {
-          return await rejectionOf(async function asked(): Promise<unknown> {
-            return await callWith({
-              client: scriptedClient({ thrown, },),
-              signal: new AbortController().signal,
-              logger,
-            },);
-          },);
-        },),);
+        const refusals = await refusalsOf({ faults, logger, },);
 
         expect(refusals,).toEqual(faults,);
         expect(refusals.map(function nameOf(refusal,): string {

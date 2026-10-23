@@ -87,7 +87,7 @@ type SchemaNode = {
  followed.
 
  @param schema - node read
- 
+
  @param path - where it sits
 
  @returns Nodes, the node itself first
@@ -124,25 +124,40 @@ function schemaNodesOf(
                 : [];
             },);
         }
-        if (SCHEMA_BEARING.has(keyword,) && isJsonRecord(value,))
-          return schemaNodesOf({
-            schema: value,
-            path: `${path}.${keyword}`,
-          },);
-        if (SCHEMA_BEARING.has(keyword,) && Array.isArray(value,)) {
-          return value.flatMap(function nodesOfItem(
+        if (!SCHEMA_BEARING.has(keyword,))
+          return [];
+
+        /**
+         Where each schema under the keyword sits, one place for a schema and one for each member of a list.
+         */
+        const places: readonly (readonly [
+          string,
+          unknown
+        ])[] = Array.isArray(value,)
+          ? value.map(function placeOf(
             item: unknown,
             index,
-          ): readonly SchemaNode[] {
-            return isJsonRecord(item,)
-              ? schemaNodesOf({
-                schema: item,
-                path: `${path}.${keyword}[${String(index,)}]`,
-              },)
-              : [];
-          },);
-        }
-        return [];
+          ): readonly [
+            string,
+            unknown
+          ] {
+            return [
+              `${path}.${keyword}[${String(index,)}]`,
+              item,
+            ];
+          },)
+          : [[
+            `${path}.${keyword}`,
+            value,
+          ],];
+        return places.flatMap(function nodesAt([place, held,],): readonly SchemaNode[] {
+          return isJsonRecord(held,)
+            ? schemaNodesOf({
+              schema: held,
+              path: place,
+            },)
+            : [];
+        },);
       },),
   ];
 }
@@ -277,9 +292,18 @@ function resolvedRef(
       at,
       segment,
     ): unknown {
-      if (Array.isArray(at,))
-        return at[Number(segment,)];
-      return isJsonRecord(at,) ? at[segment] : undefined;
+      // An array answers to its index as text, so one lookup serves a list and a record.
+      if (!(isJsonRecord(at,) || Array.isArray(at,)))
+        return undefined;
+      return Object.hasOwn(
+        at,
+        segment,
+      )
+        ? Reflect.get(
+          at,
+          segment,
+        )
+        : undefined;
     },
     root,
     );
@@ -364,8 +388,14 @@ function cyclesIn(
       ],
       settled,
     },);
+    // The refusal names the reference where the chain starts in the schema as written, not a node of the expansion.
     if (found.length > 0)
-      return found;
+      return found.map(function atSite(refusal,): SchemaRefusal {
+        return {
+          ...refusal,
+          schemaPath: path,
+        };
+      },);
     settled.add(ref,);
   }
   return [];

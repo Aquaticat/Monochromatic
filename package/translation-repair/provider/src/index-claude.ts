@@ -20,6 +20,10 @@ export {
   claudeSchemaOf,
 } from './claude-schema.ts';
 export {
+  type SchemaRefusal,
+  structuralRefusalOf,
+} from './claude-schema-refusals.ts';
+export {
   CLAUDE_PACE_WINDOW_MS,
   CLAUDE_REQUESTS_PER_MINUTE,
   ClaudeModelNotServedError,
