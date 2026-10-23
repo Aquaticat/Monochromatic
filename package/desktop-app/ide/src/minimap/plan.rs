@@ -26,10 +26,13 @@ pub const MIN_SCALE: f32 = 0.25;
 ///  Vello 0.11 sizes its scratch buffers with fixed constants,
 ///  and a scene that needs more than they hold renders blank without an error
 ///  (`doc/planning/ide-vello-buffer-sizes.md`):
-///  the densest text the editor can show overflows them in one render of 2,048 rows and fits in 1,024
-///  (`src/native/minimap_dense_tests.rs`).
+///  the densest text the editor can show fills them somewhere between 4,096 and 5,120 rows of one render
+///  (measured on 2026-10-23,
+///  `src/native/minimap_dense_tests.rs`;
+///  before selected rows were drawn once the limit was between 1,024 and 2,048).
 ///  A slice is therefore drawn in chunks of at most this many rows,
-///  which keeps the densest text a factor of two inside the buffers.
+///  which keeps the densest text a factor of eight inside the buffers;
+///  the tests only require a factor of two.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

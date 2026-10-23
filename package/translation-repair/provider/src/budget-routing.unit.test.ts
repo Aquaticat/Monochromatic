@@ -636,6 +636,75 @@ await describe({
         },),
 
         it({
+          name: 'STATES THE WEEKLY RETURN when the weekly budget is spent, and only then, so a dry reading names when it ends',
+          fn: async () => {
+            expect(syntheticMeterLevel({
+              quota: {
+                weekly: {
+                  percentRemaining: 0,
+                  nextRegenAt: '2026-10-23T05:03:47.000Z',
+                },
+              },
+            },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=none',
+              'syntheticThrottled=none',
+              'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
+            ],);
+            expect(syntheticMeterLevel({
+              quota: {
+                ...roomyQuota,
+                weekly: {
+                  percentRemaining: 0,
+                  nextRegenAt: '2026-08-25T00:12:58.000Z',
+                },
+              },
+            },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=750/750',
+              'syntheticThrottled=no',
+              'syntheticWeeklyReturn=2026-08-25T00:12:58.000Z',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'PRINTS ONLY A VALIDATED INSTANT as the weekly return: a value with a space and a newline, an empty one and a '
+            + 'spelling the logger does not write read `unreadable`, so no snapshot can forge a field or a line',
+          fn: async () => {
+            /**
+             The return field printed for each weekly return a snapshot might carry.
+             */
+            const returned = [
+              'a synthetic=wet\nINJECT',
+              '',
+              '2026-10-23T05:03:47Z',
+              '2026-10-23T05:03:47.000Z',
+            ].map(function returnFieldFor(nextRegenAt,): string {
+              return syntheticMeterLevel({
+                quota: { weekly: { percentRemaining: 0, nextRegenAt, }, },
+              },)
+                .find(function isReturn(field,): boolean {
+                  return field.startsWith('syntheticWeeklyReturn',);
+                },) ?? 'no return field';
+            },);
+            expect(returned,).toEqual([
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
+            ],);
+            // A window the parser marked unreadable carries no `nextRegenAt` at all.
+            expect(syntheticMeterLevel({ quota: { weekly: { percentRemaining: 0, }, }, },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=none',
+              'syntheticThrottled=none',
+              'syntheticWeeklyReturn=unreadable',
+            ],);
+          },
+        },),
+
+        it({
           name: 'separates active throttling from an emptied budget, which route the same way',
           fn: async () => {
             /**

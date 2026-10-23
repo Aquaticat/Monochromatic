@@ -12,6 +12,21 @@ Every number below comes from a command that was run on 2026-10-19 on the owner'
 the Raphael integrated GPU as `renderD129`);
 what was not run is listed under "Not proven".
 
+## Script names after the conversion to TypeScript
+
+The repository scripts this document names with an `.mjs` suffix under `package/desktop-app/ide/bin/`
+(`inspect-source-guards`,
+`inspect-watch-scope`,
+`inspect-refresh-latency`,
+`inspect-idle-cost`,
+`inspect-log-stall`,
+and the other `inspect-*-guards` scripts)
+were converted to `.ts` on 2026-10-22,
+because node runs TypeScript directly and `.mjs` has no advantage.
+Read each of those names with the suffix `.ts`; the text below keeps the names as they were when it was written.
+The `.mjs` files in "the scratch root" (`session.mjs`, `startup.mjs`, `rep.mjs`, `pair.mjs`, `stress.mjs`,
+`loadgen.mjs`, `matrix-load.mjs`) were scratch files of the measuring sessions and are not in the repository.
+
 ## Result in one paragraph
 
 A custom Slint platform whose windows use `FemtoVGWGPURenderer` renders a window headless

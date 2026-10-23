@@ -58,8 +58,9 @@ new,
 `@aliou/pi-synthetic` does not model them as pace-projectable windows.
 
 The Synthetic weekly credit block is read under `weeklyTokenLimit` or `planWeeklyLimit`.
-The `GET /v2/quotas` body at 2026-10-23 03:28:16 UTC carried the second name;
-the shape of the `x-synthetic-quotas` header is not yet measured, so both names are read.
+The `GET /v2/quotas` body at 2026-10-23 03:28:16 UTC carried the second name,
+and so did the `x-synthetic-quotas` header of a chat reply at 05:06:33 UTC that day.
+Both names are still read, because whether the rename is permanent is not known.
 A name whose value is missing or `null` counts as absent.
 A body that carries both names is read when the two blocks agree on `percentRemaining` and `nextRegenAt`,
 and the weekly window is skipped when they differ,

@@ -1405,6 +1405,17 @@ const cases: Guard[] = [
     test: 'the_densest_chunks_are_not_blank',
     failure: 'nearly blank'
   },
+  // Measured on 2026-10-23: two chunks drawn as one render keep their ink at 512 rows each and lose it at 4096 rows each
+  // (8192 rows in one render), so this test is what keeps a margin of two inside the buffers.
+  {
+    name: 'minimap-chunk-margin',
+    file: 'src/minimap/plan.rs',
+    before: 'pub const CHUNK_ROWS: u32 = 512;',
+    after: 'pub const CHUNK_ROWS: u32 = 4096;',
+    native: true,
+    test: 'the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds',
+    failure: 'one render of 8192 rows drew'
+  },
   {
     name: 'minimap-chunk-cut',
     file: 'src/minimap/chunks.rs',
