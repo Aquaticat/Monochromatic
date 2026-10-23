@@ -287,7 +287,11 @@ each bounded by what can cut it.
   and never make a new line,
   so a hold of hours over hundreds of slices writes one line and not hundreds.
   A change of the held set or of the short benches writes one more,
-  and so does a hold that ends and comes back.
+  and so does a hold that ends and comes back,
+  or a bench that recovers and falls short again under the same holds
+  (a reading that finds no unmet bench,
+  or that waited,
+  forgets the last state).
   **This seat-reader bound is the lead's ruling after the first fix waited at any distance,
   its entry-scoped form the lead's ruling of fix round 4,
   the would-help rule,
@@ -313,6 +317,13 @@ each bounded by what can cut it.
   ends its entry as before and never stops the run;
   its message says the pass may park and names that other outcome,
   since the gate parks only where the return fits what the pass has left.
+  When slices of one entry fail with both the all-dry refusal and such a bench error,
+  the overlapped map throws the refusal,
+  which ends the run,
+  whichever arrived first,
+  and the bench error only when no refusal is among the failures;
+  the map only hands the failure over,
+  and the gate decides whether the pass parks.
   **The park on the bench error is the lead's ruling of fix round 5 and open to the owner's veto.**
 
 The park works at the seam between entries,
@@ -329,11 +340,13 @@ because the wait must sit outside any exchange:
    and calls the gate's wait before asking the budget whether the pass goes on.
 3. The gate waits for what is left of the return,
    stored as an instant on its monotonic clock,
-   counted from the read that named the return where the error carries that stamp
-   (the bench error does,
+   counted from the read that named the return where the failure carries that stamp
+   (the seat reader's bench error and its all-dry refusal both do,
    as `neuralwattReadAtMs`,
    so slices that unwind late do not push the wait past the return)
-   and from the moment the refusal arrived otherwise,
+   and from the moment the failure arrived otherwise,
+   as for the router's own refusal,
+   which names the distance as it is raised,
    logs the end,
    and gives the pass a fresh signal.
 4. A refusal for the day start of a park that has ended trips instead of parking again,
@@ -345,8 +358,16 @@ because the wait must sit outside any exchange:
 Known costs of the park:
 the attempt it interrupts is already counted in the attempt map,
 and its `TALLY` line says `PARKED`,
-with the failure that named the return as the reason,
+with `returnsInMs=` and `returnsAt=` before the reason,
+so the cap on the reason never cuts them,
 and not `ERROR` or `INCOMPLETE`.
+The status comes from the gate's answer for that entry's own failure (`parkedFor`),
+never from whether the gate happens to be parked.
+Nothing in the code reads the printed status:
+the scheduler works from the disposition it is returned,
+and the tests match lines by prefix,
+so the status is read by people and by the runbook only,
+and `PARKED` is neither a failure nor a settlement.
 A long NeuralWatt hold also makes the per-slice re-seating (`pass-reseat-hook.ts`) read the seats on every slice
 while it runs,
 as it does for any hold.

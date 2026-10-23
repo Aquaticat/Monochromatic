@@ -598,6 +598,20 @@ Each is the exact string the log carries.
     Cache stays,
     but whole entry does not restart in same invocation.
 
+-   `TALLY <id> status=PARKED returnsInMs=<n> returnsAt=<time>`,
+    which means the pass paused because NeuralWatt's energy returns at that time of day,
+    and the entry goes back to the front of the queue to run again after the wait.
+    It is neither failure,
+    nor success,
+    nor a verdict on the entry,
+    so count it with neither `status=ERROR` nor `status=INCOMPLETE`.
+    The `error=` text is the failure that named the return.
+    The operator does nothing while the pass waits:
+    the gate logs the end of the wait (`the pass resumes`),
+    and the entry's next `TALLY` line is the one that counts.
+    A `PARKED` line that is never followed by `the pass resumes` means the run was stopped during the wait,
+    and the entry is left resumable.
+
 -   `STALLED <id>`,
     which is the earned-re-attempt rule refusing.
     The entry finished an attempt with no more cache records than it started with,
