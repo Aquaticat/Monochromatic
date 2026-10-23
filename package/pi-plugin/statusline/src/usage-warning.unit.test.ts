@@ -766,7 +766,7 @@ await describe({
           },
         },),
         it({
-          name: 'fails a child that cannot be spawned with the spawn error's message',
+          name: 'fails a child that cannot be spawned with the message of the spawn error',
           fn: async function testChildSpawnFailure() {
             await using logDirectory = await makeLogDirectory();
 
