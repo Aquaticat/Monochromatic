@@ -84,7 +84,8 @@ async function noWait(): Promise<void> {
 
  @param interrupted - asked after each attempt; true means a pause cut the attempt short, so the entry goes back to the
  front of the queue with no verdict, no REATTEMPT, STALLED or INCOMPLETE line, and the attempt that follows the pause
- starts further along. Absent, no attempt is cut by a pause
+ starts further along; when the run then ends before that attempt, a NOT RESUMED line names the entry. Absent, no
+ attempt is cut by a pause
 
  @example
  ```ts
@@ -115,6 +116,11 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
    */
   const queue: EntryT[] = [...pending,];
 
+  /**
+   Entries a pause cut short and that have not been attempted since, which a stop must say were not resumed.
+   */
+  const cutShort = new Set<string>();
+
   while (queue.length > 0) {
     /**
      Next attempt, taken from the front.
@@ -124,8 +130,15 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
     /* oxlint-disable no-await-in-loop -- a pause the caller takes between attempts, before the budget is asked */
     await beforeNext();
     /* oxlint-enable no-await-in-loop */
-    if (stopBeforeNext())
+    if (stopBeforeNext()) {
+      if (cutShort.has(entry.id,)) {
+        console.log(
+          `NOT RESUMED ${entry.id}: a pause cut its attempt short and the pass ended after the pause, so it was not `
+            + 'attempted again in this invocation and stays resumable',
+        );
+      }
       return;
+    }
 
     /* oxlint-disable no-await-in-loop -- one cheap read per attempt, against an attempt that may run seven hours */
     /**
@@ -143,9 +156,11 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
 
     // AN ATTEMPT A PAUSE CUT SHORT EARNS NO VERDICT: the entry goes back to the front, to start again after the pause.
     if (interrupted()) {
+      cutShort.add(entry.id,);
       queue.unshift(entry,);
       continue;
     }
+    cutShort.delete(entry.id,);
 
     /* oxlint-disable no-await-in-loop -- pairs with the read bracketing the other side of this attempt */
     /**
