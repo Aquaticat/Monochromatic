@@ -90,8 +90,8 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  straggler grace ends (ledger B816).
  Version 26 moves the fence length and the rendered-break counts out of the system text into the user turn (R4 of the
  third review of the Claude route).
- Version 27 reads a reply value that differs from a listed enum or const value only in capitalization as the
- listed value.
+ Version 27 reads a reply value that differs from a listed enum or const value only in
+ capitalization as the listed value.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
