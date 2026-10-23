@@ -100,7 +100,7 @@ function isText(value: unknown,): value is string {
 
  @param schema - node read
 
- @returns The listed strings, in listed order, none where the node lists no string
+ @returns Listed strings, in listed order, none where the node lists no string
 
  @example
  ```ts
@@ -170,13 +170,13 @@ function matchingSpellingsOf(
 }
 
 /**
- Joins a property name to the path above it.
+ Joins a property name to its parent's path.
 
  @param path - where the parent sits, from `reply`
 
  @param key - property name
 
- @returns The dotted path of the property
+ @returns Dotted path of the property
 
  @example
  ```ts
@@ -201,7 +201,7 @@ function childPathOf(
 
  @param members - each member of a list or object, read
 
- @returns The values taken back, in member order
+ @returns Values taken back, in member order
 
  @example
  ```ts
@@ -224,7 +224,7 @@ function foldsOf({ members, }: { readonly members: readonly EnumCaseFolded[]; },
 
  @param path - where the node sits in the reply
 
- @returns The listed spelling where exactly one differs only in capitalization, else the string as it came
+ @returns Listed spelling where exactly one differs only in capitalization, else the string as it came
 
  @example
  ```ts
@@ -277,7 +277,7 @@ function foldText(
 
  @param path - where the node sits in the reply
 
- @returns The value to read onward and every value taken back, the node's own value and those under it
+ @returns Value to read onward and every value taken back, the node's own value and those under it
 
  @example
  ```ts
@@ -422,8 +422,8 @@ function foldAt(
 
  @param value - reply parsed from JSON
 
- @returns The value to read onward, and each value taken back with where it sat, what the reply gave and what the
- schema lists
+ @returns Value to read onward, and each value taken back with where it sat, what the reply gave and what
+ the schema lists
 
  @example
  ```ts
@@ -431,7 +431,8 @@ function foldAt(
    schema: { type: 'object', properties: { verdict: { enum: ['consistent',], }, }, },
    value: { verdict: 'Consistent', },
  },);
- // => { value: { verdict: 'consistent' }, folds: [{ path: 'reply.verdict', received: 'Consistent', taken: 'consistent' }] }
+ // => { value: { verdict: 'consistent' },
+ //      folds: [{ path: 'reply.verdict', received: 'Consistent', taken: 'consistent' }] }
  ```
  */
 export function foldEnumCase(

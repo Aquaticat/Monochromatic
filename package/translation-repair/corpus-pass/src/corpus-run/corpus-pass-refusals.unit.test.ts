@@ -236,8 +236,8 @@ await describe({
                 + 'exchange is allowed (360000ms by default, 460000ms for a Claude exchange). Attempts are cut before '
                 + 'an exchange can return, so no slice caches, every '
                 + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
-                + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
-                + 'path deliberately.',
+                + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise '
+                + 'the stall path deliberately.',
               ...PROVIDERS_OFF_LINES,
               '',
             ].join('\n',),);

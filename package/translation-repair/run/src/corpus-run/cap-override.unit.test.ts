@@ -253,7 +253,7 @@ await describe({
         },),
 
         it({
-          name: 'READS HALF A MILLISECOND AND MORE as the figure written, and refuses what is below it, so the '
+          name: 'READS HALF A MILLISECOND AND MORE as the figure written, and refuses a finer one, so the '
             + 'smallest figure the refusal names is itself accepted',
           fn: async () => {
             expect(resolveHardCapMinutes({

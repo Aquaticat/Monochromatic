@@ -161,10 +161,10 @@ await describe({
     },),
 
     it({
-      name: 'PUTS node:timers/promises BACK WHEN THE WALK ENDS (R9): during the walk the wait is the rig\'s, and when '
-        + 'the walk has returned it is the real one again, so a wait in a case that follows is real, not a wait on a '
-        + 'clock whose case has finished (F9 of the re-check of fix round 6: asserted inside the walking case, where it '
-        + 'does not depend on a case before it having walked)',
+      name: 'PUTS node:timers/promises BACK WHEN THE WALK ENDS: during the walk the wait is the rig\'s, and when '
+        + 'the walk has returned it is the real one again, so a wait in another case is real, not a wait on a '
+        + 'clock whose case has finished (asserted inside the walking case, so it does not depend on any other '
+        + 'case having walked)',
       fn: async ctx => {
         /**
          Whether the wait the walk's nap sees is the real one, read while the walk runs.
@@ -189,9 +189,9 @@ await describe({
     },),
 
     it({
-      name: 'FAILS THE CASE WHEN THE WALK DOES NOT END AFTER THE RELEASE (F9 of the re-check of fix round 6): a sleep '
-        + 'the release provokes is on the fake clock, which nobody ticks again, so the rig stops waiting at its hang '
-        + 'stop and says so, where it waited for ever',
+      name: 'FAILS THE CASE WHEN THE WALK DOES NOT END AFTER THE RELEASE: a sleep the release provokes is on the '
+        + 'fake clock, which nobody ticks again, so the rig stops waiting at its hang stop and says so, where it '
+        + 'waited for ever',
       fn: async ctx => {
         /**
          Ends the nap loop when the walk is released.

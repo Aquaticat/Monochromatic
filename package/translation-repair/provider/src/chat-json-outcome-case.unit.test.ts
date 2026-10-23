@@ -24,7 +24,9 @@ import {
   readJsonOutcome,
 } from '../dist/final/node/index.mjs';
 import { SEAT_HYPER_VISION, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
-import { warnLinesDuring, } from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
+import {
+  warnLinesDuring,
+} from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
 
 /**
  Model named on every reading, for the log lines only.
@@ -57,7 +59,7 @@ function isVerdictReply(value: unknown,): value is { readonly verdict: string; }
 
  @param schema - JSON schema of the reply
 
- @returns The format
+ @returns Response format that wraps the schema
 
  @example
  ```ts
@@ -163,7 +165,10 @@ await describe({
               run: async () =>
                 readJsonOutcome({
                   modelId: MODEL_ID,
-                  reply: { text: '{"findings":[{"severity":"minor","note":"Purr"},{"severity":"Major","note":"Hiss"}]}', },
+                  reply: {
+                    text: '{"findings":[{"severity":"minor","note":"Purr"},'
+                      + '{"severity":"Major","note":"Hiss"}]}',
+                  },
                   validate: isJsonRecord,
                   responseFormat: formatOf({ schema, },),
                 },),
@@ -262,7 +267,12 @@ await describe({
                   responseFormat: formatOf({
                     schema: {
                       type: 'object',
-                      properties: { verdict: { type: 'string', enum: ['consistent', 'Consistent', 'not consistent',], }, },
+                      properties: {
+                        verdict: {
+                          type: 'string',
+                          enum: ['consistent', 'Consistent', 'not consistent',],
+                        },
+                      },
                     },
                   },),
                 },),

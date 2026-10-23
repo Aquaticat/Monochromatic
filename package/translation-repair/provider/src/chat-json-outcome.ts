@@ -129,8 +129,8 @@ export function responseFormatSpreadOf(
 
  @param value - reply parsed from JSON
 
- @returns The value to read onward and each value taken back; the value itself, with none taken back, where no format
- was sent
+ @returns Value to read onward and each value taken back; where no format was sent, the value itself and no
+ values taken back
 
  @example
  ```ts

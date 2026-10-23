@@ -78,7 +78,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
    millisecond, so a fractional figure is valid operator input, and its product
    with the milliseconds in a minute is a floating-point number that is not
    whole for most decimals (4.35 minutes comes out as 260999.99999999997). The
-   remainder is under half a millisecond, below what a timer can resolve, so
+   remainder is under half a millisecond, finer than a timer can resolve, so
    rounding changes no cap anyone can observe. A positive figure that would
    round to zero is refused by `resolveHardCapMinutes` with the smallest figure
    accepted, and no floor is applied here, because a floor would replace a

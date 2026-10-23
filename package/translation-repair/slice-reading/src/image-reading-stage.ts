@@ -267,8 +267,8 @@ type EmptyAssetRefusal = {
 
  @param assetName - its file name, which carries the media type
 
- @param l - logger the caught empty-picture error is written to, at the debug level, since the caller warns of the
- refusal once
+ @param l - logger the caught empty-picture error is written to, at the debug level, since the caller
+ warns of the refusal once
 
  @returns Encoding, or the refusal, which for a picture with no bytes carries the reason `empty-asset`
 

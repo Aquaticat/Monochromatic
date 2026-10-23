@@ -1,7 +1,7 @@
 /**
  Tests for the rule that takes a reply value differing from a listed `enum` or `const` value only in capitalization back
- to the schema's own spelling, on the value alone: the readings that carry it into a log line and an outcome are in
- `chat-json-outcome-case.unit.test.ts`.
+ to the schema's own spelling, on the value alone: the readings that carry it into a log line and an outcome
+ are in `chat-json-outcome-case.unit.test.ts`.
 
  Fixtures are cat-themed invention.
 

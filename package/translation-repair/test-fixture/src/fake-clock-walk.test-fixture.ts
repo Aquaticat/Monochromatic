@@ -25,10 +25,10 @@ import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 // family is written with them. `fake-clock-walk.unit.test.ts` walks both forms.
 //
 // THE STUB IS PROCESS-WIDE, so the retry ladder's sleeps (`provider/src/transient-retry.ts`) and the request pace
-// (`provider/src/request-pace.ts`), which import that built-in, are on the fake clock during a walk too, and so would the
-// harness's own fixtures be if they ran in a walking process (they do not: only the two bench probe suites walk). A
-// sleep the release of the transport provokes is therefore a wait on a clock nobody ticks again, and the walk stops
-// waiting for the walk's end at the hang stop after the release as it does before the first call.
+// (`provider/src/request-pace.ts`), which import that built-in, are on the fake clock during a walk too, and so
+// would the harness's own fixtures be if they ran in a walking process (they do not: only the two bench probe
+// suites walk). A sleep the release of the transport provokes is therefore a wait on a clock nobody ticks again,
+// and the walk stops waiting for the walk's end at the hang stop after the release as it does before the first call.
 //
 // TEST SUPPORT, NOT PACKAGE SOURCE. The delayed transport this drives is `delayed-transport.test-fixture.ts` of the
 // provider package; this file knows it only through the promise and the release it is handed.
@@ -332,8 +332,8 @@ export async function walkOnFakeClock(
   const endedByItself = await ticked();
 
   // THE TRANSPORT IS RELEASED NOW, and a walk that sleeps again because of it sleeps on the fake clock, which nobody
-  // ticks any more: waiting for it without a stop would hang the case where, before the clock was faked, it ended in
-  // real time.
+  // ticks any more: waiting for it without a stop would hang the case where, before the clock was faked, it
+  // ended in real time.
   await Promise.race([
     settled,
     realWait(hangStopMs,)
