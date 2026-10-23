@@ -15,6 +15,7 @@ import {
 import {
   DEFAULT_EDITOR_MAX_USD,
   DEFAULT_EDITOR_TRIAL_CAP,
+  EDITOR_BENCH_MAX_USD,
   EDITOR_DAMAGE_KINDS,
   readEditorFidelityArguments,
 } from '../../dist/final/node/index.mjs';
@@ -58,6 +59,7 @@ await describe({
           cap: DEFAULT_EDITOR_TRIAL_CAP,
           damageKinds: EDITOR_DAMAGE_KINDS,
           maxUsd: DEFAULT_EDITOR_MAX_USD,
+          benchSpentUsd: 0,
         },);
       },
     },),
@@ -65,13 +67,52 @@ await describe({
       name: 'READS the entries, the cap, one defect and the amount as written',
       fn: async () => {
         expect(askedFrom({
-          typed: ['--only', 'tabby,,ginger', '--cap', '3', '--damage', 'insertion', '--max-usd', '0.75',],
+          typed: [
+            '--only',
+            'tabby,,ginger',
+            '--cap',
+            '3',
+            '--damage',
+            'insertion',
+            '--max-usd',
+            '0.75',
+            '--bench-spent-usd',
+            '7.25',
+          ],
         },),).toEqual({
           onlyIds: ['tabby', 'ginger',],
           cap: 3,
           damageKinds: ['insertion',],
           maxUsd: 0.75,
+          benchSpentUsd: 7.25,
         },);
+      },
+    },),
+    it({
+      name: 'NAMES THE BENCH TOTAL at twenty dollars, the amount the owner ruled for all the arms of the bench together, '
+        + 'and starts an arm that reaches it exactly',
+      fn: async () => {
+        expect(EDITOR_BENCH_MAX_USD,).toBe(20,);
+        expect(askedFrom({ typed: ['--bench-spent-usd', '18', '--max-usd', '2',], },).benchSpentUsd,).toBe(18,);
+        expect(askedFrom({ typed: ['--bench-spent-usd', '7.1', '--max-usd', '12.9',], },).maxUsd,).toBe(12.9,);
+      },
+    },),
+    it({
+      name: 'REFUSES TO START an arm whose --max-usd, added to the spend the earlier arms of the bench measured, '
+        + 'passes the bench total, naming the three figures and what --max-usd may still be',
+      fn: async () => {
+        expect(refusalOf({
+          typed: ['--bench-spent-usd', '18.5', '--max-usd', '2',],
+          askedFrom,
+        },),).toBe(
+          'the bench would spend up to 20.5 USD: --bench-spent-usd 18.5 plus --max-usd 2 passes the 20 USD the owner '
+            + 'ruled for all the arms of the editor fidelity bench together; write a --max-usd of at most 1.5, or '
+            + 'stop the bench here',
+        );
+        expect(refusalOf({
+          typed: ['--bench-spent-usd', '20', '--max-usd', '0.01',],
+          askedFrom,
+        },),).toContain('write a --max-usd of at most 0',);
       },
     },),
     it({
@@ -111,7 +152,7 @@ await describe({
          */
         const usage = 'Usage: editor-fidelity-probe [--only <entry ids>] [--cap <count>] '
           + '[--damage <insertion|alteration>] [--candidates <seatable ids>] [--max-usd <dollars>] '
-          + '[--candidates-alone]';
+          + '[--bench-spent-usd <dollars>] [--candidates-alone]';
         /**
          Command lines an operator mistyped, each with the refusal it must draw.
          */
@@ -129,6 +170,11 @@ await describe({
               + 'and "two" is not one',
           ],
           [['--max-usd',], `--max-usd needs a value written after it. ${usage}`,],
+          [
+            ['--bench-spent-usd', '-1',],
+            '--bench-spent-usd needs a plain amount of dollars written in digits with at most one decimal point, '
+              + 'and "-1" is not one',
+          ],
           [['--only', ',',], '--only needs at least one entry id, and "," names none',],
           [['--damage',], `--damage needs a value written after it. ${usage}`,],
         ];

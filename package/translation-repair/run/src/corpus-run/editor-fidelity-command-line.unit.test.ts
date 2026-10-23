@@ -31,7 +31,14 @@ await describe({
          The declaration under test.
          */
         const spec = COMMAND_LINES['editor-fidelity-probe'];
-        expect(Object.keys(spec.valued,).toSorted(),).toEqual(['candidates', 'cap', 'damage', 'max-usd', 'only',],);
+        expect(Object.keys(spec.valued,).toSorted(),).toEqual([
+          'bench-spent-usd',
+          'candidates',
+          'cap',
+          'damage',
+          'max-usd',
+          'only',
+        ],);
         expect(Object.keys(spec.switches,),).toEqual(['candidates-alone',],);
         expect(Object.keys(spec.repeatable,),).toEqual([],);
         expect(spec.positionals.names,).toEqual([],);
@@ -66,12 +73,19 @@ await describe({
             '--candidates-alone',
             '--max-usd',
             '1.5',
+            '--bench-spent-usd',
+            '3',
           ],
         },);
         expect(line.flag('max-usd',),).toEqual({
           kind: 'written',
           flag: '--max-usd',
           value: '1.5',
+        },);
+        expect(line.flag('bench-spent-usd',),).toEqual({
+          kind: 'written',
+          flag: '--bench-spent-usd',
+          value: '3',
         },);
         expect(line.flag('cap',).kind,).toBe('written',);
         expect(line.switched('candidates-alone',),).toBe(true,);

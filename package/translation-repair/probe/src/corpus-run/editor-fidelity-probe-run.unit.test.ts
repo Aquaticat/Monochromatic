@@ -491,6 +491,32 @@ await describe({
         },),
 
         it({
+          name: 'REFUSES TO START AN ARM THAT WOULD PASS THE BENCH TOTAL, the spend the earlier arms measured plus '
+            + 'this arm\'s --max-usd over twenty dollars, before reading or building anything, and starts one that '
+            + 'reaches the total exactly',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const over = await probeIn({
+              runsDir: scratch.path,
+              typed: [...ONE_CARD, '--bench-spent-usd', '19', '--max-usd', '2',],
+            },);
+            expect(refusedWith({ seen: over, },),).toBe(
+              'the bench would spend up to 21 USD: --bench-spent-usd 19 plus --max-usd 2 passes the 20 USD the owner '
+                + 'ruled for all the arms of the editor fidelity bench together; write a --max-usd of at most 1, or '
+                + 'stop the bench here',
+            );
+            expect(over.readFor,).toStrictEqual([],);
+            expect(over.clientBuilds,).toStrictEqual([],);
+            expect(over.runsAsked,).toStrictEqual([],);
+            const exact = await probeIn({
+              runsDir: scratch.path,
+              typed: [...ONE_CARD, '--bench-spent-usd', '18', '--max-usd', '2', '--cap', '0',],
+            },);
+            expect(exact.failures,).toStrictEqual([],);
+          },
+        },),
+
+        it({
           name: 'REFUSES A CARD WITH NO PRICE TABLE before reading anything, since no ceiling could be printed for it',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
