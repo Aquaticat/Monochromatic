@@ -178,7 +178,7 @@ function positionsWhere(
  The lines that a kind of span covers, each from an opening line through the first line at or after it that ends the
  span, or through the end of the file when none does.
 
- @param lines - the file's lines
+ @param lines - file's lines
 
  @param openers - positions of the lines that open a span
 
@@ -421,7 +421,7 @@ function functionNameOpenedBy({ line, }: { readonly line: string; },): string {
  The value must start as an arrow function does: a parameter list, `async` and a parameter list, type parameters, or a
  lone parameter and the arrow. A parenthesised value that is no arrow function but holds one is read as one.
 
- @param lines - the declaration's lines
+ @param lines - declaration's lines
 
  @returns Name of the constant
 
@@ -553,9 +553,9 @@ export function functionDeclarationsOf(
  Whether a function's text returns the result of calling another function straight away: `return name(`, `=> name(`, and
  the same with type arguments.
 
- @param text - the function declaration's text
+ @param text - function declaration's text
 
- @param name - the called function's name
+ @param name - called function's name
 
  @returns Whether the text returns a call of it
 
@@ -588,7 +588,7 @@ export function returnsCallOf(
 
  @param code - lines of code
 
- @param name - the function's name
+ @param name - function's name
 
  @returns Whether some occurrence of the name is a use
 
