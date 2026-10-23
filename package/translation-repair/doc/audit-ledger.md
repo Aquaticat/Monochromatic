@@ -556,6 +556,15 @@ named for that subject and listed here.
   a model the owner's answer took off the lane-contest and consolidation benches
   after the grace cut 40 of its 95 streams (B815),
   and a writing-bench floor that stopped an entry for want of a named return though NeuralWatt's return was 48 s away (B826).
+- [Audit ledger: probes that read one editor card](audit-ledger-editor-card-probes.md):
+  An editor calibration with no flag naming a card (B870),
+  a flag that confines the editing and not the spend (B871),
+  a lone editor whose slate ships unjudged (B872),
+  a relative share that moved from 52.2 to 26.7 to 10.0 percent across identical runs (B874),
+  and the absolute probe that reads one card's edit against a known fix,
+  with its shared gather,
+  its refused deletion,
+  its cost ceiling and its card-only client (B875 to B879).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,
