@@ -1,32 +1,43 @@
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type {
-  ChatTextReply,
-  ModelClient,
+import {
+  type ChatTextReply,
+  type ModelClient,
+  reportSpend,
+  type SpendReckoning,
 } from '@monochromatic-dev/translation-repair-provider/ts';
-import type { AnthropicPrices, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import {
+  CLAUDE_COMPLETION_CAP,
+  runSpendUsd,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   callCeilingUsd,
   messageChars,
-  PER_MILLION,
   pricesOf,
-  tierFor,
   usdText,
 } from './editor-fidelity-ceiling.ts';
 
 //region Editor fidelity spend guard
-// WHAT HOLDS AN ARM TO `--max-usd`, call by call, on what the replies cost and not on what the arm might cost.
+// WHAT HOLDS AN ARM TO `--max-usd`, call by call, on the money the client reports and not on the replies the guard sees.
 //
 // A POOL OF FORTY TRIALS PRICES PAST ANY AMOUNT, because the ceiling takes the whole completion cap on every ask
 // (`editor-fidelity-ceiling.ts`). Refusing to start on that total would refuse every arm of the pool, so the guard asks
-// the question at each call instead: would the spend measured so far, plus the most this call can cost, pass the amount?
-// If it would, the call is refused and the arm ends there, with the rows it finished already in their files.
+// the question at each call instead: would the spend so far, plus the most this call can cost, pass the amount? If it
+// would, the call is refused and the arm ends there, with the rows it finished already in their files.
 //
-// SPEND IS READ FROM THE REPLIES. A reply reports the tokens it used, thinking counted in the completion, and the card's
-// prices turn them into dollars. The report folds the prompt's cached tokens into one prompt count, so the prompt is
-// priced at the higher of the card's input and cache-write rates: the figure never falls under the bill, and an overcount
-// only stops the arm sooner. A reply that reports no usage has an unknown cost and is counted at its call's ceiling, since
-// an unknown cost may not be assumed small. A call that throws delivered no reply to measure and counts nothing; the
-// attempts a client retries inside a call are its own to report, and are invisible here.
+// SPEND IS READ OFF THE RUN METER, WHICH IS WHAT THE CLIENT WRITES. Every priced reply of the Claude client is a SPEND
+// line that moves the meter by the cost the client priced from the four counts its stream reported, and since the
+// client reports abandoned attempts (`claude-abandoned-spend.ts`) every attempt it retried inside a call after a cut
+// stream is a line too, at the most it could have been billed. The first guard priced the replies it saw by a second
+// rule, which differed from the client's cost on every reply and could not see a retried attempt at all: it bounded
+// the replies and not the money.
+//
+// WHAT NO LINE HOLDS IS COUNTED AT THE CALL'S CEILING, by a SPEND line the guard writes itself, so the meter, the log
+// and the guard's total stay one figure. A reply that reports no usage has an unknown cost, and an unknown cost may not
+// be assumed small. A call that throws may have been billed for a stream that never reached the caller, so it counts
+// unless the error proves no billable body was delivered, which an HTTP error status with no response body does. An
+// attempt the client already wrote and a call that then throws are both counted, so a throw after an abandoned attempt
+// reads one ceiling high: the guard may stop an arm sooner than the bill requires and never later.
 //
 // THE REFUSAL ENDS THE ARM, NOT ONE VOICE OF IT. The stage turns a call that throws into a lost voice and asks again, but
 // rethrows once the arm's signal has aborted. The guard aborts that signal with the refusal as its reason before it
@@ -39,40 +50,44 @@ import {
 type ReportedUsage = NonNullable<ChatTextReply['usage']>;
 
 /**
- US dollars a reply cost, from the tokens it reported.
-
- @param prices - the card's prices, whose tier the prompt size picks
-
- @param usage - the tokens the reply reported, thinking counted in the completion
-
- @returns Cost in US dollars, the prompt priced at the higher of the input and cache-write rates
+ What the guard counted, for the line that ends an arm.
 
  @example
  ```ts
- const usd = measuredUsd({ prices, usage: { prompt_tokens: 1_000, completion_tokens: 3_000, }, },);
+ const total: GuardTotal = { usd: 0.322, calls: 3, atCeiling: 1, };
  ```
  */
-export function measuredUsd(
-  {
-    prices,
-    usage,
-  }: {
-    readonly prices: AnthropicPrices;
-    readonly usage: ReportedUsage;
-  },
-): number {
+export type GuardTotal = {
   /**
-   Rates of the tier that prices the whole call.
+   Dollars on the run meter since the guard was built: the client's lines and the guard's own.
    */
-  const tier = tierFor({
-    prices,
-    promptTokens: usage.prompt_tokens,
-  },);
-  return ((usage.prompt_tokens * Math.max(
-    tier.inputUsdPerMillion,
-    tier.cacheWriteUsdPerMillion,
-  )) + (usage.completion_tokens * tier.outputUsdPerMillion)) / PER_MILLION;
-}
+  readonly usd: number;
+
+  /**
+   Calls the guard let through.
+   */
+  readonly calls: number;
+
+  /**
+   Calls the guard counted at their ceiling itself, by a line of its own.
+   */
+  readonly atCeiling: number;
+};
+
+/**
+ A client held to an amount, which also says what it counted.
+
+ @example
+ ```ts
+ const { usd, } = client.guardTotal();
+ ```
+ */
+export type GuardedClient = ModelClient & {
+  /**
+   Reads what the guard has counted so far.
+   */
+  readonly guardTotal: () => GuardTotal;
+};
 
 /**
  The line that says what holds the arm to its amount.
@@ -87,8 +102,117 @@ export function measuredUsd(
  ```
  */
 export function guardLine({ maxUsd, }: { readonly maxUsd: number; },): string {
-  return 'spend guard: each call is refused, and the arm ends, when the spend measured from the replies so far plus '
-    + `that call's ceiling would pass --max-usd ${usdText({ usd: maxUsd, },)}`;
+  return 'spend guard: each call is refused, and the arm ends, when the spend so far plus that call\'s ceiling would '
+    + `pass --max-usd ${usdText({ usd: maxUsd, },)}; the spend so far is every SPEND line the client wrote, the `
+    + 'attempts it abandoned included, and a call that throws, or a reply that reports no usage, is counted at its '
+    + 'ceiling';
+}
+
+/**
+ Decimals the total line prints dollars with, enough to tell the sum of SPEND lines from the total they are compared
+ with.
+ */
+const TOTAL_DECIMALS = 6;
+
+/**
+ The line that says what the guard counted when an arm ends, in the grammar the read step totals.
+
+ @param total - what the guard counted
+
+ @returns The line, without a newline
+
+ @example
+ ```ts
+ log.info(guardTotalLine({ total: client.guardTotal(), },),);
+ ```
+ */
+export function guardTotalLine({ total, }: { readonly total: GuardTotal; },): string {
+  /**
+   The parts of the total, named for the line.
+   */
+  const {
+    usd,
+    calls,
+    atCeiling,
+  } = total;
+  return `GUARD total=${usd.toFixed(TOTAL_DECIMALS,)} calls=${String(calls,)} atCeiling=${String(atCeiling,)}`;
+}
+
+/**
+ Whether a thrown error proves no billable body was delivered: an HTTP error status that carried no response body.
+
+ @param error - what the call threw
+
+ @returns Whether the call is free
+
+ @example
+ ```ts
+ const free = deliveredNothing({ error, },);
+ ```
+ */
+function deliveredNothing({ error, }: { readonly error: unknown; },): boolean {
+  return (error instanceof ProviderHttpError) && (error.bodyExcerpt === '');
+}
+
+/**
+ What an exchange did: answered, or threw.
+
+ @example
+ ```ts
+ const attempt: Attempt<string> = { kind: 'replied', reply: 'meow', };
+ ```
+ */
+type Attempt<ReplyT,> =
+  | {
+    /**
+     The exchange answered.
+     */
+    readonly kind: 'replied';
+
+    /**
+     What it answered.
+     */
+    readonly reply: ReplyT;
+  }
+    | {
+    /**
+     The exchange threw.
+     */
+      readonly kind: 'threw';
+
+    /**
+     What it threw.
+     */
+      readonly error: unknown;
+    };
+
+/**
+ Runs an exchange and says what it did as data, so the caller counts a throw before it rethrows.
+
+ @param exchange - the inner client's exchange
+
+ @returns The reply, or what the exchange threw
+
+ @example
+ ```ts
+ const attempt = await attemptOf({ exchange, },);
+ ```
+ */
+async function attemptOf<ReplyT,>(
+  { exchange, }: { readonly exchange: () => Promise<ReplyT>; },
+): Promise<Attempt<ReplyT>> {
+  try {
+    return {
+      kind: 'replied',
+      reply: await exchange(),
+    };
+  }
+  catch (error) {
+    return {
+      kind: 'threw',
+      error,
+    };
+  }
 }
 
 /**
@@ -100,11 +224,11 @@ export function guardLine({ maxUsd, }: { readonly maxUsd: number; },): string {
 
  @param controller - the arm's own, aborted with the refusal as its reason when a call is refused
 
- @returns A client with every member of the inner one, at run time, its exchanges refused once the measured spend plus
- the call's ceiling would pass the amount
+ @returns A client with every member of the inner one, at run time, its exchanges refused once the spend so far plus the
+ call's ceiling would pass the amount, and the reader of what it counted
 
- @throws StatedRefusalError from an exchange whose ceiling plus the spend measured so far passes the amount, before the
- inner client is reached, and from every exchange after it
+ @throws StatedRefusalError from an exchange whose ceiling plus the spend so far passes the amount, before the inner
+ client is reached, and from every exchange after it
 
  @throws StatedRefusalError from an exchange naming a model with no price table
 
@@ -123,15 +247,36 @@ export function spendGuardedClient(
     readonly maxUsd: number;
     readonly controller: AbortController;
   },
-): ModelClient {
+): GuardedClient {
   /**
-   Dollars measured from the replies so far.
+   What the meter held when the guard was built, so the spend is the arm's alone.
    */
-  const spent = { usd: 0, };
+  const baselineUsd = runSpendUsd({ provider: 'anthropic', },);
+  /**
+   Calls let through and calls counted at their ceiling.
+   */
+  const counted = {
+    calls: 0,
+    atCeiling: 0,
+  };
   /**
    The refusal the arm ended with, at most one.
    */
   const refusals: StatedRefusalError[] = [];
+
+  /**
+   Dollars the arm has spent so far.
+
+   @returns What the meter gained since the guard was built
+
+   @example
+   ```ts
+   const spentUsd = spentSoFar();
+   ```
+   */
+  function spentSoFar(): number {
+    return runSpendUsd({ provider: 'anthropic', },) - baselineUsd;
+  }
 
   /**
    Lets a call through, or ends the arm.
@@ -140,13 +285,13 @@ export function spendGuardedClient(
 
    @param messages - what the call sends
 
-   @returns The most this call can cost, which an unreported reply is counted at
+   @returns The most this call can cost and the prompt size it was reckoned from
 
    @throws StatedRefusalError when the call could take the arm past its amount, or an earlier one did
 
    @example
    ```ts
-   const ceilingUsd = admit({ modelId, messages, },);
+   const ceiling = admit({ modelId, messages, },);
    ```
    */
   function admit(
@@ -157,7 +302,10 @@ export function spendGuardedClient(
       readonly modelId: Parameters<typeof pricesOf>[0]['cardId'];
       readonly messages: Parameters<typeof messageChars>[0]['messages'];
     },
-  ): number {
+  ): {
+    readonly usd: number;
+    readonly promptTokens: number;
+  } {
     /**
      The refusal an earlier call ended the arm with, absent while none has.
      */
@@ -165,109 +313,182 @@ export function spendGuardedClient(
     if (standing !== undefined)
       throw standing;
     /**
+     Prompt size the ceiling is reckoned from.
+     */
+    const promptTokens = messageChars({ messages, },);
+    /**
      The most this call can cost.
      */
     const ceilingUsd = callCeilingUsd({
       prices: pricesOf({ cardId: modelId, },),
-      promptTokens: messageChars({ messages, },),
+      promptTokens,
     },);
     /**
-     What the arm would have spent if this call cost its most.
+     What the arm has spent so far.
      */
-    const worstTotalUsd = spent.usd + ceilingUsd;
-    if (worstTotalUsd > maxUsd) {
+    const spentUsd = spentSoFar();
+    if ((spentUsd + ceilingUsd) > maxUsd) {
       /**
        The refusal that ends the arm.
        */
       const refusal = new StatedRefusalError({
-        says: `the editor fidelity probe will not ask ${modelId}: the replies so far cost ${
-          usdText({ usd: spent.usd, },)
-        } USD as measured, this call can cost ${usdText({ usd: ceilingUsd, },)} USD at most, and together they pass `
+        says: `the editor fidelity probe will not ask ${modelId}: the spend so far is ${
+          usdText({ usd: spentUsd, },)
+        } USD, this call can cost ${usdText({ usd: ceilingUsd, },)} USD at most, and together they pass `
           + `--max-usd ${usdText({ usd: maxUsd, },)}; the arm ends here, and the rows it finished stay in their files`,
       },);
       refusals.push(refusal,);
       controller.abort(refusal,);
       throw refusal;
     }
-    return ceilingUsd;
+    return {
+      usd: ceilingUsd,
+      promptTokens,
+    };
   }
 
   /**
-   Adds what a reply cost to the spend.
+   Counts a call at its ceiling, by a SPEND line of the guard's own.
 
-   @param modelId - model that answered
+   @param modelId - model the call names
 
-   @param ceilingUsd - the most the call could cost, counted when the reply reports no usage
+   @param ceiling - the most the call could cost
 
-   @param reply - what the inner client answered, whose usage is absent when it reported none
+   @param reckoning - why the line is reckoned, not reported
 
    @example
    ```ts
-   settle({ modelId, ceilingUsd, reply, },);
+   countAtCeiling({ modelId, ceiling, reckoning: 'abandoned-bound', },);
    ```
    */
-  function settle(
+  function countAtCeiling(
     {
       modelId,
-      ceilingUsd,
-      reply,
+      ceiling,
+      reckoning,
     }: {
-      readonly modelId: Parameters<typeof pricesOf>[0]['cardId'];
-      readonly ceilingUsd: number;
-      readonly reply: { readonly usage?: ReportedUsage; };
+      readonly modelId: string;
+      readonly ceiling: {
+        readonly usd: number;
+        readonly promptTokens: number;
+      };
+      readonly reckoning: SpendReckoning;
     },
   ): void {
+    counted.atCeiling += 1;
+    reportSpend({
+      provider: 'anthropic',
+      label: modelId,
+      extracted: {
+        text: '',
+        usage: {
+          prompt_tokens: ceiling.promptTokens,
+          completion_tokens: CLAUDE_COMPLETION_CAP,
+        },
+      },
+      costUsd: ceiling.usd,
+      estimated: reckoning,
+    },);
+  }
+
+  /**
+   Runs one exchange under the guard: admits it, lets it through, and counts what no line of the client holds.
+
+   @param modelId - model the call names
+
+   @param messages - what the call sends
+
+   @param exchange - the inner client's exchange
+
+   @returns What the inner client answered
+
+   @throws StatedRefusalError when the call is refused
+
+   @throws Whatever the inner client threw, after the call was counted
+
+   @example
+   ```ts
+   const reply = await guarded({ modelId, messages, exchange: askText, },);
+   ```
+   */
+  async function guarded<ReplyT extends { readonly usage?: ReportedUsage; },>(
+    {
+      modelId,
+      messages,
+      exchange,
+    }: {
+      readonly modelId: Parameters<typeof pricesOf>[0]['cardId'];
+      readonly messages: Parameters<typeof messageChars>[0]['messages'];
+      readonly exchange: () => Promise<ReplyT>;
+    },
+  ): Promise<ReplyT> {
     /**
-     The tokens the reply reported, absent when it reported none.
+     The most this call can cost.
      */
-    const { usage, } = reply;
-    spent.usd += (usage === undefined)
-      ? ceilingUsd
-      : measuredUsd({
-        prices: pricesOf({ cardId: modelId, },),
-        usage,
+    const ceiling = admit({
+      modelId,
+      messages,
+    },);
+    counted.calls += 1;
+    /**
+     What the meter held when the call began, to see whether the client wrote a line for it.
+     */
+    const beforeUsd = runSpendUsd({ provider: 'anthropic', },);
+    /**
+     What the inner client did with the call: answered or threw.
+     */
+    const attempt = await attemptOf({ exchange, },);
+    if (attempt.kind === 'threw') {
+      if (!deliveredNothing({ error: attempt.error, },)) {
+        countAtCeiling({
+          modelId,
+          ceiling,
+          reckoning: 'abandoned-bound',
+        },);
+      }
+      throw attempt.error;
+    }
+    /**
+     What the client reported about the tokens of its reply.
+     */
+    const { usage, } = attempt.reply;
+    // A REPLY WITHOUT USAGE, OR WITH USAGE AND NO LINE ON THE METER, has a cost nobody wrote down.
+    if ((usage === undefined) || (runSpendUsd({ provider: 'anthropic', },) === beforeUsd)) {
+      countAtCeiling({
+        modelId,
+        ceiling,
+        reckoning: 'unreported-bound',
       },);
+    }
+    return attempt.reply;
   }
 
   return {
     ...inner,
     chatText: async function guardedText(request,) {
-      /**
-       The most this call can cost.
-       */
-      const ceilingUsd = admit({
+      return await guarded({
         modelId: request.modelId,
         messages: request.messages,
+        exchange: function askText() {
+          return inner.chatText(request,);
+        },
       },);
-      /**
-       What the inner client answered.
-       */
-      const reply = await inner.chatText(request,);
-      settle({
-        modelId: request.modelId,
-        ceilingUsd,
-        reply,
-      },);
-      return reply;
     },
     chatJson: async function guardedJson(request,) {
-      /**
-       The most this call can cost.
-       */
-      const ceilingUsd = admit({
+      return await guarded({
         modelId: request.modelId,
         messages: request.messages,
+        exchange: function askJson() {
+          return inner.chatJson(request,);
+        },
       },);
-      /**
-       What the inner client answered.
-       */
-      const outcome = await inner.chatJson(request,);
-      settle({
-        modelId: request.modelId,
-        ceilingUsd,
-        reply: outcome,
-      },);
-      return outcome;
+    },
+    guardTotal: function guardTotal(): GuardTotal {
+      return {
+        usd: spentSoFar(),
+        calls: counted.calls,
+        atCeiling: counted.atCeiling,
+      };
     },
   };
 }

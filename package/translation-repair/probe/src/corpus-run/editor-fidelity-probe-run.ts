@@ -41,6 +41,7 @@ import {
 } from './editor-fidelity-plan.ts';
 import {
   guardLine,
+  guardTotalLine,
   spendGuardedClient,
 } from './editor-fidelity-spend-guard.ts';
 import { poolLine, } from './editor-fidelity-pool-line.ts';
@@ -322,12 +323,21 @@ export async function runEditorFidelityProbe(
     controller,
   },);
   /**
+   Says what the guard counted when this run ends, finished or stopped, so the read step has the figure its SPEND-line
+   sum is checked against even for an arm that ended on the refusal.
+   */
+  using guardSaid = {
+    [Symbol.dispose](): void {
+      log.info(guardTotalLine({ total: client.guardTotal(), },),);
+    },
+  };
+  /**
    Sequential native driver retains every outcome.
    */
   const rows = await mapOverlapped({
     items: pairs,
     overlap: 1,
-    // The probe never stops its own exchanges, so this signal never aborts;
+    // The spend guard aborts this signal when it refuses a call, and nothing else does;
     // one row runs at a time, so no failure is left unthrown to be written.
     signal: controller.signal,
     l: log,

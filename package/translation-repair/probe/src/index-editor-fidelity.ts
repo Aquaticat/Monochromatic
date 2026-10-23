@@ -48,8 +48,10 @@ export {
   runEditorFidelityProbe,
 } from './corpus-run/editor-fidelity-probe-run.ts';
 export {
+  type GuardedClient,
   guardLine,
-  measuredUsd,
+  type GuardTotal,
+  guardTotalLine,
   spendGuardedClient,
 } from './corpus-run/editor-fidelity-spend-guard.ts';
 export {

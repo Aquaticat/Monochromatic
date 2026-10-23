@@ -122,7 +122,7 @@ The groups that follow name the main ones.
   `runEditorTrial`,
   `editorCeilings`,
   `spendGuardedClient`,
-  `measuredUsd`,
+  `guardTotalLine`,
   `cardsOnlyClient`,
   `editorProbeEnv`.
   Declared in `editor-fidelity-trials.ts`,
@@ -236,7 +236,14 @@ and each task sets it to its own name.
   Prints the per-arm cost ceiling before any call,
   and refuses each call,
   ending the arm,
-  when the spend measured from the replies so far plus that call's ceiling would pass `--max-usd`.
+  when the spend so far plus that call's ceiling would pass `--max-usd`.
+  The spend so far is every `SPEND` line the Claude client wrote,
+  the attempts it abandoned and retried included;
+  a call that throws,
+  or a reply that reports no usage,
+  is counted at its ceiling by a `SPEND` line of the guard's own
+  (an HTTP error status that carried no body is the one throw counted as free),
+  and the arm ends with a `GUARD total=` line.
   Only the Claude key is read.
   Spends quota.
 - `damage-sample`:
