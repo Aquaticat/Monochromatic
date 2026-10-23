@@ -3,13 +3,21 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 import {
+  BedrockModelNotServedError,
   type ChatJsonOutcome,
   ClaudeModelNotServedError,
   ClaudePrefillError,
   ClaudeSchemaKeywordError,
+  DeepSeekModelNotServedError,
   EmptyConversationError,
   type JsonSchemaResponseFormat,
   type ModelClient,
+  ModelNotServedError,
+  NeuralWattModelNotServedError,
+  OpenRouterModelNotServedError,
+  SyntheticModelNotServedError,
+  UnnameableToolError,
+  XiaomiModelNotServedError,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
@@ -246,15 +254,49 @@ function lostVoiceCause(
 }
 
 /**
- Whether an error is the route refusing a request our own stage code built wrong, before any exchange was made.
+ The classes of error that are a fault in the request our own code built, each thrown from local state before any
+ exchange is made.
 
- The four classes are a schema keyword the Claude route cannot send, a conversation that ends on an assistant turn,
- a conversation that holds no turn to answer, and a seat that is no Claude card. None of them is a thing a model did
- or a transport lost, and each recurs on every call of the stage until the code is changed.
+ Four are the Claude route refusing the request: a schema keyword it cannot send, a conversation that ends on an
+ assistant turn, a conversation that holds no turn to answer, and a seat that is no Claude card. Eight more are
+ thrown by the same kind of local lookup or build: the seven clients other than Claude's each refuse a seat their
+ roster lookup does not serve (`servedIdFor`, or `syntheticServes` for Synthetic) before the request body is built,
+ and `UnnameableToolError` refuses the name the stage's own schema carries. None of them reads a provider's answer,
+ and each recurs on every call of the stage until the code or the roster wiring is changed.
+ */
+const REQUEST_FAULT_CLASSES: readonly (new (...parameters: never) => Error)[] = [
+  ClaudeSchemaKeywordError,
+  ClaudePrefillError,
+  EmptyConversationError,
+  ClaudeModelNotServedError,
+  BedrockModelNotServedError,
+  DeepSeekModelNotServedError,
+  ModelNotServedError,
+  NeuralWattModelNotServedError,
+  OpenRouterModelNotServedError,
+  SyntheticModelNotServedError,
+  XiaomiModelNotServedError,
+  UnnameableToolError,
+];
+
+/**
+ Whether an error is a request our own code built wrong, refused before any exchange was made.
+
+ The twelve classes are listed with `REQUEST_FAULT_CLASSES`. Each was classified by its throw site, and the rule is
+ that a class thrown only from local state is a fault of the request, while a class that can come from a live answer,
+ or from the data one document carries, is a lost voice.
+
+ What stays a lost voice, and why. `ProviderHttpError` and every other transport failure are a provider's answer or
+ a connection that dropped; a deadline, an idle stream and a runaway or degenerate stream are a model or a network
+ being slow or wrong; `NoProviderForModelError` is a fact about which providers the bench holds wet, and the call
+ reports it as an unreachable seat. `MalformedImageUriError` is thrown by the request builder but from the bytes of
+ one asset: `encodeImageAsset` returns a usable data URI with an empty payload for a zero-byte file, so one
+ document's picture can raise it, and ending the round would stop the seats that read the picture another way. It
+ recurs for that document and not for the stage, so the seat's voice is lost for the call and the warning names it.
 
  @param error - caught value, of unknown type by construction
 
- @returns Whether the error is one of the four
+ @returns Whether the error is one of the twelve classes
 
  @example
  ```ts
@@ -263,10 +305,9 @@ function lostVoiceCause(
  ```
  */
 export function isRequestFault({ error, }: { readonly error: unknown; },): boolean {
-  return (error instanceof ClaudeSchemaKeywordError)
-    || (error instanceof ClaudePrefillError)
-    || (error instanceof EmptyConversationError)
-    || (error instanceof ClaudeModelNotServedError);
+  return REQUEST_FAULT_CLASSES.some(function isInstance(faultClass,): boolean {
+    return error instanceof faultClass;
+  },);
 }
 
 /**
@@ -309,6 +350,12 @@ export function isRequestFault({ error, }: { readonly error: unknown; },): boole
  @throws {@link EmptyConversationError} when the conversation holds no turn to answer
 
  @throws {@link ClaudeModelNotServedError} when the seat is no Claude card
+
+ @throws {@link BedrockModelNotServedError}, {@link DeepSeekModelNotServedError}, {@link ModelNotServedError},
+ {@link NeuralWattModelNotServedError}, {@link OpenRouterModelNotServedError}, {@link SyntheticModelNotServedError}
+ or {@link XiaomiModelNotServedError} when the seat is handed to a client that does not serve it
+
+ @throws {@link UnnameableToolError} when the schema's own name is one the protocol rejects
 
  @example
  ```ts

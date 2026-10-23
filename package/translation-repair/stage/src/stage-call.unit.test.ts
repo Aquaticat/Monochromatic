@@ -232,13 +232,13 @@ await describe({
          Faults the clients and the request builder raise before any exchange, one of each class.
          */
         const faults: readonly Error[] = [
-          new BedrockModelNotServedError({ modelId: 'claude-cat-5-5', },),
-          new DeepSeekModelNotServedError({ modelId: 'claude-cat-5-5', },),
-          new ModelNotServedError({ modelId: 'claude-cat-5-5', },),
-          new NeuralWattModelNotServedError({ modelId: 'claude-cat-5-5', },),
-          new OpenRouterModelNotServedError({ modelId: 'claude-cat-5-5', },),
-          new SyntheticModelNotServedError({ modelId: 'claude-cat-5-5', },),
-          new XiaomiModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new BedrockModelNotServedError({ modelId: MODEL_ID, },),
+          new DeepSeekModelNotServedError({ modelId: MODEL_ID, },),
+          new ModelNotServedError({ modelId: MODEL_ID, },),
+          new NeuralWattModelNotServedError({ modelId: MODEL_ID, },),
+          new OpenRouterModelNotServedError({ modelId: MODEL_ID, },),
+          new SyntheticModelNotServedError({ modelId: MODEL_ID, },),
+          new XiaomiModelNotServedError({ modelId: MODEL_ID, },),
           new UnnameableToolError({ detail: 'schema name is empty', },),
         ];
         const warnings: string[] = [];
