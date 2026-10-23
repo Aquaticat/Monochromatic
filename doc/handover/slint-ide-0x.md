@@ -1758,6 +1758,14 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     not said go for the first real release; none has been cut. A real release needs a version bump merged to `main`
     or `gh workflow run ide-release.yml --ref main -f dry-run=false` (runbook `doc/runbook/release-the-ide.md`).
     The IDE release agent's worktree, branches (local and remote) and my scratch trees are removed.
+    Owner answers of 2026-10-22 (question tool): "Cut it now" for the first real IDE pre-release, and "Run the
+    sweep (Recommended)" for the 168-guard sweep. REAL RELEASE dispatched: `gh workflow run ide-release.yml --ref
+    main -f dry-run=false`, run `39882469329`, from `main` at `461c8c62b6`; watched by a bounded background `gh run
+    watch`. On its end: `gh release view ide-v0.1.0`, download the assets, `gh attestation verify` each file,
+    compare `SHA256SUMS`, run the extracted binary; record the result here and in `doc/decision/ide-releases.md`.
+    Guard sweep: not started yet; needs a built target directory (the scratch trees that held one were removed), so
+    build one first in a capped unit, then run all 168 cases in a capped unit and repair broken guards like
+    `clip-chosen`.
     Guard sweep finding (disposable copy, unit `conv2-guards`): `clip-chosen` removed run fails with status 100 at
     `src/native/tile_reads.rs:187:45` (`tile texture pixels`) because the stacked tile reads no texture for a line
     past the raster limit; the guard still bites but its expected `failure` text (`the window shows an error`) was
