@@ -202,7 +202,7 @@ function oneTokenTimeOf({ text, }: { readonly text: string; },): string {
 /**
  The fields stating the NeuralWatt return a park waits for.
 
- @param answer - the gate's answer for the entry's failure, which says the pass is parked for it
+ @param answer - gate's answer for the entry's failure, which says the pass is parked for it
 
  @returns Leading-space fields: the distance and the time of day
 
