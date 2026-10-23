@@ -126,6 +126,7 @@ const MARKED_CLASSES: readonly string[] = [
   'GenerationDriftError',
   'GradedSheetExistsError',
   'HardCapOverrideError',
+  'HoldBoundError',
   'InStreamProviderError',
   'InStreamRefusalError',
   'IssueEvidenceConflictError',
@@ -325,6 +326,8 @@ const NAMED_PARTS: Record<string, string> = {
   'convention': 'footnote marker convention name, one of two literals',
   'String(MAX_SLICE_IDENTIFIERS,)': 'bound this package sets',
   'String(timeoutMs,)': 'deadline in milliseconds',
+  'String(maxHoldMs,)': 'longest hold in milliseconds a caller passed, shown as the number it was given '
+    + '(NaN and Infinity print as words)',
   'String(boundMs,)': 'stream bound in milliseconds a model card declares',
   'String(perCallTimeoutMs,)': 'per-call deadline in milliseconds',
   'faults': 'the keys of the settings found wrong and their numbers, joined (StreamBoundsOutsideCallTimeoutError)',

@@ -301,6 +301,42 @@ function notHeldOut(): boolean {
 }
 
 /**
+ Raised when the longest hold a budgets instance may state is not a finite whole number of milliseconds above zero.
+
+ CHECKED AT RUN TIME, where the budgets are built, since the type says `number` and so admits `Infinity`, which brings
+ back the unbounded hold the bound exists to end, and `NaN`, which made the cut return `NaN`. The value is quoted back
+ because it is the thing to fix.
+
+ @example
+ ```ts
+ throw new HoldBoundError({ maxHoldMs: Number.POSITIVE_INFINITY, },);
+ ```
+ */
+export class HoldBoundError extends Error {
+  /**
+   Declares this message safe to print whole: the name of the setting and the number the caller gave it.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Names the setting and quotes the number it was given.
+
+   @param maxHoldMs - the value the caller passed, whatever number it was
+
+   @example
+   ```ts
+   new HoldBoundError({ maxHoldMs: 0, },);
+   ```
+   */
+  public constructor({ maxHoldMs, }: { readonly maxHoldMs: number; },) {
+    super(
+      `maxHoldMs must be a finite whole number of milliseconds above zero, received ${String(maxHoldMs,)}`,
+    );
+    this.name = 'HoldBoundError';
+  }
+}
+
+/**
  Builds the cached budget view every provider is routed by.
 
  @param neuralwatt - first provider's energy meter, which is all this reads
@@ -342,6 +378,8 @@ function notHeldOut(): boolean {
 
  @returns Budget view plus the correction a refused call feeds back, and the states the meters gave
 
+ @throws {@link HoldBoundError} when `maxHoldMs` is not a finite whole number of milliseconds above zero
+
  @example
  ```ts
  const budgets = createProviderBudgets({ neuralwatt, synthetic, hyper, bedrock, openrouter, maxHoldMs: 25_200_000, },);
@@ -380,6 +418,10 @@ export function createProviderBudgets(
     readonly now?: () => number;
   },
 ): ProviderBudgetsWithStates {
+  // `isInteger` is false for NaN and both infinities, so one test covers every value that is not a whole number.
+  if ((!Number.isInteger(maxHoldMs,)) || (maxHoldMs <= 0))
+    throw new HoldBoundError({ maxHoldMs, },);
+
   /**
    Last meter reading and when it was taken, stamped infinitely long ago until
    the first.

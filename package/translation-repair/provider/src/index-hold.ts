@@ -12,6 +12,7 @@ export {
   holdOnCredentialRefusal,
   reachPastCredentialHolds,
 } from './credential-hold.ts';
+export { HoldBoundError, } from './provider-budget.ts';
 export { isCredentialRefusal, } from './provider-budget-refusal.ts';
 export { reachPastHoldsOrRefusal, } from './reach-past-holds.ts';
 
