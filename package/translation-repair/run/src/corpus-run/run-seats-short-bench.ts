@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { judgeSeatsFor, } from './run-seats.ts';
+import { holdsThatServeShortBenches, } from './run-seats-hold-need.ts';
 import {
   belowFloorWritingBenches,
   benchesOf,
@@ -153,7 +154,10 @@ export async function readDrynessPastShortBench(
     try {
       return await client.providerDryness({ signal, },);
     } catch (error) {
-      l.warn(`judge seats: the budget view could not be read (${exchangeFailureLogText({ error, },)}); seating the full bench`,);
+      l.warn(
+        `judge seats: the budget view could not be read (${exchangeFailureLogText({ error, },)}); `
+          + 'seating the full bench',
+      );
       return providerRecord({ of: wetWhenUnread, },);
     }
   }
@@ -162,14 +166,6 @@ export async function readDrynessPastShortBench(
    */
   const first = await readDryness();
   /**
-   How long each provider's refusal still holds it out.
-   */
-  const holds = holdsWithinPass({ client, },);
-  /**
-   The first hold to end, zero when no provider is held.
-   */
-  const shortest = shortestHold({ holds, },);
-  /**
    Benches this phase leans on, in the order the line prints them.
    */
   const names = phaseBenches({ phase, },);
@@ -177,6 +173,20 @@ export async function readDrynessPastShortBench(
    Benches as first read.
    */
   const benches = benchesOf({ seats: judgeSeatsFor({ dry: first, },), },);
+  /**
+   How long each provider's refusal still holds it out, for the providers that serve a seat of a bench that stands
+   short; a hold on any other provider cannot bring such a bench back and is not waited for.
+   */
+  const holds = holdsThatServeShortBenches({
+    holds: holdsWithinPass({ client, },),
+    benches,
+    names,
+    dry: first,
+  },);
+  /**
+   The first hold to end, zero when no provider that matters is held.
+   */
+  const shortest = shortestHold({ holds, },);
   /**
    Benches this phase leans on that cannot reach quorum as first read.
    */
@@ -316,7 +326,9 @@ export async function readDrynessPastShortBench(
       pollMs,
     },);
     waiting.waitedMs += waiting.shortest;
-    l.info(`JUDGE SEATS phase=${phase} waited ${String(waiting.shortest,)}ms for ${reason}; the benches are read again`,);
+    l.info(
+      `JUDGE SEATS phase=${phase} waited ${String(waiting.shortest,)}ms for ${reason}; the benches are read again`,
+    );
     // Dryness after the wait.
     waiting.dry = await readDryness();
     /* oxlint-enable no-await-in-loop */
@@ -343,7 +355,12 @@ export async function readDrynessPastShortBench(
       break;
     // A HOLD THAT ENDED FIRST IS NOT THE END OF THE WAITING: a bench still short while another hold runs (the
     // NeuralWatt return behind a rate-limit hold) is waited for too, bounded by the entry's abort and by the holds.
-    waiting.holds = holdsWithinPass({ client, },);
+    waiting.holds = holdsThatServeShortBenches({
+      holds: holdsWithinPass({ client, },),
+      benches: benchesAfter,
+      names,
+      dry: waiting.dry,
+    },);
     waiting.shortest = shortestHold({ holds: waiting.holds, },);
     if (waiting.shortest === 0)
       break;

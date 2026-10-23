@@ -3,8 +3,8 @@
 
  A hold on a provider that serves no seat of a bench the phase leans on, and that stands short, cannot change that
  bench's reach however long it is waited for, so the reader seats what is reachable at once; a hold on a provider that
- does serve such a seat is waited for. The providers a bench draws on come from the roster through `reachOf`, never from a
- list of names.
+ does serve such a seat is waited for. The providers a bench draws on come from the roster through `reachOf`,
+ never from a list of names.
 
  Fixtures are cat-themed invention; every view and hold is scripted and no HTTP is made.
 
@@ -22,7 +22,9 @@ import {
   reachOf,
 } from '@monochromatic-dev/translation-repair-provider';
 import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
+import {
+  levelCapturingLogger,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import {
   phaseBenches,
   readJudgeSeats,
@@ -151,7 +153,7 @@ await describe({
     it({
       name: 'THE CASE\'S PREMISE HOLDS: the translate lane leans on the translators, and no seat of them is served by '
         + 'Xiaomi while Hyper serves several',
-      fn: () => {
+      fn: async () => {
         expect(phaseBenches({ phase: 'translate lane', },),).toContain('translators',);
         expect(servesTranslators({ provider: 'xiaomi', },),).toBe(false,);
         expect(servesTranslators({ provider: 'hyper', },),).toBe(true,);
@@ -172,9 +174,9 @@ await describe({
     },),
 
     it({
-      name: 'WAITS FOR A HOLD ON A PROVIDER THAT SERVES A SEAT OF A SHORT BENCH, and for that one: Hyper held 40 ms and '
-        + 'Xiaomi 10 ms, the wait is the 40 ms of the provider that serves the translators and not the 10 ms of the '
-        + 'one that does not',
+      name: 'WAITS FOR A HOLD ON A PROVIDER THAT SERVES A SEAT OF A SHORT BENCH, and for that one: Hyper held 40 ms '
+        + 'and Xiaomi 10 ms, the wait is the 40 ms of the provider that serves the translators and not the 10 ms of '
+        + 'the one that does not',
       fn: async () => {
         const lines: string[] = [];
         const reads = await readTranslateLane({
