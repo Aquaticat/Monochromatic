@@ -16,7 +16,12 @@ import {
   pathUnderSrc,
   readPackageSource,
 } from './family-source.test-fixture.ts';
-import type { SourceText, } from './source-scan.test-fixture.ts';
+import {
+  identifierName,
+  nodesUnder,
+  parseSource,
+  type SourceText,
+} from './source-scan.test-fixture.ts';
 import { expectRecordAsListed, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 
 /**
@@ -82,20 +87,21 @@ function buildersIn({ text, }: { readonly text: string; },): readonly string[] {
 }
 
 /**
- Text of every fixture whose file name opens with a prefix.
+ Names every fixture whose file name opens with a prefix calls, read from the syntax tree so that a name in a comment,
+ in a string or inside a longer name is not a call.
 
  @param files - every file of the family
 
  @param prefix - how the fixtures' file names open
 
- @returns The fixtures, joined
+ @returns Each name a call expression of a fixture calls plainly
 
  @example
  ```ts
- const fixtures = fixtureText({ files, prefix: 'rendered-sheets', },);
+ const called = namesCalledBy({ files, prefix: 'rendered-sheets', },); // Set { 'buildCatMessages', }
  ```
  */
-function fixtureText(
+function namesCalledBy(
   {
     files,
     prefix,
@@ -103,49 +109,26 @@ function fixtureText(
     readonly files: readonly SourceText[];
     readonly prefix: string;
   },
-): string {
-  return files
-    .filter(function isSheetFixture({ path, },): boolean {
-      /**
-       Path under the package's source directory.
-       */
-      const name = pathUnderSrc({ path, },);
-      return name.startsWith(prefix,) && name.endsWith('.test-fixture.ts',);
-    },)
-    .map(function read({ text, },): string {
-      return text;
-    },)
-    .join('\n',);
-}
-
-/**
- Whether the fixtures of a family render a sheet builder.
-
- @param files - every file of the family
-
- @param prefix - how the fixtures' file names open
-
- @param name - builder looked for
-
- @returns Whether a fixture mentions the builder as a call
-
- @example
- ```ts
- const rendered = isRendered({ files, prefix: 'rendered-sheets', name: 'buildCatMessages', },);
- ```
- */
-function isRendered(
-  {
-    files,
-    prefix,
-    name,
-  }: {
-    readonly files: readonly SourceText[];
-    readonly prefix: string;
-    readonly name: string;
-  },
-): boolean {
-  return fixtureText({ files, prefix, },).includes(`${name}(`,);
+): ReadonlySet<string> {
+  return new Set(
+    files
+      .filter(function isSheetFixture({ path, },): boolean {
+        /**
+         Path under the package's source directory.
+         */
+        const name = pathUnderSrc({ path, },);
+        return name.startsWith(prefix,) && name.endsWith('.test-fixture.ts',);
+      },)
+      .flatMap(function callsOf(file,): readonly string[] {
+        return nodesUnder({ root: parseSource({ file, },).program, },)
+          .filter(function isCall({ type, },): boolean {
+            return type === 'CallExpression';
+          },)
+          .map(function calleeName({ callee, },): string {
+            return identifierName({ node: callee, },);
+          },);
+      },),
+  );
 }
 
 await describe({
@@ -168,13 +151,17 @@ await describe({
           .flatMap(function buildersOf({ text, },): readonly string[] {
             return buildersIn({ text, },);
           },);
+        /**
+         Names the sheet fixtures call.
+         */
+        const called = namesCalledBy({ files, prefix: 'rendered-sheets', },);
         expectRecordAsListed({
           found: {
             // The census reads the builders at all: two it must find.
             readsBuilders: builders.includes('buildCriticMessages',)
               && builders.includes('buildArchiveBlockReviewMessages',),
             unrendered: builders.filter(function unrendered(name,): boolean {
-              return !isRendered({ files, prefix: 'rendered-sheets', name, },);
+              return !called.has(name,);
             },),
           },
           listed: {
@@ -202,10 +189,14 @@ await describe({
           .flatMap(function buildersOf({ text, },): readonly string[] {
             return buildersIn({ text, },);
           },);
+        /**
+         Names the system prompt guard's stage fixtures call.
+         */
+        const called = namesCalledBy({ files, prefix: 'system-prompt-stages', },);
         expectRecordAsListed({
           found: {
             unguarded: builders.filter(function unguarded(name,): boolean {
-              return !isRendered({ files, prefix: 'system-prompt-stages', name, },);
+              return !called.has(name,);
             },),
           },
           listed: { unguarded: [], },
@@ -230,6 +221,10 @@ await describe({
           isTest: true,
         };
         /**
+         Names the fixture calls.
+         */
+        const called = namesCalledBy({ files: [fixture,], prefix: 'rendered-sheets', },);
+        /**
          Rendered or not, for each builder the fixture holds.
          */
         const rendered = Object.fromEntries(
@@ -239,7 +234,7 @@ await describe({
             'buildQuotedMessages',
             'buildPrefixedMessages',
           ].map(function readOne(name,): readonly [string, boolean] {
-            return [name, isRendered({ files: [fixture,], prefix: 'rendered-sheets', name, },),];
+            return [name, called.has(name,),];
           },),
         );
         expectRecordAsListed({
