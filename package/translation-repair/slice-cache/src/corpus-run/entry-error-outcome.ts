@@ -113,11 +113,43 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
 }
 
 /**
+ A return time that does not end in ` UTC`, though the only writer of the time gives it with that zone.
+
+ @example
+ ```ts
+ throw new ReturnTimeNotUtcError({ text: '19:15:08 CEST', },);
+ ```
+ */
+export class ReturnTimeNotUtcError extends Error {
+  /**
+   Builds the diagnostic naming the text the failure carried.
+
+   @param text - return time as the failure carried it
+
+   @example
+   ```ts
+   new ReturnTimeNotUtcError({ text: '19:15:08 CEST', },);
+   ```
+   */
+  public constructor({ text, }: { readonly text: string; },) {
+    super(
+      `the return time ${JSON.stringify(text,)} of a NeuralWatt failure does not end in " UTC", the zone its only `
+        + 'writer (`returnTimeOf` in the provider package) gives; the TALLY line states the time as an ISO 8601 UTC '
+        + 'time of day, so either that writer changed its zone or another writer was added, and the line then needs '
+        + 'a conversion for that zone',
+    );
+    this.name = 'ReturnTimeNotUtcError';
+  }
+}
+
+/**
  The time of day of a return as one token, so a reader splitting the line on spaces keeps the zone with it.
 
  @param text - time of day with its zone, as the failure carries it
 
- @returns ISO 8601 time with `Z` for UTC, or the text with its spaces removed for another zone
+ @returns ISO 8601 time of day with `Z` for UTC
+
+ @throws {@link ReturnTimeNotUtcError} when the text does not end in ` UTC`, since its only writer gives that zone
 
  @example
  ```ts
@@ -125,13 +157,12 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
  ```
  */
 function oneTokenTimeOf({ text, }: { readonly text: string; },): string {
-  return text.endsWith(' UTC',)
-    ? `${text.slice(
-      0,
-      -' UTC'.length,
-    )}Z`
-    : text.split(' ',)
-      .join('',);
+  if (!text.endsWith(' UTC',))
+    throw new ReturnTimeNotUtcError({ text, },);
+  return `${text.slice(
+    0,
+    -' UTC'.length,
+  )}Z`;
 }
 
 /**
@@ -140,6 +171,8 @@ function oneTokenTimeOf({ text, }: { readonly text: string; },): string {
  @param error - what the entry raised
 
  @returns Leading-space fields: the distance, and the time of day where the failure carries one
+
+ @throws {@link ReturnTimeNotUtcError} when the failure carries a time of day that is not in UTC
 
  @example
  ```ts
@@ -188,6 +221,9 @@ function returnFieldsOf({ error, }: { readonly error: unknown; },): string {
  failure would have had; never true for a failure that is not the park's own
 
  @returns Scheduling disposition, never a settlement
+
+ @throws {@link ReturnTimeNotUtcError} when the entry is parked for a failure whose return time is not in UTC, before
+ any TALLY line is printed
 
  @example
  ```ts

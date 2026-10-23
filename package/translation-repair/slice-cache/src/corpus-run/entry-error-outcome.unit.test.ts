@@ -33,6 +33,7 @@ import {
 } from '@monochromatic-dev/translation-repair-page-pass';
 import {
   entryErrorOutcome,
+  ReturnTimeNotUtcError,
   tallyCaughtEntry,
   VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
@@ -324,7 +325,10 @@ await describe({
               neuralwattReturnsInMs: 301_000,
               neuralwattReturnsAt: '19:15:08 CEST',
             },);
-            expect(function tally(): void {
+            /**
+             Tallies the entry as the pass does once it has parked for the failure.
+             */
+            function tallyParked(): void {
               tallyCaughtEntry({
                 entryId: 'Cat',
                 error: lanes,
@@ -335,7 +339,9 @@ await describe({
                   return true;
                 },
               },);
-            },).toThrow('19:15:08 CEST',);
+            }
+            expect(tallyParked,).toThrow(ReturnTimeNotUtcError,);
+            expect(tallyParked,).toThrow('"19:15:08 CEST"',);
             expect(printed.lines.filter(function tally(text,): boolean {
               return text.startsWith('TALLY ',);
             },),).toEqual([],);
