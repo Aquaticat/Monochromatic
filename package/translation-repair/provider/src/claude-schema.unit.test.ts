@@ -241,6 +241,105 @@ await describe({
     },),
 
     it({
+      name: 'SENDS A PATTERN, WHICH THE STRUCTURED OUTPUTS PAGE LISTS AS SUPPORTED (F7), and a keyed call of 2026-10-22 '
+        + 'accepted: it stays on the node beside its type and gains no description',
+      fn: async () => {
+        expect(claudeSchemaOf({
+          schema: { type: 'object', properties: { name: { type: 'string', pattern: '^[a-z]+(\\d{1,3})?$', }, }, },
+        },),).toEqual({
+          type: 'object',
+          properties: { name: { type: 'string', pattern: '^[a-z]+(\\d{1,3})?$', }, },
+          additionalProperties: false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A PATTERN WRITTEN WITH A CONSTRUCT THE PAGE LISTS AS NOT SUPPORTED (F7): a backreference, a '
+        + 'lookahead, a lookbehind and a word boundary, named by a ClaudeSchemaKeywordError at the node, and leaves a '
+        + 'pattern that spells them as data (an escaped backslash, a character class)',
+      fn: async () => {
+        /**
+         Patterns the page refuses, each with the text the error must carry.
+         */
+        const refused: readonly (readonly [string, string])[] = [
+          ['^(a)\\1$', 'backreference',],
+          ['^a(?=b)', 'lookahead',],
+          ['^a(?!b)', 'lookahead',],
+          ['(?<=a)b', 'lookbehind',],
+          ['(?<!a)b', 'lookbehind',],
+          ['\\bcat\\b', 'word boundary',],
+          ['\\Bcat', 'word boundary',],
+        ];
+        refused.forEach(function refuses([pattern, construct,],): void {
+          /**
+           Failure the schema is refused with.
+           */
+          const failure = (function refusal(): unknown {
+            try {
+              claudeSchemaOf({ schema: { type: 'object', properties: { name: { type: 'string', pattern, }, }, }, },);
+              return undefined;
+            }
+            catch (error) {
+              return error;
+            }
+          })();
+          expect(failure,).toBeInstanceOf(Error,);
+          expect((failure as Error).name,).toBe('ClaudeSchemaKeywordError',);
+          expect((failure as Error).message,).toContain(construct,);
+          expect((failure as Error).message,).toContain('root.name',);
+        },);
+        expect(() =>
+          claudeSchemaOf({
+            schema: {
+              type: 'object',
+              properties: { name: { type: 'string', pattern: '^[\\b]\\\\1(?:a|b)(?<kind>c)$', }, },
+            },
+          },)).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'KEEPS minItems OF 0 OR 1, WHICH THE PAGE LISTS AS SUPPORTED, AND TELLS THE MODEL ANY OTHER (F7)',
+      fn: async () => {
+        expect(claudeSchemaOf({
+          schema: {
+            type: 'object',
+            properties: {
+              some: { type: 'array', items: { type: 'string', }, minItems: 1, },
+              any: { type: 'array', items: { type: 'string', }, minItems: 0, },
+              pair: { type: 'array', items: { type: 'string', }, minItems: 2, },
+            },
+          },
+        },).properties,).toEqual({
+          some: { type: 'array', items: { type: 'string', }, minItems: 1, },
+          any: { type: 'array', items: { type: 'string', }, minItems: 0, },
+          pair: { type: 'array', items: { type: 'string', }, description: '{minItems: 2}', },
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS A format ON THE PAGE\'S LIST OF TEN AND TELLS THE MODEL ANY OTHER (F7), as the SDKs filter it',
+      fn: async () => {
+        expect(claudeSchemaOf({
+          schema: {
+            type: 'object',
+            properties: {
+              at: { type: 'string', format: 'date-time', },
+              id: { type: 'string', format: 'uuid', },
+              tint: { type: 'string', format: 'color', },
+            },
+          },
+        },).properties,).toEqual({
+          at: { type: 'string', format: 'date-time', },
+          id: { type: 'string', format: 'uuid', },
+          tint: { type: 'string', description: '{format: "color"}', },
+        },);
+      },
+    },),
+
+    it({
       name: 'LEAVES THE CALLER\'S SCHEMA UNTOUCHED, returns a schema that shares no object with it, and passes a '
         + 'boolean schema through',
       fn: async () => {
