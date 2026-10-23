@@ -74,6 +74,8 @@ const FRESH_DAY = {
 
  @param syntheticWet - whether Synthetic, the only other configured provider, has budget
 
+ @param passLeftMs - what the pass has left, which bounds the wait for a return; absent for a pass that bounds nothing
+
  @param lagging - whether the account still reads the spent day after the return (default: the new day shows)
 
  @returns The client the reader takes, and the energy reads counted
@@ -89,11 +91,13 @@ function clientBefore(
     spent = SPENT_DAY,
     syntheticWet = true,
     lagging = false,
+    passLeftMs,
   }: {
     readonly msBeforeReturn: number;
     readonly spent?: NeuralWattEnergy;
     readonly syntheticWet?: boolean;
     readonly lagging?: boolean;
+    readonly passLeftMs?: number;
   },
 ) {
   const reads = { count: 0, };
@@ -129,6 +133,8 @@ function clientBefore(
       providerHolds: budgets.holds,
       neuralwattReturn: budgets.neuralwattReturn,
       neuralwattDryness: budgets.neuralwattDryness,
+      // Conditional spread keeps the client without a pass bound where the case names none.
+      ...((passLeftMs === undefined) ? {} : { passLeftMs: () => passLeftMs, }),
     },
   };
 }
@@ -255,6 +261,45 @@ await describe({
         expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
         expect((refusal as EveryProviderDryError).message,).toContain('still reads the day spent',);
         expect((refusal as EveryProviderDryError).neuralwattReturnsInMs,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'WAITS FOR A RETURN INSIDE WHAT THE PASS HAS LEFT, past 300 s too: a return 301 away with 600 left (scaled '
+        + 'from seconds to milliseconds so the case sleeps for real) is waited for and the NeuralWatt writers are seated',
+      fn: async () => {
+        const { client, reads, } = clientBefore({ msBeforeReturn: 301, passLeftMs: 600, },);
+        const { unreachableWriters, } = await readPhaseSeats({
+          client,
+          phase: 'lanes',
+          signal: SIGNAL,
+          l: levelCapturingLogger({ lines: [], },),
+          pollMs: 5,
+        },);
+        expect(unreachableWriters,).toEqual([],);
+        expect(reads.count,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES AT ONCE, STATING THE RETURN TIME, for a return past what the pass has left: 700 away with 600 left '
+        + '(scaled from seconds to milliseconds) is not waited for, since the pass would end first, and the refusal '
+        + 'names the time of day in UTC and says the pass has less left',
+      fn: async () => {
+        const { client, reads, } = clientBefore({ msBeforeReturn: 700, passLeftMs: 600, },);
+        const refusal = await rejectionOf({
+          promise: readPhaseSeats({
+            client,
+            phase: 'lanes',
+            signal: SIGNAL,
+            l: levelCapturingLogger({ lines: [], },),
+            pollMs: 5,
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
+        expect((refusal as WritingBenchUnreachableError).message,).toContain('its day starts again at 19:15:08 UTC',);
+        expect((refusal as WritingBenchUnreachableError).message,).toContain('past the',);
+        expect(reads.count,).toBe(1,);
       },
     },),
   ],
