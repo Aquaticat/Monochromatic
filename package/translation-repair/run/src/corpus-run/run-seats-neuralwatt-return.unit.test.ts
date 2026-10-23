@@ -2,9 +2,11 @@
  Tests the seat reader against the XingZ6019 shape: NeuralWatt dry because the day's energy was spent, its day starting
  again 48 s after the entry stopped, and a writing bench short of its floor without it.
 
- The reader waits for a return the budgets name, at any distance, and then seats the NeuralWatt writers; where no return
- is named it refuses and the refusal states only the true cause. The budgets are the real ones over stub meters and a stub wall
- clock, so the return reaches the reader the way a run's does (a hold), and the times are scaled to milliseconds.
+ The reader waits for a return the budgets name when it lies inside the bound its client carries (what the pass has
+ left), at any distance for a client that carries none, and then seats the NeuralWatt writers; where no return is named,
+ or it lies past the bound, it refuses and the refusal states only the true cause. The budgets are the real ones over stub
+ meters and a stub wall clock, so the return reaches the reader the way a run's does (a hold), and the times are scaled to
+ milliseconds.
 
  Fixtures are cat-themed invention; every meter is a stub and no HTTP is made.
 
@@ -17,127 +19,18 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  createProviderBudgets,
-  type NeuralWattEnergy,EveryProviderDryError
-} from '@monochromatic-dev/translation-repair-provider';
+import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import {
   readPhaseSeats,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Abort signal every read here carries.
- */
-const SIGNAL = new AbortController().signal;
-
-/**
- Milliseconds after 00:00 UTC the account's day starts at: 19:15:08 UTC.
- */
-const DAY_START_MS_OF_DAY = 69_308_000;
-
-/**
- The day whose energy is spent.
- */
-const SPENT_DAY = {
-  dayStart: '2026-10-22T19:15:08.000Z',
-  dailyWh: 550,
-  spentWh: 550,
-  reckonedWh: 0,
-  reservedWh: 0,
-  remainingWh: 0,
-  calls: 40,
-} as const;
-
-/**
- The day that began at the return.
- */
-const FRESH_DAY = {
-  dayStart: '2026-10-23T19:15:08.000Z',
-  dailyWh: 550,
-  spentWh: 0,
-  reckonedWh: 0,
-  reservedWh: 0,
-  remainingWh: 550,
-  calls: 0,
-} as const;
-
-/**
- The seat reader's client over the real budgets, with NeuralWatt dry for the spent day and Synthetic the only wet
- provider.
-
- @param msBeforeReturn - how long before NeuralWatt's day starts again the wall clock reads
-
- @param spent - the first NeuralWatt reading, the spent day unless the case says otherwise
-
- @param syntheticWet - whether Synthetic, the only other configured provider, has budget
-
- @param passLeftMs - what the pass has left, which bounds the wait for a return; absent for a pass that bounds nothing
-
- @param lagging - whether the account still reads the spent day after the return (default: the new day shows)
-
- @returns The client the reader takes, and the energy reads counted
-
- @example
- ```ts
- const { client, } = clientBefore({ msBeforeReturn: 60, },);
- ```
- */
-function clientBefore(
-  {
-    msBeforeReturn,
-    spent = SPENT_DAY,
-    syntheticWet = true,
-    lagging = false,
-    passLeftMs,
-  }: {
-    readonly msBeforeReturn: number;
-    readonly spent?: NeuralWattEnergy;
-    readonly syntheticWet?: boolean;
-    readonly lagging?: boolean;
-    readonly passLeftMs?: number;
-  },
-) {
-  const reads = { count: 0, };
-  const budgets = createProviderBudgets({
-    neuralwatt: {
-      energy: async () => {
-        reads.count += 1;
-        return ((reads.count === 1) || lagging) ? spent : FRESH_DAY;
-      },
-      dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
-    },
-    synthetic: {
-      quotas: async () => ({
-        weekly: { percentRemaining: syntheticWet ? 50 : 0, nextRegenAt: '2026-10-25T00:00:00.000Z', },
-      }),
-    },
-    wallNow: () => new Date(Date.UTC(
-      2_026,
-      9,
-      23,
-      0,
-      0,
-      0,
-      DAY_START_MS_OF_DAY - msBeforeReturn,
-    ),),
-    returnMarginMs: 0,
-  },);
-  return {
-    reads,
-    client: {
-      providerDryness: () => budgets.read({ signal: SIGNAL, },),
-      providerMeterStates: () => budgets.readStates({ signal: SIGNAL, },),
-      providerHolds: budgets.holds,
-      neuralwattReturn: budgets.neuralwattReturn,
-      neuralwattDryness: budgets.neuralwattDryness,
-      // Conditional spread keeps the client without a pass bound where the case names none.
-      ...((passLeftMs === undefined) ? {} : { passLeftMs: () => passLeftMs, }),
-    },
-  };
-}
+import {
+  clientBefore,
+  SIGNAL,
+  SPENT_DAY,
+} from './neuralwatt-seat-client.test-fixture.ts';
 
 await describe({
   name: 'the seat reader and NeuralWatt\'s return',
@@ -175,9 +68,9 @@ await describe({
     },),
 
     it({
-      name: 'WAITS FOR A RETURN PAST THE 300 s A ROUTER CALL WAITS, since the seat reader sits outside every exchange and '
-        + 'is bounded by the entry\'s abort, the way Hyper\'s stated holds are: the budgets name the return as a hold at '
-        + 'any distance for a caller that names no bound, and the NeuralWatt writers are seated once it has passed',
+      name: 'WAITS FOR A RETURN PAST THE 300 s A ROUTER CALL WAITS for a client that names no pass bound, the way '
+        + 'Hyper\'s stated holds are waited for: the budgets name the return as a hold at any distance for a caller that '
+        + 'names no bound, and the NeuralWatt writers are seated once it has passed',
       fn: async () => {
         const lines: string[] = [];
         const { client, reads, } = clientBefore({ msBeforeReturn: 80, },);
@@ -286,7 +179,8 @@ await describe({
         + '(scaled from seconds to milliseconds) is not waited for, since the pass would end first, and the refusal '
         + 'names the time of day in UTC and says the pass has less left',
       fn: async () => {
-        const { client, reads, } = clientBefore({ msBeforeReturn: 700, passLeftMs: 600, },);
+        // A frozen monotonic clock: the distance stays 700 whatever the host does between the reading and the hold.
+        const { client, reads, } = clientBefore({ msBeforeReturn: 700, passLeftMs: 600, now: () => 0, },);
         const refusal = await rejectionOf({
           promise: readPhaseSeats({
             client,
@@ -298,7 +192,7 @@ await describe({
         },);
         expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
         expect((refusal as WritingBenchUnreachableError).message,).toContain('its day starts again at 19:15:08 UTC',);
-        expect((refusal as WritingBenchUnreachableError).message,).toContain('past the',);
+        expect((refusal as WritingBenchUnreachableError).message,).toContain('this pass has left',);
         expect(reads.count,).toBe(1,);
       },
     },),

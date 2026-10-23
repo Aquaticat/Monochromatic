@@ -276,16 +276,17 @@ await describe({
 
     it({
       name: 'HOLDS THE RETURN AT ANY DISTANCE for a caller that names no bound, and none past the bound a caller names: '
-        + 'the router names 300 s, the seat reader names none, and the production margin sits outside the bound',
+        + 'the router names 300 s, the seat reader names none, and the production margin counts inside the bound, the '
+        + 'way the refusal\'s clause and the pass\'s park count it',
       fn: async () => {
         const far = budgetsBefore({ msBeforeReturn: 82_800_000, clock: { now: 1_000, }, reads: { count: 0, }, },);
         await far.read({ signal: SIGNAL, },);
         expect(far.holds().neuralwatt,).toBe(82_800_000,);
         expect(far.holds({ returnBoundMs: 300_000, },).neuralwatt,).toBe(0,);
         expect([
-          await heldWithin({ msBeforeReturn: 300_000, }),
-          await heldWithin({ msBeforeReturn: 300_001, }),
-        ],).toEqual([301_000, 0,],);
+          await heldWithin({ msBeforeReturn: 299_000, }),
+          await heldWithin({ msBeforeReturn: 299_001, }),
+        ],).toEqual([300_000, 0,],);
       },
     },),
 

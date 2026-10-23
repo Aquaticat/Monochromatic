@@ -691,6 +691,68 @@ await describe({
       },
     },),
     it({
+      name: 'COUNTS THE SOFT BUDGET DOWN ON THE PASS\'S CLOCK in what the client is handed: with a hard cap far past the '
+        + 'soft budget, the first entry reads the whole soft budget (4,320 min) and a minute later reads a minute less, so '
+        + 'the bound follows time and is not the cap alone',
+      fn: async (ctx) => {
+        using _printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         The pass's monotonic clock, held still until the case moves it.
+         */
+        const clock = { now: 1_000, };
+        /**
+         What the client read at the first entry and a minute later.
+         */
+        const seen: { first?: number; later?: number; } = {};
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {
+            hardCapMs: 500_000_000,
+            now: function now() {
+              return clock.now;
+            },
+            newClient: function newClient({ passLeftMs, },) {
+              return runClientFrom({
+                env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
+                transport: unreachedTransport,
+                passLeftMs,
+              },);
+            },
+            settle: async function settle({ entry, client, artifactsDir, },): Promise<EntryOutcome> {
+              seen.first = client.passLeftMs?.();
+              clock.now += 60_000;
+              seen.later = client.passLeftMs?.();
+              await writeFile(
+                join(
+                  artifactsDir,
+                  `${entry.id}.json`,
+                ),
+                '{}',
+              );
+              return { kind: 'settled', };
+            },
+          },
+        },);
+
+        expect(seen.first,).toBe(259_200_000,);
+        expect(seen.later,).toBe(259_140_000,);
+      },
+    },),
+    it({
       name: 'ENDS ON THE PLAN LINE under --plan, with the client built and no entry settled',
       fn: async (ctx) => {
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
