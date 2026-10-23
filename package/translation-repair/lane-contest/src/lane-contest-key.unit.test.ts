@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  LANE_CONTEST_CACHE_VERSION,
   laneContestRunShape,
   laneContestSliceKey,
 } from '../dist/final/node/index.mjs';
@@ -80,6 +81,14 @@ function catInputs(): Parameters<typeof laneContestSliceKey>[0] {
 await describe({
   name: laneContestSliceKey.name,
   children: [
+    it({
+      name: `IS AT VERSION 17 (R4 of the third review): the system text of the selection slates, the writers and the gates moved `
+        + 'in this change (fence length, rendered-break counts), and the key hashes the version, the shape of the run and the texts, '
+        + 'not the sheet, so only this number retires a record written under the sheet before',
+      fn: async () => {
+        expect(LANE_CONTEST_CACHE_VERSION,).toBe(17,);
+      },
+    },),
     it({
       name:
         'DERIVES THE PINNED KEY for a fixed set of inputs, which is the only thing that fails when the '

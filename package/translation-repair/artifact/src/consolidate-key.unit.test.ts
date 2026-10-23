@@ -25,6 +25,7 @@ import {
 
 import type { LaneContestBallot, } from '@monochromatic-dev/translation-repair-lane-contest';
 import {
+  CONSOLIDATE_CACHE_VERSION,
   consolidateRunShape,
   consolidateSliceKey,
 } from '../dist/final/node/index.mjs';
@@ -75,6 +76,14 @@ const SLICE = {
 await describe({
   name: consolidateSliceKey.name,
   children: [
+    it({
+      name: `IS AT VERSION 33 (R4 of the third review): the system text of the selection slates, the writers and the gates moved `
+        + 'in this change (fence length, rendered-break counts), and the key hashes the version, the shape of the run and the texts, '
+        + 'not the sheet, so only this number retires a record written under the sheet before',
+      fn: async () => {
+        expect(CONSOLIDATE_CACHE_VERSION,).toBe(33,);
+      },
+    },),
     it({
       name: 'GIVES ONE KEY FOR ONE QUESTION, so a resumed run finds what an earlier run settled rather '
         + 'than paying for the same slate twice',

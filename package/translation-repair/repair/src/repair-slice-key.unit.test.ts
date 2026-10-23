@@ -88,7 +88,7 @@ await describe({
           + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
           + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(43,);
+        expect(SLICE_CACHE_VERSION,).toBe(44,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.

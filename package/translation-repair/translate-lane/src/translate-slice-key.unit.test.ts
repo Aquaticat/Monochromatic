@@ -19,6 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  TRANSLATE_SLICE_CACHE_VERSION,
   translateRunShape,
   translateSliceKey,
 } from '../dist/final/node/index.mjs';
@@ -123,6 +124,14 @@ function keyFor(
 await describe({
   name: translateSliceKey.name,
   children: [
+    it({
+      name: `IS AT VERSION 26 (R4 of the third review): the system text of the selection slates, the writers and the gates moved `
+        + 'in this change (fence length, rendered-break counts), and the key hashes the version, the shape of the run and the texts, '
+        + 'not the sheet, so only this number retires a record written under the sheet before',
+      fn: async () => {
+        expect(TRANSLATE_SLICE_CACHE_VERSION,).toBe(26,);
+      },
+    },),
     it({
       name: 'SEPARATES a run shown the pages the original cites from one shown none, and keeps the run '
         + 'shape of an entry that cites nothing (class thirty-six, 2026-09-16)',

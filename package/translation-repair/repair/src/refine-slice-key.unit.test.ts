@@ -36,6 +36,7 @@ import {
 
 import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
+  REFINE_CACHE_VERSION,
   refineRunShape,
   refineSliceKey,
 } from '../dist/final/node/index.mjs';
@@ -89,6 +90,14 @@ await describe({
       name: refineSliceKey.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: `IS AT VERSION 15 (R4 of the third review): the system text of the selection slates, the writers and the gates moved `
+            + 'in this change (fence length, rendered-break counts), and the key hashes the version, the shape of the run and the texts, '
+            + 'not the sheet, so only this number retires a record written under the sheet before',
+          fn: async () => {
+            expect(REFINE_CACHE_VERSION,).toBe(15,);
+          },
+        },),
         it({
           name: 'ANSWERS THE SAME KEY for the same question asked twice, which is '
             + 'the property the whole resume rests on: without it every run rebuys '
