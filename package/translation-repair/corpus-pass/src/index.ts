@@ -26,7 +26,9 @@ export { orderPendingEntries, } from './corpus-run/corpus-pass-order.ts';
 export { runPassQueue, } from './corpus-run/corpus-pass-queue.ts';
 export {
   createPassDryStop,
+  type DryPark,
   type PassDryStop,
+  recordOnPark,
 } from './corpus-run/pass-dry-stop.ts';
 export { runCorpusPassOver, } from './corpus-run/corpus-pass-run.ts';
 export { selectPendingEntries, } from './corpus-run/corpus-pass-select.ts';

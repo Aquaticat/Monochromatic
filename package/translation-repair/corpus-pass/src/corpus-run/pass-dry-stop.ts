@@ -151,7 +151,7 @@ export type PassDryStop = {
 /**
  The return a park waits for.
  */
-type DryPark = {
+export type DryPark = {
   /**
    The failure the gate chose to park for, which `parkedFor` answers by identity.
    */
@@ -307,6 +307,35 @@ function isParkingRefusal(error: unknown,): error is EveryProviderDryError | Wri
 }
 
 /**
+ Records a parking failure met while a park lasts, so the park answers for it.
+
+ @param park - park in force
+
+ @param error - parking failure a guarded call raised, or that ended an entry
+
+ @mutates park - gains the failure at the end of `seen`, once
+
+ @example
+ ```ts
+ recordOnPark({ park, error, },);
+ ```
+ */
+export function recordOnPark(
+  {
+    park,
+    error,
+  }: {
+    readonly park: DryPark;
+    readonly error: EveryProviderDryError | WritingBenchUnreachableError;
+  },
+): void {
+  if (!park.seen
+    .includes(error,))
+    park.seen
+      .push(error,);
+}
+
+/**
  Parks the pass for the return a refusal or a bench error names, or trips the gate on the refusal.
 
  @param error - what a guarded call raised, or what ended an entry
@@ -351,10 +380,7 @@ function refuseOn(
   // A PARK OR A TRIP IS MADE ONCE: calls of the same entry that meet the dry router after the first are the same event,
   // but the failure each raises is kept, since the entry may end with any of them.
   if (parked !== undefined) {
-    if (!parked.seen
-      .includes(error,))
-      parked.seen
-        .push(error,);
+    recordOnPark({ park: parked, error, },);
     return;
   }
   if (state.cause !== undefined)
