@@ -13,7 +13,10 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { judgeSeatsFor, } from './run-seats.ts';
-import { holdsThatServeShortBenches, } from './run-seats-hold-need.ts';
+import {
+  holdsThatCureShortBenches,
+  shortBenchesWithCure,
+} from './run-seats-hold-need.ts';
 import {
   holdsWithinPass,
   passBoundOf,
@@ -165,14 +168,13 @@ export async function readDrynessPastShortBench(
    */
   const benches = benchesOf({ seats: judgeSeatsFor({ dry: first, },), },);
   /**
-   How long each provider's refusal still holds it out, for the providers that serve a seat of a bench that stands
+   How long each provider's refusal still holds it out, for the providers whose return would cure a bench that stands
    short; a hold on any other provider cannot bring such a bench back and is not waited for.
    */
-  const holds = holdsThatServeShortBenches({
+  const holds = holdsThatCureShortBenches({
     holds: holdsWithinPass({ client, },),
-    benches,
-    names,
     dry: first,
+    names,
   },);
   /**
    The first hold to end, zero when no provider that matters is held.
@@ -247,13 +249,17 @@ export async function readDrynessPastShortBench(
         return name;
       },),);
     /**
+     Benches whose shortfall no error line has named.
+     */
+    const namesElsewhere = names.filter(function isNotNamedAbove(name,): boolean {
+      return !(goesOn && belowFloor.has(name,));
+    },);
+    /**
      Benches short of quorum that no error line has named.
      */
     const shortElsewhere = shortBenches({
       benches,
-      names: names.filter(function isNotNamedAbove(name,): boolean {
-        return !(goesOn && belowFloor.has(name,));
-      },),
+      names: namesElsewhere,
       dry: first,
     },);
     if (shortElsewhere.length > 0) {
@@ -267,7 +273,10 @@ export async function readDrynessPastShortBench(
       l.warn(
         `JUDGE SEATS phase=${phase} short of quorum: ${
           withNeuralWattReturn({
-            clauses: shortElsewhere,
+            clauses: shortBenchesWithCure({
+              dry: first,
+              names: namesElsewhere,
+            },),
             dry: first,
             client,
             refusalFollows: false,
@@ -351,16 +360,31 @@ export async function readDrynessPastShortBench(
       === 0) && (stillBelow.length === 0))
       break;
     // A HOLD THAT ENDED FIRST IS NOT THE END OF THE WAITING: a bench still short while another hold runs (the
-    // NeuralWatt return behind a rate-limit hold) is waited for too, bounded by the entry's abort and by the holds.
-    waiting.holds = holdsThatServeShortBenches({
+    // NeuralWatt return behind a rate-limit hold) is waited for too, bounded by the entry's abort, by the holds that
+    // serve a short bench, and by the pass bound the client carries (a return past it is not a hold).
+    waiting.holds = holdsThatCureShortBenches({
       holds: holdsWithinPass({ client, },),
-      benches: benchesAfter,
-      names,
       dry: waiting.dry,
+      names,
     },);
     waiting.shortest = shortestHold({ holds: waiting.holds, },);
     if (waiting.shortest === 0)
       break;
+  }
+  if (waiting.short
+    .length
+    > 0) {
+    // SAID WHEN A BENCH IS SEATED SHORT after the waits, with the providers whose return would have reached its quorum,
+    // so a reader of the run can tell a bench that waited for nobody from one nobody could cure.
+    l.warn(
+      `JUDGE SEATS phase=${phase} seated short after waiting ${String(waiting.waitedMs,)}ms: ${
+        shortBenchesWithCure({
+          dry: waiting.dry,
+          names,
+        },)
+          .join('; ',)
+      }`,
+    );
   }
   /**
    Writing benches still below the floor after the waits this reading takes.

@@ -488,8 +488,8 @@ await describe({
           },
         },),
         it({
-          name: 'DOES NOT WAIT when no provider has named a return the pass can wait for, seating what it read, nor when every '
-            + 'bench can reach quorum however long a provider is held',
+          name: 'DOES NOT WAIT when no provider has named a return the pass can wait for, seating what it read, nor '
+            + 'when every bench can reach quorum however long a provider is held',
           fn: async () => {
             const noHold = scriptedViews({
               views: [
@@ -808,7 +808,8 @@ await describe({
               ],
               stops: [],
               warned: [
-                'warn JUDGE SEATS phase=page consistency short of quorum: wide 0 of 7 reachable, quorum 4; '
+                'warn JUDGE SEATS phase=page consistency short of quorum: wide 0 of 7 reachable, quorum 4 '
+                  + '(reached again with the return of hyper, openrouter); '
                   + 'no provider has named a return the pass can wait for, so the phase runs on what is reachable',
               ],
             },);
@@ -896,9 +897,9 @@ await describe({
           },
         },),
         it({
-          name: 'KEEPS WAITING WHILE A HOLD STILL RUNS: a rate-limit hold that ends first leaves the editors bench short, '
-            + 'and the lanes wait goes on for the hold behind it (the NeuralWatt return) instead of stopping the entry '
-            + 'short of it',
+          name: 'KEEPS WAITING WHILE A HOLD STILL RUNS: a rate-limit hold that ends first leaves the editors bench '
+            + 'short, and the lanes wait goes on for the hold behind it (the NeuralWatt return) instead of stopping '
+            + 'the entry short of it',
           fn: async () => {
             const script = scriptedViews({
               views: [

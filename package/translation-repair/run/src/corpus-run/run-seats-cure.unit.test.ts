@@ -3,11 +3,13 @@
  providers could when it seats a bench short.
 
  THE SHAPE, from the second review of the Claude route (round 3): with one provider's key dry the wide bench stands one
- seat short of its quorum, and a hold on a provider that serves no seat the bench lacks is waited out in full (a refusal's
- cooldown is 300,000 ms, a stated return can be hours) and the bench is seated short all the same. Here the fleet is the
+ seat short of its quorum, and a hold on a provider that serves no seat the bench lacks is waited out in full (a
+ refusal's cooldown is 300,000 ms, a stated return can be hours) and the bench is seated short all the same. Here the
+ fleet is the
  live roster of this tree, NeuralWatt and Bedrock wet and the rest dry: the wide bench is 3 of 7 against a quorum of 4.
- Synthetic, Hyper or OpenRouter back reach the quorum; DeepSeek or Xiaomi back leave it at 3 of 7 (DeepSeek's one wide seat
- is one Bedrock or NeuralWatt already reach). THE CLAUDE KEY IS NOT IN THIS TREE (its route is another branch), so the
+ Synthetic, Hyper or OpenRouter back reach the quorum; DeepSeek or Xiaomi back leave it at 3 of 7 (DeepSeek's one wide
+ seat is one Bedrock or NeuralWatt already reach). THE CLAUDE KEY IS NOT IN THIS TREE (its route is another branch), so
+ the
  case where that key is the dry one is added when the branches meet; the rule is the same.
 
  Each case reads the phase that leans on the wide bench alone, and the wait is counted by the dryness reads (one read
@@ -29,7 +31,9 @@ import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared
 import {
   levelCapturingLogger,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
-import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
+import {
+  metersAllWet,
+} from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 import { readJudgeSeats, } from '../../dist/final/node/index.mjs';
 
 /**
@@ -125,8 +129,8 @@ await describe({
     },),
 
     it({
-      name: 'DOES NOT WAIT OUT A HOLD ON A PROVIDER WHOSE RETURN LEAVES THE BENCH SHORT: with DeepSeek or Xiaomi back the '
-        + 'wide bench is still 3 of 7, so the wait buys nothing',
+      name: 'DOES NOT WAIT OUT A HOLD ON A PROVIDER WHOSE RETURN LEAVES THE BENCH SHORT: with DeepSeek or Xiaomi back '
+        + 'the wide bench is still 3 of 7, so the wait buys nothing',
       fn: async () => {
         expect(await readsUnderHold({ held: 'deepseek', lines: [], },),).toBe(1,);
         expect(await readsUnderHold({ held: 'xiaomi', lines: [], },),).toBe(1,);
@@ -153,8 +157,8 @@ await describe({
     },),
 
     it({
-      name: 'NAMES THE PROVIDERS THAT COULD CURE IT when no wait was taken either: the DeepSeek hold is not waited for and '
-        + 'the short bench is seated short with the same warning',
+      name: 'NAMES THE PROVIDERS THAT COULD CURE IT when no wait was taken either: the DeepSeek hold is not waited for '
+        + 'and the short bench is seated short with the same warning',
       fn: async () => {
         const lines: string[] = [];
         await readsUnderHold({ held: 'deepseek', lines, },);
