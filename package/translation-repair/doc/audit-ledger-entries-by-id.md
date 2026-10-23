@@ -426,7 +426,7 @@ which lists every file of this record.
 - [B826, providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md)
 - [B860, providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md)
 - [B861, the producer-list search and the shapes it read](audit-ledger-guard-demonstration-survivors-and-their-pins.md)
-- [B870 to B884, probes that read one editor card](audit-ledger-editor-card-probes.md)
+- [B870 to B890, probes that read one editor card](audit-ledger-editor-card-probes.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)

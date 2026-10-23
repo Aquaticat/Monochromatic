@@ -4,8 +4,10 @@ A card the editor calibration could not bench,
 the seats that flag leaves unconfined,
 a relative share that moves with the run,
 the probe that reads one card's edit against a known fix,
-the frozen pool of forty-one trials it now reads,
-and the guard that holds an arm to its amount call by call.
+the frozen pool of forty trials it now reads as a seeded draw,
+the guard that holds an arm to its amount call by call and to the bench's amount,
+the sheet and the headline that no cheap reply passes,
+and the read step that checks the logs of the four arms.
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -216,6 +218,9 @@ Status:
 fixed on 2026-10-23 (UTC) in `56ff293b924b06fb8de0ce0b670ec969712ea52b`,
 red `88e995ca38fb9418cd0029c41e68632077ac2400`,
 open to the owner's veto (the lead's ruling of at least forty scoreable trials per card).
+Superseded by B888 on the count of trials (forty in place of forty-one),
+the rule (a seeded draw run by a command)
+and the replay.
 
 B875 recorded the limit:
 a card that fixes all four reviewed twins reads the same as a stronger one.
@@ -331,6 +336,9 @@ the second call is never made and the finished row stays in its file.
 Status:
 recorded on 2026-10-23 (UTC),
 no code changed.
+Superseded by B887 and B888:
+the equivalence now ignores trailing whitespace,
+so these insertions are scoreable and the draw takes them.
 
 The insertion splice leads the borrowed sentence with a space.
 Mid-section,
@@ -367,3 +375,287 @@ This round the red tests stayed byte-identical to their fix commits
 The one exception is a layout change of a single statement,
 made in its own commit (`27b17b9065a6d91fbc77fe2d9a1536708bdd9741`) between the red commit and the fix,
 because the red commit left a `no-await-in-loop` warning that `lint:oxlint` reads as a failure.
+
+## B885: the spend guard did not count a call that threw or an attempt the Claude client retried, so an arm could spend past its amount unseen
+
+Status:
+fixed on 2026-10-23 (UTC) in `9a8b0a4c1fd801c25a9ab03930b2e017800628a6`
+and `96a6b701ec5d770b70581fb3a785c791232c6dd2`,
+red `0bb5810d6e2616f7fee982857ec4caf39912c052`,
+`744ab1a4722da0e2868a757b176302bcabcac6df`,
+`3c1cd1e0657283cbd3a1312a1e147c79b5fbb6b3`,
+still red `cd6f8380806321aff0d5632b6b689867e63189aa`,
+`7c61c829b725ca88250b0ba0e0dfb2cc0b56ec48`,
+open to the owner's veto.
+
+B881 said a call that throws counts nothing and the attempts a client retries are invisible to the guard.
+Both are money.
+The Claude client asks again on a 529 or a stream that stopped,
+and Anthropic bills an attempt that delivered a stream whether or not its usage arrived.
+The Bedrock,
+NeuralWatt and OpenRouter clients already wrote each abandoned attempt at its bound;
+the Claude client did not,
+so a call's `SPEND` line read its last attempt alone and the run meter missed the rest.
+
+Two changes close it.
+The Claude client now writes every abandoned attempt through `onAbandonedAttempt`
+(`provider/src/claude-abandoned-spend.ts`),
+priced at the most it could have been billed:
+the request body's bytes as input tokens at the higher of the input and cache-write rates,
+and the `max_tokens` it sent as completion.
+The spend guard counts a call that throws at its ceiling by a `SPEND` line of its own,
+except an HTTP error status that carried no body,
+which is the one throw counted as free,
+and the arm ends with a line `GUARD total=<dollars> calls=N atCeiling=N`.
+So the `SPEND` lines of an arm add to the guard's total,
+which is a check the read step makes (B889),
+and the guard is a ledger of the bill and no longer a stop on the replies it saw.
+
+A throw after an abandoned attempt reads one ceiling high,
+so the guard stops an arm sooner and never later.
+The one-way flag the client keeps moved to its own module (`provider/src/one-way-flag.ts`) with a unit test,
+because the source scans want every module to own one.
+
+Cache:
+`git log --no-merges -G _CACHE_VERSION` over every commit of this branch since `83194090a561fd1134e96c35b7164daf46c0cb3a`
+lists none.
+The same search over `c265e8df9525f4513b8229482d3e8d932ea630df`,
+a commit known to move a cache version,
+lists it,
+so the search can show a hit.
+The Claude client change adds a log line and a meter increment per abandoned attempt;
+it touches no request body,
+no reply,
+no key and no record a cache holds.
+No cache version moves.
+
+## B886: the bench amount of 20 USD was held by nothing but the sum of three hand-typed caps
+
+Status:
+fixed on 2026-10-23 (UTC) in `f60c7b102162663a03f973e62d18ec8ae6c63b81`,
+red `5ab2a717844a2b036bdfc2b83f1637f1d9721c84`,
+open to the owner's veto.
+
+The owner ruled 20 USD for the whole bench,
+and each arm held itself to its own `--max-usd` only.
+Four arms with caps of 3,
+4,
+4 and 8 add to 19.
+`--bench-spent-usd` states what the arms already run measured,
+and an arm whose `--max-usd` plus that figure passes `EDITOR_BENCH_MAX_USD` (20) is refused before any call,
+with both figures in the refusal.
+The figure is typed by whoever launches the next arm,
+from the `GUARD total=` line of the last,
+so the read step checks the bench total again from the logs (B889).
+
+## B887: a cheap reply could pass the probe, so the sheet carries the page's context and the headline counts exact fixes only
+
+Status:
+fixed on 2026-10-23 (UTC) in `84f697f3b46e6bb23cb7cb90e5c032215bbe5c3e`
+and `ad33d9916abfbc9cf78f45ea6fb1fcbe49139e4f`,
+red `a57dcc2e76dfa030b958ed3de0a3f1890337915d`,
+`ebf264ba4d27d7a513a61f45a884cfeaa41548a6`,
+`bbb6991f25ee8bf4207c3a37033a4e5f6e509500`,
+still red `c4a09d7f6131e581520c00fac9f9debee95d4bea`,
+`95f82c9dcbf0cd933b976d1d68d8da9ccf540a72`,
+open to the owner's veto.
+
+Two findings of the recheck made the old instrument weaker than the question.
+The sheet held the passage and its issue alone,
+where the editor stage is handed the sections either side,
+the declared names and the whole original of the page.
+And the headline counted a patched text that removed the defect and changed more,
+and a reply that removed the planted sentence together with its neighbours.
+
+The sheet is built by `buildEditorMessages` through `gatherEditorProposals`,
+the stage's own builder and gather,
+from context prepared by `prepareDocumentPair` and read by `neighbouringSource` and `neighbouringIncumbent`
+(`probe/src/editor-fidelity-context.ts`).
+The sheet of one trial of the headed fixture carries a declared-names block with the pronoun line,
+the original and the translation of the section,
+the heading and the next section as `NEARBY ORIGINAL, CONTEXT ONLY` and `NEARBY EXISTING TRANSLATION, CONTEXT ONLY`,
+the instruction that the nearby blocks are context and must not be edited,
+and one region with its issue,
+its current text and a context window.
+
+The headline is a clean fix:
+a patched text equal to the clean text,
+or equal once whitespace runs are collapsed and trailing whitespace is ignored.
+Everything else that removes the defect is defect only,
+has its own count and is never in the headline.
+The issue of an insertion trial quotes the added sentence with its neighbours.
+Production quotes the span a critic flagged,
+which is the added sentence alone,
+so the wider quoted region is a deliberate departure and is open to the owner's veto.
+
+What the sheet still lacks,
+stated as limits:
+the reference context,
+which production buys from keyed web lookups;
+the entry's `info.yml`;
+the line-structure rule addendum;
+a per-defect issue summary,
+for the issue is the generic one of its kind;
+and the size of the unit,
+for the unit is a heading section where production slices are at most 400 characters,
+so the probe's editor reads more of the page than production's does.
+
+Gaming controls,
+run against the old and the new reading on the old pool of forty-one:
+- Delete the quoted insertion region:
+  equivalent in 22 of 23 trials before,
+  defect only with collateral now,
+  and not counted.
+- Restore the number and nothing else:
+  defect only with collateral in 17 of 18 and counted before,
+  and not counted now.
+- A perfect fix plus a trailing `!`:
+  defect only in 18 of 18 and counted before,
+  and not counted now.
+- Echo the sheet:
+  unusable.
+- `edits: []`:
+  refused,
+  counted apart.
+- A wrong number:
+  not fixed.
+- The ideal fixes:
+  exact.
+
+The decision rule is printed on the `RULE` line of every arm before its first call:
+clean fix is exact plus equivalent,
+read pooled and per kind of defect;
+an effort differs from the default (medium) only when its pooled clean fix count is further from the mean of the two
+medium arms than the larger of 3 and the two medium arms' own difference,
+and neither kind moves against it;
+any other difference,
+and any tie,
+keeps the default effort.
+
+## B888: the pool of forty-one was a first-sections sample, so the pool is a seeded draw by a command in the repository
+
+Status:
+fixed on 2026-10-23 (UTC) in `fe1949dfaeed8c6f630155e505af8625d74b2504`
+and `921e578fe8c2c958c6c0078d2c1de210983d09c2`,
+red `1486b9491feff53ab24e5f9f078bb8232c49661e`,
+`296648165e51c42ba2fa77dbaf9a443f7c8f38ab`,
+still red `47d5f7edd8c3cc1e32665a647fe6ebda53bdd945`,
+open to the owner's veto.
+
+B880 drew the first entries by id and recorded the rule in a comment.
+The rule is now code.
+`editor-fidelity-pool-draw` (`probe/src/corpus-run/editor-fidelity-pool-selection.ts`) orders the readable entries
+by a hash of a domain,
+a seed and the entry id,
+takes entries in that order until the pool holds forty trials,
+and builds at most one insertion and one alteration trial from each.
+The seed is `round-4`,
+the domain is `editor-fidelity-pool/v2`,
+and the draw is dated 2026-10-23.
+`--check` compares the committed files with a fresh draw,
+then reads every committed reference through the hash-verifying reader and runs the scoreability check on its trials.
+
+Over the pinned clone `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`,
+93 entries are listed,
+50 are eligible,
+and 21 were taken.
+They gave 36 drawn trials,
+19 of insertion and 17 of alteration,
+beside the 4 reviewed trials,
+so the probe prints `pool: 40 trials over 24 entries (insertion 22, alteration 18)`.
+Sheets run from 25,644 to 32,094 characters,
+median 27,839.
+Entries left out and why:
+not of equal shape 2,
+unreadable 1,
+no donor for an insertion 25,
+no donor span 16,
+no number shared with the Chinese 45,
+and not scoreable 6
+(5 where the scripted editor read unusable,
+1 that scored defect only with collateral).
+The draw ran twice and gave the same files,
+and the replay read 36 references and found all 40 trials scoreable.
+
+A drawn trial is scoreable only when the scripted ideal edit scores exact,
+the damaged text scores not fixed,
+and deleting the quoted region does not read as a fix.
+That last condition,
+and the end of a section no longer being a separator problem,
+supersede B883:
+the equivalence of B887 ignores trailing whitespace,
+so an insertion at the end of a section is scoreable and is drawn when its section is.
+B880's count of forty-one trials,
+its first-by-id rule and its hand-run replay are superseded by this entry.
+The pool is still not source-reviewed,
+two trials an entry is still a thin spread,
+and forty trials still bound what an arm can claim.
+
+No cache version moves:
+the draw reads the clone and the probe reads no cache.
+
+## B889: nothing read an arm's log for a failure before its figure was read, so a code reads the logs
+
+Status:
+fixed on 2026-10-23 (UTC) in `3f4aa8cde943417d9de1c2e7fefde5c3923c8b04`,
+red `ff706ab047255f356582738f7999560690251a33`,
+open to the owner's veto.
+
+A bench of four arms leaves four logs and a clean fix count in each.
+A count read from a log that ended in an error,
+a different pool,
+or a spend that does not add up is not evidence.
+`editor-fidelity-read` checks each arm for its exit status
+(read from `<arm>.exit` beside `<arm>.log`),
+the manifest line and its digest,
+the pool line,
+the ceiling line,
+the guard line,
+the `EDITOR` line,
+the row count,
+no `[error]` line,
+the `SEAT` line
+(`threw` stated,
+nothing unreachable,
+no seat withheld for a refused credential,
+no dark seat),
+and the identity of the `SPEND` lines' sum with the `GUARD total=`.
+Across the arms it checks that every manifest digest is the same and that the bench total is under 20 USD.
+It prints one `PASS` or `FAIL` line each,
+then `CHECKS n pass, n fail`,
+and exits 6 when any failed.
+The probe now logs `manifest: N specifications, digest <hex>`.
+The runbook for the four arms is in `probe/README.md`.
+
+## B890: the process slips of round 4, for the commit comments
+
+Status:
+recorded on 2026-10-23 (UTC).
+
+Short hashes stand in the bodies of five commits of this round,
+where a full hash belongs:
+`fe1949dfaeed8c6f630155e505af8625d74b2504` names
+`1486b9491feff53ab24e5f9f078bb8232c49661e`,
+`296648165e51c42ba2fa77dbaf9a443f7c8f38ab` and
+`47d5f7edd8c3cc1e32665a647fe6ebda53bdd945`;
+`bbb6991f25ee8bf4207c3a37033a4e5f6e509500` and `95f82c9dcbf0cd933b976d1d68d8da9ccf540a72` name
+`9a8b0a4c1fd801c25a9ab03930b2e017800628a6`;
+`9a8b0a4c1fd801c25a9ab03930b2e017800628a6` names `7c61c829b725ca88250b0ba0e0dfb2cc0b56ec48`;
+and `96a6b701ec5d770b70581fb3a785c791232c6dd2` names `cd6f8380806321aff0d5632b6b689867e63189aa`.
+
+Three red commits needed a second commit that changes only tests for lint or scan reasons
+(`cd6f8380806321aff0d5632b6b689867e63189aa`,
+`7c61c829b725ca88250b0ba0e0dfb2cc0b56ec48` and
+`95f82c9dcbf0cd933b976d1d68d8da9ccf540a72`),
+and `47d5f7edd8c3cc1e32665a647fe6ebda53bdd945` rewrote the draw's tests for the repo scans.
+The source scans ran late in each of those chains,
+which is why.
+
+The fix commit `3f4aa8cde943417d9de1c2e7fefde5c3923c8b04` does not leave its red tests byte-identical to
+`ff706ab047255f356582738f7999560690251a33`.
+It changes the manifest-line case of `editor-fidelity-probe-run.unit.test.ts`,
+because the red case expected the digest of the whole pool where the run digests the specifications it was asked to read
+(`--only` narrows them),
+and it moves one trailing comment in `editor-fidelity-read.unit.test.ts`.
+It also adds the unit tests of the arm facts and the arm answers,
+which the red commit did not hold.

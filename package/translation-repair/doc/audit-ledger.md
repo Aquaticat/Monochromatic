@@ -568,10 +568,16 @@ named for that subject and listed here.
   with its shared gather,
   its refused deletion,
   its cost ceiling and its card-only client (B875 to B879),
-  the frozen pool of forty-one trials it reads (B880),
+  the frozen pool of forty-one trials it first read (B880),
   the per-call spend guard that replaced a gate on the first-pass total (B881 and B882),
-  the end-of-section insertions it cannot score (B883),
-  and the process slips of two rounds (B884).
+  the end-of-section insertions it could not score (B883),
+  the process slips of two rounds (B884),
+  the guard that counts a throw and a retried attempt (B885),
+  the bench amount held by the arms (B886),
+  the sheet and the headline that no cheap reply passes (B887),
+  the pool redrawn by a seeded command (B888),
+  the read step over the arm logs (B889),
+  and the slips of a third round (B890).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,
