@@ -223,6 +223,14 @@ await describe({
           },
         },),
         it({
+          name: 'IS AT VERSION 8: the reader of a model\'s reply takes a label that differs from a listed label only '
+            + 'in its capital as the listed label, and the key digests the version, the sheet and the roster, not the '
+            + 'reader, so only this number retires a ballot stored under the reader before',
+          fn: async () => {
+            expect(CONSISTENCY_CACHE_VERSION,).toBe(8,);
+          },
+        },),
+        it({
           name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version '
             + 'eight names a run whose sheets list the labels a reply may use, whose replies may write a label in '
             + 'another form of it, whose choice among candidates is run off when it splits, whose house rule '
