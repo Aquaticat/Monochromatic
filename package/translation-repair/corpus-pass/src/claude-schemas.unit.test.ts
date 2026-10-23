@@ -205,7 +205,7 @@ type SchemaNode = {
  @param schema - schema read
  @param path - where it sits
 
- @returns The nodes, the root first
+ @returns Nodes, the root first
 
  @example
  ```ts
@@ -252,7 +252,7 @@ function schemaNodesOf(
 
  @param schema - schema read
 
- @returns The paths of the open objects
+ @returns Paths of the open objects
 
  @example
  ```ts
@@ -503,8 +503,8 @@ await describe({
   children: [
     it({
       name: 'LISTS EVERY FILE OF THE FAMILY THAT DECLARES AN ANSWER SCHEMA, so a stage schema added later cannot skip '
-        + 'the schema cases of this file: the family\'s source is searched for a json_schema format, and each file found is a '
-        + 'producer here or a named exception',
+        + 'the schema cases of this file: the family\'s source is searched for a json_schema format, and each '
+        + 'file found is a producer here or a named exception',
       fn: async () => {
         /**
          Files of the family's source that write a `json_schema` response format.
@@ -527,8 +527,8 @@ await describe({
     it({
       name: 'FINDS A STAGE THAT BUILDS ITS ANSWER SCHEMA THROUGH A BUILDER OTHER STAGES SHARE, which the search '
         + 'for the text json_schema alone misses: a file that calls the contest builder, a file that calls a '
-        + 'builder of its own kind that a second file calls, and not a file that only shows the builder in its '
-        + 'documentation',
+        + 'builder of its own kind that a second file calls, and not a file that only shows the builder in '
+        + 'its documentation',
       fn: async () => {
         /**
          Files found over the family's source with the imaginary files beside it.
@@ -669,9 +669,10 @@ await describe({
 
     it({
       name: 'DROPS ONE BOUND IN THE WHOLE FAMILY, minimum 1 on the paragraph of a naturalness finding, which '
-        + '`isAbsoluteNaturalnessReviewWire` still enforces (its case "REFUSES A FINDING WITH paragraph BELOW ONE"), and '
-        + 'tells the model it in the field\'s description (R6); a keyword outside the allowlist added to any other '
-        + 'schema lists here, which is also the positive control that the allowlist finds what it is there to find',
+        + '`isAbsoluteNaturalnessReviewWire` still enforces (its case "REFUSES A FINDING WITH paragraph BELOW '
+        + 'ONE"), and tells the model it in the field\'s description (R6); a keyword outside the allowlist added '
+        + 'to any other schema lists here, which is also the positive control that the allowlist finds what it is '
+        + 'there to find',
       fn: async () => {
         /**
          The schema the body sends for the naturalness review, whose one bound is stripped and told.

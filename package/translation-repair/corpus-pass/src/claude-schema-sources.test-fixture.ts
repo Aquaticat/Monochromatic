@@ -7,6 +7,12 @@ import { join, } from 'node:path';
 //region Sources that declare an answer schema
 // What `claude-schemas.unit.test.ts` reads to keep the list of schema producers honest: the family's own source files,
 // the files among them that write a `json_schema` response format, and the files that call a function which writes one.
+//
+// A BUILDER IS A FUNCTION THAT WRITES THE FORMAT IN ITS BODY, so each call can make a different schema. A format held
+// in a constant is one schema however many files read it, and the producer list holds it once. That is why
+// `blockPairingProtocol` (`slice-reading/src/block-pairing-protocol.ts`) is left out of the builders: it returns a
+// clone of the constant `PAIRING_RESPONSE_FORMAT`, so every caller sends the same schema, the format text is not in its
+// body, and its one caller (`pair-blocks-stage.ts`) is covered by the producer list's entry for the constant.
 
 /**
  One source file of the family.
@@ -117,7 +123,7 @@ export async function familySources(): Promise<readonly SourceFile[]> {
 /**
  A file's code with the comments that sit on their own lines taken out, so a call shown in documentation is no call.
 
- @param text - the file's text
+ @param text - file's text
 
  @returns Lines outside block comments and line comments that start a line
 
@@ -193,7 +199,7 @@ function functionNameOpenedBy({ line, }: { readonly line: string; },): string {
 
  @param code - lines of code
 
- @param name - the function's name
+ @param name - function's name
 
  @returns Whether some occurrence of the name is a call
 
@@ -324,7 +330,7 @@ export function buildersOf(
 
  @param sources - files searched
 
- @param builder - the builder whose calls are looked for
+ @param builder - builder whose calls are looked for
 
  @returns Paths, in the order of the sources
 
