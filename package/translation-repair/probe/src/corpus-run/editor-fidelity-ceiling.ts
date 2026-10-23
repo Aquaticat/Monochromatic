@@ -265,7 +265,8 @@ const USD_DECIMALS = 4;
 
  @example
  ```ts
- const text = usdText({ usd: 0.648, },); // '0.6480'
+ // yields '0.6480'
+ const text = usdText({ usd: 0.648, },);
  ```
  */
 export function usdText({ usd, }: { readonly usd: number; },): string {

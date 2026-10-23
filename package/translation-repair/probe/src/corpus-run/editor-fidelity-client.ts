@@ -27,7 +27,8 @@ import {
 
  @example
  ```ts
- const served = isClaudeCard({ cardId: 'claude-haiku-5-5', },); // true
+ // yields true
+ const served = isClaudeCard({ cardId: 'claude-haiku-5-5', },);
  ```
  */
 function isClaudeCard({ cardId, }: { readonly cardId: RosterModelId; },): boolean {

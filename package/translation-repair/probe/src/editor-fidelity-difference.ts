@@ -15,7 +15,8 @@ import { isAsciiDigit, } from '@monochromatic-dev/translation-repair-markup/ts';
 
  @example
  ```ts
- const shared = commonPrefixLength({ left: 'cat naps', right: 'cat purrs', },); // 4
+ // yields 4
+ const shared = commonPrefixLength({ left: 'cat naps', right: 'cat purrs', },);
  ```
  */
 function commonPrefixLength(
@@ -50,7 +51,8 @@ function commonPrefixLength(
 
  @example
  ```ts
- const shared = commonSuffixLength({ left: 'a cat', right: 'the cat', room: 5, },); // 4
+ // yields 4
+ const shared = commonSuffixLength({ left: 'a cat', right: 'the cat', room: 5, },);
  ```
  */
 function commonSuffixLength(
@@ -143,7 +145,8 @@ export function differingMiddle(
 
  @example
  ```ts
- const digits = digitsFrom({ text: 'in 2023 and', from: 6, step: -1, },); // 4
+ // yields 4
+ const digits = digitsFrom({ text: 'in 2023 and', from: 6, step: -1, },);
  ```
  */
 function digitsFrom(

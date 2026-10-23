@@ -102,7 +102,8 @@ export function sheetCharsOf({ trial, }: { readonly trial: EditorFidelityTrial; 
 
  @example
  ```ts
- pairName({ item: pair, },); // 'claude-sonnet-5-5-effort-low on tabby-reference/insertion'
+ // yields 'claude-sonnet-5-5-effort-low on tabby-reference/insertion'
+ pairName({ item: pair, },);
  ```
  */
 export function pairName({ item, }: { readonly item: EditorPair; },): string {

@@ -183,7 +183,8 @@ const CLAIMS: Readonly<Record<EditorDamageKind, Pick<IssueClaim, 'category' | 's
 
  @example
  ```ts
- const builds = isEditorDamageKind('deletion',); // false
+ // yields false
+ const builds = isEditorDamageKind('deletion',);
  ```
  */
 function isEditorDamageKind(kind: FidelityDamageKind,): kind is EditorDamageKind {

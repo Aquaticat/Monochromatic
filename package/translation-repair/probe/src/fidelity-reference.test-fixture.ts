@@ -343,7 +343,8 @@ export function expectRefusal(
 
  @example
  ```ts
- const plain = withoutStamp({ line: '[info] [2026-01-01T00:00:00.000Z] [probe] purr', },); // '[info] [probe] purr'
+ // yields '[info] [probe] purr'
+ const plain = withoutStamp({ line: '[info] [2026-01-01T00:00:00.000Z] [probe] purr', },);
  ```
  */
 export function withoutStamp({ line, }: { readonly line: string; },): string {
