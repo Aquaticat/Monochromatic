@@ -638,6 +638,34 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: 'the deadline the probe hands its call, read back off the request the client saw',
   },
+  'bench/corpus-run/model-health-probe.unit.test.ts#askOnce: timeoutMs: RUN_PER_CALL_MS': {
+    count: 1,
+    bound: 'other',
+    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at it '
+      + 'is the finding (N4 of the re-check of fix rounds 3 and 4)',
+  },
+  'bench/corpus-run/translate-probe-run.unit.test.ts#probeClaudeLandingAfter: perCallTimeoutMs: RUN_PER_CALL_MS': {
+    count: 1,
+    bound: 'other',
+    reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at it '
+      + 'is the finding (N4 of the re-check of fix rounds 3 and 4)',
+  },
+  'bench/corpus-run/translate-probe-run.unit.test.ts#walkOnce: perCallTimeoutMs: perCallTimeoutMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
+  'provider/delayed-transport.test-fixture.ts#landing: setTimeout landMs': {
+    count: 1,
+    bound: 'other',
+    reason: 'the delay a scripted reply lands after, on whichever timer function is global; a case that sets it fakes '
+      + 'the timers and ticks the clock, so no real time passes',
+  },
+  'test-fixture/fake-clock-walk.test-fixture.ts#timeoutOnFakeClock: setTimeout ms': {
+    count: 1,
+    bound: 'other',
+    reason: 'the figure a signal factory call was handed, put on the fake clock so the signal aborts at it in fake time',
+  },
   'corpus-pass/corpus-run/pass-entry.unit.test.ts#entryClient: wait of module-async-time 10': {
     count: 1,
     bound: 'other',

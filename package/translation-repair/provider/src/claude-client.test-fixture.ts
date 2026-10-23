@@ -5,7 +5,14 @@
  @module
  */
 
-import type { TransportReply, } from '@monochromatic-dev/translation-repair-provider-stream';
+import type {
+  ModelTransport,
+  TransportReply,
+} from '@monochromatic-dev/translation-repair-provider-stream';
+import {
+  createClaudeClient,
+  type ModelClient,
+} from '../dist/final/node/index.mjs';
 import {
   anthropicBlockDelta,
   anthropicBlockStart,
@@ -154,6 +161,44 @@ export function claudeStreamOf(
  Key every case here sends. Invented.
  */
 export const CLAUDE_CAT_KEY = 'sk-ant-cat-key-whisker-9f3c7a-Qx4d';
+
+/**
+ The quota read of a Claude client, which has no quota view, so it rejects.
+ */
+function quotasUnused(): Promise<never> {
+  return Promise.reject(new Error('quotas unused',),);
+}
+
+/**
+ A model client over a Claude client that sends through the given transport, for the cases that ask a stage or a probe
+ about a Claude seat.
+
+ @param transport - transport the Claude client sends through
+
+ @returns Client whose `quotas` throws, since a Claude client has no quota view and the callers here read none
+
+ @example
+ ```ts
+ const client = claudeModelClientOver({ transport, },);
+ ```
+ */
+export function claudeModelClientOver({ transport, }: { readonly transport: ModelTransport; },): ModelClient {
+  /**
+   Claude client whose calls the case reads.
+   */
+  const {
+    chatText,
+    chatJson,
+  } = createClaudeClient({
+    apiKey: CLAUDE_CAT_KEY,
+    transport,
+  },);
+  return {
+    chatText,
+    chatJson,
+    quotas: quotasUnused,
+  };
+}
 
 /**
  A success reply that carries response headers, typed as the status-and-body pair the shared script helper takes so

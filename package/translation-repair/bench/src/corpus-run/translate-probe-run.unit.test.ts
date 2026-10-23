@@ -16,15 +16,17 @@ import {
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  createClaudeClient,
-  type ModelClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { armedDeadlinesDuring, } from '@monochromatic-dev/translation-repair-provider/ts/armed-deadlines.test-fixture.ts';
+import { armedDeadlinesDuring, } from
+  '@monochromatic-dev/translation-repair-provider/ts/armed-deadlines.test-fixture.ts';
+import { transportLandingAfter, } from
+  '@monochromatic-dev/translation-repair-provider/ts/delayed-transport.test-fixture.ts';
 import {
-  CLAUDE_CAT_KEY,
+  claudeModelClientOver,
   claudeStreamOf,
   PLAIN_USAGE,
 } from '@monochromatic-dev/translation-repair-provider/ts/claude-client.test-fixture.ts';
@@ -36,6 +38,10 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import {
+  type FakeClockWalk,
+  walkOnFakeClock,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/fake-clock-walk.test-fixture.ts';
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 import {
   makeProbeCorpus,
@@ -135,6 +141,11 @@ type Probed = {
 
  @param sinon - the case's own sandbox
 
+ @param perCallTimeoutMs - per-call figure the probe is handed
+
+ @param drive - how the case runs the walk once the corpus stands; it calls the walk and awaits it, and a case that
+ fakes the timers installs them here, after the corpus is made and before the walk starts
+
  @returns Clients built, lines printed and the refusal if any
 
  @example
@@ -148,11 +159,17 @@ async function probeOver(
     newClient,
     roster,
     sinon,
+    perCallTimeoutMs = HANG_STOP_MS,
+    drive = async function plainly(walkOnce,): Promise<void> {
+      await walkOnce();
+    },
   }: {
     readonly files: Readonly<Record<string, string>>;
     readonly newClient: () => ModelClient;
     readonly roster: readonly RosterModelId[];
     readonly sinon: Parameters<typeof divertingConsoleLog>[0]['sinon'];
+    readonly perCallTimeoutMs?: number;
+    readonly drive?: (walkOnce: () => Promise<void>,) => Promise<void>;
   },
 ): Promise<Probed> {
   await using corpus = await makeProbeCorpus({ files, },);
@@ -187,14 +204,16 @@ async function probeOver(
    Runs the probe, as the case under test asks.
    */
   async function walk(): Promise<void> {
-    await probeTranslate({
-      entryId: 'Mittens',
-      pin: corpus.pin,
-      newClient: counting,
-      editorModelIds: roster,
-      perCallTimeoutMs: HANG_STOP_MS,
-      log: logger,
-      stageSettings: SCRIPTED_STAGE_SETTINGS,
+    await drive(async function walkOnce(): Promise<void> {
+      await probeTranslate({
+        entryId: 'Mittens',
+        pin: corpus.pin,
+        newClient: counting,
+        editorModelIds: roster,
+        perCallTimeoutMs,
+        log: logger,
+        stageSettings: SCRIPTED_STAGE_SETTINGS,
+      },);
     },);
   }
 
@@ -257,6 +276,138 @@ const TARGET_PAGE = '# Cat\n\nThe cat naps.\n';
  */
 const CLAUDE_DEADLINE_MS = 460_000;
 
+/**
+ The per-call figure the run hands every call, which a caller-side cut would use.
+ */
+const RUN_PER_CALL_MS = 360_000;
+
+/**
+ Longest the fake clock is ticked for a reply that is meant to be heard: past the Claude deadline and a minute more.
+ */
+const LONGEST_TICKING_MS = 520_000;
+
+/**
+ What a probe over one Claude seat whose reply lands late did.
+ */
+type LateClaudeProbe = {
+  /**
+   Lines the probe printed.
+   */
+  readonly lines: readonly string[];
+
+  /**
+   What the probe was refused with, empty when it ran.
+   */
+  readonly refusal: string;
+
+  /**
+   Reasons the transport saw exchanges cut for by an abort signal, in order.
+   */
+  readonly cut: readonly unknown[];
+
+  /**
+   How many exchanges had been cut after each tick, in the order of the ticks.
+   */
+  readonly cutsAfterEachTick: readonly number[];
+
+  /**
+   Whether the probe had ended on its own when the ticking stopped, so the voice was heard or lost by the clock and not
+   by the case's release.
+   */
+  readonly endedByItself: boolean;
+};
+
+/**
+ Runs the probe over one Claude seat whose reply lands after a delay, on a fake clock, and reports what it did.
+
+ EVERY CALLER-SIDE CUT IS DRIVEN BY THE SAME CLOCK: `setTimeout` and `clearTimeout` are fake, and the signal factory
+ `AbortSignal.timeout` is replaced by one built on the fake `setTimeout`, so a signal made from a timer, from
+ `AbortSignal.timeout` or from `AbortSignal.any` over either aborts at its figure on the fake clock and the cut shows.
+ The clock stands still until the probe has made its call, since the probe reads its corpus over real I/O first, and
+ the transport is released when the ticking stops, so the walk always ends.
+
+ @param landMs - delay before the scripted reply lands
+
+ @param ticks - fake milliseconds to advance, one step after another
+
+ @param waitForEnd - whether to wait for the probe to end once the ticking is done, which a probe meant to outlast the
+ ticking does not
+
+ @param sinon - the case's own sandbox
+
+ @returns What the probe printed and what the transport saw
+
+ @example
+ ```ts
+ const { lines, cut, } = await probeClaudeLandingAfter({
+   landMs: 400_000,
+   ticks: [LONGEST_TICKING_MS,],
+   waitForEnd: true,
+   sinon,
+ },);
+ ```
+ */
+async function probeClaudeLandingAfter(
+  {
+    landMs,
+    ticks,
+    waitForEnd,
+    sinon,
+  }: {
+    readonly landMs: number;
+    readonly ticks: readonly number[];
+    readonly waitForEnd: boolean;
+    readonly sinon: Parameters<typeof divertingConsoleLog>[0]['sinon'];
+  },
+): Promise<LateClaudeProbe> {
+  const { transport, firstCall, cut, release, } = transportLandingAfter({
+    landMs,
+    reply: {
+      status: 200,
+      bodyText: claudeStreamOf({
+        text: '{"translation":"The cat naps."}',
+        stopReason: 'end_turn',
+        usage: PLAIN_USAGE,
+      },),
+    },
+  },);
+
+  /**
+   What the driver reported, in a list of none or one.
+   */
+  const walked: FakeClockWalk[] = [];
+  const probed = await probeOver({
+    files: {
+      'people/Mittens/page.md': SOURCE_PAGE,
+      'people/Mittens/page.en.md': TARGET_PAGE,
+    },
+    newClient: function claudeVoice(): ModelClient {
+      return claudeModelClientOver({ transport, },);
+    },
+    roster: ['claude-sonnet-5-5',],
+    sinon,
+    perCallTimeoutMs: RUN_PER_CALL_MS,
+    drive: async function onFakeClock(walkOnce,): Promise<void> {
+      walked.push(await walkOnFakeClock({
+        sinon,
+        walkOnce,
+        firstCall,
+        release,
+        ticks,
+        cutCount: () => cut.length,
+        waitForEnd,
+      },),);
+    },
+  },);
+  return {
+    lines: probed.lines,
+    refusal: probed.refusal,
+    cut,
+    cutsAfterEachTick: walked.flatMap(function cutsOf(walk,): readonly number[] { return walk.cutsAfterEachTick; },),
+    endedByItself: walked.some(function endedOf(walk,): boolean { return walk.endedByItself; },),
+  };
+}
+
 await describe({
   name: probeTranslate.name,
   // SEQUENTIAL: one case wraps the process-wide timer function and one spies on the process-wide signal factory.
@@ -307,18 +458,7 @@ await describe({
                 'people/Mittens/page.en.md': TARGET_PAGE,
               },
               newClient: function claudeVoice(): ModelClient {
-                /**
-                 Claude client whose calls the case reads.
-                 */
-                const { chatText, chatJson, } = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, },);
-                return {
-                  chatText,
-                  chatJson,
-                  // The probe reads no quota, and a Claude client has no quota view to hand it.
-                  quotas: async () => {
-                    throw new Error('quotas unused',);
-                  },
-                };
+                return claudeModelClientOver({ transport, },);
               },
               roster: ['claude-sonnet-5-5',],
               sinon: ctx.sinon,
@@ -328,6 +468,39 @@ await describe({
         expect(result.refusal,).toBe('',);
         expect(result.lines.includes('HEARD 1/1',),).toBe(true,);
         expect(armed.includes(CLAUDE_DEADLINE_MS,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'HEARS A CLAUDE REPLY THAT LANDS AT 400,000 MS (N4 of the re-check of fix rounds 3 and 4): no signal the '
+        + 'caller hands the client aborts before the Claude deadline of 460,000 ms, whether it is built from '
+        + 'AbortSignal.timeout, from setTimeout or from AbortSignal.any',
+      fn: async (ctx) => {
+        const probed = await probeClaudeLandingAfter({
+          landMs: 400_000,
+          ticks: [LONGEST_TICKING_MS,],
+          waitForEnd: true,
+          sinon: ctx.sinon,
+        },);
+
+        expect(probed.refusal,).toBe('',);
+        expect(probed.cut,).toEqual([],);
+        expect(probed.endedByItself,).toBe(true,);
+        expect(probed.lines.includes('HEARD 1/1',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'CUTS A CLAUDE REPLY THAT LANDS AT 500,000 MS AT 460,000 MS, not before (the positive control of N4): the '
+        + 'rig shows the client\'s own deadline firing, so the heard reply at 400,000 ms is a measurement and not a rig '
+        + 'that cannot cut',
+      fn: async (ctx) => {
+        const probed = await probeClaudeLandingAfter({ landMs: 500_000,
+          ticks: [CLAUDE_DEADLINE_MS - 1, 1,],
+          waitForEnd: false,
+          sinon: ctx.sinon,
+        },);
+
+        expect(probed.cutsAfterEachTick,).toEqual([0, 1,],);
+        expect(probed.endedByItself,).toBe(false,);
       },
     },),
     it({
