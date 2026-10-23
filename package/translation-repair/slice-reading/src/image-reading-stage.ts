@@ -267,7 +267,8 @@ type EmptyAssetRefusal = {
 
  @param assetName - its file name, which carries the media type
 
- @param l - logger the empty-picture refusal is written to
+ @param l - logger the caught empty-picture error is written to, at the debug level, since the caller warns of the
+ refusal once
 
  @returns Encoding, or the refusal, which for a picture with no bytes carries the reason `empty-asset`
 
@@ -287,6 +288,13 @@ function encodedForReading(
     readonly l: Logger;
   },
 ): EncodedAsset | EmptyAssetRefusal {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const el = tagged({
+    tag: encodedForReading.name,
+    l,
+  },);
   try {
     return encodeImageAsset({
       bytes,
@@ -298,7 +306,9 @@ function encodedForReading(
     // ONLY THE EMPTY PICTURE IS NAMED. Any other throw is a defect of this code and keeps propagating.
     if (!(error instanceof EmptyImageAssetError))
       throw error;
-    l.warn(`${assetName} has no bytes, so nothing of it is sent`,);
+    // LOGGED, NOT WARNED: `readImageAsset` warns of the refusal once for the seat read, so this line only records
+    // which error was caught and which picture it named.
+    el.debug(`${error.name}: ${assetName} has no bytes, so nothing of it is sent`,);
     return {
       kind: 'refused',
       reason: 'empty-asset',

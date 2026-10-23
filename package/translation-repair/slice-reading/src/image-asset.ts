@@ -109,7 +109,7 @@ export type EncodedAsset = {
  THE ASSET IS NAMED, since one empty file in a corpus is the thing to find. A zero-byte file would otherwise encode to
  a data URI with an empty payload, which the Anthropic request builder rejects at every seat that reads the picture,
  so each seat would lose its voice with a warning per call. Raised here, where the file is known, the stage reports
- the picture as unavailable once and spends no request on it.
+ the picture as unavailable with one warning for each seat read and spends no request on it.
 
  @example
  ```ts
