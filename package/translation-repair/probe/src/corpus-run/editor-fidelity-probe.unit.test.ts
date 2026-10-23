@@ -16,6 +16,7 @@ import {
 
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
+import { EDITOR_FIDELITY_POOL, } from '../../dist/final/node/index.mjs';
 import { PROBE_ENTRY, } from './built-entry.test-fixture.ts';
 import { withoutStamp, } from '../fidelity-reference.test-fixture.ts';
 import { LOW_CARD, } from '../editor-fidelity.test-fixture.ts';
@@ -98,7 +99,8 @@ await describe({
           return line.replace('[editor-fidelity-probe] ', '',);
         },),).toEqual([
           `[info] editors: ${LOW_CARD}`,
-          `[info] preflight only: 3 reviewed reference specifications selected for ${LOW_CARD}; no corpus or model calls`,
+          `[info] preflight only: ${String(EDITOR_FIDELITY_POOL.length,)} pinned reference specifications selected for ${LOW_CARD}; `
+            + 'no corpus or model calls',
         ],);
       },
     },),

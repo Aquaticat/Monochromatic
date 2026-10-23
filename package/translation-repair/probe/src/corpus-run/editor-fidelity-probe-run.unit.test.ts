@@ -38,6 +38,7 @@ import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-gloss
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   EDITOR_DAMAGE_KINDS,
+  EDITOR_FIDELITY_POOL,
   editorFidelityTrials,
   type FidelityReferenceSpec,
   REVIEWED_FIDELITY_REFERENCES,
@@ -498,12 +499,67 @@ await describe({
             expect(seen.failures,).toStrictEqual([],);
             expect(seen.lines,).toStrictEqual([
               `editors: ${LOW_CARD}`,
-              `preflight only: 1 reviewed reference specification selected for ${LOW_CARD}; no corpus or model calls`,
+              `preflight only: 1 pinned reference specification selected for ${LOW_CARD}; no corpus or model calls`,
             ],);
             expect(seen.readFor,).toStrictEqual([],);
             expect(seen.runsAsked,).toStrictEqual([],);
             expect(seen.clientBuilds,).toStrictEqual([],);
             expect(seen.written,).toBe('',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'the frozen pool',
+      children: [
+        it({
+          name: 'SELECTS EVERY SPECIFICATION OF THE POOL when no entry is named, and a cap of zero says how many',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const seen = await probeIn({
+              runsDir: scratch.path,
+              typed: ['--candidates', LOW_CARD, '--candidates-alone', '--cap', '0',],
+            },);
+            expect(seen.failures,).toStrictEqual([],);
+            expect(seen.lines,).toContain(
+              `preflight only: ${String(EDITOR_FIDELITY_POOL.length,)} pinned reference specifications selected for ${LOW_CARD}; `
+                + 'no corpus or model calls',
+            );
+          },
+        },),
+
+        it({
+          name: 'READS A DRAWN ENTRY OF THE POOL by its id, the specifications of that entry and no others, in the pool\'s order',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const drawn = nonNullishOrThrow(EDITOR_FIDELITY_POOL.at(-1,),);
+            const seen = await probeIn({
+              runsDir: scratch.path,
+              typed: ['--only', drawn.entryId, '--candidates', LOW_CARD, '--candidates-alone', '--cap', '1',],
+            },);
+            expect(seen.failures,).toStrictEqual([],);
+            expect(seen.readFor,).toStrictEqual([
+              EDITOR_FIDELITY_POOL.filter(function isEntry(spec,): boolean {
+                return spec.entryId === drawn.entryId;
+              },),
+            ],);
+          },
+        },),
+
+        it({
+          name: 'SAYS WHAT IT DREW just before the ceiling, so the log of an arm shows the pool it saw',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
+            const seen = await probeIn({
+              runsDir: scratch.path,
+              typed: ONE_CARD,
+            },);
+            const ceilingAt = seen.lines.findIndex(function isCeiling(line,): boolean {
+              return line.startsWith('ceiling ',);
+            },);
+            expect(ceilingAt,).toBeGreaterThan(0,);
+            expect(seen.lines[ceilingAt - 1],).toBe('pool: 2 trials over 1 entry (insertion 1, alteration 1)',);
           },
         },),
       ],

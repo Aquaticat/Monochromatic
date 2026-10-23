@@ -238,13 +238,13 @@ await describe({
               cardIds: [LOW_CARD,],
               selected: 3,
             },),).toBe(
-              `preflight only: 3 reviewed reference specifications selected for ${LOW_CARD}; no corpus or model calls`,
+              `preflight only: 3 pinned reference specifications selected for ${LOW_CARD}; no corpus or model calls`,
             );
             expect(editorPreflightLine({
               cardIds: [LOW_CARD, HIGH_CARD,],
               selected: 1,
             },),).toBe(
-              `preflight only: 1 reviewed reference specification selected for ${LOW_CARD}, ${HIGH_CARD}; no corpus or `
+              `preflight only: 1 pinned reference specification selected for ${LOW_CARD}, ${HIGH_CARD}; no corpus or `
                 + 'model calls',
             );
           },
