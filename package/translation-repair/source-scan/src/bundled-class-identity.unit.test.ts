@@ -100,8 +100,8 @@ type ClassIdentityReading = {
 function ownerOf({ specifier, }: { readonly specifier: string; },): string {
   return specifier.split('/',)
     .slice(
-      0,
-      2,
+    0,
+    2,
     )
     .join('/',);
 }
@@ -209,17 +209,56 @@ function classIdentityOf(
     readonly manifests: Manifests;
   },
 ): ClassIdentityReading {
-  // PLACEHOLDER, so the cases below fail before the scan exists: it reads nothing and finds nothing.
+  /**
+   Sites and findings so far.
+   */
+  const sites: string[] = [];
+  const findings: string[] = [];
+  for (const file of files) {
+    if (file.isTest)
+      continue;
+    /**
+     Parsed file.
+     */
+    const { program, } = parseSource({ file, },);
+    /**
+     Names it imports from workspace packages.
+     */
+    const imported = workspaceValueImports({ program, },);
+    /**
+     Package directory the file sits in, which names its manifest.
+     */
+    const [directory = '',] = file.path.split('/',);
+    /**
+     Packages that directory keeps external.
+     */
+    const external = manifests.get(directory,) ?? [];
+    for (const node of nodesUnder({ root: program, },)) {
+      /**
+       Class this node tests.
+       */
+      const tested = testedClassOf({ node, },);
+      /**
+       Package the class is imported from, none where it is not an import from a workspace package.
+       */
+      const owner = imported.get(tested,);
+      if (owner === undefined)
+        continue;
+      sites.push(`${file.path}#${tested}`,);
+      if (owner.startsWith(FAMILY_PREFIX,) && external.includes(owner,))
+        continue;
+      findings.push(
+        `${file.path}#${tested}: imported from ${owner}, which ${directory} ${
+          owner.startsWith(FAMILY_PREFIX,)
+            ? 'does not list under dependencies, so its dist bundles a copy'
+            : 'always bundles, so its dist holds a copy'
+        }; test the class through a guard its owner exports, or list the owner under dependencies`,
+      );
+    }
+  }
   return {
-    sites: files.filter(function never(): boolean {
-      return false;
-    },)
-      .map(function pathOf({ path, },): string {
-        return path;
-      },),
-    findings: [...manifests.keys(),].filter(function never(): boolean {
-      return false;
-    },),
+    sites: sites.toSorted(),
+    findings: findings.toSorted(),
   };
 }
 
@@ -242,26 +281,28 @@ async function readManifests(): Promise<Manifests> {
     '..',
     '..',
   );
-  return new Map(await Promise.all((await familyPackages()).map(
-    async function readManifest(directory,): Promise<readonly [string, readonly string[],]> {
+  return new Map(
+    await Promise.all((await familyPackages()).map(
+      async function readManifest(directory,): Promise<readonly [string, readonly string[],]> {
       /**
        The manifest, parsed.
        */
-      const manifest: unknown = JSON.parse(await readFile(
-        join(
-          familyRoot,
-          directory,
-          'package.json',
-        ),
-        'utf8',
-      ),);
+        const manifest: unknown = JSON.parse(await readFile(
+          join(
+            familyRoot,
+            directory,
+            'package.json',
+          ),
+          'utf8',
+        ),);
       /**
        Its dependencies field.
        */
-      const dependencies = isJsonRecord(manifest,) ? manifest['dependencies'] : undefined;
-      return [directory, isJsonRecord(dependencies,) ? Object.keys(dependencies,) : [],];
-    },
-  ),));
+        const dependencies = isJsonRecord(manifest,) ? manifest.dependencies : undefined;
+        return [directory, isJsonRecord(dependencies,) ? Object.keys(dependencies,) : [],];
+      },
+    ),),
+  );
 }
 
 //endregion Bundled class identity
@@ -409,8 +450,8 @@ await describe({
     },),
 
     it({
-      name: 'TESTS A CLASS IMPORTED FROM A WORKSPACE PACKAGE ONLY WHERE THE IMPORTER KEEPS THAT PACKAGE EXTERNAL, across '
-        + 'the family, and reaches the sites the census found',
+      name: 'TESTS A CLASS IMPORTED FROM A WORKSPACE PACKAGE ONLY WHERE THE IMPORTER KEEPS THAT PACKAGE EXTERNAL, '
+        + 'across the family, and reaches the sites the census found',
       fn: async () => {
         /**
          Every package file, tests among them.
