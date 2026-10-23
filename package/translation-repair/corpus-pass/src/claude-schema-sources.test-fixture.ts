@@ -91,37 +91,107 @@ const FUNCTION_OPENINGS: readonly string[] = [
  */
 export async function familySources(): Promise<readonly SourceFile[]> {
   /**
-   Files read so far.
+   Every file under a package's `src`, tests and fixtures not yet left out.
    */
-  const found: SourceFile[] = [];
-  for await (
-    const file of glob(
-      '*/src/**/*.ts',
-      { cwd: FAMILY_ROOT, },
-    )
-  ) {
-    if (file.includes('node_modules',) || file.includes('.test',))
-      continue;
-    /**
-     The file's text.
-     */
-    const text = await readFile(
-      join(
-        FAMILY_ROOT,
-        file,
-      ),
-      'utf8',
-    );
-    found.push({
-      file,
-      text,
-    },);
-  }
-  return found;
+  const files = await Array.fromAsync(glob(
+    '*/src/**/*.ts',
+    { cwd: FAMILY_ROOT, },
+  ),);
+  return await Promise.all(
+    files
+      .filter(function isSource(file,): boolean {
+        return !(file.includes('node_modules',) || file.includes('.test',));
+      },)
+      .map(async function sourceOf(file,): Promise<SourceFile> {
+        return {
+          file,
+          text: await readFile(
+            join(
+              FAMILY_ROOT,
+              file,
+            ),
+            'utf8',
+          ),
+        };
+      },),
+  );
+}
+
+/**
+ The positions of the lines that satisfy a test.
+
+ @param lines - lines searched
+
+ @param test - what a line must satisfy
+
+ @returns Positions, in order
+
+ @example
+ ```ts
+ const positions = positionsWhere({ lines: ['a', 'b', 'a',], test: (line,) => line === 'a', },);
+ // => [0, 2]
+ ```
+ */
+function positionsWhere(
+  {
+    lines,
+    test,
+  }: {
+    readonly lines: readonly string[];
+    readonly test: (line: string,) => boolean;
+  },
+): readonly number[] {
+  return lines.flatMap(function positionOf(
+    line,
+    index,
+  ): readonly number[] {
+    return test(line,) ? [index,] : [];
+  },);
+}
+
+/**
+ Whether a line opens a block comment: its first characters are the opening mark.
+
+ @param line - one line of a file
+
+ @returns Whether a block comment starts the line
+
+ @example
+ ```ts
+ const opens = opensBlock('  /* Builds the question.');
+ // => true
+ ```
+ */
+function opensBlock(line: string,): boolean {
+  /**
+   The line without its indentation.
+   */
+  const trimmed = line.trimStart();
+  return trimmed.startsWith('/*',);
+}
+
+/**
+ Whether a line holds the closing mark of a block comment, wherever it stands in the line.
+
+ @param line - one line of a file
+
+ @returns Whether the closing mark is in the line
+
+ @example
+ ```ts
+ const closes = closesBlock(' end of the block *\/');
+ // => true
+ ```
+ */
+function closesBlock(line: string,): boolean {
+  return line.includes('*/',);
 }
 
 /**
  A file's code with the comments that sit on their own lines taken out, so a call shown in documentation is no call.
+
+ A block comment covers the lines from the one that opens it, as its first characters, through the first line at or
+ after that one holding the closing mark, or to the end of the file when none does.
 
  @param text - file's text
 
@@ -135,26 +205,53 @@ export async function familySources(): Promise<readonly SourceFile[]> {
  */
 function codeLinesOf({ text, }: { readonly text: string; },): readonly string[] {
   /**
-   Whether the scan is inside a block comment.
+   The text's lines.
    */
-  const block = { open: false, };
-  return text
-    .split('\n',)
-    .filter(function isCode(line,): boolean {
-      /**
-       The line without its indentation.
-       */
-      const trimmed = line.trimStart();
-      if (block.open) {
-        block.open = !trimmed.includes('*/',);
-        return false;
-      }
-      if (trimmed.startsWith('/*',)) {
-        block.open = !trimmed.includes('*/',);
-        return false;
-      }
-      return !trimmed.startsWith('//',);
-    },);
+  const lines = text.split('\n',);
+  /**
+   Lines whose first characters open a block comment.
+   */
+  const openers = positionsWhere({
+    lines,
+    test: opensBlock,
+  },);
+  /**
+   Lines that hold the closing mark of a block comment.
+   */
+  const closers = positionsWhere({
+    lines,
+    test: closesBlock,
+  },);
+  /**
+   Lines inside some block comment, the opening and the closing line included.
+   */
+  const covered = new Set(openers.flatMap(function coveredFrom(opener,): readonly number[] {
+    /**
+     Where the comment ends: the first closing line at or after its opener, the last line when none follows.
+     */
+    const end = closers.find(function closesAfter(closer,): boolean {
+      return closer >= opener;
+    },) ?? (lines.length - 1);
+    return Array.from(
+      { length: (end - opener) + 1, },
+      function lineOf(
+        _,
+        offset,
+      ): number {
+        return opener + offset;
+      },
+    );
+  },),);
+  return lines.filter(function isCode(
+    line,
+    index,
+  ): boolean {
+    /**
+     The line without its indentation.
+     */
+    const trimmed = line.trimStart();
+    return (!covered.has(index,)) && (!trimmed.startsWith('//',));
+  },);
 }
 
 /**
