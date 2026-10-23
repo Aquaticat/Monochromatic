@@ -249,7 +249,7 @@ await describe({
           type: 'object',
           properties: { mood: { enum: ['major', 'not calm',], }, },
         };
-        for (const mood of ['major ', ' Major', 'not\u00a0Calm', 'Major\n',]) {
+        for (const mood of ['major ', ' Major', 'not\u00A0Calm', 'Major\n',]) {
           expect(foldEnumCase({
             schema,
             value: { mood, },
@@ -357,12 +357,12 @@ await describe({
             taken: 'strasse',
           },
         ],);
-        expect(foldsAgainst({ listed: 'stra\u00dfe', received: 'STRASSE', },),).toEqual([],);
-        expect(foldsAgainst({ listed: 'stra\u00dfe', received: 'STRA\u1e9eE', },),).toEqual([
+        expect(foldsAgainst({ listed: 'stra\u00DFe', received: 'STRASSE', },),).toEqual([],);
+        expect(foldsAgainst({ listed: 'stra\u00DFe', received: 'STRA\u1E9EE', },),).toEqual([
           {
             path: 'reply',
-            received: 'STRA\u1e9eE',
-            taken: 'stra\u00dfe',
+            received: 'STRA\u1E9EE',
+            taken: 'stra\u00DFe',
           },
         ],);
       },

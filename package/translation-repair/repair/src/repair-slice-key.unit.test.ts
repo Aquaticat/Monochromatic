@@ -184,7 +184,8 @@ await describe({
         // VERSION 45 ON 2026-10-23 ON THE CLAUDE ROUTE (the reader takes a value that differs from a listed enum or const value
         // only in capitalization as the listed value): moved the same way.
         //
-        // VERSION 46 ON 2026-10-23 (the merge of the three moves above, which no line held as one number): moved the same way.
+        // VERSION 46 ON 2026-10-23 (the merge of the silent-stage move of main with the fence-length and case-fold moves of
+        // the Claude route, which no line held as one number): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
           .toBe('cd4085ca1b4c02ea7b32420cf1a97c487718385a9dc6b0f44c765a59872a112f',);
       },

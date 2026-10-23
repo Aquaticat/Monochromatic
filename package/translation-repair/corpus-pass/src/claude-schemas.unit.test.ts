@@ -276,7 +276,7 @@ function unreadFormsOf(
     ...own,
     ...Object.entries(schema,)
       .flatMap(function formsBelow([keyword, value,],): readonly string[] {
-        if (keyword === 'properties' && isJsonRecord(value,)) {
+        if ((keyword === 'properties') && isJsonRecord(value,)) {
           return Object.entries(value,)
             .flatMap(function formsOfMember([name, member,],): readonly string[] {
               return isJsonRecord(member,)
@@ -327,9 +327,9 @@ function choicesOutsideReadOf(
 ): readonly string[] {
   return Object.entries(schema,)
     .flatMap(function choicesBelow([keyword, value,],): readonly string[] {
-      if (keyword === 'enum' || keyword === 'const')
+      if ((keyword === 'enum') || (keyword === 'const'))
         return read ? [] : [`${path}: ${keyword}`,];
-      if (keyword === 'properties' && isJsonRecord(value,)) {
+      if ((keyword === 'properties') && isJsonRecord(value,)) {
         return Object.entries(value,)
           .flatMap(function choicesOfMember([name, member,],): readonly string[] {
             return isJsonRecord(member,)
@@ -337,7 +337,7 @@ function choicesOutsideReadOf(
               : [];
           },);
       }
-      if (keyword === 'items' && isJsonRecord(value,))
+      if ((keyword === 'items') && isJsonRecord(value,))
         return choicesOutsideReadOf({ schema: value, path: `${path}.items`, read, },);
       if (isJsonRecord(value,))
         return choicesOutsideReadOf({ schema: value, path: `${path}.${keyword}`, read: false, },);

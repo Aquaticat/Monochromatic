@@ -60,7 +60,15 @@ export class HardCapOverrideError extends StatedRefusalError {
    throw new HardCapOverrideError({ value: 'soon', },);
    ```
    */
-  constructor({ value, roundsToZero = false, }: { readonly value: string; readonly roundsToZero?: boolean; },) {
+  constructor(
+    {
+      value,
+      roundsToZero = false,
+    }: {
+      readonly value: string;
+      readonly roundsToZero?: boolean;
+    },
+  ) {
     super({
       says: roundsToZero
         ? `${HARD_CAP_VAR} must be a positive number of minutes, and a ceiling is read in whole milliseconds;`
