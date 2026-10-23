@@ -206,9 +206,17 @@ each bounded by what can cut it.
   A refusal made after a wait carries none.
 - The seat reader sits outside every exchange,
   so no call deadline applies.
-  It waits for the return at any distance,
-  as it waits for Hyper's stated holds (923 s and 2 h 25 m on record),
-  bounded by the entry's abort.
+  Its bound is what the pass has left,
+  the shorter of the soft budget remaining and the hard cap
+  (the client carries it as `passLeftMs`).
+  A return inside it is waited for,
+  as Hyper's stated holds are (923 s and 2 h 25 m on record).
+  A return past it is refused at once,
+  with the time of day in UTC and the distance stated and the note that it is past what the pass has left,
+  because the pass would end first.
+  Nothing here is bounded by 300 s.
+  **This seat-reader bound is the lead's ruling after the first fix waited at any distance,
+  and is open to the owner's veto.**
 - The pass parks when every provider reads dry and the return is known and inside what the pass has left,
   which is the shorter of the soft budget remaining and the hard cap.
   The run ends only when the return is unknown or past what the pass has left,

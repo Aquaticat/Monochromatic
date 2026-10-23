@@ -62,7 +62,7 @@ export type RunClient = ModelClient & {
    `pass-reseat-hook.ts` reads it too, to re-seat only while a hold runs.
 
    A NEURALWATT RETURN IS A HOLD AT ANY DISTANCE unless the caller names a bound (`returnBoundMs`): the seat reader sits
-   outside every exchange and waits for it, bounded by the entry's abort.
+   outside every exchange and bounds it by what the pass has left (`passLeftMs`).
    */
   readonly providerHolds: (args?: { readonly returnBoundMs?: number; },) => ProviderRecord<number>;
 
@@ -92,6 +92,13 @@ export type RunClient = ModelClient & {
    which the seat reader reads as the roster's own (`RUN_WRITING_PROVIDERS`).
    */
   readonly writingProviders?: ProviderRecord<boolean>;
+
+  /**
+   Milliseconds the pass has left before its soft budget or hard cap (the shorter), which bounds the seat reader's wait for
+   NeuralWatt's return: a return inside it is waited for, one past it is refused at once with its time stated, since the
+   pass would end first. Absent for a client built outside a pass, which bounds the wait by the entry's abort alone.
+   */
+  readonly passLeftMs?: () => number;
 };
 
 //endregion Run client contract

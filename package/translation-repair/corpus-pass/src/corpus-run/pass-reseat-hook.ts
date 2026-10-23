@@ -4,6 +4,7 @@ import { shortestHold, } from '@monochromatic-dev/translation-repair-provider/ts
 import {
   type JudgeSeatPhase,
   type JudgeSeats,
+  holdsWithinPass,
   readJudgeSeats,
   type SeatReadingClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
@@ -82,7 +83,7 @@ export function reseatHookFor<SeatingT,>(
    */
   const latest: { seating: SeatingT; } = { seating: unseated, };
   return async function reseatBeforeSlice(): Promise<SeatingT> {
-    if (shortestHold({ holds: client.providerHolds(), },) === 0)
+    if (shortestHold({ holds: holdsWithinPass({ client, },), },) === 0)
       return latest.seating;
     /**
      Benches as of this slice, the reading waiting out a named hold when a

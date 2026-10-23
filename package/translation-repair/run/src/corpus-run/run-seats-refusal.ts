@@ -26,7 +26,7 @@ import type { JudgeSeatPhase, } from './run-seats-wait.ts';
  */
 export type RefusalClient = Pick<
   RunClient,
-  'neuralwattDryness' | 'neuralwattReturn' | 'providerHolds' | 'writingProviders'
+  'neuralwattDryness' | 'neuralwattReturn' | 'passLeftMs' | 'providerHolds' | 'writingProviders'
   >;
 
 /**
@@ -89,7 +89,7 @@ export function withNeuralWattReturn(
   }: {
     readonly clauses: readonly string[];
     readonly dry: BudgetView;
-    readonly client: Pick<RunClient, 'neuralwattDryness' | 'writingProviders'>;
+    readonly client: Pick<RunClient, 'neuralwattDryness' | 'passLeftMs' | 'writingProviders'>;
   },
 ): readonly string[] {
   /**
@@ -100,7 +100,10 @@ export function withNeuralWattReturn(
     view: dry,
     writing: writingProvidersOfClient({ client, },),
   },)))
-    ? dryCauseClausesOf({ dryness: client.neuralwattDryness?.() ?? { kind: 'wet', }, },)
+    ? dryCauseClausesOf({
+      dryness: client.neuralwattDryness?.() ?? { kind: 'wet', },
+      ...((client.passLeftMs === undefined) ? {} : { passLeftMs: client.passLeftMs(), }),
+    },)
     : [];
   return [
     ...clauses,

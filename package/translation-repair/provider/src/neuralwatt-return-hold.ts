@@ -24,8 +24,8 @@ import { neuralWattIsDry, } from './neuralwatt-meter.ts';
  layer's own refusal cooldown (`REFUSAL_COOLDOWN_MS`, 300 s, in `provider-budget.ts`): the longest it holds a provider on
  its own judgment, below that deadline. A return past it ends the call with the refusal, which states the time and the
  distance, and the pass parks until the return when it has the time (`pass-dry-stop.ts`). The seat reader sits outside
- every exchange, so no call deadline applies to it: it waits for a return as it waits for Hyper's stated holds (923 s
- and 2 h 25 m on record), bounded by the entry's abort.
+ every exchange, so no call deadline applies to it: it waits for a return inside what the pass has left as it waits for
+ Hyper's stated holds (923 s and 2 h 25 m on record), and refuses at once for one past it (`run-seats-short-bench.ts`).
  */
 export const NEURALWATT_RETURN_WAIT_BOUND_MS = 300_000;
 

@@ -636,6 +636,61 @@ await describe({
       },
     },),
     it({
+      name: 'HANDS THE CLIENT WHAT THE PASS HAS LEFT, unbounded before the loop starts and the hard cap or less once an '
+        + 'entry runs, so the seat reader waits for NeuralWatt\'s return only inside it',
+      fn: async (ctx) => {
+        using _printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         The bound the client was handed and what it read before the loop and at the first entry.
+         */
+        const seen: { before?: number; during?: number; } = {};
+
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched: nothingWatched(),
+          overrides: {
+            newClient: function newClient({ passLeftMs, },) {
+              seen.before = passLeftMs();
+              return runClientFrom({
+                env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
+                transport: unreachedTransport,
+                passLeftMs,
+              },);
+            },
+            settle: async function settle({ entry, client, artifactsDir, },): Promise<EntryOutcome> {
+              // Conditional write keeps an absent bound absent, which the assertions then fail on.
+              if (client.passLeftMs !== undefined)
+                seen.during = client.passLeftMs();
+              await writeFile(
+                join(
+                  artifactsDir,
+                  `${entry.id}.json`,
+                ),
+                '{}',
+              );
+              return { kind: 'settled', };
+            },
+          },
+        },);
+
+        expect(seen.before,).toBe(Number.POSITIVE_INFINITY,);
+        expect(seen.during,).toBeLessThanOrEqual(25_200_000,);
+        expect(seen.during,).toBeGreaterThan(0,);
+      },
+    },),
+    it({
       name: 'ENDS ON THE PLAN LINE under --plan, with the client built and no entry settled',
       fn: async (ctx) => {
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);

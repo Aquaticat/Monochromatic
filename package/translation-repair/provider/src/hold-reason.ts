@@ -72,6 +72,9 @@ export function holdReasonOf(
 
  @param dryness - why NeuralWatt reads dry as the last reading found it
 
+ @param passLeftMs - milliseconds the pass has left, where the reader's wait is bounded by it: a spent day's return past
+ it is stated as past what the pass has left
+
  @returns One sentence, or none where NeuralWatt is not dry
 
  @example
@@ -79,7 +82,15 @@ export function holdReasonOf(
  dryCauseClausesOf({ dryness: { kind: 'key-blocked', until: '2026-10-23T05:00:00.000Z', }, },);
  ```
  */
-export function dryCauseClausesOf({ dryness, }: { readonly dryness: NeuralWattDryness; },): readonly string[] {
+export function dryCauseClausesOf(
+  {
+    dryness,
+    passLeftMs,
+  }: {
+    readonly dryness: NeuralWattDryness;
+    readonly passLeftMs?: number;
+  },
+): readonly string[] {
   if (dryness.kind === 'wet')
     return [];
   if (dryness.kind === 'key-blocked')
@@ -99,8 +110,14 @@ export function dryCauseClausesOf({ dryness, }: { readonly dryness: NeuralWattDr
   const at = (msOfDay === undefined) ? 'its day start' : `${neuralWattTimeOfDayShort({ msOfDay, },)} UTC`;
   if (dryness.returnsInMs === undefined)
     return [`NeuralWatt reads dry because its account still shows the day spent past the day start at ${at}`,];
+  /**
+   The clause saying the pass would end first, where the return lies past what the pass has left.
+   */
+  const pastPass = ((passLeftMs !== undefined) && (dryness.returnsInMs > passLeftMs))
+    ? `, which is past the ${durationWordsOf({ ms: passLeftMs, },)} this pass has left`
+    : '';
   return [
-    `NeuralWatt reads dry and its day starts again at ${at} (in ${durationWordsOf({ ms: dryness.returnsInMs, },)})`,
+    `NeuralWatt reads dry and its day starts again at ${at} (in ${durationWordsOf({ ms: dryness.returnsInMs, },)})${pastPass}`,
   ];
 }
 

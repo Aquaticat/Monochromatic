@@ -48,11 +48,31 @@ export type SeatReadingClient = Pick<
   'neuralwattDryness'
     | 'neuralwattHeldByReturn'
     | 'neuralwattReturn'
+    | 'passLeftMs'
     | 'providerDryness'
     | 'providerHolds'
     | 'providerMeterStates'
     | 'writingProviders'
   >;
+
+/**
+ How long each provider is held out as the seat reader waits for it: a NeuralWatt return counts as a hold only when it
+ lies inside what the pass has left, so a return past it is not waited for and the reading refuses at once.
+
+ @param client - run client, whose pass bound is read when it carries one
+
+ @returns Milliseconds of hold left per provider
+
+ @example
+ ```ts
+ const holds = holdsWithinPass({ client, },);
+ ```
+ */
+export function holdsWithinPass(
+  { client, }: { readonly client: Pick<SeatReadingClient, 'passLeftMs' | 'providerHolds'>; },
+): ReturnType<SeatReadingClient['providerHolds']> {
+  return client.providerHolds({ returnBoundMs: client.passLeftMs?.() ?? Number.POSITIVE_INFINITY, },);
+}
 
 /**
  The view when the budgets could not be read: nothing is dry.
@@ -144,7 +164,7 @@ export async function readDrynessPastShortBench(
   /**
    How long each provider's refusal still holds it out.
    */
-  const holds = client.providerHolds();
+  const holds = holdsWithinPass({ client, },);
   /**
    The first hold to end, zero when no provider is held.
    */
@@ -278,7 +298,9 @@ export async function readDrynessPastShortBench(
       holds: waiting.holds,
       shortest: waiting.shortest,
       neuralwatt: neuralwattOf({ client, },),
-      neuralwattHeldByReturn: client.neuralwattHeldByReturn?.() ?? true,
+      neuralwattHeldByReturn: client.neuralwattHeldByReturn?.({
+        returnBoundMs: client.passLeftMs?.() ?? Number.POSITIVE_INFINITY,
+      },) ?? true,
     },);
     l.warn(
       `JUDGE SEATS phase=${phase} short of quorum: ${waiting.short
@@ -321,7 +343,7 @@ export async function readDrynessPastShortBench(
       break;
     // A HOLD THAT ENDED FIRST IS NOT THE END OF THE WAITING: a bench still short while another hold runs (the
     // NeuralWatt return behind a rate-limit hold) is waited for too, bounded by the entry's abort and by the holds.
-    waiting.holds = client.providerHolds();
+    waiting.holds = holdsWithinPass({ client, },);
     waiting.shortest = shortestHold({ holds: waiting.holds, },);
     if (waiting.shortest === 0)
       break;
