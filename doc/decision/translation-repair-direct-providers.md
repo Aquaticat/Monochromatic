@@ -227,12 +227,20 @@ each bounded by what can cut it.
   Its bound is what the pass has left:
   the shorter of the soft budget remaining and the hard cap,
   and inside an entry also what that entry's own hard cap has left,
-  so a wait never outlasts the entry's timer (`withEntryBound` in `pass-entry-bound.ts`;
-  the client carries the bound as `passLeftMs`).
+  so a wait for a NeuralWatt return never outlasts the entry's timer (`withEntryBound` in `pass-entry-bound.ts`;
+  the client carries the bound as `passLeftMs` and whose it is as `passBoundOwner`).
+  Only a NeuralWatt return is filtered by the bound:
+  a stated hold (Hyper's daily limit,
+  a rate limit's)
+  and a refusal cooldown are waited for whatever the bound is,
+  and the entry's abort cuts them when the entry's timer ends first.
   A return inside it is waited for,
   as Hyper's stated holds are (923 s and 2 h 25 m on record).
   A return past it is refused at once,
-  with the time of day in UTC and the distance stated and the note that it is past what the pass has left,
+  with the time of day in UTC and the distance stated and the note that it is past what the bound has left,
+  naming the bound that won
+  ("the entry has left" when the entry's own cap is the smaller,
+  "this pass has left" otherwise),
   whichever refusal ends the reading:
   the bench error,
   the error line of a phase that goes on without its writers,
@@ -242,34 +250,67 @@ each bounded by what can cut it.
   Nothing here is bounded by 300 s.
   The reader waits only for a hold whose provider,
   back,
-  would cure a bench that stands short
+  would help cure a bench that stands short:
+  the held providers are judged together,
+  and a held provider counts when the benches they cure between them include one to which its own return adds a
+  reachable seat
   (the seats are derived again with the held providers back,
   from the roster through `reachOf`,
-  `run-seats-hold-need.ts`);
-  a hold on a provider that serves no seat the bench lacks cannot bring it back and is not waited for,
+  `run-seats-hold-need.ts`).
+  Two holds that only cure a bench jointly are both waited for,
+  and so are two holds that each cure it alone;
+  an earlier test,
+  "the bench stays short without this provider",
+  counted neither of the second pair and seated the bench short without a wait.
+  A counted hold that proves unneeded costs one extra read and no extra wall time,
+  since the loop reads again after every wait.
+  A hold on a provider that adds no seat to such a bench cannot bring it back and is not waited for,
   which includes DeepSeek on a wide bench the wet providers already reach through its one seat.
   When a bench is seated short,
   a warning names it,
   the reachable and needed counts,
   and the providers whose return alone would reach the quorum.
+  When the reader does not wait,
+  the line names the running holds it skipped and why
+  (`held: xiaomi (2 h), deepseek (40 min); neither would help cure a short bench`),
+  and says that no NeuralWatt return lies inside what the pass has left only when NeuralWatt is dry with no hold.
   The re-seat hook still reads the seats under any hold,
-  since its reading is what re-seats a slice,
+  since its reading is what re-seats a slice
+  (a provider going dry changes the seating whether or not its hold would cure anything,
+  so the hook cannot skip the read on "no running hold would cure",
+  which is also the state of a hold with no short bench),
   and takes the same rule for its waiting through the reader.
+  It lets a warning through once per running hold,
+  so a hold of hours over hundreds of slices writes one line and not hundreds.
   **This seat-reader bound is the lead's ruling after the first fix waited at any distance,
   its entry-scoped form the lead's ruling of fix round 4,
-  and both are open to the owner's veto.**
+  the would-help rule,
+  the skipped-holds line and the bound-owner wording the lead's rulings of fix round 5,
+  and all are open to the owner's veto.**
 - The pass parks when every provider reads dry and the return is known and inside what the pass has left,
   which is the shorter of the soft budget remaining and the hard cap (the park sits between entries on a fresh timer,
   so the entry's cap does not narrow it).
   The run ends only when the return is unknown or past what the pass has left,
   and the stop line states the return time.
-  A seat reader's refusal for a return inside what the pass has left but past what the entry has left
+  A seat reader's all-dry refusal for a return inside what the pass has left but past what the entry has left
   therefore parks the pass and ends nothing.
+  The writing bench error parks the pass the same way when NeuralWatt's return would lift the bench to its floor
+  (asked of the roster,
+  `returnLiftsWritingBenches`,
+  with no provider name list):
+  it then carries the distance,
+  the time of day and the spent day,
+  the entry scheduler hands it to the gate,
+  and the gate applies the same checks and the same requeue.
+  A bench error that carries no return,
+  or one the pass cannot wait for,
+  ends its entry as before and never stops the run.
+  **The park on the bench error is the lead's ruling of fix round 5 and open to the owner's veto.**
 
 The park works at the seam between entries,
 because the wait must sit outside any exchange:
 
-1. The dry gate (`pass-dry-stop.ts`) receives the refusal,
+1. The dry gate (`pass-dry-stop.ts`) receives the refusal (or the bench error that carries the return),
    records a park instead of tripping,
    logs the start with the reason and the UTC return time,
    and aborts the shared signal so the entry in flight ends.
