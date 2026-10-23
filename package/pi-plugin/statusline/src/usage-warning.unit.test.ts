@@ -131,10 +131,26 @@ const SIGNALED_EXIT_STATUS = -1;
  A throwaway directory and the disposer that removes it on every path out of the case, including a failed spawn.
  */
 type LogDirectory = {
+  /**
+   Absolute path of the directory, handed to the child's logger so its files stay out of the project.
+   */
   readonly path: string;
+  /**
+   Removes the directory with everything in it; `await using` calls it so a failing case leaves nothing behind.
+   */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
+/**
+ Creates the throwaway log directory a child process writes into.
+ 
+ @returns directory that removes itself when its `await using` scope ends, on every path out of the case
+ 
+ @example
+ ```ts
+ await using logDirectory = await makeLogDirectory();
+ ```
+ */
 async function makeLogDirectory(): Promise<LogDirectory> {
   const path = await mkdtemp(join(tmpdir(), 'statusline-log-',),);
 
@@ -253,12 +269,21 @@ const OUT_OF_RANGE_RESET_TEXTS = [
  ```
  */
 function parseWithEngineAcceptingAll(nextRegenAt: string,): readonly RateLimitSnapshot[] {
+  /**
+   The engine's own parser, kept so the disposer can put it back.
+   */
   const engineParse = Date.parse;
+  /**
+   Disposer that restores the engine's parser on every path out of this function, including a throw.
+   */
   const restoreEngineParse = {
     [Symbol.dispose](): void {
       Date.parse = engineParse;
     },
   };
+  /**
+   Holds the disposer so the restore runs when this function returns.
+   */
   using restore = restoreEngineParse;
   Date.parse = function acceptEverything(): number {
     return 0;

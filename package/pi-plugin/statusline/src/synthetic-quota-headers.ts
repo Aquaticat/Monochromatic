@@ -106,11 +106,11 @@ function parseSyntheticQuotasHeader(
 /**
  Weekly block key names Synthetic has delivered, in the order they were first seen.
 
- The `GET /v2/quotas` body carried `weeklyTokenLimit` at 19:32:44 UTC on 2026-10-22 and `planWeeklyLimit` at 03:28:16 UTC
- on 2026-10-23; the rename happened between 19:32:44 UTC and 22:21:58 UTC on 2026-10-22, as the sibling reader in
- `package/translation-repair/provider-stream/src/synthetic-quota.ts` records. The shape of the `x-synthetic-quotas`
- header this module reads is not yet measured, and whether the rename is permanent or tied to a spent weekly credit is
- not known, so both names are read.
+ The `GET /v2/quotas` body carried `weeklyTokenLimit` at 19:32:44 UTC on 2026-10-22 and `planWeeklyLimit` at
+ 03:28:16 UTC on 2026-10-23; the rename happened between 19:32:44 UTC and 22:21:58 UTC on 2026-10-22, as the
+ sibling reader in `package/translation-repair/provider-stream/src/synthetic-quota.ts` records. The shape of the
+ `x-synthetic-quotas` header this module reads is not yet measured, and whether the rename is permanent or tied to a
+ spent weekly credit is not known, so both names are read.
  */
 const SYNTHETIC_WEEKLY_BLOCK_NAMES = [
   'weeklyTokenLimit',

@@ -739,7 +739,15 @@ function usedPercentFromLimit({
  
  @example
  ```ts
- createRateLimitSnapshot({ key: 'demo', label: 'demo', resetAtMs, windowSeconds: 60, paceScale: 1, sampledAtMs, usedPercent: 50 });
+ createRateLimitSnapshot({
+   key: 'demo',
+   label: 'demo',
+   resetAtMs,
+   windowSeconds: 60,
+   paceScale: 1,
+   sampledAtMs,
+   usedPercent: 50,
+ });
  ```
  */
 function createRateLimitSnapshot({
