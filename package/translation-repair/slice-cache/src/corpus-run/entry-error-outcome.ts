@@ -113,6 +113,28 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
 }
 
 /**
+ The time of day of a return as one token, so a reader splitting the line on spaces keeps the zone with it.
+
+ @param text - time of day with its zone, as the failure carries it
+
+ @returns ISO 8601 time with `Z` for UTC, or the text with its spaces removed for another zone
+
+ @example
+ ```ts
+ const token = oneTokenTimeOf({ text: '19:15:08 UTC', },);
+ ```
+ */
+function oneTokenTimeOf({ text, }: { readonly text: string; },): string {
+  return text.endsWith(' UTC',)
+    ? `${text.slice(
+      0,
+      -' UTC'.length,
+    )}Z`
+    : text.split(' ',)
+      .join('',);
+}
+
+/**
  The fields stating the NeuralWatt return a failure names, none where it names none.
 
  @param error - what the entry raised
@@ -130,7 +152,9 @@ function returnFieldsOf({ error, }: { readonly error: unknown; },): string {
   if (error.neuralwattReturnsInMs === undefined)
     return '';
   return ` returnsInMs=${String(error.neuralwattReturnsInMs,)}${
-    (error.neuralwattReturnsAt === undefined) ? '' : ` returnsAt=${error.neuralwattReturnsAt}`
+    (error.neuralwattReturnsAt === undefined)
+      ? ''
+      : ` returnsAt=${oneTokenTimeOf({ text: error.neuralwattReturnsAt, },)}`
   }`;
 }
 
@@ -143,8 +167,8 @@ function returnFieldsOf({ error, }: { readonly error: unknown; },): string {
  `ERROR` for a failure a whole-entry retry may resume, `INCOMPLETE` for stage-local work or a run-ending refusal that
  no retry would change, and `PARKED` for an entry the pass put back at the front of its queue to wait for NeuralWatt's
  energy to return, which earns no verdict and is attempted again after the wait. A `PARKED` line states the distance
- and the time of day of the return in `returnsInMs=` and `returnsAt=` fields before the reason, so the cap on the
- reason's text never cuts them; `error=` is the failure that named the return.
+ in `returnsInMs=` and the time of day in `returnsAt=` (ISO 8601, `Z` for UTC, one token) before the reason, so the
+ cap on the reason's text never cuts them; `error=` is the failure that named the return.
 
  @param entryId - entry that failed
 

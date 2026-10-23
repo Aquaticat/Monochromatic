@@ -129,8 +129,9 @@ export type PassDryStop = {
   readonly parked: () => boolean;
 
   /**
-   Whether the park in force is for this failure: a parking refusal or bench error while the pass is parked, and no
-   other failure, so an entry that failed for another reason is not mistaken for the one the pass waits to resume.
+   Whether the park in force is for this very failure: the object the gate chose to park for when it recorded the park,
+   and no other, so an entry that failed for another reason, or with another parking failure, is not mistaken for the
+   one the pass waits to resume.
    */
   readonly parkedFor: (args: { readonly error: unknown; },) => boolean;
 
@@ -151,6 +152,11 @@ export type PassDryStop = {
  The return a park waits for.
  */
 type DryPark = {
+  /**
+   The failure the gate chose to park for, which `parkedFor` answers by identity.
+   */
+  readonly refusal: EveryProviderDryError | WritingBenchUnreachableError;
+
   /**
    Milliseconds the refusal named between itself and the return, which the park log states.
    */
@@ -378,6 +384,7 @@ function refuseOn(
     const readAtMs = refusal.neuralwattReadAtMs ?? now();
     state.parks
       .push({
+        refusal,
         returnsInMs: nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
         atMs: readAtMs + nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
         returnsAt: nonNullishOrThrow(refusal.neuralwattReturnsAt,),
@@ -543,9 +550,11 @@ export function createPassDryStop(
     },
 
     parkedFor: function parkedFor({ error, }: { readonly error: unknown; },): boolean {
-      return isParkingRefusal(error,) && (state.parks
-        .length
-        > 0);
+      /**
+       The one park in force, none where the pass is not parked.
+       */
+      const [park,] = state.parks;
+      return (park !== undefined) && (park.refusal === error);
     },
 
     awaitPark: async function awaitPark(): Promise<void> {
