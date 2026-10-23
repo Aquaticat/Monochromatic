@@ -11,7 +11,14 @@
  THREE QUESTIONS, ASKED OF EACH SCHEMA PRODUCER: is every object of the schema as the stage writes it closed, does the
  body the Claude client builds send a schema that meets every rule, and which bounds does the body drop (only the one
  the reader of its stage enforces). A FOURTH CASE KEEPS THE LIST HONEST: it reads the source of the family for files
- that declare a `json_schema` and fails when one is missing here, so a new stage schema cannot skip the check.
+ that declare a `json_schema` and fails when one is missing here, so a new stage schema cannot skip the check. THAT
+ SEARCH IS HELD IN TURN BY ONE CASE PER FORM IT FOLLOWS, each with imaginary files: a call that names a type argument,
+ a builder handed over by reference, a spread of its result, a call through a namespace import or an import alias, a
+ builder written as an arrow function, a function expression, the default export, a method of an object, an argument
+ of a call or an async arrow with one bare parameter, and a wrapper of any of them (returned at once, awaited, in
+ parentheses, or through another wrapper). The fixtures `claude-schema-call-forms.test-fixture.ts`,
+ `claude-schema-builder-forms.test-fixture.ts` and `claude-schema-wrapper-forms.test-fixture.ts` hold the files, and
+ the header of `claude-schema-code.test-fixture.ts` lists the shapes the search does not read.
 
  A FIFTH CASE HOLDS THE LIMIT OF THE ENUM CASE FOLD (`provider/src/enum-case-fold.ts`): the fold takes a reply value
  back to the spelling its schema lists only along `properties` and `items`, and leaves `anyOf`, `oneOf`, `allOf`,
