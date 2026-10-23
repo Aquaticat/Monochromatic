@@ -148,29 +148,38 @@ const SHORT_HOLD_MS = 40;
 const l = tagged({ tag: 'pass-reseat-test', },);
 
 /**
- The holds a rig reports: each one a case names, ended within the short window a case can wait out.
+ The holds a rig reports: each one a case names, ended within the window the rig allows.
 
  @param holds - holds as the case set them
 
- @returns Same providers held, none for longer than {@link SHORT_HOLD_MS}
+ @param capMs - longest a reported hold lasts; {@link SHORT_HOLD_MS} for a case that waits on the real clock
+
+ @returns Same providers held, none for longer than the cap
 
  @example
  ```ts
- const reported = endingHolds({ holds: { ...NO_HOLDS, synthetic: DRY_HOLD_MS, }, },); // synthetic: 40
+ const reported = endingHolds({ holds: { ...NO_HOLDS, synthetic: DRY_HOLD_MS, }, capMs: SHORT_HOLD_MS, },);
+ // synthetic: 40
  ```
  */
 function endingHolds(
-  { holds, }: { readonly holds: typeof NO_HOLDS; },
+  {
+    holds,
+    capMs,
+  }: {
+    readonly holds: typeof NO_HOLDS;
+    readonly capMs: number;
+  },
 ): typeof NO_HOLDS {
   return {
-    neuralwatt: Math.min(holds.neuralwatt, SHORT_HOLD_MS,),
-    synthetic: Math.min(holds.synthetic, SHORT_HOLD_MS,),
-    bedrock: Math.min(holds.bedrock, SHORT_HOLD_MS,),
-    deepseek: Math.min(holds.deepseek, SHORT_HOLD_MS,),
-    xiaomi: Math.min(holds.xiaomi, SHORT_HOLD_MS,),
-    anthropic: Math.min(holds.anthropic, SHORT_HOLD_MS,),
-    hyper: Math.min(holds.hyper, SHORT_HOLD_MS,),
-    openrouter: Math.min(holds.openrouter, SHORT_HOLD_MS,),
+    neuralwatt: Math.min(holds.neuralwatt, capMs,),
+    synthetic: Math.min(holds.synthetic, capMs,),
+    bedrock: Math.min(holds.bedrock, capMs,),
+    deepseek: Math.min(holds.deepseek, capMs,),
+    xiaomi: Math.min(holds.xiaomi, capMs,),
+    anthropic: Math.min(holds.anthropic, capMs,),
+    hyper: Math.min(holds.hyper, capMs,),
+    openrouter: Math.min(holds.openrouter, capMs,),
   };
 }
 
@@ -179,6 +188,9 @@ function endingHolds(
  its dryness reads.
 
  @param view - dryness every read answers
+
+ @param capMs - longest a hold the client reports lasts; the short window unless a case waits the hold out on a fake
+ clock
 
  @returns Client beside its read counter and its hold setter
 
@@ -189,7 +201,13 @@ function endingHolds(
  ```
  */
 function viewClient(
-  { view, }: { readonly view: BudgetView; },
+  {
+    view,
+    capMs = SHORT_HOLD_MS,
+  }: {
+    readonly view: BudgetView;
+    readonly capMs?: number;
+  },
 ) {
   /**
    Reads taken so far.
@@ -208,7 +226,7 @@ function viewClient(
         return view;
       },
       providerMeterStates: metersAllWet,
-      providerHolds: () => endingHolds({ holds, },),
+      providerHolds: () => endingHolds({ holds, capMs, },),
     },
   };
 }
@@ -338,10 +356,10 @@ await describe({
           },
         },),
         it({
-          name: 'REPORTS NO HOLD LONGER THAN THE SHORT WINDOW A CASE CAN WAIT OUT, however long the case names it (the 300 s '
-            + 'sleep of the padded rig, measured at 300.3 s of the describe at f2f77b0701 and at the tip of the second '
-            + 'review): a view short of quorum under a running hold makes the reading sleep the hold on the real clock, so '
-            + 'the rig reports the hold it ends in this window',
+          name: 'TESTS THE RIG, NOT PRODUCTION: viewClient REPORTS NO HOLD LONGER THAN THE SHORT WINDOW A CASE CAN WAIT '
+            + 'OUT, however long the case names it (the 300 s sleep of the padded rig, measured at 300.3 s of the '
+            + 'describe at f2f77b0701 and at the tip of the second review); this guards the fixture against a later edit '
+            + 'and the case that waits a 300 s hold out in production code is the one on a fake clock',
           fn: async () => {
             /** Rig whose padded view is short of quorum, under the hold the router registers on a dry refusal. */
             const rig = viewClient({ view: NEURALWATT_AND_BEDROCK, },);
@@ -1001,6 +1019,69 @@ await describe({
             },);
             expect(await hooks.beforeItem(),).toEqual({},);
             expect(rig.counter.reads,).toBe(0,);
+          },
+        },),
+      ],
+    },),
+
+    // SEQUENTIAL: the case fakes the process-wide timer function.
+    describe({
+      name: `${lanesHooksFor.name} (a 300 s hold waited out on a fake clock)`,
+      concurrency: 1,
+      children: [
+        it({
+          name: 'WAITS A 300 S HOLD OUT THROUGH THE PRODUCTION WAIT AND NO SOONER (N9 of the re-check of fix rounds 3 and 4): '
+            + 'a view short of quorum under a Synthetic hold of 300,000 ms sleeps the hold in slices on a fake clock, is '
+            + 'still waiting a millisecond before it ends, and reads again and seats once it has',
+          fn: async (ctx) => {
+            /** The fake clock the production wait sleeps on. */
+            const clock = ctx.sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout',], },);
+            /** Rig whose padded view is short of quorum, reporting the hold whole. */
+            const rig = viewClient({ view: NEURALWATT_AND_BEDROCK, capMs: DRY_HOLD_MS, },);
+            rig.holds.synthetic = DRY_HOLD_MS;
+            /** Lines the hook wrote. */
+            const lines: string[] = [];
+            /** Whether the hook has returned. */
+            const returned = { done: false, };
+
+            /**
+             Seats the next chunk on the fake clock and notes when the hook returns.
+
+             @returns Roster the hook handed the driver
+             */
+            async function seated() {
+              /** Roster the hook hands the driver. */
+              const handed = await lanesHooksFor({
+                client: rig.client,
+                signal: new AbortController().signal,
+                entryId: 'mittens',
+                l: capturingLogger({ messages: lines, },),
+              },).beforeSlice({ lane: 'repair', },);
+              returned.done = true;
+              return handed;
+            }
+
+            /** The hook's seating, started on the fake clock. */
+            const seating = seated();
+            await clock.tickAsync(DRY_HOLD_MS - 1,);
+            /** Whether the hook had returned a millisecond before the hold ends. */
+            const returnedEarly = returned.done;
+            /** Reads taken a millisecond before the hold ends. */
+            const readsEarly = rig.counter.reads;
+            await clock.tickAsync(1,);
+            /** Roster the hook handed the driver. */
+            const roster = await seating;
+
+            expect(returnedEarly,).toBe(false,);
+            expect(readsEarly,).toBe(1,);
+            expect(returned.done,).toBe(true,);
+            expect(rig.counter.reads,).toBe(2,);
+            expect(roster.repairModels,).toBeDefined();
+            expect(
+              lines.some(function waitsTheWholeHold(line,): boolean {
+                return line.includes(`waiting ${String(DRY_HOLD_MS,)}ms for the shortest hold to end`,);
+              },),
+            ).toBe(true,);
           },
         },),
       ],
