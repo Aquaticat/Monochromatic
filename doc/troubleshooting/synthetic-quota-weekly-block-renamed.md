@@ -89,7 +89,7 @@ and `provider-meters.ts:315` feeds it the snapshot, so a body that had been read
 
 Version under test: the endpoint has no version, so the subject is the parser,
 at three commits of this repository: `0fa4950b88` (before), `a4a53c010d` (first fix),
-and `FIX2SHA` (second fix, which adds instant validation, null-as-absent and drops `nextRegenPercent`).
+and `c388130106` (second fix, which adds instant validation, null-as-absent and drops `nextRegenPercent`).
 The reading used is the one of 2026-10-23 03:28:16 UTC described in the Root cause section,
 with invented numbers in the blocks other than `planWeeklyLimit`.
 
@@ -115,7 +115,7 @@ QuotaShapeError: Synthetic /quotas body violated expectations: weeklyTokenLimit 
 received subscription:object, search:object, planWeeklyLimit:object
 ```
 
-At `FIX2SHA` the cases pass under `mise run //package/translation-repair/provider-stream:test:unit`
+At `c388130106` the cases pass under `mise run //package/translation-repair/provider-stream:test:unit`
 and `mise run //package/translation-repair/provider:test:unit`.
 
 Bodies that read cleanly:
