@@ -1,12 +1,12 @@
 /**
- Reads every answer schema a stage can send and holds it to what Anthropic's structured outputs accept (C1 of the
- review of the Claude route). The bundled API skill (`shared/tool-use-concepts.md`, "JSON Schema Limitations") says
+ Reads every answer schema a stage can send and holds it to what Anthropic's structured outputs accept. The bundled
+ API skill (`shared/tool-use-concepts.md`, "JSON Schema Limitations") says
  `additionalProperties: false` is required on every object and that the numeric, string and array bounds are not
  supported. EVERY KEYWORD A SENT SCHEMA CARRIES MUST BE ON AN ALLOWLIST of what the feature supports (R10 of the second
  review), so a keyword nobody thought of fails here and not with HTTP 400 at the first live call. A schema Anthropic
  refuses answers HTTP 400 on every call, which the ladder returns unretried and the router counts as a lost voice, so
  a seat would be silently absent from a stage. The list of producers is `claude-schema-producers.ts`, which the pass
- reads at its start (N2 of the re-check of fix rounds 3 and 4).
+ reads at its start.
 
  THREE QUESTIONS, ASKED OF EACH SCHEMA PRODUCER: is every object of the schema as the stage writes it closed, does the
  body the Claude client builds send a schema that meets every rule, and which bounds does the body drop (only the one
@@ -410,8 +410,8 @@ await describe({
 
     it({
       name: 'CLOSES EVERY OBJECT OF EVERY SCHEMA AS THE STAGE WRITES IT, so the schema is acceptable to Anthropic '
-        + 'without the client narrowing it and the omission is never relied on (C1: the block pairing protocol and '
-        + 'the contest ballot left objects open)',
+        + 'without the client narrowing it and the omission is never relied on (the block pairing protocol and '
+        + 'the contest ballot once left objects open)',
       fn: async () => {
         expect(schemasOf()
           .flatMap(function openIn({ label, format, },): readonly string[] {

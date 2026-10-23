@@ -403,8 +403,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A NAMED BACKREFERENCE OUTSIDE A CLASS, which is a backreference as much as a numbered one is '
-        + '(N5), and leaves the same two characters inside a class',
+      name: 'REFUSES A NAMED BACKREFERENCE OUTSIDE A CLASS, which is a backreference as much as a numbered one is'
+        + ', and leaves the same two characters inside a class',
       fn: async () => {
         /**
          Refusal for a pattern that repeats a named group.
@@ -422,7 +422,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES AN allOf MEMBER THAT HOLDS A $ref, which the page lists as not supported (N5), and sends an allOf '
+      name: 'REFUSES AN allOf MEMBER THAT HOLDS A $ref, which the page lists as not supported, and sends an allOf '
         + 'of plain schemas',
       fn: async () => {
         /**
@@ -445,7 +445,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A $ref THAT RESOLVES TO NOTHING, naming the node that holds it (R8), '
+      name: 'REFUSES A $ref THAT RESOLVES TO NOTHING, naming the node that holds it, '
         + 'and sends one that resolves',
       fn: async () => {
         /**
@@ -472,7 +472,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES AN enum MEMBER THAT IS NOT A STRING, A NUMBER, A BOOLEAN OR NULL (N5): the page allows no complex '
+      name: 'REFUSES AN enum MEMBER THAT IS NOT A STRING, A NUMBER, A BOOLEAN OR NULL: the page allows no complex '
         + 'type in an enum',
       fn: async () => {
         for (const member of [{ spot: 'sunbeam', }, ['sunbeam',],]) {
@@ -493,8 +493,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A $ref THAT DOES NOT START WITH #, an external reference the page lists as not supported '
-        + '(N5), and sends one into the same document',
+      name: 'REFUSES A $ref THAT DOES NOT START WITH #, an external reference the page lists as not supported'
+        + ', and sends one into the same document',
       fn: async () => {
         /**
          Refusal for a reference to another document.
@@ -517,7 +517,7 @@ await describe({
 
     it({
       name: 'REFUSES A RECURSIVE $ref CYCLE, whether the reference points at the root or two definitions point at each '
-        + 'other (N5), and sends a definition used twice',
+        + 'other, and sends a definition used twice',
       fn: async () => {
         /**
          Schemas that refer back into themselves: to the root, and between two definitions.
@@ -552,7 +552,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES MORE THAN 24 OPTIONAL PARAMETERS, the page\'s limit for one request (N5), and sends 24',
+      name: 'REFUSES MORE THAN 24 OPTIONAL PARAMETERS, the page\'s limit for one request, and sends 24',
       fn: async () => {
         /**
          Refusal for 25 members none of which is required.
@@ -567,7 +567,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES MORE THAN 16 PARAMETERS THAT USE A UNION TYPE, anyOf or a type array (N5), and sends 16',
+      name: 'REFUSES MORE THAN 16 PARAMETERS THAT USE A UNION TYPE, anyOf or a type array, and sends 16',
       fn: async () => {
         /**
          Refusal for 17 members typed by a type array.

@@ -249,8 +249,8 @@ await describe({
     },),
 
     it({
-      name: 'RETHROWS A SEAT HANDED TO A CLIENT THAT DOES NOT SERVE IT, AND A SCHEMA NAME THE PROTOCOL REJECTS (N1 of '
-        + 'the re-check of fix rounds 3 and 4): each is thrown from local state, the roster lookup of one of the '
+      name: 'RETHROWS A SEAT HANDED TO A CLIENT THAT DOES NOT SERVE IT, AND A SCHEMA NAME THE PROTOCOL REJECTS: '
+        + 'each is thrown from local state, the roster lookup of one of the '
         + 'eight clients or the name of the stage\'s own schema, before any exchange, so it recurs on every call of '
         + 'the stage like the four classes before it',
       fn: async () => {
@@ -293,10 +293,10 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS A PICTURE THE ANTHROPIC PROTOCOL CANNOT READ A LOST VOICE (the control arm of N1): the data URI is '
+      name: 'KEEPS A PICTURE THE ANTHROPIC PROTOCOL CANNOT READ A LOST VOICE (the control arm): the data URI is '
         + 'built by the caller of the request, so a malformed one is a fault of that caller\'s content part and not '
         + 'of the stage code, and the other seats of the round still answer. A zero-byte file no longer reaches it, '
-        + 'since the encoder refuses it by name (R7)',
+        + 'since the encoder refuses it by name',
       fn: async () => {
         const warnings: string[] = [];
         const logger = warningRecordingLogger({ base: l, warnings, },);

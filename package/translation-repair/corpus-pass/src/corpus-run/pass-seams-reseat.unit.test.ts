@@ -68,7 +68,7 @@ const l = tagged({ tag: 'pass-seams-reseat-test', },);
 
 /**
  Every provider wet, the Claude key included: the view each phase reads at its start. The Claude provider read dry here
- until the review of the Claude route (C7), which made the name untrue and left every pass-level path under a wet Claude
+ until the review of the Claude route, which made the name untrue and left every pass-level path under a wet Claude
  key untested; Haiku 5.5 now takes its seats in these cases like any wet provider's models.
  */
 const ALL_WET: BudgetView = {

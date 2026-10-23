@@ -40,8 +40,8 @@ import {
 // (`doc/decision/translation-repair-direct-providers.md`, "Addendum: the keyed Claude probes"). So a `pattern`
 // passes, except one that spells a construct the page names as unsupported, which fails here.
 // A LARGE `{n,m}` QUANTIFIER IS NOT CHECKED: the page says only "Complex `{n,m}` quantifiers with large ranges" and
-// names no bound, so no figure is invented here, and a pattern with a range the API finds too large may still answer
-// HTTP 400 (N5 of the re-check of fix rounds 3 and 4).
+// names no bound, so no figure is invented here, and a pattern with a range the API finds too large may still
+// answer HTTP 400.
 //
 // WHAT THE ALLOWLIST CANNOT SEE IS REFUSED IN `claude-schema-refusals.ts`: a named backreference (`\k` outside a class,
 // refused here with the numbered ones), an `allOf` member that holds a `$ref`, an `enum` member that is not a string,

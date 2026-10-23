@@ -1,5 +1,5 @@
 /**
- Tests that a probe's run client cuts a hold a refusal states for itself (N6 of the re-check of fix rounds 3 and 4).
+ Tests that a probe's run client cuts a hold a refusal states for itself.
 
  A probe command has no hard cap, so the budgets its client builds once held a provider out for as long as a refusal
  stated: a body saying "try again in 99999999h" kept Synthetic out of routing for about eleven thousand years while the
@@ -133,8 +133,8 @@ await describe({
   name: probeRunClientFrom.name,
   children: [
     it({
-      name: 'CUTS A HOLD A REFUSAL STATES TO THE PROBE BOUND, so a probe never waits out a stated wait of 99,999,999 '
-        + 'hours (N6 of the re-check of fix rounds 3 and 4)',
+      name: 'CUTS A HOLD A REFUSAL STATES TO THE PROBE BOUND, so a probe never waits out a stated '
+        + 'wait of 99,999,999 hours',
       fn: async (ctx) => {
         using _fresh = withFreshRunSeats();
         const held = await heldAfterRefusal({

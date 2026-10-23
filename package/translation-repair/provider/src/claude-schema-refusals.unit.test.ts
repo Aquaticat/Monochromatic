@@ -156,7 +156,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A $ref THAT NAMES NOTHING IN THE DOCUMENT (R8): a pointer into a definition nobody wrote is a '
+      name: 'REFUSES A $ref THAT NAMES NOTHING IN THE DOCUMENT: a pointer into a definition nobody wrote is a '
         + 'reference no grammar can be built from, and was passed here because the walk stopped at a target it could '
         + 'not find. The control arms are a pointer that resolves and a pointer to a Boolean schema',
       fn: async () => {

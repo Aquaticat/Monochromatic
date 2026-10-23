@@ -472,7 +472,7 @@ await describe({
         },),
         it({
           name: 'SEATS HAIKU 5.5 ON THE CHECKER BENCH WHILE THE CLAUDE KEY IS WET AND SEATS THE NEXT MEASURED CHECKER '
-            + 'INSTEAD WHEN IT IS DRY (C7): with the second measured checker unserved, the pass-level hook that '
+            + 'INSTEAD WHEN IT IS DRY: with the second measured checker unserved, the pass-level hook that '
             + 're-reads the view takes the first three a wet provider serves, and the Claude provider is the fourth '
             + 'of the order that fills the place',
           fn: async () => {
@@ -1034,9 +1034,9 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'WAITS A 300 S HOLD OUT THROUGH THE PRODUCTION WAIT AND NO SOONER (N9 of the re-check of fix rounds 3 '
-            + 'and 4): a view short of quorum under a Synthetic hold of 300,000 ms sleeps the hold in slices on a '
-            + 'fake clock, is still waiting a millisecond before it ends, and reads again and seats once it has',
+          name: 'WAITS A 300 S HOLD OUT THROUGH THE PRODUCTION WAIT AND NO SOONER: a view short of quorum under a '
+            + 'Synthetic hold of 300,000 ms sleeps the hold in slices on a fake clock, is still waiting a millisecond '
+            + 'before it ends, and reads again and seats once it has',
           fn: async (ctx) => {
             /** The fake clock the production wait sleeps on. */
             const clock = ctx.sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout',], },);

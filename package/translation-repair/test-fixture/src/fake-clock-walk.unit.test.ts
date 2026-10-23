@@ -1,6 +1,6 @@
 /**
- Tests that the fake clock walk puts every kind of wait on the fake clock, including a wait built on
- `node:timers/promises` (R9 of the re-check of fix round 5).
+ Tests that the fake clock walk puts every kind of wait on the fake clock, including a wait
+ built on `node:timers/promises`.
 
  The rig faked the global `setTimeout`, `clearTimeout` and `AbortSignal.timeout`, and a caller cut written with
  `import { setTimeout } from 'node:timers/promises'` was on none of them: its named import is bound once, and the
@@ -109,7 +109,7 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'ENDS A WAIT BUILT ON THE GLOBAL setTimeout AT ITS FIGURE (the control arm of R9)',
+      name: 'ENDS A WAIT BUILT ON THE GLOBAL setTimeout AT ITS FIGURE (the control arm)',
       fn: async ctx => {
         expect(await napWalk({
           sinon: ctx.sinon,
@@ -129,7 +129,7 @@ await describe({
     },),
 
     it({
-      name: 'ENDS A WAIT BUILT ON node:timers/promises AT ITS FIGURE (R9): a cut written with that import was on the '
+      name: 'ENDS A WAIT BUILT ON node:timers/promises AT ITS FIGURE: a cut written with that import was on the '
         + 'real clock, so the heard case stayed green however the cut was written',
       fn: async ctx => {
         expect(await napWalk({
@@ -145,7 +145,7 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES A node:timers/promises WAIT UNENDED BEFORE ITS FIGURE (R9 control arm): the rig advances that '
+      name: 'LEAVES A node:timers/promises WAIT UNENDED BEFORE ITS FIGURE (control arm): the rig advances that '
         + 'clock and no further, so the end of a nap on the fake clock is the clock\'s doing and not the release\'s',
       fn: async ctx => {
         expect(await napWalk({

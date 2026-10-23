@@ -1,7 +1,7 @@
 /**
  The hold bound a case passes the budgets when it does not read the bound.
 
- A bound is required of every budgets instance (N6 of the re-check of fix rounds 3 and 4), so a case about something
+ A bound is required of every budgets instance, so a case about something
  else still names one. A DAY: no wait a case states comes near it, so the bound cuts nothing in those cases, and a case
  about the bound itself names its own figure.
 

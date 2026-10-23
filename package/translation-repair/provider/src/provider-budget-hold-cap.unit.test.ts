@@ -6,7 +6,7 @@
  that wait sets keeps the provider out of routing for about 3,170 years while the wait for the hold polls once a second.
  No timer overflows, since a hold is a timestamp and `waitOutHold` (`budget-hold-wait.ts`) sleeps it out in slices of at
  most `HOLD_POLL_MS`, so no delay past the 2,147,483,647 ms that `setTimeout` takes ever reaches it, which is why the
- largest whole number is a valid bound (F10 of the re-check of fix round 6, traced). The run's hard cap is the longest a
+ largest whole number is a valid bound. The run's hard cap is the longest a
  hold can matter, so a hold past it is cut to it and the stated value is logged once, so the cut shows in the log with
  the number the provider gave.
 
@@ -154,7 +154,7 @@ await describe({
       },
     },),
 
-    // ONE CASE PER BOUND (F10 of the re-check of fix round 6): the type says number and nothing at run time did, so
+    // ONE CASE PER BOUND: the type says number and nothing at run time did, so
     // Infinity reintroduced the unbounded hold the bound exists to end and NaN made the cut return NaN. A case that
     // looped over the six bad values stopped at the first failure and hid the rest.
     ...([
@@ -166,7 +166,7 @@ await describe({
       [1.5, '1.5',],
     ] as const).map(function refusedBoundCase([maxHoldMs, shown,],) {
       return it({
-        name: `REFUSES A BOUND OF ${shown} when the budgets are built (R8), with the class that names it and `
+        name: `REFUSES A BOUND OF ${shown} when the budgets are built, with the class that names it and `
           + 'the value it was given',
         fn: async () => {
           /**
@@ -191,7 +191,7 @@ await describe({
     },),
 
     it({
-      name: 'BUILDS WITH THE SMALLEST AND THE LARGEST WHOLE BOUNDS (R8 control arm): one millisecond is a bound, and '
+      name: 'BUILDS WITH THE SMALLEST AND THE LARGEST WHOLE BOUNDS (control arm): one millisecond is a bound, and '
         + 'so is the largest integer a number holds exactly, which the claude client cases use',
       fn: async () => {
         expect(() => {

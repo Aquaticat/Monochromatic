@@ -401,7 +401,7 @@ await describe({
       },
     },),
     it({
-      name: 'CARRIES A retry-after PAST THE LADDER\'S REACH ONTO THE FAILURE (C3), so the budget layer holds Anthropic '
+      name: 'CARRIES A retry-after PAST THE LADDER\'S REACH ONTO THE FAILURE, so the budget layer holds Anthropic '
         + 'out for the 3,600 s the header names and not for the 60 s default: the wait the router reads is the larger '
         + 'of the body\'s and the header\'s',
       fn: async () => {
@@ -484,7 +484,7 @@ await describe({
     },),
 
     it({
-      name: 'RAISES THE DRY FLAG FOR A billing_error EVENT UNDER A SUCCESS STATUS (C8), which the retry ladder returns '
+      name: 'RAISES THE DRY FLAG FOR A billing_error EVENT UNDER A SUCCESS STATUS, which the retry ladder returns '
         + 'unretried as a thrown 402: the meter reads dry after it as after a plain HTTP 402',
       fn: async () => {
         /**
@@ -511,7 +511,7 @@ await describe({
     },),
 
     it({
-      name: 'HONOURS A 429 THE HEADER ASKS ONE SECOND FOR end to end through the client (C11): the retry waits the '
+      name: 'HONOURS A 429 THE HEADER ASKS ONE SECOND FOR end to end through the client: the retry waits the '
         + 'second and the call answers',
       fn: async () => {
         /**
@@ -549,7 +549,7 @@ await describe({
     },),
 
     it({
-      name: 'RETRIES A 529 OVERLOADED REPLY through the client (C11) and answers from the second attempt',
+      name: 'RETRIES A 529 OVERLOADED REPLY through the client and answers from the second attempt',
       fn: async () => {
         const { transport, exchanges, } = scripted({
           replies: [
@@ -569,7 +569,7 @@ await describe({
     },),
 
     it({
-      name: 'READS A max_tokens STOP AFTER A THINKING BLOCK AS A TRUNCATED VOICE (C5, C11): empty text, finish reason '
+      name: 'READS A max_tokens STOP AFTER A THINKING BLOCK AS A TRUNCATED VOICE: empty text, finish reason '
         + 'max_tokens, the spent tokens on a SPEND line, and the truncated outcome for the caller, with no retry',
       fn: async () => {
         resetRunSpend();
@@ -606,7 +606,7 @@ await describe({
       },
     },),
     it({
-      name: 'STOPS A CARD EDITED PAST THE TYPES (C13), the lock\'s third line: a wire model outside the two granted and an '
+      name: 'STOPS A CARD EDITED PAST THE TYPES, the lock\'s third line: a wire model outside the two granted and an '
         + 'effort outside the three both refuse the call at the client, before a request is built',
       fn: async () => {
         /**

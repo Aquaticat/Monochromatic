@@ -881,7 +881,7 @@ await describe({
     },),
     it({
       name: 'REFUSES THE PASS BEFORE ANY PROVIDER IS ASKED when a stage schema carries a keyword the Claude route '
-        + 'cannot send (N2 of the re-check of fix rounds 3 and 4), naming each schema and its keyword, with nothing '
+        + 'cannot send, naming each schema and its keyword, with nothing '
         + 'printed, no client built, no entry settled and no lock taken',
       fn: async (ctx) => {
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);

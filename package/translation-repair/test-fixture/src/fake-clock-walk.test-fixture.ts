@@ -13,7 +13,7 @@ import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 // first and ticking through that would spend the scripted minutes before anything had been asked. The clock is then
 // ticked by the steps the case hands, and the case reads how many exchanges the transport had cut after each.
 //
-// `node:timers/promises` IS ON THE CLOCK TOO (R9 of the re-check of fix round 5). A cut written with `import {
+// `node:timers/promises` IS ON THE CLOCK TOO. A cut written with `import {
 // setTimeout } from 'node:timers/promises'` was on the real clock: the sinon clock reaches that built-in only where
 // its own module can `require` it, which the bundled test harness cannot (measured: the walk of a two-minute wait of
 // that form did not end on a tick past it), and a named import is bound once besides. The walk stubs the built-in's

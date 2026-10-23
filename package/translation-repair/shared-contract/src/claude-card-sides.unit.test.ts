@@ -46,7 +46,7 @@ await describe({
     },),
 
     it({
-      name: 'CAPS EVERY ROW\'S COMPLETION AT 32,000 TOKENS, not at the pooled p99 of 13,082 (C5): thinking counts toward '
+      name: 'CAPS EVERY ROW\'S COMPLETION AT 32,000 TOKENS, not at the pooled p99 of 13,082: thinking counts toward '
         + 'max_tokens on both models, so a cap measured on providers that hide no thinking would be spent thinking and '
         + 'return nothing (stop_reason max_tokens after a thinking block), billed in full and asked again',
       fn: async () => {

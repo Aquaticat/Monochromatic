@@ -183,7 +183,7 @@ await describe({
           },
         },),
         it({
-          name: 'READS THE LOW-CREDIT SENTENCE AS ANTHROPIC\'S ALONE (C9): another provider\'s 400 that happens to hold '
+          name: 'READS THE LOW-CREDIT SENTENCE AS ANTHROPIC\'S ALONE: another provider\'s 400 that happens to hold '
             + 'the words is a bad request and not an empty balance, so it neither marks that provider dry nor counts '
             + 'as a budget refusal',
           fn: async () => {

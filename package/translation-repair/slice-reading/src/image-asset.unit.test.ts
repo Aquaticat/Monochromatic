@@ -162,7 +162,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A PICTURE WITH NO BYTES BY NAMING THE ASSET (R7): a zero-byte file encodes to a data URI with an '
+      name: 'REFUSES A PICTURE WITH NO BYTES BY NAMING THE ASSET: a zero-byte file encodes to a data URI with an '
         + 'empty payload, which the Anthropic request builder then rejects at every seat that reads the picture. The '
         + 'refusal belongs here, where the file is known, and names it so the one empty file in a corpus can be found',
       fn: async () => {
@@ -177,7 +177,7 @@ await describe({
     },),
 
     it({
-      name: 'NAMES THE EMPTY ASSET IN THE ERROR, under the class name a log line shows (R7)',
+      name: 'NAMES THE EMPTY ASSET IN THE ERROR, under the class name a log line shows',
       fn: async () => {
         /**
          What the encoder threw for a picture with no bytes, or nothing when it threw nothing.
@@ -203,7 +203,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A PICTURE WITH NO BYTES BEFORE ASKING ABOUT ITS EXTENSION (R7): an empty file under an unknown '
+      name: 'REFUSES A PICTURE WITH NO BYTES BEFORE ASKING ABOUT ITS EXTENSION: an empty file under an unknown '
         + 'extension is an empty file first, since no extension makes zero bytes a picture',
       fn: async () => {
         expect(() => {
@@ -217,7 +217,7 @@ await describe({
     },),
 
     it({
-      name: 'ENCODES A ONE-BYTE PICTURE (R7 control): the refusal is for zero bytes, not for small ones',
+      name: 'ENCODES A ONE-BYTE PICTURE (control): the refusal is for zero bytes, not for small ones',
       fn: async () => {
         expect(encodeImageAsset({
           bytes: bytesOf({ length: 1, },),

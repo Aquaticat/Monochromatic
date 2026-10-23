@@ -130,7 +130,7 @@ await describe({
         },),
         it({
           name: 'CARRIES THE WAIT A HEADER NAMED as retryAfterMs, zero when none was read, so a router can hold the '
-            + 'provider out for a wait the body does not state (C3)',
+            + 'provider out for a wait the body does not state',
           fn: async () => {
             expect(new ProviderHttpError({
               provider: 'anthropic',

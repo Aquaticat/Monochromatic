@@ -325,7 +325,7 @@ await describe({
     },),
 
     it({
-      name: 'NAMES A PICTURE WITH NO BYTES AS UNAVAILABLE WITHOUT A CALL (R7): the encoder refuses a zero-byte file by '
+      name: 'NAMES A PICTURE WITH NO BYTES AS UNAVAILABLE WITHOUT A CALL: the encoder refuses a zero-byte file by '
         + 'throwing, and the stage turns that into the reason a later reader can tell from a model that failed, so the '
         + 'picture is not retried tomorrow and no seat spends a request on it',
       fn: async () => {
@@ -354,7 +354,7 @@ await describe({
     },),
 
     it({
-      name: 'WARNS ONCE FOR A PICTURE WITH NO BYTES (F6 of the re-check of fix round 6): the stage says it cannot send '
+      name: 'WARNS ONCE FOR A PICTURE WITH NO BYTES: the stage says it cannot send '
         + 'the picture, and the error the encoder threw is logged under the tag of the function that caught it, '
         + 'at the debug level, so a seat read leaves one warning and not two',
       fn: async () => {

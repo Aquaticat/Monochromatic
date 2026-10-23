@@ -9,8 +9,8 @@ import type { SchemaProducer, } from '../claude-schema-producers.ts';
 // route's own narrowing, and a schema the route refuses stops the pass at its start, naming each schema and the
 // keyword. Without it, a stage schema the route cannot send is found at the first call of the stage, inside an entry,
 // which records one `status=ERROR` and goes on: each later entry that reaches the stage then fails the same way, after
-// the paid calls of the stages before it (N2 of the re-check of fix rounds 3 and 4). A schema keyword is a fault in our
-// own code and not a fault of any document, so the check is deterministic and costs no quota.
+// the paid calls of the stages that run ahead of it. A schema keyword is a fault in our own code and not a fault of
+// any document, so the check is deterministic and costs no quota.
 
 /**
  Refusal raised when stage schemas carry what the Claude route cannot send, one line for each schema.

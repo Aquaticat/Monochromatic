@@ -472,7 +472,7 @@ await describe({
       },
     },),
     it({
-      name: 'HEARS A CLAUDE REPLY THAT LANDS AT 400,000 MS (N4 of the re-check of fix rounds 3 and 4): no signal the '
+      name: 'HEARS A CLAUDE REPLY THAT LANDS AT 400,000 MS: no signal the '
         + 'caller hands the client aborts before the Claude deadline of 460,000 ms, whether it is built from '
         + 'AbortSignal.timeout, from setTimeout or from AbortSignal.any',
       fn: async (ctx) => {
@@ -490,7 +490,7 @@ await describe({
       },
     },),
     it({
-      name: 'CUTS A CLAUDE REPLY THAT LANDS AT 500,000 MS AT 460,000 MS, not before (the positive control of N4): the '
+      name: 'CUTS A CLAUDE REPLY THAT LANDS AT 500,000 MS AT 460,000 MS, not before (the positive control): the '
         + 'rig shows the client\'s own deadline firing, so the heard reply at 400,000 ms is a measurement and not a '
         + 'rig that cannot cut',
       fn: async (ctx) => {

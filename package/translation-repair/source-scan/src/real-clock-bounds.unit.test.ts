@@ -342,7 +342,7 @@ const CHUNK_PACING = 'the pause between two chunks of a scripted body, so a stre
  and a nap that were on the real clock would fail the case by not ending.
  */
 const FAKE_NAP = 'a nap of two fake minutes that the walk ticks past on the fake clock; no real time passes, and a nap '
-  + 'left on the real clock is the failure the case reads (R9 of the re-check of fix round 5)';
+  + 'left on the real clock is the failure the case reads';
 
 /**
  Bounds that keep a value of their own, keyed `path#site: form value`.
@@ -657,13 +657,13 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'other',
     reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at '
-      + 'it is the finding (N4 of the re-check of fix rounds 3 and 4)',
+      + 'it is the finding',
   },
   'bench/corpus-run/translate-probe-run.unit.test.ts#probeClaudeLandingAfter: perCallTimeoutMs: RUN_PER_CALL_MS': {
     count: 1,
     bound: 'other',
     reason: 'the per-call figure of a run, handed to the probe over a fake clock that the case ticks past; no cut at '
-      + 'it is the finding (N4 of the re-check of fix rounds 3 and 4)',
+      + 'it is the finding',
   },
   'bench/corpus-run/translate-probe-run.unit.test.ts#walkOnce: perCallTimeoutMs: perCallTimeoutMs': {
     count: 1,
@@ -685,8 +685,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'test-fixture/fake-clock-walk.test-fixture.ts#waitOnFakeClock: setTimeout ms': {
     count: 1,
     bound: 'other',
-    reason: 'the figure a wait on node:timers/promises was handed, put on the fake clock so the wait ends at it in '
-      + 'fake time (R9 of the re-check of fix round 5)',
+    reason: 'the figure a wait on node:timers/promises was handed, put on the fake clock so the wait ends at it '
+      + 'in fake time',
   },
   'test-fixture/fake-clock-walk.unit.test.ts#napping: setTimeout NAP_MS': {
     count: 1,

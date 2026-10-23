@@ -126,7 +126,7 @@ await describe({
       name: 'SENDS ADAPTIVE THINKING WITH ITS SUMMARY SHOWN ON EVERY CARD AND NEVER A WAY TO TURN IT OFF OR BUDGET IT: '
         + 'no disabled, no between_tools, no budget_tokens (the API answers 400 to a budget on both models), because '
         + 'the owner ruled "we should never disable thinking on anything"; display summarized because the default '
-        + 'omitted streams empty thinking blocks, so the idle guard would see nothing for the whole think (C2)',
+        + 'omitted streams empty thinking blocks, so the idle guard would see nothing for the whole think',
       fn: async () => {
         await Promise.all(ANTHROPIC_SERVED_IDS.map(async function checkCard(modelId,) {
           await Promise.all([false, true,].map(async function checkSchemaChoice(withSchema,) {
@@ -246,7 +246,7 @@ await describe({
     },),
 
     it({
-      name: 'SENDS A SCHEMA THE STRUCTURED-OUTPUT FEATURE ACCEPTS (C1): additionalProperties false on every object, '
+      name: 'SENDS A SCHEMA THE STRUCTURED-OUTPUT FEATURE ACCEPTS: additionalProperties false on every object, '
         + 'including those under properties and items, and none of the numeric, string or array bounds it does not '
         + 'support, with the caller\'s own schema left untouched',
       fn: async () => {
@@ -330,8 +330,8 @@ await describe({
         const capped = await bodySentFor({ modelId: 'claude-haiku-5-5', },);
         expect(Number.isSafeInteger(capped.max_tokens,),).toBe(true,);
         expect(capped.max_tokens as number,).toBeGreaterThan(1_000,);
-        // Room for the thinking, which counts against it: the pooled p99 of 13,082 measured on other providers is not
-        // enough (C5).
+        // Room for the thinking, which counts against it: the pooled p99 of 13,082 measured on other providers
+        // is not enough.
         expect(capped.max_tokens,).toBe(32_000,);
         const lowered = await bodySentFor({ modelId: 'claude-haiku-5-5', extra: { maxTokens: 777, }, },);
         expect(lowered.max_tokens,).toBe(777,);
