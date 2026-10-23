@@ -9,6 +9,10 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // answer HTTP 400 at the first live call, which the retry ladder returns unretried and the router counts as a lost
 // voice, so each is refused here with the keyword and the node that carries it.
 //
+// A `$ref` THAT NAMES NOTHING IS REFUSED TOO, though the page does not list it: the request names a definition that
+// is not in the schema, so there is nothing for the grammar to be built from, and a refusal at the node that holds
+// the reference costs no call. That the live API would answer 400 is not measured here.
+//
 // THE COMPLEXITY LIMITS, quoted from the page: "Strict tools per request: 20", "Optional parameters: 24 (total
 // optional parameters across all strict tool schemas and JSON output schemas. Each parameter not listed in `required`
 // counts toward this limit)" and "Parameters with union types: 16 (total parameters that use `anyOf` or type arrays
@@ -253,11 +257,12 @@ function refusalsOfNode(
 
  @param ref - `$ref` text, which starts with `#`
 
- @returns Zero or one node: none where the pointer names no schema
+ @returns What the pointer ends at: a record or a Boolean where it names a schema, anything else where it names
+ something that is no schema or nothing at all
 
  @example
  ```ts
- const [target,] = resolvedRef({ root, ref: '#/$defs/cat', },);
+ const target = resolvedRef({ root, ref: '#/$defs/cat', },);
  ```
  */
 function resolvedRef(
@@ -268,11 +273,8 @@ function resolvedRef(
     readonly root: Readonly<Record<string, unknown>>;
     readonly ref: string;
   },
-): readonly Readonly<Record<string, unknown>>[] {
-  /**
-   Where the pointer ends, a record, an array, a scalar or nothing.
-   */
-  const found = ref
+): unknown {
+  return ref
     .slice(1,)
     .split('/',)
     .slice(1,)
@@ -307,7 +309,6 @@ function resolvedRef(
     },
     root,
     );
-  return isJsonRecord(found,) ? [found,] : [];
 }
 
 /**
@@ -364,14 +365,23 @@ function cyclesIn(
       continue;
 
     /**
-     The node the reference names, as a list of zero or one.
+     What the reference ends at.
      */
-    const [target,] = resolvedRef({
+    const target = resolvedRef({
       root,
       ref,
     },);
-    if (target === undefined)
+    // A Boolean schema is a schema and ends the chain; anything else that is not a record names no schema, and the
+    // page answers the first call with an HTTP 400.
+    if ((typeof target) === 'boolean')
       continue;
+    if (!isJsonRecord(target,))
+      return [
+        {
+          refusedKeyword: 'a $ref that names no schema',
+          schemaPath: path,
+        },
+      ];
 
     /**
      The cycle found under the target, if any.
@@ -492,7 +502,8 @@ function complexityRefusalsOf({ nodes, }: { readonly nodes: readonly SchemaNode[
 /**
  The first thing a schema carries that the page lists as not supported and no keyword allowlist can see: an `allOf`
  member that holds a `$ref`, an `enum` member that is not a string, a number, a Boolean or null, a `$ref` into another
- document, a recursive `$ref`, and a request past the limits on optional and union-typed parameters.
+ document, a `$ref` that names no schema, a recursive `$ref`, and a request past the limits on optional and
+ union-typed parameters.
 
  @param schema - schema as the stage wrote it
 
