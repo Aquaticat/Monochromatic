@@ -17,7 +17,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createProviderBudgets, } from '../dist/final/node/index.mjs';
+import {
+  createProviderBudgets,
+  HoldBoundError,
+} from '../dist/final/node/index.mjs';
 import { consoleLinesDuring, } from './neuralwatt-ledger.test-fixture.ts';
 
 /**
@@ -145,6 +148,52 @@ await describe({
         expect(lines.some(function namesACut(line,): boolean {
           return line.includes('capped',);
         },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A BOUND THAT IS NOT A FINITE WHOLE NUMBER OF MILLISECONDS ABOVE ZERO when the budgets are built '
+        + '(R8): the type says number and nothing at run time did, so Infinity reintroduced the unbounded hold the '
+        + 'bound exists to end and NaN made the cut return NaN. Every value is refused with the class that names it '
+        + 'and the value it was given',
+      fn: async () => {
+        for (const [maxHoldMs, shown,] of [
+          [Number.POSITIVE_INFINITY, 'Infinity',],
+          [Number.NEGATIVE_INFINITY, '-Infinity',],
+          [Number.NaN, 'NaN',],
+          [0, '0',],
+          [-1, '-1',],
+          [1.5, '1.5',],
+        ] as const) {
+          /**
+           What the build threw for this bound, or nothing when it built.
+           */
+          let thrown: unknown;
+          try {
+            createProviderBudgets({ ...WET_METERS, maxHoldMs, },);
+          }
+          catch (error) {
+            thrown = error;
+          }
+
+          expect(thrown instanceof HoldBoundError,).toBe(true,);
+          if (!(thrown instanceof HoldBoundError))
+            throw new Error(`refused ${shown} by construction`,);
+          expect(thrown.name,).toBe('HoldBoundError',);
+          expect(thrown.message,).toContain(shown,);
+          expect(thrown.message,).toContain('maxHoldMs',);
+        }
+      },
+    },),
+
+    it({
+      name: 'BUILDS WITH THE SMALLEST AND THE LARGEST WHOLE BOUNDS (R8 control arm): one millisecond is a bound, and '
+        + 'so is the largest integer a number holds exactly, which the claude client cases use',
+      fn: async () => {
+        expect(() => {
+          createProviderBudgets({ ...WET_METERS, maxHoldMs: 1, },);
+          createProviderBudgets({ ...WET_METERS, maxHoldMs: Number.MAX_SAFE_INTEGER, },);
+        },).not.toThrow();
       },
     },),
   ],
