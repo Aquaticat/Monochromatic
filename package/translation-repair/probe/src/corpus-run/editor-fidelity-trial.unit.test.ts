@@ -32,6 +32,7 @@ import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-
 import {
   inventedReference,
   LOW_CARD,
+  regionOf,
 } from '../editor-fidelity.test-fixture.ts';
 
 /**
@@ -183,25 +184,6 @@ function noAsks(): Asked {
   };
 }
 
-/**
- The region of a trial's damaged text.
-
- @param trial - trial whose region is read
-
- @returns The envelope's text
-
- @example
- ```ts
- const region = regionOf({ trial: ALTERATION, },);
- ```
- */
-function regionOf({ trial, }: { readonly trial: EditorFidelityTrial; },): string {
-  return trial.damagedText.slice(
-    trial.region.startOffset,
-    trial.region.endOffset,
-  );
-}
-
 await describe({
   name: runEditorTrial.name,
   children: [
@@ -245,8 +227,8 @@ await describe({
                 region: 1,
                 newText: regionOf({ trial: ALTERATION, },)
                   .replace(
-                    ALTERATION.damagedDefect,
-                    ALTERATION.cleanDefect,
+                  ALTERATION.damagedDefect,
+                  ALTERATION.cleanDefect,
                   ),
               },
             ],
@@ -274,19 +256,19 @@ await describe({
                 region: 1,
                 newText: regionOf({ trial: ALTERATION, },)
                   .replace(
-                    ALTERATION.damagedDefect,
-                    ALTERATION.cleanDefect,
+                  ALTERATION.damagedDefect,
+                  ALTERATION.cleanDefect,
                   )
                   .replace(
-                    'arrived',
-                    'came',
+                  'arrived',
+                  'came',
                   ),
               },
             ],
           },
           asked: noAsks(),
         },);
-        expect(reworded.kind === 'answered' && reworded.score,).toStrictEqual({
+        expect((reworded.kind === 'answered') && reworded.score,).toStrictEqual({
           fixed: 'defect-only',
           collateral: true,
         },);
@@ -298,15 +280,15 @@ await describe({
                 region: 1,
                 newText: regionOf({ trial: ALTERATION, },)
                   .replace(
-                    ALTERATION.damagedDefect,
-                    '1999',
+                  ALTERATION.damagedDefect,
+                  '1999',
                   ),
               },
             ],
           },
           asked: noAsks(),
         },);
-        expect(wrong.kind === 'answered' && wrong.score,).toStrictEqual({
+        expect((wrong.kind === 'answered') && wrong.score,).toStrictEqual({
           fixed: 'none',
           collateral: false,
         },);
@@ -348,7 +330,8 @@ await describe({
     },),
 
     it({
-      name: 'READS AN EDIT THE APPLY GATE REFUSED as unusable, naming the gate, with how many it refused',
+      name: 'READS AN EDIT THAT NEVER LANDED as unusable, naming that the edits were refused, with how many: here the '
+        + 'card names a region that is not on the sheet, which the stage drops before the gate',
       fn: async () => {
         const reading = await readingFor({
           trial: INSERTION,
@@ -364,7 +347,7 @@ await describe({
         },);
         expect(reading.kind,).toBe('unusable',);
         if (reading.kind === 'unusable') {
-          expect(reading.cause,).toBe('gate-rejected',);
+          expect(reading.cause,).toBe('edits-refused',);
           expect(reading.rejected,).toBeGreaterThan(0,);
         }
       },

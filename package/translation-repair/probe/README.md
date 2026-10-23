@@ -107,6 +107,27 @@ The groups that follow name the main ones.
   `fidelity-reference-read.ts`,
   `fidelity-reference-build.ts`,
   and `corpus-run/judge-independence.ts`.
+- Editor-fidelity probe:
+  seat one Claude card alone as the editor of a hash-verified seeded defect and read what it did to the text,
+  with no critic,
+  panel,
+  judge
+  or checker.
+  Names:
+  `editorFidelityTrials`,
+  `scoreEditedText`,
+  `runEditorFidelityProbe`,
+  `runEditorTrial`,
+  `editorCeilings`,
+  `assertWithinCeiling`,
+  `cardsOnlyClient`,
+  `editorProbeEnv`.
+  Declared in `editor-fidelity-trials.ts`,
+  `editor-fidelity-score.ts`,
+  `corpus-run/editor-fidelity-probe-run.ts`,
+  `corpus-run/editor-fidelity-trial.ts`,
+  `corpus-run/editor-fidelity-ceiling.ts`,
+  and `corpus-run/editor-fidelity-client.ts`.
 
 ## Runners
 
@@ -181,6 +202,25 @@ and each task sets it to its own name.
   `--candidates` with seatable ids,
   `--candidates-alone` and `--context`;
   `--cap 0` is a metadata-only preflight.
+  Spends quota.
+- `editor-fidelity-probe`:
+  seats each card `--candidates` names alone as the editor of an inserted sentence or an altered number,
+  and scores the patched text without a model.
+  A fix is exact,
+  or equal to the clean text once whitespace runs are collapsed.
+  Collateral is a change to text outside the defect.
+  Refused and unusable replies are counted apart.
+  Options after `--` are `--only` with reviewed entry ids,
+  `--cap n` (`--cap 0` is a preflight that spends nothing),
+  `--damage insertion|alteration`
+  (a deletion is refused,
+  because its fix is a sentence the editor must write),
+  `--candidates` with seatable Claude card ids,
+  `--candidates-alone` (required)
+  and `--max-usd n` (default 2).
+  Prints the per-arm cost ceiling before any call,
+  and refuses to start when the first-pass ceiling exceeds `--max-usd`.
+  Only the Claude key is read.
   Spends quota.
 - `damage-sample`:
   draws shipped regions at random and asks a human the same source-anchored damage question the probe asks,

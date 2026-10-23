@@ -190,8 +190,10 @@ function fixingClient({ asked, silent, }: { readonly asked: string[]; readonly s
       /**
        The sheet's user message, which holds the region's current text.
        */
-      const sheet = request.messages.map(function textOf(message,): string {
-        return message.content;
+      const sheet = request.messages.map(function wordsOf(message,): string {
+        if ((typeof message.content) === 'string')
+          return message.content;
+        return JSON.stringify(message.content,);
       },)
         .join('\n',);
       /**
@@ -206,7 +208,7 @@ function fixingClient({ asked, silent, }: { readonly asked: string[]; readonly s
       /**
        The report for it: the sentence removed, or the number put back.
        */
-      const report = (silent || trial === undefined)
+      const report = (silent || (trial === undefined))
         ? { unrelated: true, }
         : {
           edits: [
@@ -219,8 +221,8 @@ function fixingClient({ asked, silent, }: { readonly asked: string[]; readonly s
                   trial.region.endOffset,
                 )
                   .replace(
-                    trial.damagedDefect,
-                    trial.cleanDefect,
+                  trial.damagedDefect,
+                  trial.cleanDefect,
                   ),
             },
           ],
@@ -407,7 +409,7 @@ await describe({
           name: 'REFUSES A CARD THE ROSTER DOES NOT KNOW, in the judge probe\'s wording, before reading or building '
             + 'anything',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: ['--candidates', 'nobody/such-model', '--candidates-alone',],
@@ -425,7 +427,7 @@ await describe({
             + 'alone, since this probe seats the named cards and nobody else and a roster beside them would spend '
             + 'on more than was asked',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             expect(refusedWith({
               seen: await probeIn({
                 runsDir: scratch.path,
@@ -456,7 +458,7 @@ await describe({
         it({
           name: 'REFUSES A CARD WITH NO PRICE TABLE before reading anything, since no ceiling could be printed for it',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: ['--candidates', 'hf:zai-org/GLM-5.3-Flash', '--candidates-alone',],
@@ -476,7 +478,7 @@ await describe({
           name: 'SAYS THE CARD SEATED AND THE ENTRIES SELECTED and returns before the corpus is read, a directory '
             + 'is made or a client is built',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: [...ONE_CARD, '--cap', '0',],
@@ -502,7 +504,7 @@ await describe({
           name: 'PRINTS THE CEILING before any client exists and REFUSES TO START when it passes --max-usd, with no '
             + 'directory made, no plan written and no client built',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: [...ONE_CARD, '--max-usd', '0.5',],
@@ -521,7 +523,7 @@ await describe({
         it({
           name: 'STARTS under the default two dollars for one card, which is the arm the lead runs',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: ONE_CARD,
@@ -540,7 +542,7 @@ await describe({
           name: 'BUILDS ITS CLIENT ONCE, FOR THE NAMED CARD ONLY, after the plan is on disk, and asks that card and no '
             + 'other, once for each trial, with no critic, panel, judge or checker in the roster',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: ONE_CARD,
@@ -558,7 +560,7 @@ await describe({
           name: 'BENCHES TWO CARDS EACH IN ITS OWN GATHER, one card at a time and the first card\'s trials before the '
             + 'second\'s, so two efforts of one wire model are never seated together',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: [
@@ -580,7 +582,7 @@ await describe({
           name: 'KEEPS A PLAN, A ROW FOR EVERY CARD AND TRIAL AND THE RUN, and prints the tally of each card, the kept '
             + 'line and a document of the rows and tallies, none of it quoting the corpus',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: ONE_CARD,
@@ -603,14 +605,18 @@ await describe({
             expect(plan.status,).toBe('planned',);
             expect(plan.requestedCards,).toStrictEqual([LOW_CARD,],);
             expect(plan.plannedRows,).toBe(2,);
-            expect(existsSync(join(
-              runDir,
-              'row-0.json',
-            ),),).toBe(true,);
-            expect(existsSync(join(
-              runDir,
-              'row-1.json',
-            ),),).toBe(true,);
+            expect(
+              existsSync(join(
+                runDir,
+                'row-0.json',
+              ),),
+            ).toBe(true,);
+            expect(
+              existsSync(join(
+                runDir,
+                'row-1.json',
+              ),),
+            ).toBe(true,);
             expect(seen.lines,).toContain(
               `EDITOR ${LOW_CARD}: fixed 2 of 2 (exact 1, equivalent 1, defect only 0), collateral 0, missed 0, refused 0, `
                 + 'unusable 0',
@@ -623,12 +629,9 @@ await describe({
               readonly tallies: readonly { readonly cardId: string; readonly fixed: number; }[];
             };
             expect(printed.rows.length,).toBe(2,);
-            expect(printed.tallies,).toStrictEqual([
-              expect.objectContaining({
-                cardId: LOW_CARD,
-                fixed: 2,
-              },),
-            ],);
+            expect(printed.tallies.map(function pairOf(tally,): readonly [string, number] {
+              return [tally.cardId, tally.fixed,];
+            },),).toEqual([[LOW_CARD, 2,],],);
             for (const trial of TRIALS)
               expect(seen.written.includes(trial.damagedText,),).toBe(false,);
           },
@@ -637,7 +640,7 @@ await describe({
         it({
           name: 'COUNTS A CARD THAT ANSWERS NOTHING READABLE as unusable on every trial, and still ends the run',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: ONE_CARD,
@@ -654,7 +657,7 @@ await describe({
         it({
           name: 'WARNS WHEN THE CAP LEAVES TRIALS OUT, in the judge probe\'s wording, and runs only the first',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'editor-fidelity-run-', },);
             const seen = await probeIn({
               runsDir: scratch.path,
               typed: [...ONE_CARD, '--cap', '1',],

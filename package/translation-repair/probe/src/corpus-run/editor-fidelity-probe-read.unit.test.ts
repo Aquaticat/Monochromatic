@@ -1,0 +1,207 @@
+/**
+ Tests for the small readers the editor fidelity probe's run asks: which cards the command line seats, how big the
+ sheet of a trial is, what a planned pair is called and how a reading is worded on the progress line. Fixtures are
+ cat-themed invention only.
+
+ @module
+ */
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  EDITOR_DAMAGE_KINDS,
+  editorFidelityTrials,
+  type EditorTrialReading,
+  pairName,
+  readingWord,
+  seatedCardsOf,
+  sheetCharsOf,
+} from '../../dist/final/node/index.mjs';
+import { statedRefusalMessage, } from '@monochromatic-dev/translation-repair-glossary/ts/stated-refusal-message.test-fixture.ts';
+import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
+import {
+  HIGH_CARD,
+  inventedReference,
+  LOW_CARD,
+} from '../editor-fidelity.test-fixture.ts';
+
+/**
+ The invented reference's trials.
+ */
+const TRIALS = editorFidelityTrials({
+  references: [inventedReference(),],
+  damageKinds: EDITOR_DAMAGE_KINDS,
+},);
+
+/**
+ The first trial.
+ */
+const TRIAL = nonNullishOrThrow(TRIALS[0],);
+
+/**
+ Reads the cards a typed command line seats.
+
+ @param typed - what the operator wrote after the script path
+
+ @returns The cards, once each
+
+ @throws StatedRefusalError when the reader refuses what was typed
+
+ @example
+ ```ts
+ const cards = cardsTyped({ typed: ['--candidates', LOW_CARD, '--candidates-alone',], },);
+ ```
+ */
+function cardsTyped({ typed, }: { readonly typed: readonly string[]; },): readonly string[] {
+  return seatedCardsOf({
+    line: lineOf({
+      command: 'editor-fidelity-probe',
+      typed,
+    },),
+  },);
+}
+
+await describe({
+  name: '',
+  children: [
+    describe({
+      name: seatedCardsOf.name,
+      children: [
+        it({
+          name: 'SEATS THE NAMED CARDS ONCE EACH, in the order named, when --candidates-alone says so',
+          fn: async () => {
+            expect(cardsTyped({
+              typed: ['--candidates', `${HIGH_CARD},${LOW_CARD},${HIGH_CARD}`, '--candidates-alone',],
+            },),).toStrictEqual([HIGH_CARD, LOW_CARD,],);
+          },
+        },),
+        it({
+          name: 'REFUSES A RUN THAT DOES NOT SAY IT SEATS THE CARDS ALONE, since a roster seated beside them would '
+            + 'spend on more than was asked',
+          fn: async () => {
+            expect(statedRefusalMessage({
+              read: function seatsBeside(): void {
+                cardsTyped({ typed: ['--candidates', LOW_CARD,], },);
+              },
+            },),).toBe(
+              'this probe seats only the cards --candidates names; write --candidates-alone to say so',
+            );
+          },
+        },),
+        it({
+          name: 'REFUSES A CARD THE ROSTER DOES NOT KNOW, naming it',
+          fn: async () => {
+            expect(statedRefusalMessage({
+              read: function seatsStranger(): void {
+                cardsTyped({ typed: ['--candidates', 'purr-9000', '--candidates-alone',], },);
+              },
+            },),).toContain('"purr-9000", which is not seatable',);
+          },
+        },),
+        it({
+          name: 'REFUSES A SEAT WITH NO CARD NAMED, in the words the judge probe uses for it',
+          fn: async () => {
+            expect(statedRefusalMessage({
+              read: function seatsNobody(): void {
+                cardsTyped({ typed: ['--candidates-alone',], },);
+              },
+            },),).toContain('named none',);
+          },
+        },),
+        it({
+          name: 'REFUSES A CARD WITH NO PRICE TABLE, since its ceiling cannot be printed',
+          fn: async () => {
+            expect(statedRefusalMessage({
+              read: function seatsUnpriced(): void {
+                cardsTyped({ typed: ['--candidates', 'hf:zai-org/GLM-5.3-Flash', '--candidates-alone',], },);
+              },
+            },),).toContain('has no price table',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: sheetCharsOf.name,
+      children: [
+        it({
+          name: 'COUNTS THE CHARACTERS OF EVERY MESSAGE the editor is sent, so the ceiling sizes the prompt by what '
+            + 'goes out and not by the slice alone',
+          fn: async () => {
+            /**
+             Characters of the sheet.
+             */
+            const chars = sheetCharsOf({ trial: TRIAL, },);
+            expect(chars,).toBeGreaterThan(TRIAL.damagedText.length,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: pairName.name,
+      children: [
+        it({
+          name: 'NAMES A PAIR BY ITS CARD AND TRIAL HANDLES, with no corpus text in the name',
+          fn: async () => {
+            expect(pairName({
+              item: {
+                cardId: LOW_CARD,
+                trial: TRIAL,
+              },
+            },),).toBe(`${LOW_CARD} on ${TRIAL.trialId}`,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readingWord.name,
+      children: [
+        it({
+          name: 'SAYS EACH KIND OF READING in a phrase of its own',
+          fn: async () => {
+            /**
+             The readings and the phrase each earns.
+             */
+            const cases: readonly (readonly [EditorTrialReading, string])[] = [
+              [{ kind: 'refused', findings: [], }, 'refused, no edit proposed',],
+              [{ kind: 'unusable', cause: 'no-reply', rejected: 0, findings: [], }, 'unusable (no-reply)',],
+              [{ kind: 'unusable', cause: 'edits-refused', rejected: 2, findings: [], }, 'unusable (edits-refused)',],
+              [
+                {
+                  kind: 'answered',
+                  score: { fixed: 'exact', collateral: false, },
+                  applied: 1,
+                  rejected: 0,
+                  findings: [],
+                },
+                'fixed exact, nothing else touched',
+              ],
+              [
+                {
+                  kind: 'answered',
+                  score: { fixed: 'none', collateral: true, },
+                  applied: 1,
+                  rejected: 0,
+                  findings: [],
+                },
+                'not fixed, collateral',
+              ],
+            ];
+            expect(cases.map(function worded([reading,],): string {
+              return readingWord({ reading, },);
+            },),).toStrictEqual(cases.map(function phrase([, word,],): string {
+              return word;
+            },),);
+          },
+        },),
+      ],
+    },),
+  ],
+},);

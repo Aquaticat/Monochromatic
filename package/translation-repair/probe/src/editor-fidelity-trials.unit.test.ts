@@ -76,7 +76,7 @@ await describe({
         const [issue,] = INSERTION.issues;
         expect(issue?.status,).toBe('accepted',);
         expect(issue?.claims.length,).toBe(1,);
-        const claim = nonNullishOrThrow(issue?.claims[0],).claim;
+        const {claim} = nonNullishOrThrow(issue?.claims[0],);
         expect(claim.category,).toBe('accuracy/addition',);
         expect(claim.spans.length,).toBe(1,);
         expect(claim.spans[0],).toMatchObject({
@@ -100,7 +100,7 @@ await describe({
           ALTERATION.region.startOffset,
           ALTERATION.region.endOffset,
         ).startsWith('The grey-and-white cat arrived in',),).toBe(true,);
-        const claim = nonNullishOrThrow(ALTERATION.issues[0]?.claims[0],).claim;
+        const {claim} = nonNullishOrThrow(ALTERATION.issues[0]?.claims[0],);
         expect(claim.category,).toBe('accuracy/mistranslation',);
       },
     },),

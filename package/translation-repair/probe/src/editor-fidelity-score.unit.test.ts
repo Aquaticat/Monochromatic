@@ -21,7 +21,10 @@ import {
   scoreEditedText,
 } from '../dist/final/node/index.mjs';
 import { REVIEW_REFERENCE, } from './fidelity-reference.test-fixture.ts';
-import { inventedReference, } from './editor-fidelity.test-fixture.ts';
+import {
+  inventedReference,
+  regionOf,
+} from './editor-fidelity.test-fixture.ts';
 
 /**
  The invented reference's trials.
@@ -74,25 +77,6 @@ function patchedWith(
   )
     + replacement
     + trial.damagedText.slice(trial.region.endOffset,);
-}
-
-/**
- The region of the damaged text.
-
- @param trial - trial whose region is read
-
- @returns The text the envelope holds
-
- @example
- ```ts
- const region = regionOf({ trial: ALTERATION, },);
- ```
- */
-function regionOf({ trial, }: { readonly trial: EditorFidelityTrial; },): string {
-  return trial.damagedText.slice(
-    trial.region.startOffset,
-    trial.region.endOffset,
-  );
 }
 
 await describe({
@@ -198,12 +182,12 @@ await describe({
                 trial: ALTERATION,
                 replacement: regionOf({ trial: ALTERATION, },)
                   .replace(
-                    ALTERATION.damagedDefect,
-                    ALTERATION.cleanDefect,
+                  ALTERATION.damagedDefect,
+                  ALTERATION.cleanDefect,
                   )
                   .replace(
-                    'arrived in',
-                    'arrived  in',
+                  'arrived in',
+                  'arrived  in',
                   ),
               },),
             },),).toStrictEqual({
@@ -222,12 +206,12 @@ await describe({
                 trial: ALTERATION,
                 replacement: regionOf({ trial: ALTERATION, },)
                   .replace(
-                    ALTERATION.damagedDefect,
-                    ALTERATION.cleanDefect,
+                  ALTERATION.damagedDefect,
+                  ALTERATION.cleanDefect,
                   )
                   .replace(
-                    'arrived',
-                    'came',
+                  'arrived',
+                  'came',
                   ),
               },),
             },),).toStrictEqual({
@@ -250,8 +234,8 @@ await describe({
                 trial: ALTERATION,
                 replacement: regionOf({ trial: ALTERATION, },)
                   .replace(
-                    ALTERATION.damagedDefect,
-                    wrong,
+                  ALTERATION.damagedDefect,
+                  wrong,
                   ),
               },),
             },),).toStrictEqual({
@@ -264,12 +248,12 @@ await describe({
                 trial: ALTERATION,
                 replacement: regionOf({ trial: ALTERATION, },)
                   .replace(
-                    ALTERATION.damagedDefect,
-                    wrong,
+                  ALTERATION.damagedDefect,
+                  wrong,
                   )
                   .replace(
-                    'arrived',
-                    'came',
+                  'arrived',
+                  'came',
                   ),
               },),
             },),).toStrictEqual({
@@ -302,13 +286,13 @@ await describe({
               trial: ALTERATION,
               replacement: regionOf({ trial: ALTERATION, },)
                 .replace(
-                  ALTERATION.damagedDefect,
-                  ALTERATION.cleanDefect,
+                ALTERATION.damagedDefect,
+                ALTERATION.cleanDefect,
                 ),
             },)
               .replace(
-                'Every morning',
-                'Each morning',
+              'Every morning',
+              'Each morning',
               );
             expect(scoreEditedText({
               trial: ALTERATION,
@@ -329,13 +313,13 @@ await describe({
               trial: ALTERATION,
               replacement: regionOf({ trial: ALTERATION, },)
                 .replace(
-                  ALTERATION.damagedDefect,
-                  ALTERATION.cleanDefect,
+                ALTERATION.damagedDefect,
+                ALTERATION.cleanDefect,
                 ),
             },)
               .replace(
-                'Every morning',
-                'Every  morning',
+              'Every morning',
+              'Every  morning',
               );
             expect(scoreEditedText({
               trial: ALTERATION,

@@ -1,0 +1,655 @@
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
+import type { RunnerClosure, } from '@monochromatic-dev/translation-repair-insertion/ts';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type { FidelityReferenceSpec, } from '../fidelity-reference-model.ts';
+import type {
+  EditorDamageKind,
+  EditorFidelityTrial,
+} from '../editor-fidelity-trials.ts';
+import type { EditorCeiling, } from './editor-fidelity-ceiling.ts';
+import type { EditorTrialReading, } from './editor-fidelity-trial.ts';
+import type { ProbeRun, } from './probe-store.ts';
+
+//region Editor fidelity plan
+// What the editor fidelity probe writes down and says, built from values it already holds: the durable plan, one row
+// for each card and trial, the tally of each card and the lines that report them. Kept apart from the driver so the
+// driver stays a sequence of steps and each shape here has a case of its own.
+
+/**
+ One completed row: the reviewed twin's provenance beside how the card did on it.
+
+ @example
+ ```ts
+ const row: EditorFidelityRow = { cardId, trialId: 'tabby-reference/insertion', referenceId, entryId, damageKind: 'insertion', changedChars: 12, damageDetail, reading, };
+ ```
+ */
+export type EditorFidelityRow = {
+  /**
+   Card the row belongs to.
+   */
+  readonly cardId: RosterModelId;
+
+  /**
+   Trial the card was seated on.
+   */
+  readonly trialId: string;
+
+  /**
+   Reviewed reference the trial came from.
+   */
+  readonly referenceId: string;
+
+  /**
+   Corpus entry the reference came from.
+   */
+  readonly entryId: string;
+
+  /**
+   Defect the trial carries.
+   */
+  readonly damageKind: EditorDamageKind;
+
+  /**
+   Changed-content count the builder reviewed.
+   */
+  readonly changedChars: number;
+
+  /**
+   Safe structural description of the intentional delta.
+   */
+  readonly damageDetail: string;
+
+  /**
+   How the trial read.
+   */
+  readonly reading: EditorTrialReading;
+};
+
+/**
+ Joins a trial and a card to how the card did, without the trial's text.
+
+ @param cardId - card seated
+
+ @param trial - trial it was seated on
+
+ @param reading - how the trial read
+
+ @returns The row as kept, which stays readable if a later row interrupts the run
+
+ @example
+ ```ts
+ const row = editorFidelityRow({ cardId, trial, reading, },);
+ ```
+ */
+export function editorFidelityRow(
+  {
+    cardId,
+    trial,
+    reading,
+  }: {
+    readonly cardId: RosterModelId;
+    readonly trial: EditorFidelityTrial;
+    readonly reading: EditorTrialReading;
+  },
+): EditorFidelityRow {
+  return {
+    cardId,
+    trialId: trial.trialId,
+    referenceId: trial.spec
+      .id,
+    entryId: trial.spec
+      .entryId,
+    damageKind: trial.damageKind,
+    changedChars: trial.changedChars,
+    damageDetail: trial.damageDetail,
+    reading,
+  };
+}
+
+/**
+ How one card's trials read, counted.
+
+ @example
+ ```ts
+ const tally: EditorCardTally = editorTallyOf({ cardId, rows, },);
+ ```
+ */
+export type EditorCardTally = {
+  /**
+   Card counted.
+   */
+  readonly cardId: RosterModelId;
+
+  /**
+   Trials the card was seated on.
+   */
+  readonly trials: number;
+
+  /**
+   Trials whose defect was fixed, by any kind.
+   */
+  readonly fixed: number;
+
+  /**
+   Fixes that left the patched text equal to the reference.
+   */
+  readonly exact: number;
+
+  /**
+   Fixes that differ from the reference only in whitespace.
+   */
+  readonly equivalent: number;
+
+  /**
+   Fixes that mended the defect and changed something else too.
+   */
+  readonly defectOnly: number;
+
+  /**
+   Answered trials where something outside the defect changed, fixed or not.
+   */
+  readonly collateral: number;
+
+  /**
+   Answered trials where the defect was not fixed.
+   */
+  readonly missed: number;
+
+  /**
+   Trials where the card was heard and proposed no edit.
+   */
+  readonly refused: number;
+
+  /**
+   Trials with no usable reply.
+   */
+  readonly unusable: number;
+};
+
+/**
+ How many of the rows had one fix kind, among the rows of one card.
+
+ @param rows - the card's rows
+
+ @param fixed - fix kind counted
+
+ @returns Rows answered with that fix kind
+
+ @example
+ ```ts
+ const exact = countFixed({ rows, fixed: 'exact', },);
+ ```
+ */
+function countFixed(
+  {
+    rows,
+    fixed,
+  }: {
+    readonly rows: readonly EditorFidelityRow[];
+    readonly fixed: 'exact' | 'equivalent' | 'defect-only' | 'none';
+  },
+): number {
+  return rows.filter(function has(row,): boolean {
+    return (row.reading
+      .kind
+      === 'answered') && (row.reading
+        .score
+        .fixed
+        === fixed);
+  },)
+    .length;
+}
+
+/**
+ Counts each way one card's trials read.
+
+ @param cardId - card counted
+
+ @param rows - every row of the run, of every card
+
+ @returns The tally; zero trials for a card with no rows
+
+ @example
+ ```ts
+ const tally = editorTallyOf({ cardId, rows, },);
+ ```
+ */
+export function editorTallyOf(
+  {
+    cardId,
+    rows,
+  }: {
+    readonly cardId: RosterModelId;
+    readonly rows: readonly EditorFidelityRow[];
+  },
+): EditorCardTally {
+  /**
+   The card's own rows.
+   */
+  const own = rows.filter(function isOwn(row,): boolean {
+    return row.cardId === cardId;
+  },);
+  /**
+   Fixes by kind.
+   */
+  const exact = countFixed({
+    rows: own,
+    fixed: 'exact',
+  },);
+  /**
+   Fixes that matched the reference only after whitespace was collapsed.
+   */
+  const equivalent = countFixed({
+    rows: own,
+    fixed: 'equivalent',
+  },);
+  /**
+   Fixes that removed the defect but touched the rest of the region.
+   */
+  const defectOnly = countFixed({
+    rows: own,
+    fixed: 'defect-only',
+  },);
+  return {
+    cardId,
+    trials: own.length,
+    fixed: exact + equivalent
+      + defectOnly,
+    exact,
+    equivalent,
+    defectOnly,
+    collateral: own.filter(function touched(row,): boolean {
+      return (row.reading
+        .kind
+        === 'answered')
+        && row.reading
+          .score
+          .collateral;
+    },)
+      .length,
+    missed: countFixed({
+      rows: own,
+      fixed: 'none',
+    },),
+    refused: own.filter(function isRefused(row,): boolean {
+      return row.reading
+        .kind
+        === 'refused';
+    },)
+      .length,
+    unusable: own.filter(function isUnusable(row,): boolean {
+      return row.reading
+        .kind
+        === 'unusable';
+    },)
+      .length,
+  };
+}
+
+/**
+ The line that reports a card's tally.
+
+ @param tally - the card's tally
+
+ @returns The line, without a newline
+
+ @example
+ ```ts
+ log.info(editorTallyLine({ tally, },),);
+ ```
+ */
+export function editorTallyLine({ tally, }: { readonly tally: EditorCardTally; },): string {
+  return `EDITOR ${tally.cardId}: fixed ${String(tally.fixed,)} of ${String(tally.trials,)} (exact ${
+    String(tally.exact,)
+  }, equivalent ${String(tally.equivalent,)}, defect only ${String(tally.defectOnly,)}), collateral ${
+    String(tally.collateral,)
+  }, missed ${String(tally.missed,)}, refused ${String(tally.refused,)}, unusable ${String(tally.unusable,)}`;
+}
+
+/**
+ Line saying a request was accepted and nothing was asked, which is what a cap of zero buys.
+
+ @param cardIds - cards the request seats
+
+ @param selected - reviewed reference specifications the request selected
+
+ @returns The line, without a newline
+
+ @example
+ ```ts
+ log.info(editorPreflightLine({ cardIds, selected: 3, },),);
+ ```
+ */
+export function editorPreflightLine(
+  {
+    cardIds,
+    selected,
+  }: {
+    readonly cardIds: readonly RosterModelId[];
+    readonly selected: number;
+  },
+): string {
+  return `preflight only: ${String(selected,)} reviewed reference ${
+    wordForCount({
+      count: selected,
+      one: 'specification',
+      many: 'specifications',
+    },)
+  } selected for ${cardIds.join(', ',)}; no corpus or model calls`;
+}
+
+/**
+ Line saying how many rows were kept and where.
+
+ @param count - rows kept
+
+ @param keptAt - path of the kept run
+
+ @returns The line, without a newline
+
+ @example
+ ```ts
+ log.info(editorKeptLine({ count: 4, keptAt: '/runs/x.json', },),);
+ ```
+ */
+export function editorKeptLine(
+  {
+    count,
+    keptAt,
+  }: {
+    readonly count: number;
+    readonly keptAt: string;
+  },
+): string {
+  return `kept ${String(count,)} editor ${
+    wordForCount({
+      count,
+      one: 'row',
+      many: 'rows',
+    },)
+  } at ${keptAt}`;
+}
+
+/**
+ One planned row as the durable plan lists it.
+
+ @example
+ ```ts
+ const row: EditorPlannedRow = { position: 0, cardId, trialId: 'tabby-reference/insertion', damageKind: 'insertion', };
+ ```
+ */
+export type EditorPlannedRow = {
+  /**
+   Where the row sits among the planned ones, from zero.
+   */
+  readonly position: number;
+
+  /**
+   Card the row seats.
+   */
+  readonly cardId: RosterModelId;
+
+  /**
+   Trial the card is seated on.
+   */
+  readonly trialId: string;
+
+  /**
+   Defect the trial carries.
+   */
+  readonly damageKind: EditorDamageKind;
+};
+
+/**
+ What a run is and what it is about to attempt, written before any model is asked so an interrupted run cannot be
+ mistaken for a finished one.
+
+ @example
+ ```ts
+ const plan: EditorFidelityPlan = editorFidelityPlan({ startedAt, pipelineDigest, runnerClosure, referenceManifestDigest, specs, cardIds, trials, planned, ceilings, },);
+ ```
+ */
+export type EditorFidelityPlan = {
+  /**
+   Always `planned`: a completed run is a different file.
+   */
+  readonly status: 'planned';
+
+  /**
+   When this invocation began.
+   */
+  readonly startedAt: string;
+
+  /**
+   Digest of the built output that ran.
+   */
+  readonly pipelineDigest: string;
+
+  /**
+   Chunks the executing entry imports.
+   */
+  readonly runnerClosure: RunnerClosure;
+
+  /**
+   Digest of the reviewed manifest this run used.
+   */
+  readonly referenceManifestDigest: string;
+
+  /**
+   The reviewed specifications themselves.
+   */
+  readonly referenceManifest: readonly FidelityReferenceSpec[];
+
+  /**
+   Cards the request seated, each alone in its own gather.
+   */
+  readonly requestedCards: readonly RosterModelId[];
+
+  /**
+   Whether the plan holds every trial the request materialized.
+   */
+  readonly completeRequestedMatrix: boolean;
+
+  /**
+   Rows the whole request holds: every trial for every card.
+   */
+  readonly fullMatrixRows: number;
+
+  /**
+   Rows this run will attempt.
+   */
+  readonly plannedRows: number;
+
+  /**
+   The cost ceilings the run printed and was held to.
+   */
+  readonly ceilings: readonly EditorCeiling[];
+
+  /**
+   The attempted rows, in order.
+   */
+  readonly rows: readonly EditorPlannedRow[];
+};
+
+/**
+ One card and trial to attempt.
+
+ @example
+ ```ts
+ const pair: EditorPair = { cardId, trial, };
+ ```
+ */
+export type EditorPair = {
+  /**
+   Card seated.
+   */
+  readonly cardId: RosterModelId;
+
+  /**
+   Trial it is seated on.
+   */
+  readonly trial: EditorFidelityTrial;
+};
+
+/**
+ Builds the durable plan.
+
+ @param startedAt - when this invocation began
+
+ @param pipelineDigest - digest of the built output that ran
+
+ @param runnerClosure - chunks the executing entry imports
+
+ @param referenceManifestDigest - digest of the reviewed manifest used
+
+ @param specs - reviewed specifications the request selected
+
+ @param cardIds - cards the request seats
+
+ @param trials - every trial the request materialized
+
+ @param pairs - the card and trial pairs this run attempts, in order
+
+ @param ceilings - the ceilings printed before the run
+
+ @returns The plan, ready to serialize
+
+ @example
+ ```ts
+ const plan = editorFidelityPlan({ startedAt, pipelineDigest, runnerClosure, referenceManifestDigest, specs, cardIds, trials, pairs, ceilings, },);
+ ```
+ */
+export function editorFidelityPlan(
+  {
+    startedAt,
+    pipelineDigest,
+    runnerClosure,
+    referenceManifestDigest,
+    specs,
+    cardIds,
+    trials,
+    pairs,
+    ceilings,
+  }: {
+    readonly startedAt: string;
+    readonly pipelineDigest: string;
+    readonly runnerClosure: RunnerClosure;
+    readonly referenceManifestDigest: string;
+    readonly specs: readonly FidelityReferenceSpec[];
+    readonly cardIds: readonly RosterModelId[];
+    readonly trials: readonly EditorFidelityTrial[];
+    readonly pairs: readonly EditorPair[];
+    readonly ceilings: readonly EditorCeiling[];
+  },
+): EditorFidelityPlan {
+  return {
+    status: 'planned',
+    startedAt,
+    pipelineDigest,
+    runnerClosure,
+    referenceManifestDigest,
+    referenceManifest: specs,
+    requestedCards: cardIds,
+    completeRequestedMatrix: pairs.length === (trials.length * cardIds.length),
+    fullMatrixRows: trials.length * cardIds.length,
+    plannedRows: pairs.length,
+    ceilings,
+    rows: pairs.map(function plannedRowOf(
+      pair,
+      position,
+    ): EditorPlannedRow {
+      return {
+        position,
+        cardId: pair.cardId,
+        trialId: pair.trial
+          .trialId,
+        damageKind: pair.trial
+          .damageKind,
+      };
+    },),
+  };
+}
+
+/**
+ Everything a finished run is kept as, apart from the clock and the build's identity, which the driver supplies.
+
+ @param plan - the durable plan written before the run
+
+ @param rows - every completed row
+
+ @param tallies - the tally of each card
+
+ @param finishedAt - when the run ended
+
+ @param promptPayloadDir - where completed payloads were kept
+
+ @param corpusPin - corpus commit the references were read at
+
+ @param entriesRequested - entry filter as typed, empty for every entry
+
+ @param trialCap - cap on attempted trials
+
+ @param damageKinds - defect families requested
+
+ @param maxUsd - amount the run was held to
+
+ @returns The record `persistProbeRun` writes
+
+ @example
+ ```ts
+ const run = editorKeptRun({ plan, rows, tallies, finishedAt, promptPayloadDir, corpusPin, entriesRequested, trialCap, damageKinds, maxUsd, },);
+ ```
+ */
+export function editorKeptRun(
+  {
+    plan,
+    rows,
+    tallies,
+    finishedAt,
+    promptPayloadDir,
+    corpusPin,
+    entriesRequested,
+    trialCap,
+    damageKinds,
+    maxUsd,
+  }: {
+    readonly plan: EditorFidelityPlan;
+    readonly rows: readonly EditorFidelityRow[];
+    readonly tallies: readonly EditorCardTally[];
+    readonly finishedAt: string;
+    readonly promptPayloadDir: string;
+    readonly corpusPin: string;
+    readonly entriesRequested: readonly string[];
+    readonly trialCap: number;
+    readonly damageKinds: readonly EditorDamageKind[];
+    readonly maxUsd: number;
+  },
+): ProbeRun {
+  return {
+    startedAt: plan.startedAt,
+    finishedAt,
+    pipelineDigest: plan.pipelineDigest,
+    runnerClosure: plan.runnerClosure,
+    roster: plan.requestedCards,
+    subject: {
+      status: 'completed',
+      completeRequestedMatrix: plan.completeRequestedMatrix,
+      fullMatrixRows: plan.fullMatrixRows,
+      plannedRows: plan.plannedRows,
+      completedRows: rows.length,
+      referenceManifestDigest: plan.referenceManifestDigest,
+      promptPayloadDir,
+      corpusPin,
+      referenceManifest: plan.referenceManifest,
+      entriesRequested,
+      trialCap,
+      damageKinds,
+      maxUsd,
+      ceilings: plan.ceilings,
+      tallies,
+    },
+    rows,
+  };
+}
+
+//endregion Editor fidelity plan

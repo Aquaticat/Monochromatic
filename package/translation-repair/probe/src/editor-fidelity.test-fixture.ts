@@ -1,7 +1,7 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildReviewedFidelityReference,
+  type EditorFidelityTrial,
   type ReviewedFidelityReference,
 } from '../dist/final/node/index.mjs';
 import { reviewedFixture, } from './fidelity-reference.test-fixture.ts';
@@ -39,7 +39,11 @@ export function inventedReference(): ReviewedFidelityReference {
   /**
    Files and specification the invented reference is built from.
    */
-  const { sourceFile, archiveFile, spec, } = reviewedFixture();
+  const {
+    sourceFile,
+    archiveFile,
+    spec,
+  } = reviewedFixture();
   return buildReviewedFidelityReference({
     sourceFile,
     archiveFile,
@@ -48,33 +52,25 @@ export function inventedReference(): ReviewedFidelityReference {
 }
 
 /**
- The damaged twin of one family.
+ The region of the damaged text.
 
- @param reference - the reference carrying the twins
+ @param trial - trial whose region is read
 
- @param kind - family wanted
-
- @returns The twin
-
- @throws {@link Error} when the reference carries none of that family
+ @returns The text the envelope holds
 
  @example
  ```ts
- const insertion = twinOf({ reference, kind: 'insertion', },);
+ const region = regionOf({ trial: ALTERATION, },);
  ```
  */
-export function twinOf(
-  {
-    reference,
-    kind,
-  }: {
-    readonly reference: ReviewedFidelityReference;
-    readonly kind: 'deletion' | 'insertion' | 'alteration';
-  },
-): ReviewedFidelityReference['damages'][number] {
-  return nonNullishOrThrow(reference.damages.find(function isKind(damage,): boolean {
-    return damage.damageKind === kind;
-  },),);
+export function regionOf({ trial, }: { readonly trial: EditorFidelityTrial; },): string {
+  return trial.damagedText
+    .slice(
+    trial.region
+      .startOffset,
+    trial.region
+      .endOffset,
+    );
 }
 
 //endregion Invented editor fidelity fixtures

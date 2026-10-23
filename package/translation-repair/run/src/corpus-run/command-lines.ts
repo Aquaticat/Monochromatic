@@ -50,6 +50,11 @@ export type CommandLines = {
   readonly 'displacement-probe': CommandLineSpec<never, never, never>;
   readonly 'draw-sample': CommandLineSpec<never, never, 'final'>;
   readonly 'editor-calibrate': CommandLineSpec<'candidates', never, 'candidates-alone'>;
+  readonly 'editor-fidelity-probe': CommandLineSpec<
+    'only' | 'cap' | 'damage' | 'candidates' | 'max-usd',
+    never,
+    'candidates-alone'
+    >;
   readonly 'editor-standing-read': CommandLineSpec<never, never, never>;
   readonly 'editor-width-probe': CommandLineSpec<never, never, never>;
   readonly 'judge-fidelity-probe': CommandLineSpec<
@@ -205,6 +210,17 @@ export const COMMAND_LINES: CommandLines = {
     valued: { candidates: SEATABLE_IDS, },
     switches: { 'candidates-alone': true, },
     positionals: SLICE_COUNT,
+  },
+  'editor-fidelity-probe': {
+    ...NO_ARGUMENTS,
+    valued: {
+      only: ENTRY_IDS,
+      cap: COUNT,
+      damage: 'insertion|alteration',
+      candidates: SEATABLE_IDS,
+      'max-usd': 'dollars',
+    },
+    switches: { 'candidates-alone': true, },
   },
   'editor-standing-read': {
     ...NO_ARGUMENTS,

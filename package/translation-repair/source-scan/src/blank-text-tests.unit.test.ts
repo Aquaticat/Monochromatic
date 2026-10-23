@@ -1207,6 +1207,23 @@ const HELD_TESTS: Readonly<Record<string, {
       + 'reader nothing is still where the signer belongs, the name restore writes the signer\'s rendering '
       + 'into it, and `nameAuthorities` asks `rendersAsNothing` before a page name becomes a rendering',
   },
+  'probe/corpus-run/editor-fidelity-client.ts#editorProbeEnv': {
+    tests: 1,
+    why: SETTING,
+  },
+  'probe/editor-fidelity-score.ts#fixesDefect': {
+    tests: 1,
+    why: 'an editor\'s replacement of one region of the translation, where blank is the sentence removed and any other '
+      + 'byte, an invisible one among them, is text the patch left in place',
+  },
+  'probe/editor-fidelity-score.ts#isBlank': {
+    tests: 1,
+    why: SCANNER,
+  },
+  'repair/sentence-region.ts#isBlank': {
+    tests: 1,
+    why: SCANNER,
+  },
   'probe/corpus-run/attribution-read.ts#attributionEntryOf': {
     tests: 1,
     why: RECORD,

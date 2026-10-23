@@ -185,6 +185,10 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: WHOLE_NUMBER,
   },
+  'run/corpus-run/command-flags.ts#usdFlag: Number': {
+    calls: 1,
+    why: PLAIN_DECIMAL,
+  },
   'corpus-pass/corpus-run/corpus-pass-order.ts#byResumeThenBandThenAttempts: Number': {
     calls: 2,
     why: TRUTH_VALUE,

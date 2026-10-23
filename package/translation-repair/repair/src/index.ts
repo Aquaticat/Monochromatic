@@ -38,7 +38,10 @@ export {
   SENTENCE_TERMINATORS,
   splitSentences,
 } from './derive-seeds.ts';
-export { sentenceRegionAround, } from './sentence-region.ts';
+export {
+  type SentenceRegion,
+  sentenceRegionAround,
+} from './sentence-region.ts';
 export {
   buildEditorMessages,
   type EditorPromptPlan,
