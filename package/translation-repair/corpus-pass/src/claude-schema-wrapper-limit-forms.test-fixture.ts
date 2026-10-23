@@ -151,6 +151,27 @@ export const NOT_A_WRAPPER_CASES: readonly FormCase[] = [
     ],
     builders: [],
   },
+  {
+    name: 'NAMES NO WRAPPER IN A FUNCTION THAT CALLS A BUILDER IN A STATEMENT OF ITS OWN AND RETURNS SOMETHING ELSE, so '
+      + 'the file that calls it is not demanded in the producer list',
+    files: [
+      {
+        file: 'imaginary/src/statement-wire.ts',
+        text: textOf([
+          'export function statementResponseFormat(schemaName: string,) {',
+          '  contestResponseFormat({ schemaName, verdicts: [], asksArchive: false, },);',
+          '  return 1;',
+          '}',
+        ],),
+      },
+      {
+        file: 'imaginary/src/statement-caller.ts',
+        text: textOf(['export const STATEMENT = statementResponseFormat(\'statement\',);',],),
+      },
+    ],
+    found: ['imaginary/src/statement-wire.ts',],
+    builders: [],
+  },
 ];
 
 /**
