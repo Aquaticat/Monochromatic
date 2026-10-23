@@ -203,6 +203,49 @@ await describe({
         },),
 
         it({
+          name: 'ROUNDS A FRACTIONAL CAP TO THE WHOLE MILLISECOND at the one place minutes become milliseconds, so '
+            + '4.35 minutes is 261000ms and no hold bound refuses it',
+          fn: async () => {
+            await using clone = await makeCorpusPassClone({ entries: ENTRIES, },);
+            await using runs = await scratchDir({ prefix: 'corpus-pass-runs-', },);
+            await using cache = await scratchDir({ prefix: 'corpus-pass-cache-', },);
+
+            /**
+             What the command wrote with the cap at a decimal whose product with 60000 is not a whole number of
+             floating-point milliseconds (4.35 * 60000 is 260999.99999999997).
+             */
+            const run = await runPass({
+              args: [],
+              runsDir: runs.path,
+              cacheDir: cache.path,
+              clone,
+              settings: { TRANSLATION_REPAIR_HARD_CAP_MINUTES: '4.35', },
+            },);
+
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stdout,).toBe([
+              await startLine({
+                pending: 2,
+                hardMs: 261_000,
+              },),
+              'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 4.35 minutes rather than '
+                + 'the built-in 420',
+              WRITER_GRACE_BUILT_IN,
+              pinLine({ clone, },),
+              'CAP TOO TIGHT: an attempt runs 261000ms, which is not longer than the 460000ms one model '
+                + 'exchange is allowed (360000ms by default, 460000ms for a Claude exchange). Attempts are cut before '
+                + 'an exchange can return, so no slice caches, every '
+                + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
+                + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
+                + 'path deliberately.',
+              ...PROVIDERS_OFF_LINES,
+              '',
+            ].join('\n',),);
+            expect(run.stderr,).toBe(NO_KEY_REFUSAL,);
+          },
+        },),
+
+        it({
           name: 'REFUSES AN ARTIFACT NOTHING CAN PLACE at exit 6 with its message alone and no frames, since it is an '
             + 'operator\'s refusal and no fault of the command',
           fn: async () => {
