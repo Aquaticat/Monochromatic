@@ -91,6 +91,11 @@ type Watched = {
   readonly clients: string[];
 
   /**
+   Longest hold the client was told it may keep a provider out for, in order of the clients built.
+   */
+  readonly holds: number[];
+
+  /**
    What was on disk the moment the first entry was settled.
    */
   readonly atFirstSettle: { stalePageThere: boolean; };
@@ -202,8 +207,12 @@ async function runPass(
     },
     env: {},
     transport: unreachedTransport,
-    newClient: function newClient({ promptPayloadDir, },) {
+    newClient: function newClient({
+      promptPayloadDir,
+      maxHoldMs,
+    },) {
       watched.clients.push(promptPayloadDir,);
+      watched.holds.push(maxHoldMs,);
       return runClientFrom({
         env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
         transport: unreachedTransport,
@@ -301,6 +310,7 @@ function nothingWatched(): Watched {
   return {
     settled: [],
     clients: [],
+    holds: [],
     atFirstSettle: { stalePageThere: true, },
   };
 }
@@ -353,6 +363,8 @@ await describe({
             'prompt-payloads',
           ),
         ],);
+        // THE HARD CAP IS THE LONGEST A HOLD CAN MATTER (F9 of the re-check of the second fix round).
+        expect(watched.holds,).toEqual([25_200_000,],);
       },
     },),
     it({
