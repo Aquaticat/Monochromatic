@@ -113,6 +113,104 @@ function unreadableFieldChildSource(): string {
   `;
 }
 
+/**
+ Longest a child process may run before it is killed: a kill switch, not an elapsed-time assertion.
+ 
+ `spawnSync` blocks the event loop, so the harness's own timer cannot interrupt a child that never exits (for example
+ a `logger.flush()` that never settles). The child normally ends in about a second; sixty seconds is far above that even
+ on a loaded host, and a child that reaches it fails the case instead of hanging the suite.
+ */
+const CHILD_TIMEOUT_MS = 60_000;
+
+/**
+ Exit status reported for a child that ended by a signal and so has none of its own.
+ */
+const SIGNALED_EXIT_STATUS = -1;
+
+/**
+ A throwaway directory and the disposer that removes it on every path out of the case, including a failed spawn.
+ */
+type LogDirectory = {
+  readonly path: string;
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
+};
+
+async function makeLogDirectory(): Promise<LogDirectory> {
+  const path = await mkdtemp(join(tmpdir(), 'statusline-log-',),);
+
+  return {
+    path,
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(path, { force: true, recursive: true, },);
+    },
+  };
+}
+
+/**
+ Runs a TypeScript module source in a keyless child node process in the package directory and captures its streams.
+ 
+ @param executable - node binary to run
+ 
+ @param source - module source passed to `--eval`
+ 
+ @param logDirectory - directory the child's logger writes into
+ 
+ @param timeoutMs - milliseconds after which the child is killed
+ 
+ @returns exit status and both streams
+ 
+ @throws {Error} naming the timeout when the child outlives it, or the spawn error's message when it cannot be spawned
+ 
+ @example
+ ```ts
+ runNodeChild({ executable: process.execPath, source: '', logDirectory: '/tmp/x', timeoutMs: 1000 });
+ ```
+ */
+function runNodeChild({
+  executable,
+  source,
+  logDirectory,
+  timeoutMs,
+}: Readonly<{
+  executable: string;
+  source: string;
+  logDirectory: string;
+  timeoutMs: number;
+}>,): Readonly<{ status: number; stdout: string; stderr: string; }> {
+  const child = spawnSync(
+    executable,
+    [
+      '--input-type=module-typescript',
+      '--eval',
+      source,
+    ],
+    {
+      cwd: join(import.meta.dirname, '..',),
+      encoding: 'utf8',
+      env: {
+        PATH: process.env.PATH ?? '',
+        HOME: process.env.HOME ?? '',
+        MONOCHROMATIC_VERBOSE: 'true',
+        MONOCHROMATIC_LOG_DIRECTORY: logDirectory,
+      },
+      killSignal: 'SIGKILL',
+      timeout: timeoutMs,
+    },
+  );
+  if (child.error !== undefined) {
+    if (('code' in child.error) && (child.error.code === 'ETIMEDOUT'))
+      throw new Error(`the child process timed out after ${timeoutMs} ms and was killed`,);
+
+    throw new Error(`the child process could not run: ${child.error.message}`,);
+  }
+
+  return {
+    status: child.status ?? SIGNALED_EXIT_STATUS,
+    stdout: child.stdout,
+    stderr: child.stderr,
+  };
+}
+
 const REFUSED_RESET_TEXTS = [
   { text: '2026', why: 'a year alone, which Date.parse reads', },
   { text: 'Oct 23 2026 05:03', why: 'a month-name form, which Date.parse reads in local time', },
@@ -631,26 +729,13 @@ await describe({
         it({
           name: 'logs an unreadable weekly field through the tagged debug logger and holds no value of the header',
           fn: async function testSyntheticUnreadableFieldLog() {
-            const logDirectory = await mkdtemp(join(tmpdir(), 'statusline-log-',),);
-            const child = spawnSync(
-              process.execPath,
-              [
-                '--input-type=module-typescript',
-                '--eval',
-                unreadableFieldChildSource(),
-              ],
-              {
-                cwd: join(import.meta.dirname, '..',),
-                encoding: 'utf8',
-                env: {
-                  PATH: process.env.PATH ?? '',
-                  HOME: process.env.HOME ?? '',
-                  MONOCHROMATIC_VERBOSE: 'true',
-                  MONOCHROMATIC_LOG_DIRECTORY: logDirectory,
-                },
-              },
-            );
-            await rm(logDirectory, { force: true, recursive: true, },);
+            await using logDirectory = await makeLogDirectory();
+            const child = runNodeChild({
+              executable: process.execPath,
+              source: unreadableFieldChildSource(),
+              logDirectory: logDirectory.path,
+              timeoutMs: CHILD_TIMEOUT_MS,
+            },);
             const lines = child.stderr.split('\n',).filter(function refusalLine(line,): boolean {
               return line.includes('refusing quotas',);
             },);
@@ -663,6 +748,36 @@ await describe({
                 + 'refusing quotas whose planWeeklyLimit has an unreadable percentRemaining or nextRegenAt',
             ),).toBe(true,);
             expect((child.stdout + child.stderr).includes(HEADER_VALUE_MARKER,),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'fails a child that outlives its timeout with an error that names the timeout',
+          fn: async function testChildTimeoutNamed() {
+            await using logDirectory = await makeLogDirectory();
+
+            expect(function runHungChild(): unknown {
+              return runNodeChild({
+                executable: process.execPath,
+                source: 'setTimeout(function keepAlive() {}, 60_000);',
+                logDirectory: logDirectory.path,
+                timeoutMs: 500,
+              },);
+            },).toThrow('timed out after 500 ms',);
+          },
+        },),
+        it({
+          name: 'fails a child that cannot be spawned with the spawn error's message',
+          fn: async function testChildSpawnFailure() {
+            await using logDirectory = await makeLogDirectory();
+
+            expect(function runMissingExecutable(): unknown {
+              return runNodeChild({
+                executable: join(logDirectory.path, 'no-such-node',),
+                source: '',
+                logDirectory: logDirectory.path,
+                timeoutMs: CHILD_TIMEOUT_MS,
+              },);
+            },).toThrow('ENOENT',);
           },
         },),
         it({
