@@ -643,7 +643,6 @@ await describe({
                 weekly: {
                   percentRemaining: 0,
                   nextRegenAt: '2026-10-23T05:03:47.000Z',
-                  nextRegenPercent: 2,
                 },
               },
             },),).toEqual([
@@ -681,13 +680,13 @@ await describe({
               '',
               '2026-10-23T05:03:47Z',
               '2026-10-23T05:03:47.000Z',
-            ].map(function returnFieldFor(nextRegenAt,): string | undefined {
+            ].map(function returnFieldFor(nextRegenAt,): string {
               return syntheticMeterLevel({
                 quota: { weekly: { percentRemaining: 0, nextRegenAt, }, },
               },)
                 .find(function isReturn(field,): boolean {
                   return field.startsWith('syntheticWeeklyReturn',);
-                },);
+                },) ?? 'no return field';
             },);
             expect(returned,).toEqual([
               'syntheticWeeklyReturn=unreadable',

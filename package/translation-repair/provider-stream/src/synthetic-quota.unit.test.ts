@@ -217,7 +217,7 @@ await describe({
          The values refused, as JSON text, with a secret-shaped one among them whose text must not reach the message.
          */
         const values = [
-          '"a synthetic=wet\\nINJECT-SECRET"',
+          String.raw`"a synthetic=wet\nINJECT-SECRET"`,
           '""',
           '"2026-10-23T05:03:47"',
           '"2026-10-23T05:03:47Z"',
@@ -231,7 +231,7 @@ await describe({
           },);
         },);
         expect(messages.map(function stripped(message,): string {
-          return message.replace(/^Synthetic \/quotas body violated expectations: /v, '',);
+          return message.replace('Synthetic /quotas body violated expectations: ', '',);
         },),).toEqual(values.flatMap(function expectedFor(): readonly string[] {
           return ['weeklyTokenLimit', 'planWeeklyLimit',].map(function expectedAt(name,): string {
             return `${name}.nextRegenAt is not an ISO-8601 instant; received ${name}:object; ${name} holds `

@@ -9,6 +9,7 @@ import {
   providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { isIsoStampText, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { XiaomiSpend, } from './xiaomi-spend.ts';
 import { neuralWattTimeOfDayUtc, } from './neuralwatt-day.ts';
 
@@ -712,8 +713,10 @@ const NO_WINDOW = 'none';
  carry fields verbatim, so the older `48/50` form and `none` both read.
 
  A SPENT WEEKLY BUDGET STATES ITS RETURN: `syntheticWeeklyReturn=` the instant the reply names for the next regeneration
- (`nextRegenAt`, 2026-10-23T05:03:47.000Z in the reply of that day, where 2% of the limit came back), so a dry record says when
- it can end instead of leaving a reader to ask the provider. A reading with weekly budget left prints no such field.
+ (`nextRegenAt`, 2026-10-23T05:03:47.000Z in the reply of that day, where the next regeneration returns 2% of the limit), so a dry
+ record says when it can end instead of leaving a reader to ask the provider. A reading with weekly budget left prints no such field.
+ ONLY AN INSTANT AS THE LOGGER WRITES ONE IS PRINTED (`isIsoStampText`); the reader refuses any other value, and a snapshot built
+ another way whose value is not one prints `syntheticWeeklyReturn=unreadable`, so no string can add a field or a line to the record.
 
  @param quota - snapshot the dryness verdict was read from
 
@@ -747,7 +750,13 @@ export function syntheticMeterLevel(
    The weekly return, stated only where the weekly budget is spent.
    */
   const returnFields = (weekly.percentRemaining <= 0)
-    ? [`syntheticWeeklyReturn=${weekly.nextRegenAt}`,]
+    ? [
+      `syntheticWeeklyReturn=${
+        isIsoStampText({ text: weekly.nextRegenAt, },)
+          ? weekly.nextRegenAt
+          : 'unreadable'
+      }`,
+    ]
     : [];
 
   if (fiveHour === undefined)
