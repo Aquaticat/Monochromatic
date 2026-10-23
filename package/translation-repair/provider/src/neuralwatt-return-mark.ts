@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
+import { returnFitsWithin, } from './neuralwatt-return-fit.ts';
 import type { NeuralWattDryness, } from './neuralwatt-return-hold.ts';
 
 //region NeuralWatt return mark
@@ -96,8 +97,8 @@ export type NeuralWattReturnMark = {
   /**
    Milliseconds left until the day starts again, or zero where the return lies past what a caller waits for.
 
-   THE BOUND IS TAKEN OFF THE DISTANCE WITHOUT ITS MARGIN, so a return exactly at the bound is waited for and the margin
-   does not push it out.
+   THE DISTANCE IS COMPARED WITH ITS MARGIN INCLUDED (`returnFitsWithin`), the way the refusal states it and the pass's
+   park counts it, so a return exactly at the bound is waited for and one within the margin past it is not.
 
    @param boundMs - the longest return the caller waits for
    */
@@ -108,8 +109,6 @@ export type NeuralWattReturnMark = {
  Builds the mark of one budget layer.
 
  @param now - the monotonic clock the budget layer reads
-
- @param marginMs - the margin the distances carry, which a bound is taken off (default: none)
 
  @param l - logger the line is written to; the package's root by default
 
@@ -123,11 +122,9 @@ export type NeuralWattReturnMark = {
 export function createNeuralWattReturnMark(
   {
     now,
-    marginMs = 0,
     l = root,
   }: {
     readonly now: () => number;
-    readonly marginMs?: number;
     readonly l?: Logger;
   },
 ): NeuralWattReturnMark {
@@ -242,7 +239,10 @@ export function createNeuralWattReturnMark(
        Milliseconds until the day starts again, margin included.
        */
       const left = leftMs();
-      return ((left - marginMs) <= boundMs) ? left : 0;
+      return returnFitsWithin({
+        returnsInMs: left,
+        boundMs,
+      },) ? left : 0;
     },
   };
 }

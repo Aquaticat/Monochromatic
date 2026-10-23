@@ -526,10 +526,7 @@ export function createProviderBudgets(
   /**
    When NeuralWatt's spent day starts again, as the last meter reading named it.
    */
-  const returns = createNeuralWattReturnMark({
-    now,
-    marginMs: returnMarginMs,
-  },);
+  const returns = createNeuralWattReturnMark({ now, },);
 
   /**
    How much longer a provider's refusal holds it out, zero when it does not.

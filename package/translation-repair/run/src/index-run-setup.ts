@@ -85,7 +85,7 @@ export {
   type SeatReadingClient,
 } from './corpus-run/run-seats-read.ts';
 export { writtenRefusal, } from './corpus-run/run-seats-refusal.ts';
-export { holdsWithinPass, } from './corpus-run/run-seats-short-bench.ts';
+export { holdsWithinPass, } from './corpus-run/run-seats-pass-bound.ts';
 export { writingProvidersOf, } from './corpus-run/run-writing-providers.ts';
 export {
   type BenchName,

@@ -8,6 +8,7 @@ import {
   durationWordsOf,
   EveryProviderDryError,
   type ModelClient,
+  returnFitsWithin,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { refusalText, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -302,7 +303,10 @@ function refuseOn(
    Whether the refusal names a return the pass can wait for, and no park ended just before it.
    */
   const parkable = (error.neuralwattReturnsInMs !== undefined) && (error.neuralwattReturnsAt !== undefined)
-    && (error.neuralwattReturnsInMs <= left)
+    && returnFitsWithin({
+      returnsInMs: error.neuralwattReturnsInMs,
+      boundMs: left,
+    },)
     && ((state.parkEndedAt === undefined) || ((now() - state.parkEndedAt) >= PARK_SETTLE_MS));
   /**
    Logger pre-tagged with this function's name.

@@ -105,6 +105,11 @@ type Watched = {
  */
 type Overrides = {
   /**
+   The pass's monotonic clock, for a case that moves it by hand.
+   */
+  readonly now?: () => number;
+
+  /**
    Note naming the straggler window.
    */
   readonly graceNote?: string;
@@ -691,9 +696,9 @@ await describe({
       },
     },),
     it({
-      name: 'COUNTS THE SOFT BUDGET DOWN ON THE PASS\'S CLOCK in what the client is handed: with a hard cap far past the '
-        + 'soft budget, the first entry reads the whole soft budget (4,320 min) and a minute later reads a minute less, so '
-        + 'the bound follows time and is not the cap alone',
+      name: 'COUNTS THE SOFT BUDGET DOWN ON THE PASS\'S CLOCK in what the client is handed: the first entry reads the '
+        + '420 min hard cap (the soft budget is far longer), and once the pass\'s clock has run to 320 min short of the '
+        + 'soft budget the bound is exactly what the soft budget has left, falling with the clock',
       fn: async (ctx) => {
         using _printed = relayingConsoleLog({ sinon: ctx.sinon, },);
         await using clone = await makeCorpusPassClone({ entries: [
@@ -710,9 +715,10 @@ await describe({
          */
         const clock = { now: 1_000, };
         /**
-         What the client read at the first entry and a minute later.
+         What the client read at the first entry, then after the clock ran to 20 min short of the soft budget, then a
+         minute later.
          */
-        const seen: { first?: number; later?: number; } = {};
+        const seen: number[] = [];
 
         await runPass({
           typed: [],
@@ -721,7 +727,6 @@ await describe({
           pipelineDir: built.dir,
           watched: nothingWatched(),
           overrides: {
-            hardCapMs: 500_000_000,
             now: function now() {
               return clock.now;
             },
@@ -733,9 +738,12 @@ await describe({
               },);
             },
             settle: async function settle({ entry, client, artifactsDir, },): Promise<EntryOutcome> {
-              seen.first = client.passLeftMs?.();
+              seen.push(client.passLeftMs?.() ?? Number.NaN,);
+              // 259,200,000 ms of soft budget less 20 min (1,200,000 ms) left.
+              clock.now += 258_000_000;
+              seen.push(client.passLeftMs?.() ?? Number.NaN,);
               clock.now += 60_000;
-              seen.later = client.passLeftMs?.();
+              seen.push(client.passLeftMs?.() ?? Number.NaN,);
               await writeFile(
                 join(
                   artifactsDir,
@@ -748,8 +756,7 @@ await describe({
           },
         },);
 
-        expect(seen.first,).toBe(259_200_000,);
-        expect(seen.later,).toBe(259_140_000,);
+        expect(seen,).toEqual([25_200_000, 1_200_000, 1_140_000,],);
       },
     },),
     it({

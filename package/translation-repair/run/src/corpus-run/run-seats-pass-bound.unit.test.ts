@@ -155,7 +155,7 @@ await describe({
       children: [
         it({
           name: 'HANDS THE CLIENT\'S BOUND TO THE HOLDS, and no bound where the client carries none',
-          fn: () => {
+          fn: async () => {
             /**
              The bounds the holds were asked for.
              */
@@ -176,10 +176,10 @@ await describe({
 
              @returns No hold
              */
-            const providerHolds = function recordBound(args?: { readonly returnBoundMs?: number; },): typeof holds {
+            function providerHolds(args?: { readonly returnBoundMs?: number; },): typeof holds {
               asked.push(args?.returnBoundMs ?? Number.NaN,);
               return holds;
-            };
+            }
             holdsWithinPass({ client: { providerHolds, passLeftMs: () => 600, }, },);
             holdsWithinPass({ client: { providerHolds, }, },);
             expect(asked,).toEqual([600, Number.POSITIVE_INFINITY,],);

@@ -413,6 +413,21 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: 'how long a refusal holds a dry Hyper meter out for a case that waits that hold out for real, handed in by '
       + 'the case (40 ms), so the wait cannot end before it on any machine',
   },
+  'provider/neuralwatt-return-fit.unit.test.ts#<module>: boundMs: 600_000': {
+    count: 2,
+    bound: 'other',
+    reason: 'a bound handed to a pure comparison of two numbers; no timer is armed and nothing sleeps',
+  },
+  'provider/neuralwatt-return-fit.unit.test.ts#<module>: boundMs: 0': {
+    count: 1,
+    bound: 'other',
+    reason: 'a bound handed to a pure comparison of two numbers; no timer is armed and nothing sleeps',
+  },
+  'provider/neuralwatt-return-fit.unit.test.ts#<module>: boundMs: -5': {
+    count: 1,
+    bound: 'other',
+    reason: 'a bound handed to a pure comparison of two numbers; no timer is armed and nothing sleeps',
+  },
   'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 7 * HOUR_MS': {
     count: 2,
     bound: 'other',

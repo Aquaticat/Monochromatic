@@ -5,6 +5,7 @@ import {
 import type { NeuralWattReturn, } from './budget-routing.ts';
 import { durationWordsOf, } from './duration-words.ts';
 import type { NeuralWattDryness, } from './neuralwatt-return-hold.ts';
+import { pastPassWordsOf, } from './neuralwatt-return-fit.ts';
 import { keyUnblockTextOf, } from './neuralwatt-return-words.ts';
 import {
   PROVIDER_ORDER,
@@ -111,11 +112,16 @@ export function dryCauseClausesOf(
   if (dryness.returnsInMs === undefined)
     return [`NeuralWatt reads dry because its account still shows the day spent past the day start at ${at}`,];
   /**
-   The clause saying the pass would end first, where the return lies past what the pass has left.
+   The clause saying the pass would end first, empty where the return fits what the pass has left.
    */
-  const pastPass = ((passLeftMs !== undefined) && (dryness.returnsInMs > passLeftMs))
-    ? `, which is past the ${durationWordsOf({ ms: passLeftMs, },)} this pass has left`
-    : '';
+  const pastPass = pastPassWordsOf({
+    returnsInMs: dryness.returnsInMs,
+    ...((passLeftMs === undefined) ? {} : { passLeftMs, }),
+  },)
+    .map(function clauseOf(words,): string {
+      return `, which is ${words}`;
+    },)
+    .join('',);
   return [
     `NeuralWatt reads dry and its day starts again at ${at} (in ${durationWordsOf({ ms: dryness.returnsInMs, },)})${pastPass}`,
   ];

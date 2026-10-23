@@ -30,6 +30,7 @@ import {
   readJudgeSeats,
   RUN_TRANSLATORS,
 } from '../../dist/final/node/index.mjs';
+import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 
 //region Hold need tests
 
@@ -123,15 +124,7 @@ async function readTranslateLane(
         counted.reads += 1;
         return (counted.reads === 1) ? BEDROCK_ALONE : ALL_WET;
       },
-      providerMeterStates: async () => ({
-        neuralwatt: 'wet',
-        synthetic: 'wet',
-        bedrock: 'wet',
-        deepseek: 'wet',
-        xiaomi: 'wet',
-        hyper: 'wet',
-        openrouter: 'wet',
-      }),
+      providerMeterStates: metersAllWet,
       providerHolds: () => {
         const asked = holdsByAsk[Math.min(counted.asks, holdsByAsk.length - 1,)] ?? NO_HOLDS;
         counted.asks += 1;

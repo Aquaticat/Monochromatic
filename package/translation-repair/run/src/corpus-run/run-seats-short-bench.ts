@@ -15,6 +15,10 @@ import type { RunClient, } from './run-client-contract.ts';
 import { judgeSeatsFor, } from './run-seats.ts';
 import { holdsThatServeShortBenches, } from './run-seats-hold-need.ts';
 import {
+  holdsWithinPass,
+  passBoundOf,
+} from './run-seats-pass-bound.ts';
+import {
   belowFloorWritingBenches,
   benchesOf,
   PHASES_WITHOUT_WRITER_STOP,
@@ -57,23 +61,10 @@ export type SeatReadingClient = Pick<
   >;
 
 /**
- How long each provider is held out as the seat reader waits for it: a NeuralWatt return counts as a hold only when it
- lies inside what the pass has left, so a return past it is not waited for and the reading refuses at once.
-
- @param client - run client, whose pass bound is read when it carries one
-
- @returns Milliseconds of hold left per provider
-
- @example
- ```ts
- const holds = holdsWithinPass({ client, },);
- ```
+ What a reading that stops waiting says of the returns, said of NeuralWatt's too when its return lies past what the pass
+ has left: no provider has one the reader can wait for.
  */
-export function holdsWithinPass(
-  { client, }: { readonly client: Pick<SeatReadingClient, 'passLeftMs' | 'providerHolds'>; },
-): ReturnType<SeatReadingClient['providerHolds']> {
-  return client.providerHolds({ returnBoundMs: client.passLeftMs?.() ?? Number.POSITIVE_INFINITY, },);
-}
+const NO_WAITABLE_RETURN = 'no provider has named a return the pass can wait for';
 
 /**
  The view when the budgets could not be read: nothing is dry.
@@ -94,7 +85,7 @@ function wetWhenUnread(): boolean {
  bench the phase leans on cannot reach quorum among the seats a wet provider
  serves, reading again after the wait, and waiting for the next hold while a
  bench is still short and a hold still runs; when a judge bench is short and
- no provider has named its return, the reading says so and seats what it
+ no provider has named a return the pass can wait for, the reading says so and seats what it
  read; when a writing bench is below its floor with nothing to wait for, or
  still below it after the waits, the entry stops, except in a phase that goes on
  without its writers (`PHASES_WITHOUT_WRITER_STOP`), where the reading says so in
@@ -222,6 +213,7 @@ export async function readDrynessPastShortBench(
       clauses: unreachable,
       dry: first,
       client,
+      refusalFollows: !goesOn,
     },);
     if (unreachable.length > 0) {
       // THE FIFTEENTH CLASS: a writing bench below its floor with nothing to wait for stops the entry rather than
@@ -230,7 +222,7 @@ export async function readDrynessPastShortBench(
       l.error(
         `JUDGE SEATS phase=${phase} writing bench unreachable: ${stated.join('; ',)}; ${
           goesOn
-            ? 'no provider has named its return, so the phase goes on without its writers'
+            ? `${NO_WAITABLE_RETURN}, so the phase goes on without its writers`
             : 'stopping the entry'
         }`,
       );
@@ -273,8 +265,15 @@ export async function readDrynessPastShortBench(
       // spent balance names no return, so the phase runs on what is reachable;
       // the line says so before it starts.
       l.warn(
-        `JUDGE SEATS phase=${phase} short of quorum: ${shortElsewhere.join('; ',)}; `
-          + 'no provider has named its return, so the phase runs on what is reachable',
+        `JUDGE SEATS phase=${phase} short of quorum: ${
+          withNeuralWattReturn({
+            clauses: shortElsewhere,
+            dry: first,
+            client,
+            refusalFollows: false,
+          },)
+            .join('; ',)
+        }; ${NO_WAITABLE_RETURN}, so the phase runs on what is reachable`,
       );
     }
     return {
@@ -308,9 +307,7 @@ export async function readDrynessPastShortBench(
       holds: waiting.holds,
       shortest: waiting.shortest,
       neuralwatt: neuralwattOf({ client, },),
-      neuralwattHeldByReturn: client.neuralwattHeldByReturn?.({
-        returnBoundMs: client.passLeftMs?.() ?? Number.POSITIVE_INFINITY,
-      },) ?? true,
+      neuralwattHeldByReturn: client.neuralwattHeldByReturn?.({ returnBoundMs: passBoundOf({ client, }), },) ?? true,
     },);
     l.warn(
       `JUDGE SEATS phase=${phase} short of quorum: ${waiting.short
@@ -380,6 +377,7 @@ export async function readDrynessPastShortBench(
     clauses: stillUnreachable,
     dry: waiting.dry,
     client,
+    refusalFollows: !goesOn,
   },);
   if (stillUnreachable.length > 0) {
     l.error(

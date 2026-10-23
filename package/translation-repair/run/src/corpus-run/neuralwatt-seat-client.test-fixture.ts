@@ -6,16 +6,17 @@ import {
   createProviderBudgets,
   type NeuralWattEnergy,
 } from '@monochromatic-dev/translation-repair-provider';
+import type { RunClient, } from '../../dist/final/node/index.mjs';
 
 /**
  Abort signal every read here carries.
  */
-export const SIGNAL = new AbortController().signal;
+export const SIGNAL: AbortSignal = new AbortController().signal;
 
 /**
  Milliseconds after 00:00 UTC the account's day starts at: 19:15:08 UTC.
  */
-export const DAY_START_MS_OF_DAY = 69_308_000;
+const DAY_START_MS_OF_DAY = 69_308_000;
 
 /**
  The day whose energy is spent.
@@ -33,7 +34,7 @@ export const SPENT_DAY = {
 /**
  The day that began at the return.
  */
-export const FRESH_DAY = {
+const FRESH_DAY = {
   dayStart: '2026-10-23T19:15:08.000Z',
   dailyWh: 550,
   spentWh: 0,
@@ -42,6 +43,62 @@ export const FRESH_DAY = {
   remainingWh: 550,
   calls: 0,
 } as const;
+
+/**
+ The year the stubbed wall clock reads.
+ */
+const WALL_YEAR = 2_026;
+
+/**
+ The month the stubbed wall clock reads: October, zero-based.
+ */
+const WALL_MONTH_INDEX = 9;
+
+/**
+ The day of month the stubbed wall clock reads.
+ */
+const WALL_DAY = 23;
+
+/**
+ Percent of Synthetic's week left when the case has it wet.
+ */
+const SYNTHETIC_WET_PERCENT = 50;
+
+/**
+ The anchor of the account's day, which is known.
+
+ @returns The day start as a time of day
+
+ @example
+ ```ts
+ const anchor = dayAnchor();
+ ```
+ */
+function dayAnchor(): {
+  readonly known: true;
+  readonly msOfDay: number
+} {
+  return {
+    known: true,
+    msOfDay: DAY_START_MS_OF_DAY,
+  };
+}
+
+/**
+ What the seat reader takes of its client, and the energy reads counted.
+ */
+type NeuralWattSeatClient = {
+  readonly reads: { count: number; };
+  readonly client: Pick<
+    RunClient,
+    | 'neuralwattDryness'
+      | 'neuralwattReturn'
+      | 'passLeftMs'
+      | 'providerDryness'
+      | 'providerHolds'
+      | 'providerMeterStates'
+    >;
+};
 
 /**
  The seat reader's client over the real budgets, with NeuralWatt dry for the spent day and Synthetic the only wet
@@ -83,30 +140,43 @@ export function clientBefore(
     readonly passLeftMs?: number;
     readonly now?: () => number;
   },
-) {
+): NeuralWattSeatClient {
+  /**
+   Energy reads made so far.
+   */
   const reads = { count: 0, };
+  /**
+   The real budgets over the stub meters.
+   */
   const budgets = createProviderBudgets({
     neuralwatt: {
-      energy: async () => {
+      energy: function energy(): Promise<NeuralWattEnergy> {
         reads.count += 1;
-        return ((reads.count === 1) || lagging) ? spent : FRESH_DAY;
+        return Promise.resolve(((reads.count === 1) || lagging) ? spent : FRESH_DAY,);
       },
-      dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
+      dayAnchor,
     },
     synthetic: {
-      quotas: async () => ({
-        weekly: { percentRemaining: syntheticWet ? 50 : 0, nextRegenAt: '2026-10-25T00:00:00.000Z', },
-      }),
+      quotas: function quotas() {
+        return Promise.resolve({
+          weekly: {
+            percentRemaining: syntheticWet ? SYNTHETIC_WET_PERCENT : 0,
+            nextRegenAt: '2026-10-25T00:00:00.000Z',
+          },
+        },);
+      },
     },
-    wallNow: () => new Date(Date.UTC(
-      2_026,
-      9,
-      23,
-      0,
-      0,
-      0,
-      DAY_START_MS_OF_DAY - msBeforeReturn,
-    ),),
+    wallNow: function wallNow() {
+      return new Date(Date.UTC(
+        WALL_YEAR,
+        WALL_MONTH_INDEX,
+        WALL_DAY,
+        0,
+        0,
+        0,
+        DAY_START_MS_OF_DAY - msBeforeReturn,
+      ),);
+    },
     returnMarginMs: 0,
     // Conditional spread keeps the real clock where the case sleeps for real.
     ...((now === undefined) ? {} : { now, }),
@@ -114,13 +184,23 @@ export function clientBefore(
   return {
     reads,
     client: {
-      providerDryness: () => budgets.read({ signal: SIGNAL, },),
-      providerMeterStates: () => budgets.readStates({ signal: SIGNAL, },),
+      providerDryness: function providerDryness() {
+        return budgets.read({ signal: SIGNAL, },);
+      },
+      providerMeterStates: function providerMeterStates() {
+        return budgets.readStates({ signal: SIGNAL, },);
+      },
       providerHolds: budgets.holds,
       neuralwattReturn: budgets.neuralwattReturn,
       neuralwattDryness: budgets.neuralwattDryness,
       // Conditional spread keeps the client without a pass bound where the case names none.
-      ...((passLeftMs === undefined) ? {} : { passLeftMs: () => passLeftMs, }),
+      ...((passLeftMs === undefined)
+        ? {}
+        : {
+          passLeftMs: function passLeft() {
+            return passLeftMs;
+          },
+        }),
     },
   };
 }

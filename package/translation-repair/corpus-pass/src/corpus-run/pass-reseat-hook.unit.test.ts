@@ -19,6 +19,7 @@ import {
 
 import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import { reseatHookFor, } from '../../dist/final/node/index.mjs';
+import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
 
 /**
  Every provider wet.
@@ -73,15 +74,7 @@ function hookBefore(
         reads.count += 1;
         return ALL_WET;
       },
-      providerMeterStates: async () => ({
-        neuralwatt: 'wet',
-        synthetic: 'wet',
-        bedrock: 'wet',
-        deepseek: 'wet',
-        xiaomi: 'wet',
-        hyper: 'wet',
-        openrouter: 'wet',
-      }),
+      providerMeterStates: metersAllWet,
       providerHolds: ({ returnBoundMs = Number.POSITIVE_INFINITY, }: { readonly returnBoundMs?: number; } = {},) => ({
         neuralwatt: (returnInMs <= returnBoundMs) ? returnInMs : 0,
         synthetic: 0,

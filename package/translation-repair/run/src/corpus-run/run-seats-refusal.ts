@@ -6,6 +6,7 @@ import {
   idleWetProviders,
   type NeuralWattDryness,
   type NeuralWattReturn,
+  pastPassWordsOf,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { markFailureWritten, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
@@ -15,6 +16,7 @@ import {
 import type { RunClient, } from './run-client-contract.ts';
 import { RUN_WRITING_PROVIDERS, } from './run-config.ts';
 import { WritingBenchUnreachableError, } from './run-seats-floor.ts';
+import { holdsWithinPass, } from './run-seats-pass-bound.ts';
 import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 
 //region Seat reading refusal
@@ -74,6 +76,9 @@ export function writingProvidersOfClient(
 
  @param client - run client, whose NeuralWatt day is read when it reports one
 
+ @param refusalFollows - whether a run-ending refusal follows when every provider that keeps the run going is dry, which
+ states the cause itself (default: it does); false for a reading that goes on, where nothing else would state it
+
  @returns The clauses, with the cause last where NeuralWatt reads dry and the client reports one
 
  @example
@@ -86,20 +91,22 @@ export function withNeuralWattReturn(
     clauses,
     dry,
     client,
+    refusalFollows = true,
   }: {
     readonly clauses: readonly string[];
     readonly dry: BudgetView;
     readonly client: Pick<RunClient, 'neuralwattDryness' | 'passLeftMs' | 'writingProviders'>;
+    readonly refusalFollows?: boolean;
   },
 ): readonly string[] {
   /**
    The sentence about why NeuralWatt reads dry, empty where NeuralWatt is not dry, the client reports no cause, or every
-   provider that keeps the run going is dry, which the run-ending refusal states itself.
+   provider that keeps the run going is dry and a run-ending refusal follows to state it.
    */
-  const beyond = (dry.neuralwatt && (!everyWritingProviderDry({
+  const beyond = (dry.neuralwatt && ((!refusalFollows) || (!everyWritingProviderDry({
     view: dry,
     writing: writingProvidersOfClient({ client, },),
-  },)))
+  },))))
     ? dryCauseClausesOf({
       dryness: client.neuralwattDryness?.() ?? { kind: 'wet', },
       ...((client.passLeftMs === undefined) ? {} : { passLeftMs: client.passLeftMs(), }),
@@ -122,6 +129,11 @@ export function withNeuralWattReturn(
 
  @param neuralwattDryness - why NeuralWatt reads dry, left out where the client reports none
 
+ @param neuralwattReturnsInMs - milliseconds until NeuralWatt's spent day starts again while the return lies ahead, which
+ the pass reads to park for it when it has the time; left out where no return lies ahead
+
+ @param pastPass - the words saying that return is past what the pass has left, none where it fits or none is named
+
  @param dry - the dryness view the reading stopped on, whose wet providers the refusal names with their reason
 
  @param writing - the providers whose wet reading keeps the run going
@@ -130,7 +142,7 @@ export function withNeuralWattReturn(
 
  @example
  ```ts
- throw everyProviderDryRefusal({ phase: 'lanes', holds: client.providerHolds(), dry, writing, },);
+ throw everyProviderDryRefusal({ phase: 'lanes', holds: client.providerHolds(), dry, writing, pastPass: [], },);
  ```
  */
 function everyProviderDryRefusal(
@@ -139,6 +151,8 @@ function everyProviderDryRefusal(
     holds,
     neuralwatt,
     neuralwattDryness,
+    neuralwattReturnsInMs,
+    pastPass,
     dry,
     writing,
   }: {
@@ -146,6 +160,8 @@ function everyProviderDryRefusal(
     readonly holds: ProviderRecord<number>;
     readonly neuralwatt?: NeuralWattReturn;
     readonly neuralwattDryness?: NeuralWattDryness;
+    readonly neuralwattReturnsInMs?: number;
+    readonly pastPass: readonly string[];
     readonly dry: BudgetView;
     readonly writing: ProviderRecord<boolean>;
   },
@@ -163,6 +179,11 @@ function everyProviderDryRefusal(
       return `${provider} ${String(holds[provider],)}ms`;
     },)
       .join(', ',)
+  }${
+    pastPass.map(function sentenceOf(words,): string {
+      return `; the NeuralWatt return is ${words}`;
+    },)
+      .join('',)
   }`;
   return new EveryProviderDryError({
     measured,
@@ -173,6 +194,7 @@ function everyProviderDryRefusal(
     // Conditional spread keeps the day absent on a client that reports none.
     ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     ...((neuralwattDryness === undefined) ? {} : { neuralwattDryness, }),
+    ...((neuralwattReturnsInMs === undefined) ? {} : { neuralwattReturnsInMs, }),
   },);
 }
 
@@ -227,6 +249,17 @@ export function writtenRefusal(
    */
   const writing = writingProvidersOfClient({ client, },);
   /**
+   Why NeuralWatt reads dry, as the client reports it.
+   */
+  const dryness = client.neuralwattDryness?.();
+  /**
+   Milliseconds until the spent day starts again while that return lies ahead, which the pass reads to park for it.
+   */
+  const returnsInMs = ((dryness?.kind === 'spent-day') && (dryness.returnsInMs !== undefined)
+    && (dryness.returnsInMs > 0))
+    ? dryness.returnsInMs
+    : undefined;
+  /**
    The refusal the entry stops with.
    */
   const refusal = everyWritingProviderDry({
@@ -235,9 +268,17 @@ export function writtenRefusal(
   },)
     ? everyProviderDryRefusal({
       phase,
-      holds: client.providerHolds(),
+      // THE HOLDS THE READER WAITED FOR: a NeuralWatt return it declined to wait for is stated beside, not as a hold.
+      holds: holdsWithinPass({ client, },),
       dry,
       writing,
+      pastPass: (returnsInMs === undefined)
+        ? []
+        : pastPassWordsOf({
+          returnsInMs,
+          ...((client.passLeftMs === undefined) ? {} : { passLeftMs: client.passLeftMs(), }),
+        },),
+      ...((returnsInMs === undefined) ? {} : { neuralwattReturnsInMs: returnsInMs, }),
       ...((client.neuralwattReturn === undefined) ? {} : { neuralwatt: client.neuralwattReturn(), }),
       ...((client.neuralwattDryness === undefined) ? {} : { neuralwattDryness: client.neuralwattDryness(), }),
     },)

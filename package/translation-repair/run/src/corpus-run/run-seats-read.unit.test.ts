@@ -488,7 +488,7 @@ await describe({
           },
         },),
         it({
-          name: 'DOES NOT WAIT when no provider has named its return, seating what it read, nor when every '
+          name: 'DOES NOT WAIT when no provider has named a return the pass can wait for, seating what it read, nor when every '
             + 'bench can reach quorum however long a provider is held',
           fn: async () => {
             const noHold = scriptedViews({
@@ -553,7 +553,7 @@ await describe({
           } reachable, quorum ${String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)}`,);
             },);
             expect(said === undefined,).toBe(false,);
-            expect(said?.includes('no provider has named its return',),).toBe(true,);
+            expect(said?.includes('no provider has named a return the pass can wait for',),).toBe(true,);
 
             const whole = scriptedViews({ views: [ALL_WET,], },);
             const quiet = capturingLoggerPair();
@@ -804,12 +804,12 @@ await describe({
               translators: RUN_TRANSLATORS,
               errors: [
                 'error JUDGE SEATS phase=page consistency writing bench unreachable: translators 0 of 8 reachable, floor 2; '
-                  + 'no provider has named its return, so the phase goes on without its writers',
+                  + 'no provider has named a return the pass can wait for, so the phase goes on without its writers',
               ],
               stops: [],
               warned: [
                 'warn JUDGE SEATS phase=page consistency short of quorum: wide 0 of 7 reachable, quorum 4; '
-                  + 'no provider has named its return, so the phase runs on what is reachable',
+                  + 'no provider has named a return the pass can wait for, so the phase runs on what is reachable',
               ],
             },);
           },

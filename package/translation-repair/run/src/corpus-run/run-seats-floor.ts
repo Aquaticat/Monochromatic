@@ -48,7 +48,7 @@ export const WRITING_BENCH_FLOOR = 2;
 
 /**
  Stops an entry whose phase cannot write: a writing bench it leans on has
- fewer reachable seats than the floor and no provider has named its return.
+ fewer reachable seats than the floor and no provider has named a return the pass can wait for.
 
  @example
  ```ts
@@ -84,7 +84,7 @@ export class WritingBenchUnreachableError extends Error {
   ) {
     super(
       `writing bench unreachable at ${phase}: ${clauses.join('; ',)}; `
-        + 'no provider has named its return, so the entry stops for a pass that has the bench',
+        + 'no provider has named a return the pass can wait for, so the entry stops for a pass that has the bench',
     );
     this.name = 'WritingBenchUnreachableError';
     this.clauses = clauses;
