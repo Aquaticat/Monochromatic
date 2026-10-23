@@ -577,6 +577,7 @@ const ALLOWLIST: readonly string[] = [
   // the coverage census, the first package to hold the file. The five copies listed here have no test of their own.
   'bench/build-entries.ts',
   'corpus-pass/build-entries.ts',
+  'corpus-pass/claude-schema-producers.ts',
   'probe/build-entries.ts',
   'run/build-entries.ts',
   'slice-cache/build-entries.ts',

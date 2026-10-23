@@ -3,8 +3,10 @@
  review of the Claude route). The bundled API skill (`shared/tool-use-concepts.md`, "JSON Schema Limitations") says
  `additionalProperties: false` is required on every object and that the numeric, string and array bounds are not
  supported. EVERY KEYWORD A SENT SCHEMA CARRIES MUST BE ON AN ALLOWLIST of what the feature supports (R10 of the second
- review), so a keyword nobody thought of fails here and not with HTTP 400 at the first live call. A schema Anthropic refuses answers HTTP 400 on every call, which the ladder returns unretried and the
- router counts as a lost voice, so a seat would be silently absent from a stage.
+ review), so a keyword nobody thought of fails here and not with HTTP 400 at the first live call. A schema Anthropic
+ refuses answers HTTP 400 on every call, which the ladder returns unretried and the router counts as a lost voice, so
+ a seat would be silently absent from a stage. The list of producers is `claude-schema-producers.ts`, which the pass
+ reads at its start (N2 of the re-check of fix rounds 3 and 4).
 
  THREE QUESTIONS, ASKED OF EACH SCHEMA PRODUCER: is every object of the schema as the stage writes it closed, does the
  body the Claude client builds send a schema that meets every rule, and which bounds does the body drop (only the one
@@ -25,120 +27,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  ADJUDICATION_RESPONSE_FORMAT,
-  CANDIDATE_SELECT_RESPONSE_FORMAT,
-  CRITIC_RESPONSE_FORMAT,
-  INTRODUCED_DEFECT_RESPONSE_FORMAT,
-  RESOLUTION_RESPONSE_FORMAT,
-} from '@monochromatic-dev/translation-repair-adjudication';
-import {
-  ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
-  ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
-  COVERAGE_RESPONSE_FORMAT,
-} from '@monochromatic-dev/translation-repair-archive';
-import { PAGE_TITLE_LEXICON_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-artifact';
+import { ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-archive';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure';
-import {
-  CONSOLIDATE_GATE_RESPONSE_FORMAT,
-  CONSOLIDATION_POLISH_GATE_RESPONSE_FORMAT,
-} from '@monochromatic-dev/translation-repair-consolidate';
-import {
-  consistencyChoiceResponseFormat,
-  consistencyResponseFormat,
-} from '@monochromatic-dev/translation-repair-consistency';
-import { LANE_CONTEST_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-lane-contest';
 import {
   buildClaudeBody,
   CLAUDE_MODELS,
   type JsonSchemaResponseFormat,
 } from '@monochromatic-dev/translation-repair-provider';
-import {
-  REFERENCE_ATTEST_CONFIRM_RESPONSE_FORMAT,
-  REFERENCE_ATTEST_RESPONSE_FORMAT,
-} from '@monochromatic-dev/translation-repair-reference';
-import { RENDERING_AUDIT_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-rendering-audit';
-import {
-  DERIVABILITY_RESPONSE_FORMAT,
-  EDITOR_RESPONSE_FORMAT,
-  REFINE_RESPONSE_FORMAT,
-  RESTORATION_JUDGE_RESPONSE_FORMAT,
-} from '@monochromatic-dev/translation-repair-repair';
-import { blockPairingProtocol, } from '@monochromatic-dev/translation-repair-slice-reading';
-import { SECTION_PAIRING_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-stage';
-import {
-  TRANSLATE_REPAIR_RESPONSE_FORMAT,
-  TRANSLATE_RESPONSE_FORMAT,
-} from '@monochromatic-dev/translation-repair-translate-floor';
+import { CLAUDE_SCHEMA_PRODUCERS, } from '../dist/final/node/index.mjs';
 
-//region Schema producers
-// Every place a stage builds an answer schema, by the file that declares it. A producer that builds more than one
-// schema (the contest ballot asks about the archive or not; the consistency sheets name their labels) lists each.
-
-/**
- One file that declares an answer schema, and every schema it can build.
- */
-type SchemaProducer = {
-  /**
-   Path of the file under `package/translation-repair`, as the family's source scan names it.
-   */
-  readonly file: string;
-
-  /**
-   Each schema the file builds, in the shapes a stage asks for.
-   */
-  readonly formats: readonly JsonSchemaResponseFormat[];
-};
-
-/**
- The labels a consistency sheet shows, for the schemas built per ask.
- */
-const SHEET_LABELS = ['CANDIDATE 1', 'CANDIDATE 2',];
-
-/**
- Every producer of an answer schema in the family.
- */
-const SCHEMA_PRODUCERS: readonly SchemaProducer[] = [
-  { file: 'adjudication/src/adjudicate-wire.ts', formats: [ADJUDICATION_RESPONSE_FORMAT,], },
-  { file: 'adjudication/src/candidate-select-wire.ts', formats: [CANDIDATE_SELECT_RESPONSE_FORMAT,], },
-  { file: 'adjudication/src/critic-wire.ts', formats: [CRITIC_RESPONSE_FORMAT,], },
-  { file: 'adjudication/src/introduced-defect-format.ts', formats: [INTRODUCED_DEFECT_RESPONSE_FORMAT,], },
-  { file: 'adjudication/src/resolution-wire.ts', formats: [RESOLUTION_RESPONSE_FORMAT,], },
-  { file: 'archive/src/absolute-naturalness-review-wire.ts', formats: [ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,], },
-  { file: 'archive/src/archive-block-review-wire.ts', formats: [ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,], },
-  { file: 'archive/src/coverage-wire.ts', formats: [COVERAGE_RESPONSE_FORMAT,], },
-  { file: 'artifact/src/page-title-lexicon-wire.ts', formats: [PAGE_TITLE_LEXICON_RESPONSE_FORMAT,], },
-  { file: 'consistency/src/consistency-choice.ts', formats: [consistencyChoiceResponseFormat({ labels: SHEET_LABELS, },),], },
-  { file: 'consistency/src/consistency-wire.ts', formats: [consistencyResponseFormat({ labels: SHEET_LABELS, },),], },
-  {
-    file: 'lane-contest/src/contest-ballot-wire.ts',
-    // The builder is shared by three stages, so the schemas it makes are read as the stages send them.
-    formats: [
-      LANE_CONTEST_RESPONSE_FORMAT,
-      CONSOLIDATE_GATE_RESPONSE_FORMAT,
-      CONSOLIDATION_POLISH_GATE_RESPONSE_FORMAT,
-    ],
-  },
-  { file: 'reference/src/reference-attest-confirm-wire.ts', formats: [REFERENCE_ATTEST_CONFIRM_RESPONSE_FORMAT,], },
-  { file: 'reference/src/reference-attest-wire.ts', formats: [REFERENCE_ATTEST_RESPONSE_FORMAT,], },
-  { file: 'rendering-audit/src/rendering-audit-wire.ts', formats: [RENDERING_AUDIT_RESPONSE_FORMAT,], },
-  { file: 'repair/src/derivability-wire.ts', formats: [DERIVABILITY_RESPONSE_FORMAT,], },
-  { file: 'repair/src/edit-wire.ts', formats: [EDITOR_RESPONSE_FORMAT,], },
-  { file: 'repair/src/refine-wire.ts', formats: [REFINE_RESPONSE_FORMAT,], },
-  { file: 'repair/src/restoration-judge-wire.ts', formats: [RESTORATION_JUDGE_RESPONSE_FORMAT,], },
-  {
-    file: 'slice-reading/src/block-pairing-protocol.ts',
-    formats: [
-      blockPairingProtocol({
-        sourceBlocks: [{ index: 0, text: 'one', },],
-        targetBlocks: [{ index: 0, text: 'uno', },],
-      },).responseFormat,
-    ],
-  },
-  { file: 'stage/src/pair-sections-stage.ts', formats: [SECTION_PAIRING_RESPONSE_FORMAT,], },
-  { file: 'translate-floor/src/translate-repair-wire.ts', formats: [TRANSLATE_REPAIR_RESPONSE_FORMAT,], },
-  { file: 'translate-floor/src/translate-wire.ts', formats: [TRANSLATE_RESPONSE_FORMAT,], },
-];
+//region Not stage schemas
+// Files that are listed beside the producers without being one.
 
 /**
  Files that mention a `json_schema` response format without declaring a stage's answer schema: the provider's own
@@ -152,7 +51,7 @@ const NOT_STAGE_SCHEMAS: ReadonlySet<string> = new Set([
   'provider/src/claude-body.ts',
 ]);
 
-//endregion Schema producers
+//endregion Not stage schemas
 
 //region Rules
 // What the feature accepts, written out here on its own so the case does not lean on the sanitiser it checks.
@@ -333,7 +232,7 @@ function schemasOf(): readonly {
   readonly label: string;
   readonly format: JsonSchemaResponseFormat;
 }[] {
-  return SCHEMA_PRODUCERS.flatMap(function schemasOfProducer({ file, formats, },) {
+  return CLAUDE_SCHEMA_PRODUCERS.flatMap(function schemasOfProducer({ file, formats, },) {
     return formats.map(function labelled(format,) {
       return { label: `${file} (${format.json_schema.name})`, format, };
     },);
@@ -365,7 +264,7 @@ await describe({
             declaring.push(file,);
         }
         expect(declaring.toSorted(),).toEqual([
-          ...SCHEMA_PRODUCERS.map(function fileOf({ file, },): string {
+          ...CLAUDE_SCHEMA_PRODUCERS.map(function fileOf({ file, },): string {
             return file;
           },),
           ...NOT_STAGE_SCHEMAS,

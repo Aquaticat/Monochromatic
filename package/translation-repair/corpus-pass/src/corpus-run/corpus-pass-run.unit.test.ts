@@ -130,7 +130,7 @@ type Overrides = {
   /**
    Producers of answer schemas the pass-start check reads.
    */
-  readonly schemaProducers?: CorpusPassInput['schemaProducers'];
+  readonly schemaProducers?: NonNullable<CorpusPassInput['schemaProducers']>;
 };
 
 /**

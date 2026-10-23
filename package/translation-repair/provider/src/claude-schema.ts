@@ -73,6 +73,16 @@ export class ClaudeSchemaKeywordError extends Error {
   readonly messageNamesOnly: true = true;
 
   /**
+   Keyword the schema carries that the feature does not take, read by a check that lists every refusal at once.
+   */
+  readonly refusedKeyword: string;
+
+  /**
+   Dotted path of the schema node that carries it, `root` for the top.
+   */
+  readonly schemaPath: string;
+
+  /**
    Builds the failure.
 
    @param refusedKeyword - keyword the schema carries
@@ -100,6 +110,8 @@ export class ClaudeSchemaKeywordError extends Error {
         + 'the stage\'s own guard',
     );
     this.name = 'ClaudeSchemaKeywordError';
+    this.refusedKeyword = refusedKeyword;
+    this.schemaPath = schemaPath;
   }
 }
 
