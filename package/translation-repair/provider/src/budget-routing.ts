@@ -711,6 +711,10 @@ const NO_WINDOW = 'none';
  an absent window from one that read zero; the readers of these records (`meter-sample-read.ts`, `meter-report-level.ts`)
  carry fields verbatim, so the older `48/50` form and `none` both read.
 
+ A SPENT WEEKLY BUDGET STATES ITS RETURN: `syntheticWeeklyReturn=` the instant the reply names for the next regeneration
+ (`nextRegenAt`, 2026-10-23T05:03:47.000Z in the reply of that day, where 2% of the limit came back), so a dry record says when
+ it can end instead of leaving a reader to ask the provider. A reading with weekly budget left prints no such field.
+
  @param quota - snapshot the dryness verdict was read from
 
  @returns `key=value` tokens, no value carrying a space
@@ -720,6 +724,7 @@ const NO_WINDOW = 'none';
  syntheticMeterLevel({ quota, },);
  // => ['syntheticWeekly=97%', 'syntheticFiveHour=48/50', 'syntheticThrottled=no',]
  // => ['syntheticWeekly=97%', 'syntheticFiveHour=none', 'syntheticThrottled=none',] (no five-hour window)
+ // => ['syntheticWeekly=0%', 'syntheticFiveHour=none', 'syntheticThrottled=none', 'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',]
  ```
  */
 export function syntheticMeterLevel(
@@ -738,17 +743,26 @@ export function syntheticMeterLevel(
    */
   const weeklyField = `syntheticWeekly=${String(weekly.percentRemaining,)}%`;
 
+  /**
+   The weekly return, stated only where the weekly budget is spent.
+   */
+  const returnFields = (weekly.percentRemaining <= 0)
+    ? [`syntheticWeeklyReturn=${weekly.nextRegenAt}`,]
+    : [];
+
   if (fiveHour === undefined)
     return [
       weeklyField,
       `syntheticFiveHour=${NO_WINDOW}`,
       `syntheticThrottled=${NO_WINDOW}`,
+      ...returnFields,
     ];
 
   return [
     weeklyField,
     `syntheticFiveHour=${String(fiveHour.remaining,)}/${String(fiveHour.max,)}`,
     `syntheticThrottled=${fiveHour.limited ? 'yes' : 'no'}`,
+    ...returnFields,
   ];
 }
 

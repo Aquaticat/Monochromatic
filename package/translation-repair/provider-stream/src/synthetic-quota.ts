@@ -23,9 +23,21 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // maintainer of Synthetic wrote on 2026-09-15, in `slkiser/opencode-quota` issue 276, that a bearer API key returns the full quota
 // JSON with `weeklyTokenLimit` and `rollingFiveHourLimit`; the reading of 2026-10-19 supersedes that for the five-hour block. The
 // same issue records a key on an account the reporter took to be on the free tier answered with status 200 and the body `{}`,
-// which this reader refuses for lack of `weeklyTokenLimit`. A refusal says what arrived: the top-level key names with the JSON type
+// which this reader refuses for lack of a weekly block. A refusal says what arrived: the top-level key names with the JSON type
 // of each, or the type of a body that is no object, and, when the fault is a field inside a block, that block's own key names with
 // the JSON type of each; never a value (`QuotaShapeError`).
+//
+// THE WEEKLY BLOCK IS NAMED `planWeeklyLimit` SINCE A DATE BETWEEN 2026-10-22 19:32 UTC AND 22:21 UTC, AND THIS READER TAKES EITHER NAME.
+// A keyed `GET https://api.synthetic.new/v2/quotas` at 2026-10-23 03:28:16 UTC answered HTTP 200 with 269 characters whose top-level
+// keys were `subscription`, `search` and `planWeeklyLimit`, each an object, and no `weeklyTokenLimit` and no `freeToolCalls`; the
+// values of `planWeeklyLimit` were `nextRegenAt` (a string), `percentRemaining` (a number, 0 then) and `nextRegenPercent` (a number,
+// 2 then). A corpus pass read the old name (421 characters) at 19:32:44 UTC on 2026-10-22 and was refused `weeklyTokenLimit is not an
+// object; received subscription:object, search:object, planWeeklyLimit:object` from 22:21:58 UTC on, and 266 further refusals followed. Whether the rename
+// came with the weekly credit reaching 0 % or with a deploy is not known, so both names are read: the block under either name, and a
+// body that carries both is read when the two blocks read the same and refused when they differ, since which one a reader should
+// believe is then unknowable. `nextRegenPercent` is the share of the weekly limit the next regeneration returns; it is kept when the
+// block carries it and refused when it is present and no number. A body carrying neither name is refused, as before. See
+// `doc/troubleshooting/synthetic-quota-weekly-block-renamed.md`.
 
 /**
  Budget-relevant quota state at one instant.
@@ -34,7 +46,7 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
  consumes them.
 
  THE FIVE-HOUR WINDOW MAY BE ABSENT, as in the reply of 2026-10-19 (see the
- region comment); the weekly block is always present.
+ region comment); the weekly block is always present, read from `weeklyTokenLimit` or `planWeeklyLimit`.
 
  @example
  ```ts
@@ -44,6 +56,9 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
  };
  const weeklyOnly: QuotaSnapshot = {
    weekly: { percentRemaining: 99.8, nextRegenAt: '2026-10-20T00:12:58.000Z', },
+ };
+ const renamed: QuotaSnapshot = {
+   weekly: { percentRemaining: 0, nextRegenAt: '2026-10-23T05:03:47.000Z', nextRegenPercent: 2, },
  };
  ```
  */
@@ -87,6 +102,12 @@ export type QuotaSnapshot = {
      ISO timestamp of next credit regeneration.
      */
     readonly nextRegenAt: string;
+
+    /**
+     Percent of the weekly limit the next regeneration returns, present only where the block carries it (the block named
+     `planWeeklyLimit` does, since 2026-10-23); 2 at the reading of that day.
+     */
+    readonly nextRegenPercent?: number;
   };
 };
 
@@ -298,6 +319,20 @@ function receivedShapeOf({ parsed, }: { readonly parsed: unknown; },): string {
 }
 
 /**
+ The keys a body has named its weekly block under, in the order they were first seen: `weeklyTokenLimit` until the live reading of
+ 2026-10-22 19:32 UTC and `planWeeklyLimit` from that of 2026-10-23 03:28 UTC.
+ */
+const WEEKLY_BLOCK_NAMES = [
+  'weeklyTokenLimit',
+  'planWeeklyLimit',
+] as const;
+
+/**
+ A key a weekly block has been seen under.
+ */
+type WeeklyBlockName = typeof WEEKLY_BLOCK_NAMES[number];
+
+/**
  Builds the refusal of a parsed body that violates the expected shape.
 
  @param detail - which expectation the body violated
@@ -332,7 +367,7 @@ function shapeRefusal(
 /**
  Builds the refusal of a field inside one block of a parsed body.
 
- DESCRIBES THE BLOCK AS WELL AS THE BODY. A field refused inside `weeklyTokenLimit` says which keys that block holds and the JSON
+ DESCRIBES THE BLOCK AS WELL AS THE BODY. A field refused inside a weekly block says which keys that block holds and the JSON
  type of each, so the next live reading shows the block's real fields if they are not the ones this reader expects, with the same
  bounds as the body's description and never a value.
 
@@ -365,7 +400,7 @@ function blockRefusal(
   }: {
     readonly detail: string;
     readonly parsed: unknown;
-    readonly blockName: 'rollingFiveHourLimit' | 'weeklyTokenLimit';
+    readonly blockName: 'rollingFiveHourLimit' | WeeklyBlockName;
     readonly block: Readonly<Record<string, unknown>>;
   },
 ): QuotaShapeError {
@@ -451,23 +486,27 @@ function fiveHourWindowOf(
 
  @param parsed - the parsed body, described in a refusal
 
+ @param blockName - the key the block was found under, named in a refusal
+
  @param block - the weekly block of that body
 
- @returns The typed weekly window
+ @returns The typed weekly window, with `nextRegenPercent` only where the block carries it
 
  @throws {@link QuotaShapeError} when a field is missing or mistyped
 
  @example
  ```ts
- const weekly = weeklyWindowOf({ parsed, block, },);
+ const weekly = weeklyWindowOf({ parsed, blockName: 'planWeeklyLimit', block, },);
  ```
  */
 function weeklyWindowOf(
   {
     parsed,
+    blockName,
     block,
   }: {
     readonly parsed: Readonly<Record<string, unknown>>;
+    readonly blockName: WeeklyBlockName;
     readonly block: Readonly<Record<string, unknown>>;
   },
 ): QuotaSnapshot['weekly'] {
@@ -477,26 +516,128 @@ function weeklyWindowOf(
   const {
     percentRemaining,
     nextRegenAt,
+    nextRegenPercent,
   } = block;
   if ((typeof percentRemaining) !== 'number')
     throw blockRefusal({
-      detail: 'weeklyTokenLimit.percentRemaining is not a number',
+      detail: `${blockName}.percentRemaining is not a number`,
       parsed,
-      blockName: 'weeklyTokenLimit',
+      blockName,
       block,
     },);
   if ((typeof nextRegenAt) !== 'string')
     throw blockRefusal({
-      detail: 'weeklyTokenLimit.nextRegenAt is not a string',
+      detail: `${blockName}.nextRegenAt is not a string`,
       parsed,
-      blockName: 'weeklyTokenLimit',
+      blockName,
+      block,
+    },);
+
+  // ABSENT IS NOT UNDEFINED: a block without the key yields a window without the property, and a key that is present must be a number.
+  if (!Object.hasOwn(
+    block,
+    'nextRegenPercent',
+  ))
+    return {
+      percentRemaining,
+      nextRegenAt,
+    };
+  if ((typeof nextRegenPercent) !== 'number')
+    throw blockRefusal({
+      detail: `${blockName}.nextRegenPercent is not a number`,
+      parsed,
+      blockName,
       block,
     },);
 
   return {
     percentRemaining,
     nextRegenAt,
+    nextRegenPercent,
   };
+}
+
+/**
+ Reads the weekly window from whichever key a body carries it under.
+
+ BOTH KEYS ARE ACCEPTED (see the region comment): the block under either name, two blocks that read the same, and a refusal for two
+ that differ or for a key that is present and no object. A body with neither key is refused naming both.
+
+ @param parsed - the parsed body
+
+ @returns The typed weekly window
+
+ @throws {@link QuotaShapeError} when neither key is present, a present key is no object, a field is missing or mistyped, or the two
+ blocks of a body that carries both read differently
+
+ @example
+ ```ts
+ const weekly = weeklyWindowFromBody({ parsed, },);
+ ```
+ */
+function weeklyWindowFromBody(
+  { parsed, }: { readonly parsed: Readonly<Record<string, unknown>>; },
+): QuotaSnapshot['weekly'] {
+  /**
+   The keys the body carries a weekly block under, in the order of {@link WEEKLY_BLOCK_NAMES}.
+   */
+  const present = WEEKLY_BLOCK_NAMES.filter(function carried(name,): boolean {
+    return Object.hasOwn(
+      parsed,
+      name,
+    );
+  },);
+  if (present.length === 0)
+    throw shapeRefusal({
+      detail: `neither ${WEEKLY_BLOCK_NAMES.join(' nor ',)} is an object`,
+      parsed,
+    },);
+
+  /**
+   Each carried block with the window read from it.
+   */
+  const readings = present.map(function read(blockName,): {
+    readonly blockName: WeeklyBlockName;
+    readonly block: Readonly<Record<string, unknown>>;
+    readonly weekly: QuotaSnapshot['weekly'];
+  } {
+    /**
+     The block under this key as delivered.
+     */
+    const block = parsed[blockName];
+    if (!isJsonRecord(block,))
+      throw shapeRefusal({
+        detail: `${blockName} is not an object`,
+        parsed,
+      },);
+
+    return {
+      blockName,
+      block,
+      weekly: weeklyWindowOf({
+        parsed,
+        blockName,
+        block,
+      },),
+    };
+  },);
+  /**
+   The first carried block, which the key order makes `weeklyTokenLimit` where both are carried, and the second, present only for a
+   body that carries both keys.
+   */
+  const [first, second,] = readings;
+  if (first === undefined)
+    throw new QuotaShapeError({ detail: 'a weekly block was carried and read as none', },);
+  if (second === undefined)
+    return first.weekly;
+  if (JSON.stringify(first.weekly,) === JSON.stringify(second.weekly,))
+    return first.weekly;
+
+  throw new QuotaShapeError({
+    detail: `${first.blockName} and ${second.blockName} are both present and read differently`,
+    received: `${receivedShapeOf({ parsed, },)}; ${first.blockName} holds ${describedKeysOf({ record: first.block, },)}; `
+      + `${second.blockName} holds ${describedKeysOf({ record: second.block, },)}`,
+  },);
 }
 
 /**
@@ -504,7 +645,8 @@ function weeklyWindowOf(
  validating every consumed field.
 
  THE WEEKLY BLOCK IS REQUIRED AND THE FIVE-HOUR BLOCK IS NOT. A body without the `rollingFiveHourLimit` key yields a snapshot with no
- `fiveHour` property; a body that carries the key must carry a well-formed block.
+ `fiveHour` property; a body that carries the key must carry a well-formed block. The weekly block is read under `weeklyTokenLimit`
+ or `planWeeklyLimit`.
 
  @param bodyText - raw 200-response body
 
@@ -542,20 +684,12 @@ export function parseQuotaSnapshot(
   );
 
   /**
-   Rolling five-hour block and weekly credit block as delivered.
+   Rolling five-hour block as delivered.
    */
-  const {
-    rollingFiveHourLimit: fiveHourBlock,
-    weeklyTokenLimit: weekly,
-  } = parsed;
+  const { rollingFiveHourLimit: fiveHourBlock, } = parsed;
   if (carriesFiveHour && (!isJsonRecord(fiveHourBlock,)))
     throw shapeRefusal({
       detail: 'rollingFiveHourLimit is not an object',
-      parsed,
-    },);
-  if (!isJsonRecord(weekly,))
-    throw shapeRefusal({
-      detail: 'weeklyTokenLimit is not an object',
       parsed,
     },);
 
@@ -574,10 +708,7 @@ export function parseQuotaSnapshot(
 
   return {
     ...fiveHourEntry,
-    weekly: weeklyWindowOf({
-      parsed,
-      block: weekly,
-    },),
+    weekly: weeklyWindowFromBody({ parsed, },),
   };
 }
 
