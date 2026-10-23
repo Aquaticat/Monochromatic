@@ -76,6 +76,37 @@ function requestWith({ signal, }: { readonly signal: AbortSignal; },): Parameter
   };
 }
 
+/**
+ The day start of the spent day a park is for.
+ */
+const DAY_ONE = '2026-10-22T19:15:08.000Z';
+
+/**
+ The day start of the day after it.
+ */
+const DAY_TWO = '2026-10-23T19:15:08.000Z';
+
+/**
+ A refusal naming a spent NeuralWatt day 301 s from its return.
+
+ @param dayStart - the day start the reading named
+
+ @returns The refusal, carrying the distance, the time of day and the dryness the pass tells one spent day from the next by
+
+ @example
+ ```ts
+ const refusal = spentDayRefusal({ dayStart: DAY_ONE, },);
+ ```
+ */
+function spentDayRefusal({ dayStart, }: { readonly dayStart: string; },): EveryProviderDryError {
+  return new EveryProviderDryError({
+    measured: 'seat reading',
+    neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+    neuralwattDryness: { kind: 'spent-day', dayStart, returnsInMs: 301_000, },
+    neuralwattReturnsInMs: 301_000,
+  },);
+}
+
 await describe({
   name: createPassDryStop.name,
   children: [
@@ -300,12 +331,59 @@ await describe({
         expect(dryStop.parked(),).toBe(false,);
         const [note = '',] = dryStop.takeStopNotes();
         expect(note,).toContain('19:15:08 UTC',);
+        // The distance and why the pass did not wait for it, in the sentence the note adds.
+        expect(note,).toContain('in 5 min 1 s, which is past the 5 min this pass has left',);
       },
     },),
 
     it({
-      name: 'STOPS ON A DRY REFUSAL THAT ARRIVES RIGHT AFTER A PARK ENDED, since the account has not yet shown the new '
-        + 'day, and parks again for one that arrives later',
+      name: 'WAITS ONLY FOR WHAT IS LEFT OF THE RETURN: the park stores the return as an instant on the gate\'s clock, so '
+        + 'the time the entry in flight took to end after the refusal comes off the wait, and a return that has passed '
+        + 'by then is waited for not at all',
+      fn: async () => {
+        /**
+         Clock the gate reads, moved by the case.
+         */
+        const clock = { now: 1_000, };
+        /**
+         Milliseconds each park waited for.
+         */
+        const waits: number[] = [];
+        /**
+         Gate whose clock the case moves and whose waits it records.
+         */
+        const dryStop = createPassDryStop({
+          passLeftMs: () => 90_000_000,
+          now: () => clock.now,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        dryStop.trip({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },);
+        // The entry in flight took 100 s to end after the refusal.
+        clock.now += 100_000;
+        await dryStop.awaitPark();
+        expect(waits,).toEqual([201_000,],);
+
+        const late = createPassDryStop({
+          passLeftMs: () => 90_000_000,
+          now: () => clock.now,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        late.trip({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },);
+        // The entry took longer than the return was away.
+        clock.now += 400_000;
+        await late.awaitPark();
+        expect(waits,).toEqual([201_000, 0,],);
+      },
+    },),
+
+    it({
+      name: 'STOPS ON A DRY REFUSAL FOR THE SAME DAY START AS THE PARK THAT ENDED, however long after: the account has '
+        + 'not rolled to a new day, and parking again would wait a day in a loop; a refusal for the next day start '
+        + 'parks again',
       fn: async () => {
         /**
          Clock the gate reads, moved by the case.
@@ -318,33 +396,25 @@ await describe({
             clock.now += ms;
           },
         },);
-        /**
-         A refusal naming a return 301 s away.
-         */
-        const refusal = (): EveryProviderDryError => new EveryProviderDryError({
-          measured: 'seat reading',
-          neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
-          neuralwattReturnsInMs: 301_000,
-        },);
-        dryStop.trip({ error: refusal(), },);
+        dryStop.trip({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },);
         await dryStop.awaitPark();
-        clock.now += 1_000;
-        dryStop.trip({ error: refusal(), },);
+        // An hour later, far past any settling window: the same spent day still stands.
+        clock.now += 3_600_000;
+        dryStop.trip({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },);
         expect(dryStop.tripped(),).toBe(true,);
 
-        const later = createPassDryStop({
+        const next = createPassDryStop({
           passLeftMs: () => 90_000_000,
           now: () => clock.now,
           waitMs: async function waitMs({ ms, },): Promise<void> {
             clock.now += ms;
           },
         },);
-        later.trip({ error: refusal(), },);
-        await later.awaitPark();
-        clock.now += 3_600_000;
-        later.trip({ error: refusal(), },);
-        expect(later.tripped(),).toBe(false,);
-        expect(later.parked(),).toBe(true,);
+        next.trip({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },);
+        await next.awaitPark();
+        next.trip({ error: spentDayRefusal({ dayStart: DAY_TWO, },), },);
+        expect(next.tripped(),).toBe(false,);
+        expect(next.parked(),).toBe(true,);
       },
     },),
 
