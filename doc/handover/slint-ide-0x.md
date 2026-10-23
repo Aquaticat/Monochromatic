@@ -1747,6 +1747,17 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     re-run by me: the full chain on a fresh volume (`bundle` 5 min 6 s locally, `inspect:bundle` 3 checks, 581,554
     byte notices, 23,457,136 byte archive); runner timings from run 1 (base image 1 min 04 s, IDE image 1 min 30 s,
     `bundle` 10 min 26 s; about 8 GB disk used). Dry run 2: run `39878025410`, watched in the background.
+    Dry run 2 RESULT: success, every step green (`detect` 27 s, `build` 15 min 53 s, `checksums` 9 s, `release` 6 s,
+    attestation steps skipped as a dry run; the `release` job printed the `gh release create` command only). I
+    downloaded the three artifacts: the sha256 of the archive (`4628854e30...`) and of the notices (`0fc6032c03...`)
+    match `SHA256SUMS`; the archive holds exactly `bin/monochromatic-ide`, `INSTALL.txt`, `LICENSE`, both
+    `LICENSES/` texts, the launcher entry and `THIRD-PARTY-LICENSES.txt`; the extracted binary run with an empty
+    environment prints `monochromatic-ide 0.1.0` and its `--licenses` output is byte-identical to the notices file.
+    Not proved: the real release path (attestation, `gh release create` with all assets, tag creation), a window on
+    the runner (none possible: no display, no GPU), and the binary on a machine other than this one. The owner has
+    not said go for the first real release; none has been cut. A real release needs a version bump merged to `main`
+    or `gh workflow run ide-release.yml --ref main -f dry-run=false` (runbook `doc/runbook/release-the-ide.md`).
+    The IDE release agent's worktree, branches (local and remote) and my scratch trees are removed.
     Guard sweep finding (disposable copy, unit `conv2-guards`): `clip-chosen` removed run fails with status 100 at
     `src/native/tile_reads.rs:187:45` (`tile texture pixels`) because the stacked tile reads no texture for a line
     past the raster limit; the guard still bites but its expected `failure` text (`the window shows an error`) was
