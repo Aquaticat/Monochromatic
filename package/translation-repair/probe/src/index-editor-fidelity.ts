@@ -5,6 +5,7 @@
 export {
   DEFAULT_EDITOR_MAX_USD,
   DEFAULT_EDITOR_TRIAL_CAP,
+  EDITOR_BENCH_MAX_USD,
   readEditorFidelityArguments,
 } from './corpus-run/editor-fidelity-args.ts';
 export {

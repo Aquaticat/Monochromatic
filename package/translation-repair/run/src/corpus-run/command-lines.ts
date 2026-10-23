@@ -51,7 +51,7 @@ export type CommandLines = {
   readonly 'draw-sample': CommandLineSpec<never, never, 'final'>;
   readonly 'editor-calibrate': CommandLineSpec<'candidates', never, 'candidates-alone'>;
   readonly 'editor-fidelity-probe': CommandLineSpec<
-    'only' | 'cap' | 'damage' | 'candidates' | 'max-usd',
+    'only' | 'cap' | 'damage' | 'candidates' | 'max-usd' | 'bench-spent-usd',
     never,
     'candidates-alone'
     >;
@@ -219,6 +219,7 @@ export const COMMAND_LINES: CommandLines = {
       damage: 'insertion|alteration',
       candidates: SEATABLE_IDS,
       'max-usd': 'dollars',
+      'bench-spent-usd': 'dollars',
     },
     switches: { 'candidates-alone': true, },
   },
