@@ -69,6 +69,22 @@ function syntheticQuotasHeader(quotas: unknown,): Record<string, string> {
   };
 }
 
+function weeklySnapshots(quotas: unknown,): readonly RateLimitSnapshot[] {
+  return parseRateLimitSnapshots({
+    headers: syntheticQuotasHeader(quotas,),
+    nowMs: NOW_MS,
+  },);
+}
+
+function weeklyResetSnapshots(nextRegenAt: string,): readonly RateLimitSnapshot[] {
+  return weeklySnapshots({
+    planWeeklyLimit: {
+      nextRegenAt,
+      percentRemaining: 80,
+    },
+  },);
+}
+
 function firstSnapshot(headers: Readonly<Record<string, string>>,): RateLimitSnapshot {
   /**
    First parsed snapshot from supplied header fixture.
@@ -327,17 +343,175 @@ await describe({
           },
         },),
         it({
-          name: 'refuses a body carrying neither weekly name',
-          fn: async function testSyntheticNoWeeklyName() {
-            const snapshots = parseRateLimitSnapshots({
-              headers: syntheticQuotasHeader({
-                subscription: {
+          name: 'refuses a body carrying one weekly name that is no object beside a readable first name',
+          fn: async function testSyntheticFirstWeeklyNameNotObject() {
+            const snapshots = weeklySnapshots({
+              weeklyTokenLimit: 'spent',
+              planWeeklyLimit: {
+                nextRegenAt: resetAt(20 * HOUR_MS,),
+                percentRemaining: 80,
+              },
+            },);
+
+            expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'reads planWeeklyLimit beside a null weeklyTokenLimit',
+          fn: async function testSyntheticNullOldName() {
+            const snapshots = weeklySnapshots({
+              weeklyTokenLimit: null,
+              planWeeklyLimit: {
+                nextRegenAt: resetAt(20 * HOUR_MS,),
+                percentRemaining: 80,
+              },
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.usedPercent,).toBe(20,);
+          },
+        },),
+        it({
+          name: 'reads weeklyTokenLimit beside a null planWeeklyLimit',
+          fn: async function testSyntheticNullNewName() {
+            const snapshots = weeklySnapshots({
+              weeklyTokenLimit: {
+                nextRegenAt: resetAt(20 * HOUR_MS,),
+                percentRemaining: 80,
+              },
+              planWeeklyLimit: null,
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.usedPercent,).toBe(20,);
+          },
+        },),
+        it({
+          name: 'refuses a body whose only weekly name is null',
+          fn: async function testSyntheticOnlyNullWeeklyName() {
+            const snapshots = weeklySnapshots({ weeklyTokenLimit: null, },);
+
+            expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'refuses both weekly names that read the same percent and differ in nextRegenAt',
+          fn: async function testSyntheticBothWeeklyNamesDifferInReset() {
+            const snapshots = weeklySnapshots({
+              weeklyTokenLimit: {
+                nextRegenAt: resetAt(20 * HOUR_MS,),
+                percentRemaining: 80,
+              },
+              planWeeklyLimit: {
+                nextRegenAt: resetAt(21 * HOUR_MS,),
+                percentRemaining: 80,
+              },
+            },);
+
+            expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'refuses a weekly block whose percentRemaining is a string, under either name',
+          fn: async function testSyntheticMistypedPercent() {
+            const underNew = weeklySnapshots({
+              planWeeklyLimit: { nextRegenAt: resetAt(20 * HOUR_MS,), percentRemaining: '80', },
+            },);
+            const underOld = weeklySnapshots({
+              weeklyTokenLimit: { nextRegenAt: resetAt(20 * HOUR_MS,), percentRemaining: '80', },
+            },);
+
+            expect(underNew.length,).toBe(0,);
+            expect(underOld.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'refuses a weekly block whose nextRegenAt is a number, under either name',
+          fn: async function testSyntheticMistypedReset() {
+            const underNew = weeklySnapshots({
+              planWeeklyLimit: { nextRegenAt: NOW_MS + HOUR_MS, percentRemaining: 80, },
+            },);
+            const underOld = weeklySnapshots({
+              weeklyTokenLimit: { nextRegenAt: NOW_MS + HOUR_MS, percentRemaining: 80, },
+            },);
+
+            expect(underNew.length,).toBe(0,);
+            expect(underOld.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'ignores a mistyped nextRegenPercent',
+          fn: async function testSyntheticMistypedRegenPercent() {
+            const snapshots = weeklySnapshots({
+              planWeeklyLimit: {
+                nextRegenAt: resetAt(20 * HOUR_MS,),
+                percentRemaining: 80,
+                nextRegenPercent: 'two',
+              },
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.usedPercent,).toBe(20,);
+          },
+        },),
+        it({
+          name: 'keeps the search and free-tool windows when the weekly block is refused',
+          fn: async function testSyntheticWeeklyRefusalKeepsOtherWindows() {
+            const snapshots = weeklySnapshots({
+              weeklyTokenLimit: { nextRegenAt: resetAt(20 * HOUR_MS,), percentRemaining: 80, },
+              planWeeklyLimit: { nextRegenAt: resetAt(20 * HOUR_MS,), percentRemaining: 0, },
+              search: {
+                hourly: {
                   limit: 100,
-                  requests: 0,
-                  renewsAt: resetAt(DAY_MS,),
+                  requests: 60,
+                  renewsAt: resetAt(30 * MINUTE_MS,),
                 },
-              },),
-              nowMs: NOW_MS,
+              },
+              freeToolCalls: {
+                limit: 50,
+                requests: 10,
+                renewsAt: resetAt(12 * HOUR_MS,),
+              },
+            },);
+
+            expect(snapshots.map(function keyOf(snapshot,): string {
+              return snapshot.key;
+            },),).toEqual(['synthetic:search', 'synthetic:tools',],);
+          },
+        },),
+        it({
+          name: 'refuses nextRegenAt that is not an ISO-8601 instant with a zone',
+          fn: async function testSyntheticResetInstantRefused() {
+            // Each text is readable by `Date.parse`: a year alone, a month-name form, a trailing newline, a local time
+            // without a zone, and an offset without its colon.
+            const refused = [
+              '2026',
+              'Oct 23 2026 05:03',
+              '2026-10-23T05:03:47.000Z\n',
+              '2026-10-23T05:03:47',
+              '2026-10-23T05:03:47+0000',
+            ];
+            expect(refused.map(function countFor(text,): number {
+              return weeklyResetSnapshots(text,).length;
+            },),).toEqual([0, 0, 0, 0, 0,],);
+          },
+        },),
+        it({
+          name: 'reads nextRegenAt spelled with Z or with an offset to the same instant',
+          fn: async function testSyntheticResetInstantAccepted() {
+            const zulu = weeklyResetSnapshots('2026-10-23T05:03:47.000Z',);
+            const offset = weeklyResetSnapshots('2026-10-23T01:03:47-04:00',);
+
+            expect(zulu[0]?.resetAtMs,).toBe(Date.parse('2026-10-23T05:03:47.000Z',),);
+            expect(offset[0]?.resetAtMs,).toBe(Date.parse('2026-10-23T05:03:47.000Z',),);
+          },
+        },),
+        it({
+          name: 'applies the instant rule to the search and free-tool windows',
+          fn: async function testSyntheticResetInstantOtherWindows() {
+            const snapshots = weeklySnapshots({
+              search: { hourly: { limit: 100, requests: 60, renewsAt: '2026', }, },
+              freeToolCalls: { limit: 50, requests: 10, renewsAt: 'Oct 23 2026 05:03', },
             },);
 
             expect(snapshots.length,).toBe(0,);
