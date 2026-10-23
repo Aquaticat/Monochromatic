@@ -312,6 +312,74 @@ await describe({
         },),
 
         it({
+          name: 'STATES THE PARK\'S OWN RETURN ON A PARKED LINE, not the failure\'s: a parking refusal that names no '
+            + 'return and a bench error that names another distance both print the distance and the time the gate '
+            + 'answered, and an entry the gate has no return for is not printed as PARKED',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             What the gate answers: the return the park waits for.
+             */
+            const parkReturn = { returnsInMs: 301_000, returnsAt: '19:15:08 UTC', };
+            /**
+             A parking refusal of the entry that names no return.
+             */
+            const noReturn = new EveryProviderDryError({ measured: 'every meter dry', },);
+            /**
+             A bench error of the entry that names a nearer return than the park waits for.
+             */
+            const nearer = new WritingBenchUnreachableError({
+              phase: 'lanes',
+              clauses: ['editors 0 of 3 reachable, floor 2',],
+              neuralwattReturnsInMs: 120_000,
+              neuralwattReturnsAt: '19:01:00 UTC',
+            },);
+            tallyCaughtEntry({
+              entryId: 'Cat',
+              error: noReturn,
+              durationMs: 5,
+              aborted: true,
+              endRun: function endRun(): void {},
+              parked: function parked() {
+                return parkReturn;
+              },
+            },);
+            tallyCaughtEntry({
+              entryId: 'Dog',
+              error: nearer,
+              durationMs: 5,
+              aborted: true,
+              endRun: function endRun(): void {},
+              parked: function parked() {
+                return parkReturn;
+              },
+            },);
+            tallyCaughtEntry({
+              entryId: 'Eel',
+              error: new Error('connection reset',),
+              durationMs: 5,
+              aborted: false,
+              endRun: function endRun(): void {},
+              parked: function parked() {
+                return undefined;
+              },
+            },);
+            expect(printed.lines.filter(function tally(text,): boolean {
+              return text.startsWith('TALLY ',);
+            },).map(function lineStart(text,): string {
+              return text.slice(
+                0,
+                text.indexOf(' ms=',),
+              );
+            },),).toEqual([
+              'TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08Z',
+              'TALLY Dog status=PARKED returnsInMs=301000 returnsAt=19:15:08Z',
+              'TALLY Eel status=ERROR',
+            ],);
+          },
+        },),
+
+        it({
           name: 'THROWS ON A RETURN TIME THAT IS NOT IN UTC, naming the text it got and printing no line, since the '
             + 'only writer of the time gives it with the UTC zone and any other text is a break of that rule',
           fn: async (ctx) => {

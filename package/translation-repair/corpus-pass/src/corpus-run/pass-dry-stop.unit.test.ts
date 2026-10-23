@@ -683,6 +683,38 @@ await describe({
     },),
 
     it({
+      name: 'ANSWERS THE PARK\'S OWN RETURN for every failure it answers for, never the failure\'s: a second parking '
+        + 'refusal that carries no NeuralWatt return and one that carries another distance, met during the park, '
+        + 'get the distance and the time the park waits for, and an ordinary failure gets none',
+      fn: async () => {
+        const dryStop = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
+        /**
+         The refusal that parks the pass, 301 s from its return.
+         */
+        const first = spentDayRefusal({ dayStart: DAY_ONE, },);
+        /**
+         A parking refusal of the same entry from a router that had no day information, so it names no return.
+         */
+        const noReturn = new EveryProviderDryError({ measured: 'every meter dry', },);
+        /**
+         A parking bench error of the same entry that names a nearer return than the park waits for.
+         */
+        const nearer = benchErrorBefore({ returnsInMs: 120_000, },);
+        dryStop.trip({ error: first, },);
+        dryStop.trip({ error: noReturn, },);
+        dryStop.trip({ error: nearer, },);
+        /**
+         What the park waits for.
+         */
+        const parkReturn = { returnsInMs: 301_000, returnsAt: '19:15:08 UTC', };
+        expect(dryStop.parkedFor({ error: first, },),).toEqual(parkReturn,);
+        expect(dryStop.parkedFor({ error: noReturn, },),).toEqual(parkReturn,);
+        expect(dryStop.parkedFor({ error: nearer, },),).toEqual(parkReturn,);
+        expect(dryStop.parkedFor({ error: new Error('connection reset',), },),).toBeUndefined();
+      },
+    },),
+
+    it({
       name: 'RECORDS ONLY THE PARKING FAILURES OTHER THAN THE PARK\'S OWN REFUSAL, once each: the refusal that parked '
         + 'the pass, handed in again by the entry\'s catch, leaves the list empty',
       fn: async () => {
