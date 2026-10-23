@@ -25,7 +25,10 @@ import {
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { judgeSeatsFor, } from '@monochromatic-dev/translation-repair-run';
 import { configuredConsolidationPolish, } from '@monochromatic-dev/translation-repair-consolidate';
-import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  type BudgetView,
+  createProviderBudgets,
+} from '@monochromatic-dev/translation-repair-provider';
 import {
   consolidationHooksFor,
   contestHooksFor,
@@ -206,6 +209,87 @@ function viewClient(
       },
       providerMeterStates: metersAllWet,
       providerHolds: () => endingHolds({ holds, },),
+    },
+  };
+}
+
+/**
+ Meters that all read wet, one for each provider a case can need wet.
+ */
+const WET_METERS = {
+  synthetic: {
+    quotas: async () => ({
+      weekly: { percentRemaining: 62, nextRegenAt: '2026-10-21T13:24:00.000Z', },
+    }),
+  },
+  hyper: { credits: async () => ({ balance: 243, }), },
+  bedrock: {
+    credits: async () => ({
+      creditUsd: 200,
+      spentUsd: 1,
+      reckonedUsd: 0,
+      remainingUsd: 199,
+      calls: 1,
+    }),
+  },
+  xiaomi: { spend: async () => ({ spentUsd: 0, }), },
+  anthropic: { spend: async () => ({ spentUsd: 0, billingRefused: false, }), },
+  openrouter: {
+    credits: async () => ({ purchasedUsd: 100, usedUsd: 40, remainingUsd: 60, }),
+  },
+};
+
+/**
+ Builds a client over the production budgets, so a hold a case sets folds into the dryness the way the run's router
+ folds it and not the way a test double writes it.
+
+ A PROVIDER THE VIEW READS DRY HAS NO METER, which the budgets read as dry, and a provider it reads wet has a wet meter.
+ Every hold the budgets place lasts {@link SHORT_HOLD_MS}, and the stated wait a case names is cut to that by the
+ budgets' own cap, so the reading that waits a hold out on the real clock waits no longer than a short window.
+
+ @param view - dryness the meters give before any hold
+
+ @returns The run client's three budget reads, and the budgets a case marks refusals on
+
+ @throws {@link Error} when the view reads a provider wet that this file has no wet meter for
+
+ @example
+ ```ts
+ const rig = budgetsClient({ view: MIMO_UNSERVED_CLAUDE_WET, },);
+ await rig.budgets.markRefused({ provider: 'synthetic', signal, statedWaitMs: DRY_HOLD_MS, },);
+ ```
+ */
+function budgetsClient(
+  { view, }: { readonly view: BudgetView; },
+) {
+  /**
+   Providers the view reads wet, each with the meter that says so.
+   */
+  const wet = Object.entries(view,)
+    .filter(function isWet([, dry,],): boolean {
+      return !dry;
+    },)
+    .map(function meterOf([provider,],): readonly [string, unknown] {
+      if (!(provider in WET_METERS))
+        throw new Error(`no wet meter is written for ${provider}`,);
+      return [provider, WET_METERS[provider as keyof typeof WET_METERS],];
+    },);
+  /**
+   Budgets whose holds all last the short window and whose clock stands still.
+   */
+  const budgets = createProviderBudgets({
+    ...Object.fromEntries(wet,),
+    maxHoldMs: SHORT_HOLD_MS,
+    cooldownMs: SHORT_HOLD_MS,
+    rateLimitBackoffMs: SHORT_HOLD_MS,
+    now: () => 10_000,
+  },);
+  return {
+    budgets,
+    client: {
+      providerDryness: budgets.read,
+      providerMeterStates: budgets.readStates,
+      providerHolds: budgets.holds,
     },
   };
 }
@@ -404,26 +488,17 @@ await describe({
         it({
           name: 'DROPS HAIKU 5.5 FROM THE NEXT SEATING WHEN THE CLAUDE KEY GOES FROM WET TO HELD (R3 of the second '
             + 'review): the first seating, with the key wet, takes Haiku as the fourth of the order, and once '
-            + 'holds.anthropic is set the router reads the key dry and the next seating has no Haiku in the repair '
+            + 'the production budgets mark the key refused the router reads the key dry and the next seating has no Haiku in the repair '
             + 'checker bench; the same rig with no hold on the key seats Haiku again',
           fn: async () => {
-            /** Rig whose dryness reads fold a running hold in, as the router\'s view does. */
-            const rig = viewClient({ view: MIMO_UNSERVED_CLAUDE_WET, },);
-            rig.holds.synthetic = DRY_HOLD_MS;
-            /** Client whose dryness answers the base view with every held provider read dry. */
-            const folding = {
-              ...rig.client,
-              providerDryness: async (): Promise<BudgetView> => {
-                rig.counter.reads += 1;
-                return Object.fromEntries(Object.entries(MIMO_UNSERVED_CLAUDE_WET,)
-                  .map(function foldHold([provider, dry,],): readonly [string, boolean] {
-                    return [provider, dry || (rig.holds[provider as keyof typeof rig.holds] > 0),];
-                  },),) as BudgetView;
-              },
-            };
+            /** Rig over the production budgets, so a hold folds into the view as the router folds it. */
+            const rig = budgetsClient({ view: MIMO_UNSERVED_CLAUDE_WET, },);
+            /** Signal the refusals are marked under. */
+            const { signal, } = new AbortController();
+            await rig.budgets.markRefused({ provider: 'synthetic', signal, statedWaitMs: DRY_HOLD_MS, },);
             const hooks = lanesHooksFor({
-              client: folding,
-              signal: new AbortController().signal,
+              client: rig.client,
+              signal,
               entryId: 'mittens',
             },);
             /** Seating while the Claude key is wet. */
@@ -431,7 +506,7 @@ await describe({
             // THE NEGATIVE ARM: nothing else changed between the readings, so Haiku is seated again.
             /** Seating a second time with the Claude key still wet. */
             const stillWetSeating = await hooks.beforeSlice({ lane: 'repair', },);
-            rig.holds.anthropic = DRY_HOLD_MS;
+            await rig.budgets.markRefused({ provider: 'anthropic', signal, statedWaitMs: DRY_HOLD_MS, },);
             /** Seating once the Claude key is held. */
             const heldSeating = await hooks.beforeSlice({ lane: 'repair', },);
 

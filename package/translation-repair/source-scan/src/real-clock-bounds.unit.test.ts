@@ -243,6 +243,13 @@ const SCRIPTED_CLOCK = 'a window on the case\'s own injected clock, which the ca
   + 'back; no timer is armed with it';
 
 /**
+ Why a hold the reseat file names keeps its value: the production budgets cut it to the file's short window, on a
+ clock that stands still, and the seat reading waits that window out once on the real clock.
+ */
+const CUT_TO_SHORT_WINDOW = 'a hold the production budgets cut to the file\'s short window (40 ms), placed on a clock '
+  + 'that stands still; the seat reading waits that window out once, so no case waits for the named value';
+
+/**
  Why a deadline handed to a client keeps its value: the client arms a timer with it, the case reads the delay back
  from the timer and clears it, and the scripted transport answers at once, so no case waits for it.
  */
@@ -635,6 +642,21 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'other',
     reason: SAME_TURN_METER,
+  },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#<module>: statedWaitMs: DRY_HOLD_MS': {
+    count: 2,
+    bound: 'other',
+    reason: CUT_TO_SHORT_WINDOW,
+  },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#budgetsClient: cooldownMs: SHORT_HOLD_MS': {
+    count: 1,
+    bound: 'other',
+    reason: CUT_TO_SHORT_WINDOW,
+  },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#budgetsClient: rateLimitBackoffMs: SHORT_HOLD_MS': {
+    count: 1,
+    bound: 'other',
+    reason: CUT_TO_SHORT_WINDOW,
   },
   'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 360_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
   'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 900_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
