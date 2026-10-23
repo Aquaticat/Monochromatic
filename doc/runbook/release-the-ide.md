@@ -115,9 +115,8 @@ and the run refuses `dry-run=false` there.
 Read these steps of the `build` job log:
 
 - "Free disk space on the runner" and the later `df` lines print how much of the disk the build used.
-  The first dry run of the workflow records these numbers,
-  and the cold build time,
-  in the decision document.
+  The first dry run's numbers and the cold build time are in the decision document,
+  section "First dry run".
 - "Record the toolchain of the build image" prints `rustc`,
   `cargo` and `cargo-about` versions.
   The `rustc` line goes into the release notes.
@@ -191,6 +190,15 @@ Failures that belong to this workflow:
   the README section "What the host provides" and the release notes do not name.
   Decide whether that is intended,
   then update those texts and the `expected` list or `GLIBC_FLOOR` in the step.
+- "Check that no software renderer is linked" fails with `no matching package named ... found` and the note about
+  `--frozen`:
+  the cargo volume lacks a registry index entry for a crate that the positive control `slint/mcp` resolves.
+  The task fills those entries with a network pass before it checks offline;
+  if that pass could not reach the network,
+  its message says so in the log,
+  and a rerun is the cure.
+  A different message means the software renderer is linked,
+  and the tree it prints names the path.
 - "Check the single executable" fails with a named check:
   the message names the embedded file or license text that is missing or differs.
   `mise run //package/desktop-app/ide:runtime` and `notices` rebuild the inputs locally.
