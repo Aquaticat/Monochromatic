@@ -25,13 +25,22 @@ import {
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
+  BedrockModelNotServedError,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   ClaudeModelNotServedError,
   ClaudePrefillError,
   ClaudeSchemaKeywordError,
+  DeepSeekModelNotServedError,
   EmptyConversationError,
+  MalformedImageUriError,
   type ModelClient,
+  ModelNotServedError,
+  NeuralWattModelNotServedError,
+  OpenRouterModelNotServedError,
+  SyntheticModelNotServedError,
+  UnnameableToolError,
+  XiaomiModelNotServedError,
 } from '@monochromatic-dev/translation-repair-provider';
 import { attemptStageCall, } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -210,6 +219,81 @@ await describe({
           'ClaudeModelNotServedError',
         ],);
         expect(warnings,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'RETHROWS A SEAT HANDED TO A CLIENT THAT DOES NOT SERVE IT, AND A SCHEMA NAME THE PROTOCOL REJECTS (N1 of the '
+        + 're-check of fix rounds 3 and 4): each is thrown from local state, the roster lookup of one of the eight '
+        + 'clients or the name of the stage\'s own schema, before any exchange, so it recurs on every call of the '
+        + 'stage like the four classes before it',
+      fn: async () => {
+        /**
+         Faults the clients and the request builder raise before any exchange, one of each class.
+         */
+        const faults: readonly Error[] = [
+          new BedrockModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new DeepSeekModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new ModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new NeuralWattModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new OpenRouterModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new SyntheticModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new XiaomiModelNotServedError({ modelId: 'claude-cat-5-5', },),
+          new UnnameableToolError({ detail: 'schema name is empty', },),
+        ];
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
+
+        /**
+         What each call rejected with, in the order of the faults.
+         */
+        const refusals = await Promise.all(faults.map(async function refusalOf(thrown,): Promise<unknown> {
+          return await rejectionOf(async function asked(): Promise<unknown> {
+            return await callWith({
+              client: scriptedClient({ thrown, },),
+              signal: new AbortController().signal,
+              logger,
+            },);
+          },);
+        },),);
+
+        expect(refusals,).toEqual(faults,);
+        expect(refusals.map(function nameOf(refusal,): string {
+          return (refusal as Error).name;
+        },),).toEqual([
+          'BedrockModelNotServedError',
+          'DeepSeekModelNotServedError',
+          'ModelNotServedError',
+          'NeuralWattModelNotServedError',
+          'OpenRouterModelNotServedError',
+          'SyntheticModelNotServedError',
+          'XiaomiModelNotServedError',
+          'UnnameableToolError',
+        ],);
+        expect(warnings,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'KEEPS A PICTURE THE ANTHROPIC PROTOCOL CANNOT READ A LOST VOICE (the control arm of N1): the data URI is '
+        + 'built from the bytes of one asset of one document, so a zero-byte file is a fault of that input and not of '
+        + 'the stage code, and the other seats of the round still answer',
+      fn: async () => {
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
+
+        /**
+         What the call returned for a picture with no payload.
+         */
+        const voice = await callWith({
+          client: scriptedClient({ thrown: new MalformedImageUriError({ detail: 'payload is empty', },), },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        expect(voice.heard,).toBe(false,);
+        expect(warnings.length,).toBe(1,);
+        expect(warnings[0],).toContain('voice lost',);
       },
     },),
 
