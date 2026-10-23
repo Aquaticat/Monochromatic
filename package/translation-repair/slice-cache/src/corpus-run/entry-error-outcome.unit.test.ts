@@ -311,6 +311,38 @@ await describe({
         },),
 
         it({
+          name: 'THROWS ON A RETURN TIME THAT IS NOT IN UTC, naming the text it got and printing no line, since the only '
+            + 'writer of the time gives it with the UTC zone and any other text is a break of that rule',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             The bench error whose time carries another zone than the one its writer gives.
+             */
+            const lanes = new WritingBenchUnreachableError({
+              phase: 'lanes',
+              clauses: ['editors 0 of 3 reachable, floor 2',],
+              neuralwattReturnsInMs: 301_000,
+              neuralwattReturnsAt: '19:15:08 CEST',
+            },);
+            expect(function tally(): void {
+              tallyCaughtEntry({
+                entryId: 'Cat',
+                error: lanes,
+                durationMs: 5,
+                aborted: true,
+                endRun: function endRun(): void {},
+                parked: function parked(): boolean {
+                  return true;
+                },
+              },);
+            },).toThrow('19:15:08 CEST',);
+            expect(printed.lines.filter(function tally(text,): boolean {
+              return text.startsWith('TALLY ',);
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
           name: 'PRINTS THE ALL-DRY REFUSAL THE GATE PARKED FOR AS PARKED too, with the same return fields and not '
             + 'INCOMPLETE, and prints a refusal the gate did not park for as INCOMPLETE',
           fn: async (ctx) => {
