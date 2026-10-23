@@ -163,6 +163,34 @@ await describe({
           },
         },),
         it({
+          name: 'SEATS ONLY THE EDITORS IT IS HANDED, so one named effort card edits alone and no writer or plain Sonnet '
+            + '5.5 is credited with the shipped edit',
+          fn: async () => {
+            /**
+             What the lane produced when the one card edited every slice.
+             */
+            const rounds = await runEditorLane({
+              slice: benchSliceOf({ entryId: 'mittens', index: 0, },),
+              client: shippingLaneClient(),
+              editorModelIds: ['claude-sonnet-5-5-effort-low',],
+              stageSettings: { ...SCRIPTED_STAGE_SETTINGS, editorBenchStart: PINNED_EDITOR_BENCH_START, },
+            },);
+
+            expect(rounds.editorShipped,).toEqual(['claude-sonnet-5-5-effort-low',],);
+            expect(rounds.editor,).toEqual([
+              {
+                producers: [
+                  {
+                    kind: 'composite',
+                    contributors: ['claude-sonnet-5-5-effort-low',],
+                  },
+                ],
+                ballots: [],
+              },
+            ],);
+          },
+        },),
+        it({
           name: 'SEATS SONNET 5.5 AS AN EDITOR BY NAME AND HAIKU 5.5 AS NO EDITOR (C4): the run\'s editor list names Sonnet, '
             + 'which the roster-derived benches leave out (it holds judge-unmeasured), so the calibration must seat it by '
             + 'name to measure it; and the owner said "Haiku wide", so the wide-only card takes no editor chair and the '
