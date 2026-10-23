@@ -152,7 +152,7 @@ export async function runEntryPipeline(
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly stageSettings: StageSettings;
     readonly endRun?: (args: { readonly error: unknown; },) => void;
-    readonly parked?: () => boolean;
+    readonly parked?: (args: { readonly error: unknown; },) => boolean;
   },
 ): Promise<EntryOutcome> {
   /**

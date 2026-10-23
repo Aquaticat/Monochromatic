@@ -306,8 +306,8 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
         stageSettings: input.stageSettings,
         // The refusal that ended an entry reaches the gate even where no guarded call carried it.
         endRun: dryStop.trip,
-        // Asked after the trip, so the entry's TALLY line says it was parked and not that it failed.
-        parked: dryStop.parked,
+        // Asked after the trip with the entry's own failure, so its TALLY line says parked and not failed.
+        parked: dryStop.parkedFor,
       },);
     },
   },);

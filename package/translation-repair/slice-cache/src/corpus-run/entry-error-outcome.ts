@@ -17,6 +17,7 @@ import {
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   endsTheRun,
+  isDryRefusal,
   PromptPayloadStoreError,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run/ts';
@@ -112,6 +113,28 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
 }
 
 /**
+ The fields stating the NeuralWatt return a failure names, none where it names none.
+
+ @param error - what the entry raised
+
+ @returns Leading-space fields: the distance, and the time of day where the failure carries one
+
+ @example
+ ```ts
+ const fields = returnFieldsOf({ error, },);
+ ```
+ */
+function returnFieldsOf({ error, }: { readonly error: unknown; },): string {
+  if ((!(error instanceof WritingBenchUnreachableError)) && (!isDryRefusal(error,)))
+    return '';
+  if (error.neuralwattReturnsInMs === undefined)
+    return '';
+  return ` returnsInMs=${String(error.neuralwattReturnsInMs,)}${
+    (error.neuralwattReturnsAt === undefined) ? '' : ` returnsAt=${error.neuralwattReturnsAt}`
+  }`;
+}
+
+/**
  Prints the TALLY line for an entry that raised out of its pipeline, and
  returns the scheduler's disposition for it.
 
@@ -119,8 +142,9 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
  `DECLINED`, from their own lines):
  `ERROR` for a failure a whole-entry retry may resume, `INCOMPLETE` for stage-local work or a run-ending refusal that
  no retry would change, and `PARKED` for an entry the pass put back at the front of its queue to wait for NeuralWatt's
- energy to return, which earns no verdict and is attempted again after the wait. The `error=` text of a `PARKED` line
- is the reason: the failure that named the return, with the time of day it falls at.
+ energy to return, which earns no verdict and is attempted again after the wait. A `PARKED` line states the distance
+ and the time of day of the return in `returnsInMs=` and `returnsAt=` fields before the reason, so the cap on the
+ reason's text never cuts them; `error=` is the failure that named the return.
 
  @param entryId - entry that failed
 
@@ -135,8 +159,9 @@ function carriesNeuralWattReturn({ error, }: { readonly error: unknown; },): boo
  the entry is filed, so the pass stops starting entries (or parks) however the failure reached the entry: a guarded call
  carries it by the shared abort, the seat reading and a layer that re-raises it reach here without one
 
- @param parked - asked after `endRun` has been told: true when the pass is now parked for the failure, so the entry
- goes back to the front of its queue and the line prints `PARKED` and not the status the failure would have had
+ @param parked - asked after `endRun` has been told, naming this entry's failure: true when the pass is parked for
+ that failure, so the entry goes back to the front of its queue and the line prints `PARKED` and not the status the
+ failure would have had; never true for a failure that is not the park's own
 
  @returns Scheduling disposition, never a settlement
 
@@ -159,7 +184,7 @@ export function tallyCaughtEntry(
     readonly durationMs: number;
     readonly aborted: boolean;
     readonly endRun?: (args: { readonly error: unknown; },) => void;
-    readonly parked?: () => boolean;
+    readonly parked?: (args: { readonly error: unknown; },) => boolean;
   },
 ): EntryErrorOutcome['outcome'] {
   /**
@@ -182,11 +207,20 @@ export function tallyCaughtEntry(
       console.log(`INTERRUPTED ${entryId}: ${finding}`,);
   }
   /**
-   Status the line prints: the entry's own, or `PARKED` where the pass is parked for it and will attempt it again.
+   Whether the pass is parked for this failure and will attempt the entry again.
    */
-  const status = (parked?.() === true) ? 'PARKED' : classified.status;
+  const parkedForThis = parked?.({ error, },) === true;
+  /**
+   Status the line prints: the entry's own, or `PARKED`.
+   */
+  const status = parkedForThis ? 'PARKED' : classified.status;
+  /**
+   The return a parked entry waits for, stated before the reason so the cap on the reason never cuts it.
+   */
+  const returnFields = parkedForThis ? returnFieldsOf({ error, },) : '';
   console.log(
-    `TALLY ${entryId} status=${status} ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,
+    `TALLY ${entryId} status=${status}${returnFields} ms=${String(durationMs,)} aborted=${String(aborted,)} `
+      + `error=${message}`,
   );
   return classified.outcome;
 }

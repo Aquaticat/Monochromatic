@@ -305,8 +305,8 @@ await describe({
               return text.startsWith('TALLY ',);
             },);
             expect(line,).toContain('TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08 UTC ms=5 ',);
-            expect(line?.indexOf('returnsAt=',) ?? -1,).toBeLessThan(line?.indexOf(' error=',) ?? -1,);
-            expect(line?.indexOf('returnsAt=',) ?? -1,).toBeGreaterThan(-1,);
+            expect(line?.indexOf('returnsAt=',) ?? (-1),).toBeLessThan(line?.indexOf(' error=',) ?? (-1),);
+            expect(line?.indexOf('returnsAt=',) ?? (-1),).toBeGreaterThan(-1,);
           },
         },),
 

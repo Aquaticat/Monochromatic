@@ -130,6 +130,12 @@ export type PassDryStop = {
   readonly parked: () => boolean;
 
   /**
+   Whether the park in force is for this failure: a parking refusal or bench error while the pass is parked, and no
+   other failure, so an entry that failed for another reason is not mistaken for the one the pass waits to resume.
+   */
+  readonly parkedFor: (args: { readonly error: unknown; },) => boolean;
+
+  /**
    Waits until the return the park is for, logging the end, and gives the gate a live signal again; nothing where the
    pass is not parked.
    */
@@ -535,6 +541,12 @@ export function createPassDryStop(
       return state.parks
         .length
         > 0;
+    },
+
+    parkedFor: function parkedFor({ error, }: { readonly error: unknown; },): boolean {
+      return isParkingRefusal(error,) && (state.parks
+        .length
+        > 0);
     },
 
     awaitPark: async function awaitPark(): Promise<void> {

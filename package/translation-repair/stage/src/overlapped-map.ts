@@ -326,9 +326,12 @@ export async function mapOverlapped<Item, Result,>(
       l,
     },);
     /**
-     Why the thrown failure outranks an earlier one: it ends the run, or it names a NeuralWatt return the pass parks on.
+     Why the thrown failure outranks an earlier one: it ends the run, or it names a NeuralWatt return that the run's
+     gate may park on, which this map only hands over and does not decide.
      */
-    const winsBecause = endsTheRun({ error: thrown, },) ? 'ends the run' : 'parks the run';
+    const winsBecause = endsTheRun({ error: thrown, },)
+      ? 'ends the run'
+      : 'names a NeuralWatt return the run\'s gate may park on';
     /**
      Why the work ended, as each line about an unthrown failure says it: the
      caller's stop, or the failure thrown, named by its item.
