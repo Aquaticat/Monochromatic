@@ -38,6 +38,10 @@ Its top-level keys and their JSON types were:
 The values of `planWeeklyLimit` were
 `{"nextRegenAt":"2026-10-23T05:03:47.000Z","percentRemaining":0,"nextRegenPercent":2}`.
 The body held no `weeklyTokenLimit` and no `freeToolCalls`.
+The `x-synthetic-quotas` response header of a keyed chat call at 2026-10-23 05:06:33 UTC (HTTP 200) has the same shape:
+`subscription`, `search` and `planWeeklyLimit` with `nextRegenAt`, `percentRemaining` and `nextRegenPercent`,
+and no `weeklyTokenLimit`.
+This reader parses the `/v2/quotas` body only; a reader of the header meets the same name.
 The reading of 2026-10-19 at 14:35 UTC had `weeklyTokenLimit` and `freeToolCalls`
 (`doc/troubleshooting/translation-repair-provider-concurrency.md`, section on the removed limits).
 
@@ -119,7 +123,8 @@ a merge keeps them, and a squash or a rebase would not:
 and `61528e1180` (red) with `90a480dcea` (third fix, which keeps the window and marks the return unreadable
 where `nextRegenAt` is no instant, instead of refusing the body),
 and `4e1db8a35a` (red) with `bc367f792f` (fourth fix, which reads two blocks that agree on `percentRemaining`
-and differ in `nextRegenAt` with the return marked unreadable, instead of refusing the body).
+and differ in `nextRegenAt` with the return marked unreadable, instead of refusing the body),
+and `218443fc90` (red) with `9371655ffd` (fifth fix, which logs one warning, not two, for such a pair).
 The reading used is the one of 2026-10-23 03:28:16 UTC described in the Root cause section,
 with invented numbers in the blocks other than `planWeeklyLimit`.
 
@@ -147,7 +152,7 @@ QuotaShapeError: Synthetic /quotas body violated expectations: weeklyTokenLimit 
 received subscription:object, search:object, planWeeklyLimit:object
 ```
 
-At `bc367f792f` the cases pass under `mise run //package/translation-repair/provider-stream:test:unit`
+At `9371655ffd` the cases pass under `mise run //package/translation-repair/provider-stream:test:unit`
 and `mise run //package/translation-repair/provider:test:unit`.
 
 Bodies that read cleanly:
