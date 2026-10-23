@@ -29,8 +29,8 @@ import {
 // it. A failure stops further items from starting; the items already in
 // flight finish, or throw under the same abort; and the error thrown is the
 // lowest position's, which is the one the sequential loop would have thrown,
-// unless a failure ends the run (`endsTheRun`) or carries a NeuralWatt return the pass may park on (`parksTheRun`), which
-// is thrown instead.
+// unless a failure ends the run (`endsTheRun`), which is thrown instead, or else one carries a NeuralWatt return the
+// pass may park on (`parksTheRun`), which is thrown instead of the lowest position's.
 // Results come back in item order whatever order the items finished in, so
 // records and findings aggregate the same way at any overlap.
 //
@@ -296,14 +296,19 @@ export async function mapOverlapped<Item, Result,>(
      */
     const earliest = Math.min(...failures.keys(),);
     /**
-     The first failure to arrive that ends the run or carries a NeuralWatt return the pass may park on, when any does.
-     The precedence is that of `endsTheRun` (`stage-run-end.ts`), which the every-provider-dry refusal already holds, so
-     a writing bench error that carries a return is not hidden behind an earlier item's ordinary failure.
+     The failure to throw in place of the lowest position's, when any qualifies: the first to arrive that ends the run
+     (`endsTheRun`, which the every-provider-dry refusal holds), and only when none does the first that carries a
+     NeuralWatt return the pass may park on (`parksTheRun`). Searched in that order, so the refusal wins whichever
+     arrived first and a bench error that carries a return is not hidden behind an earlier item's ordinary failure.
      */
     const endingEntry = [...failures.entries(),]
       .find(function endsRun([, error,],): boolean {
-        return endsTheRun({ error, },) || parksTheRun({ error, },);
-      },);
+        return endsTheRun({ error, },);
+      },)
+      ?? [...failures.entries(),]
+        .find(function mayPark([, error,],): boolean {
+          return parksTheRun({ error, },);
+        },);
     /**
      Position whose failure is thrown: one that ends the run wins over an earlier failure of one item, since no item
      could be served once every provider is dry and the earlier item's own failure is not what ended the work.
