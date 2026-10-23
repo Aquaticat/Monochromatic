@@ -246,8 +246,8 @@ await describe({
         },),
 
         it({
-          name: 'KEEPS A POSITIVE CAP FINER THAN A MILLISECOND AT ONE MILLISECOND, so a cap an operator wrote as '
-            + 'positive never reaches the hold bound as zero',
+          name: 'REFUSES A POSITIVE CAP THAT ROUNDS TO ZERO MILLISECONDS at exit 6 with its line alone, naming the '
+            + 'figure and the smallest figure accepted',
           fn: async () => {
             await using clone = await makeCorpusPassClone({ entries: ENTRIES, },);
             await using runs = await scratchDir({ prefix: 'corpus-pass-runs-', },);
@@ -265,13 +265,15 @@ await describe({
             },);
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);
-            expect(run.stdout,).toContain(
-              await startLine({
-                pending: 2,
-                hardMs: 1,
-              },),
+            expect(run.stdout,).toBe('',);
+            expect(run.stderr,).toBe(
+              'corpus-pass: TRANSLATION_REPAIR_HARD_CAP_MINUTES must be a positive number of minutes, and a ceiling '
+                + 'is read in whole milliseconds; received "0.0000001", which rounds to 0 milliseconds. The smallest '
+                + 'figure accepted is half a millisecond, written as 0.0000083334 minutes. This is the ceiling that '
+                + 'stops one entry running away with a whole pass, so a figure it cannot state is refused rather '
+                + 'than quietly replaced by another: an operator who set it believes the run is bounded the way '
+                + 'they asked for.\n',
             );
-            expect(run.stderr,).toBe(NO_KEY_REFUSAL,);
           },
         },),
 

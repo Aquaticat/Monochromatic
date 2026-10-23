@@ -232,6 +232,47 @@ await describe({
             },),).toBe(7.5,);
           },
         },),
+
+        it({
+          name: 'REFUSES A POSITIVE FIGURE THAT ROUNDS TO ZERO WHOLE MILLISECONDS, naming the figure and the '
+            + 'smallest figure accepted, and replaces no figure an operator wrote',
+          fn: async () => {
+            /**
+             Error raised for a figure of 0.006 milliseconds.
+             */
+            const refusal = caught(function readTooFine(): number {
+              return resolveHardCapMinutes({
+                fallback: FALLBACK,
+                raw: '0.0000001',
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(HardCapOverrideError,);
+            expect(String(refusal,),).toContain('received "0.0000001"',);
+            expect(String(refusal,),).toContain('0.0000083334 minutes',);
+          },
+        },),
+
+        it({
+          name: 'READS HALF A MILLISECOND AND MORE as the figure written, and refuses what is below it, so the '
+            + 'smallest figure the refusal names is itself accepted',
+          fn: async () => {
+            expect(resolveHardCapMinutes({
+              fallback: FALLBACK,
+              raw: '0.0000083334',
+            },),).toBe(0.0000083334,);
+            expect(resolveHardCapMinutes({
+              fallback: FALLBACK,
+              raw: '0.0000167',
+            },),).toBe(0.0000167,);
+            expect(caught(function readBelowHalf(): number {
+              return resolveHardCapMinutes({
+                fallback: FALLBACK,
+                raw: '0.0000083',
+              },);
+            },),).toBeInstanceOf(HardCapOverrideError,);
+          },
+        },),
+
         it({
           name: 'READS ONLY THE TEXT IT IS HANDED, never the process\'s own variable, whose unreadable value '
             + 'would refuse the read and whose number would replace the fallback',
