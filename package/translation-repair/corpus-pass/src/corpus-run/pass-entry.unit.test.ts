@@ -2414,6 +2414,47 @@ await describe({
       },
     },),
     it({
+      name: 'BOUNDS THE SEAT READER INSIDE AN ENTRY BY THE ENTRY\'S OWN HARD CAP: a pass with hours left hands the entry '
+        + 'a bound no larger than the cap, so a wait for a return never outlasts the entry\'s timer',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         The bound each seat reading asked the holds for.
+         */
+        const asked: (number | undefined)[] = [];
+        const base = entryClient({ served: [], },);
+        await settleEntry({
+          client: {
+            ...base,
+            // A pass with a year left, far past the entry's cap.
+            passLeftMs: () => Number.MAX_SAFE_INTEGER,
+            providerHolds: function recordBound(bound,) {
+              asked.push(bound?.returnBoundMs,);
+              return base.providerHolds();
+            },
+          },
+          entry: LINK_RECOVERY_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
+          outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
+          hardCapMs: HANG_STOP_MS,
+          baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        expect(asked.length,).toBeGreaterThan(0,);
+        expect(asked.every(function isWithinCap(bound,): boolean {
+          return (bound !== undefined) && (bound <= HANG_STOP_MS);
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'PUBLISHES SOURCE-ALIGNED FRONT MATTER THROUGH LANES, CONTEST, ARTIFACT READBACK, AND PAGE WRITE',
       fn: async () => {
         await using dirs = await throwawayDirs();
