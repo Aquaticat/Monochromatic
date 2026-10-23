@@ -537,6 +537,74 @@ await describe({
     },),
 
     it({
+      name: 'THROWS THE EVERY-PROVIDER-DRY REFUSAL OVER A BENCH ERROR THAT CARRIES A RETURN in either arrival order: the '
+        + 'refusal ends the run and the bench error only may be parked on, so what arrived first does not decide it',
+      fn: async () => {
+        /**
+         A bench error standing in for the run package's, which this package cannot import.
+         */
+        class BenchWithReturnError extends Error {
+          public override readonly name: string = 'BenchWithReturnError';
+
+          public readonly neuralwattReturnsInMs: number = 301_000;
+        }
+        /**
+         What the router raised.
+         */
+        const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+        /**
+         What the thrown failure is when the bench error arrives first and the refusal second.
+         */
+        const benchFirst = gatedRun({ count: 3, },);
+        const first = collected({
+          run: mapOverlapped({
+            items: ITEMS.slice(
+              0,
+              3,
+            ),
+            overlap: 3,
+            oneItem: benchFirst.oneItem,
+            signal: NEVER_STOPPED,
+            l: QUIET,
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        nonNullishOrThrow(benchFirst.gates[1],).reject(new BenchWithReturnError('writing bench unreachable',),);
+        await settle();
+        nonNullishOrThrow(benchFirst.gates[2],).reject(dry,);
+        await settle();
+        nonNullishOrThrow(benchFirst.gates[0],).resolve('fine',);
+        expect(await first,).toBe(dry,);
+
+        /**
+         The same two failures with the refusal arriving first.
+         */
+        const dryFirst = gatedRun({ count: 3, },);
+        const second = collected({
+          run: mapOverlapped({
+            items: ITEMS.slice(
+              0,
+              3,
+            ),
+            overlap: 3,
+            oneItem: dryFirst.oneItem,
+            signal: NEVER_STOPPED,
+            l: QUIET,
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        nonNullishOrThrow(dryFirst.gates[2],).reject(dry,);
+        await settle();
+        nonNullishOrThrow(dryFirst.gates[1],).reject(new BenchWithReturnError('writing bench unreachable',),);
+        await settle();
+        nonNullishOrThrow(dryFirst.gates[0],).resolve('fine',);
+        expect(await second,).toBe(dry,);
+      },
+    },),
+
+    it({
       name: 'admits every item at once when the overlap exceeds the count',
       fn: async () => {
         const run = gatedRun({ count: 3, },);
