@@ -244,6 +244,7 @@ const NAMED_PARTS: Record<string, string> = {
   'ALLOW_DRIFT_VALUE': 'value this package expects in the override variable',
   'ALLOW_DRIFT_VAR': 'environment variable name',
   'HARD_CAP_VAR': 'environment variable name',
+  'SMALLEST_FIGURE_MINUTES': 'fixed decimal figure in minutes, a constant of this package',
   'NEURALWATT_DAILY_WH_VAR': 'environment variable name',
   'NEURALWATT_DAY_START_VAR': 'environment variable name',
   'energy.day': 'UTC date the NeuralWatt ledger computed from its clock',
