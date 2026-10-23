@@ -209,7 +209,7 @@ async function heldWithin({ msBeforeReturn, }: { readonly msBeforeReturn: number
 
  @param pollMs - how often the wait reads the holds again
 
- @returns The refusal thrown
+ @returns Refusal thrown
 
  @example
  ```ts

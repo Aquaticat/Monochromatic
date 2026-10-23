@@ -197,7 +197,7 @@ function measuredAt(
 
  @param waited - whether the call waited for a hold before this refusal
 
- @returns The options to spread into the refusal, none for a view that knows nothing of NeuralWatt
+ @returns Options to spread into the refusal, none for a view that knows nothing of NeuralWatt
 
  @example
  ```ts
@@ -249,19 +249,19 @@ function dryCauseOf(
 
  @param modelId - model being routed, for the log lines
 
- @param signal - the call's abort, which ends a wait with its reason
+ @param signal - call's abort, which ends a wait with its reason
 
  @param pollMs - how often a wait checks for abort
 
- @param holds - the holds as the caller read them, with at least one running
+ @param holds - holds as the caller read them, with at least one running
 
- @param returnBoundMs - the longest the waits of this call take in all, for a NeuralWatt return: every millisecond
+ @param returnBoundMs - longest the waits of this call take in all, for a NeuralWatt return: every millisecond
  already waited comes off it before the holds are asked again, so a return inside the bound alone but past what is left
  is not waited for
 
- @param writing - the providers whose wet reading keeps the run going
+ @param writing - providers whose wet reading keeps the run going
 
- @returns The first reading in which some provider that keeps the run going no longer reads dry
+ @returns First reading in which some provider that keeps the run going no longer reads dry
 
  @throws {@link EveryProviderDryError} when every provider still reads dry and no hold is left to wait out
 
@@ -409,10 +409,10 @@ async function readAfterHolds(
 
  @param pollMs - how often the wait checks for abort
 
- @param writing - the providers whose wet reading keeps the run going, because they serve a model seated in a writing
+ @param writing - providers whose wet reading keeps the run going, because they serve a model seated in a writing
  bench (`WritingReach`); every provider where the caller knows no roster
 
- @param returnBoundMs - the longest NeuralWatt return this call waits for; the router's own bound by default, since a
+ @param returnBoundMs - longest NeuralWatt return this call waits for; the router's own bound by default, since a
  call carries a deadline that cuts anything longer (`NEURALWATT_RETURN_WAIT_BOUND_MS`)
 
  @returns Every provider's dryness, holds waited out

@@ -259,11 +259,11 @@ async function tripping<ResultT,>(
 
  @param returnsInMs - milliseconds until the return, absent where the refusal named none
 
- @param returnsAt - the time of day the return falls at, with its zone
+ @param returnsAt - time of day the return falls at, with its zone
 
  @param passLeftMs - milliseconds the pass has left
 
- @returns A sentence, empty where the refusal named no return
+ @returns Sentence, empty where the refusal named no return
 
  @example
  ```ts
@@ -317,7 +317,7 @@ function isParkingRefusal(error: unknown,): error is EveryProviderDryError | Wri
 
  @param passLeftMs - milliseconds the pass has left before its soft budget or hard cap
 
- @param now - the gate's clock
+ @param now - gate's clock
 
  @mutates state - holds the cause, or the park, and aborts the controller, the first time only; records a further
  parking failure on the park in force
@@ -450,7 +450,7 @@ function refuseOn(
 
  @param waitMs - waits out a park, injectable so a test does not wait; `wait` by default
 
- @param now - the gate's clock, on which a park's return is an instant and what is left of it is waited for;
+ @param now - gate's clock, on which a park's return is an instant and what is left of it is waited for;
  `monotonicMs` by default
 
  @returns Gate whose signal aborts on the first every-provider-dry refusal a guarded client meets

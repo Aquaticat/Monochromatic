@@ -35,9 +35,9 @@ const SPENT_DAY = {
 /**
  A spent day that starts again after so many milliseconds.
 
- @param returnsInMs - the distance, margin included
+ @param returnsInMs - distance, margin included
 
- @returns The cause
+ @returns Cause
 
  @example
  ```ts
@@ -55,9 +55,9 @@ function spentDayIn({ returnsInMs, }: { readonly returnsInMs: number; },): Neura
 /**
  The cause for a spent day at a time, with no margin.
 
- @param at - the wall clock's instant, in UTC
+ @param at - wall clock's instant, in UTC
 
- @returns The cause
+ @returns Cause
 
  @example
  ```ts

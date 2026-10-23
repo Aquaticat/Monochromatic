@@ -94,7 +94,7 @@ const DAY_TWO = '2026-10-23T19:15:08.000Z';
 
  @param readAtMs - instant on the gate's clock of the seat reading that made the refusal, absent for the router's own
 
- @returns The refusal, carrying the distance, the time of day and the dryness that tells one spent day from the next
+ @returns Refusal, carrying the distance, the time of day and the dryness that tells one spent day from the next
 
  @example
  ```ts
@@ -128,7 +128,7 @@ function spentDayRefusal(
 
  @param readAtMs - instant on the gate's clock of the read that named the return, absent for an error without one
 
- @returns The error
+ @returns Error
 
  @example
  ```ts
@@ -631,9 +631,9 @@ await describe({
     },),
 
     it({
-      name: 'ANSWERS FOR EVERY PARKING FAILURE IT SAW DURING THE PARK, since a layer above the guard may rethrow any of '
-        + 'them: two distinct refusals handed to it are both the park\'s, an ordinary failure and a bench error with no '
-        + 'return are not, and none is once the park has ended',
+      name: 'ANSWERS FOR EVERY PARKING FAILURE IT SAW DURING THE PARK, since a layer above the guard may rethrow '
+        + 'any of them: two distinct refusals handed to it are both the park\'s, an ordinary failure and a bench '
+        + 'error with no return are not, and none is once the park has ended',
       fn: async () => {
         const dryStop = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
         /**

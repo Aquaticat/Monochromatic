@@ -101,7 +101,7 @@ export type NeuralWattReturnMark = {
    THE DISTANCE IS COMPARED WITH ITS MARGIN INCLUDED (`returnFitsWithin`), the way the refusal states it and the pass's
    park counts it, so a return exactly at the bound is waited for and one within the margin past it is not.
 
-   @param boundMs - the longest return the caller waits for
+   @param boundMs - longest return the caller waits for
    */
   readonly leftWithinMs: (args: { readonly boundMs: number; },) => number;
 };

@@ -38,7 +38,7 @@ function boundWordsOf({ boundOwner, }: { readonly boundOwner: BoundOwner; },): s
 
  @param returnsInMs - milliseconds until the day starts again, the margin included
 
- @param boundMs - the longest wait the caller takes: what a router call allows, or what the pass or the entry has left
+ @param boundMs - longest wait the caller takes: what a router call allows, or what the pass or the entry has left
 
  @returns Whether the return can be waited for
 
@@ -69,7 +69,7 @@ export function returnFitsWithin(
  @param boundOwner - whose bound passLeftMs is, the entry's own hard cap when that is the smaller of the two bounds an
  entry runs under (default: the pass)
 
- @returns The words as the one entry of a list, or an empty list when the return fits or nothing bounds the wait
+ @returns Words as the one entry of a list, or an empty list when the return fits or nothing bounds the wait
 
  @example
  ```ts

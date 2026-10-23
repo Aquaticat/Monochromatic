@@ -179,7 +179,7 @@ async function readsUnderHold(
 
  @param lines - what the reading logged
 
- @returns The line, empty where the reading wrote no such warning (a case that expects one then fails on its content)
+ @returns Line, empty where the reading wrote no such warning (a case that expects one then fails on its content)
 
  @example
  ```ts

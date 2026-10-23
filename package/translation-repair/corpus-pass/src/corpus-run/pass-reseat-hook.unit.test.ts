@@ -59,7 +59,7 @@ const RESEATED = { seated: 'read under a hold', };
 
  @param passLeftMs - what the pass has left
 
- @returns The hook and the dryness reads counted
+ @returns Hook and the dryness reads counted
 
  @example
  ```ts
@@ -139,7 +139,7 @@ function leftAfter({ asks, }: { readonly asks: number; },): number {
 
  @param lines - receives what the readings log
 
- @returns The hook and the switch that ends or starts the DeepSeek hold
+ @returns Hook and the switch that ends or starts the DeepSeek hold
 
  @example
  ```ts
@@ -179,7 +179,7 @@ function hookUnderDeepSeekHold({ lines, }: { readonly lines: string[]; },) {
 
  @param lines - what the readings logged
 
- @returns The warning lines
+ @returns Warning lines
 
  @example
  ```ts

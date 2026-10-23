@@ -91,7 +91,7 @@ type ClassIdentityReading = {
 
  @param specifier - import specifier, such as `@monochromatic-dev/translation-repair-run/ts`
 
- @returns The scope and the package name, without any subpath
+ @returns Scope and the package name, without any subpath
 
  @example
  ```ts
@@ -360,8 +360,8 @@ const PACKAGE_FLOOR = 8;
  Sites the package-wide case must find by name, as `path#Class` with the path as `readPackageSource` gives it (the
  package directory, then the path under `src`): one in each of three packages, each a class from another family
  package. A floor on the count alone would pass with these gone, so a scan that stopped reading one whole package
- would go unseen. A site that a fix through an owner's guard removes leaves this list in the same commit, with the
- reason.
+ would go unseen. A site that a fix through an owner's guard removes leaves this list in the same commit, and the
+ commit message gives the reason.
  */
 const ANCHORED_SITES = [
   'slice-cache/corpus-run/entry-error-outcome.ts#WritingBenchUnreachableError',
@@ -372,9 +372,9 @@ const ANCHORED_SITES = [
 /**
  One file importing a class from the family package `b` and testing it.
 
- @param test - the test expression, using `BError`
+ @param test - test expression, using `BError`
 
- @returns The file, of package `a`
+ @returns File, of package `a`
 
  @example
  ```ts
@@ -396,9 +396,9 @@ await describe({
   name: 'class identity across bundled packages',
   children: [
     it({
-      name: 'FINDS A CLASS TESTED THAT THE IMPORTER DOES NOT KEEP EXTERNAL: a sibling absent from dependencies (it is '
-        + 'listed under devDependencies only, or not at all) is bundled, and the same file passes when the sibling is '
-        + 'listed',
+      name: 'FINDS A CLASS TESTED THAT THE IMPORTER DOES NOT KEEP EXTERNAL: a sibling absent from dependencies (it '
+        + 'is listed under devDependencies only, or not at all) is bundled, and the same file passes when the '
+        + 'sibling is listed',
       fn: async () => {
         /**
          The package-a manifests without and with the sibling.

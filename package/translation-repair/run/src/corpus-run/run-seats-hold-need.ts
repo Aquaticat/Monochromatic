@@ -44,7 +44,7 @@ import {
 
  @param back - providers whose return is asked about
 
- @returns The view after their return
+ @returns View after their return
 
  @example
  ```ts
@@ -75,7 +75,7 @@ function viewWithBack(
 
  @param names - benches the phase leans on
 
- @returns The names of the unmet benches
+ @returns Names of the unmet benches
 
  @example
  ```ts
@@ -199,7 +199,7 @@ export function returnLiftsWritingBenches(
 
  @param names - benches the phase leans on
 
- @returns The holds worth waiting for, in the shape of the holds given
+ @returns Holds worth waiting for, in the shape of the holds given
 
  @example
  ```ts
@@ -284,7 +284,7 @@ export function holdsThatCureShortBenches(
 
  @param nothingHeld - words for a reading where no hold is skipped (none runs, or every one is waited for)
 
- @returns The words
+ @returns Words
 
  @example
  ```ts

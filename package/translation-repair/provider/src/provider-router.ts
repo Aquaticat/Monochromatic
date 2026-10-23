@@ -160,7 +160,7 @@ const routerRoot = contextRoot({ tag: 'translation-repair', },);
  learned once, and reads the same set for the view its seat readers use
  (`foldCredentialHolds`)
 
- @param writing - the providers whose wet reading keeps the run going, because they serve a model seated in a writing
+ @param writing - providers whose wet reading keeps the run going, because they serve a model seated in a writing
  bench; the run derives it from its roster, and every provider counts where none is given (`WritingReach`)
 
  @returns Client surface a stage calls without naming a provider

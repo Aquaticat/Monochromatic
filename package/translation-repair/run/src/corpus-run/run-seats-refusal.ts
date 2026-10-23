@@ -58,7 +58,7 @@ export function neuralwattOf({ client, }: { readonly client: Pick<RunClient, 'ne
 
  @param client - run client, whose record is read when it carries one
 
- @returns The client's record, or the roster's own where the client carries none
+ @returns Client's record, or the roster's own where the client carries none
 
  @example
  ```ts
@@ -85,7 +85,7 @@ export function writingProvidersOfClient(
  @param refusalFollows - whether a run-ending refusal follows when every provider that keeps the run going is dry, which
  states the cause itself (default: it does); false for a reading that goes on, where nothing else would state it
 
- @returns The clauses, with the cause last where NeuralWatt reads dry and the client reports one
+ @returns Clauses, with the cause last where NeuralWatt reads dry and the client reports one
 
  @example
  ```ts
@@ -141,11 +141,11 @@ export function withNeuralWattReturn(
 
  @param neuralwattReadAtMs - instant of the reading that named the return, which the pass counts its wait from
 
- @param pastPass - the words saying that return is past what the pass has left, none where it fits or none is named
+ @param pastPass - words saying that return is past what the pass has left, none where it fits or none is named
 
- @param dry - the dryness view the reading stopped on, whose wet providers the refusal names with their reason
+ @param dry - dryness view the reading stopped on, whose wet providers the refusal names with their reason
 
- @param writing - the providers whose wet reading keeps the run going
+ @param writing - providers whose wet reading keeps the run going
 
  @returns The refusal, stating the reading it was made on
 

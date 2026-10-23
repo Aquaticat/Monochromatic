@@ -312,8 +312,8 @@ await describe({
         },),
 
         it({
-          name: 'THROWS ON A RETURN TIME THAT IS NOT IN UTC, naming the text it got and printing no line, since the only '
-            + 'writer of the time gives it with the UTC zone and any other text is a break of that rule',
+          name: 'THROWS ON A RETURN TIME THAT IS NOT IN UTC, naming the text it got and printing no line, since the '
+            + 'only writer of the time gives it with the UTC zone and any other text is a break of that rule',
           fn: async (ctx) => {
             using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
             /**

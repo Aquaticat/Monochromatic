@@ -104,11 +104,11 @@ function clockReading({ instants, }: { readonly instants: readonly number[]; },)
 /**
  Makes one chat call through a guarded client and returns the failure it raises.
 
- @param client - the guarded client
+ @param client - guarded client
 
- @param signal - the call's abort handle
+ @param signal - call's abort handle
 
- @returns The failure the call raised
+ @returns Failure the call raised
 
  @example
  ```ts

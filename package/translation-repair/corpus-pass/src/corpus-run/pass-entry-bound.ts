@@ -12,15 +12,15 @@ import type { RunClient, } from '@monochromatic-dev/translation-repair-run/ts';
 /**
  The client an entry runs on, its pass bound narrowed to the time the entry's own cap has left.
 
- @param client - the pass's client, whose bound (when it carries one) counts the soft budget left
+ @param client - pass's client, whose bound (when it carries one) counts the soft budget left
 
  @param hardCapMs - how long the entry may run before its timer aborts it
 
  @param startedAt - when the entry began, on the clock `now` reads
 
- @param now - the monotonic clock in milliseconds
+ @param now - monotonic clock in milliseconds
 
- @returns The client with a bound that is the smaller of its own and what the entry's cap has left, which may be zero
+ @returns Client with a bound that is the smaller of its own and what the entry's cap has left, which may be zero
  or negative once the cap is spent
 
  @example

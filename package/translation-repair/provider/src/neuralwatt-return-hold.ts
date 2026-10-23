@@ -124,7 +124,7 @@ export type NeuralWattCause = {
    Whether the hold that keeps NeuralWatt out is its day start and not a refusal's, so a wait that names the hold names
    the day start only when it won.
 
-   @param returnBoundMs - the longest return the caller waits for (default: none)
+   @param returnBoundMs - longest return the caller waits for (default: none)
    */
   readonly neuralwattHeldByReturn: (args?: { readonly returnBoundMs?: number; },) => boolean;
 };
@@ -178,7 +178,7 @@ function msOfDayUtc({ at, }: { readonly at: Date; },): number {
 
  @param marginMs - milliseconds added to a return that is waited for
 
- @returns The cause, with the distance to the return and the margin for a spent day
+ @returns Cause, with the distance to the return and the margin for a spent day
 
  @example
  ```ts

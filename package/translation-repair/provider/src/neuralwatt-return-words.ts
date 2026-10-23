@@ -54,7 +54,7 @@ export type NeuralWattReturn =
 
  @param dryness - why NeuralWatt reads dry, where the caller knows
 
- @returns The time of day with its zone as `text`, absent where neither source names one
+ @returns Time of day with its zone as `text`, absent where neither source names one
 
  @example
  ```ts
@@ -87,9 +87,9 @@ export function returnTimeOf(
  The time a blocked key lets requests through again, as a refusal states it: the reading's own text read as an instant
  and spelled in UTC, never the reply's text itself.
 
- @param until - the instant as the quota reply spelled it
+ @param until - instant as the quota reply spelled it
 
- @returns The instant spelled in UTC, or that the account stated none that reads as one
+ @returns Instant spelled in UTC, or that the account stated none that reads as one
 
  @example
  ```ts
@@ -111,7 +111,7 @@ export function keyUnblockTextOf({ until, }: { readonly until: string; },): stri
 
  @param neuralwattReturnsInMs - milliseconds until a spent day starts again, where the caller counted them
 
- @returns The cause as `dryness`, absent where the caller named neither
+ @returns Cause as `dryness`, absent where the caller named neither
 
  @example
  ```ts
@@ -149,7 +149,7 @@ export function namedDrynessOf(
 
  @param dryness - why NeuralWatt reads dry, where the caller knows
 
- @returns A clause ending in a comma and a space, or nothing for an off provider
+ @returns Clause ending in a comma and a space, or nothing for an off provider
 
  @example
  ```ts
@@ -186,7 +186,7 @@ export function openingClauseOf(
 
  @param afterWaiting - whether the call waited for the return before this refusal
 
- @returns A clause ending in a semicolon and a space
+ @returns Clause ending in a semicolon and a space
 
  @example
  ```ts

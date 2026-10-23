@@ -121,7 +121,7 @@ export const DARK_MODEL_WARN_COOLDOWN_MS = 300_000;
 
  @param cooldownMs - how long a model is not warned about again
 
- @returns A check that is true the first time a model is asked about and again once the cooldown has passed
+ @returns Check that is true the first time a model is asked about and again once the cooldown has passed
 
  @example
  ```ts

@@ -97,7 +97,7 @@ export const EVERY_PROVIDER_COUNTS: WritingReach = {
 
  @param view - dryness per provider, holds and refusals folded in
 
- @param writing - the providers whose wet reading keeps the run going
+ @param writing - providers whose wet reading keeps the run going
 
  @returns Whether nothing that writes a page can be bought anywhere
 
@@ -125,9 +125,9 @@ export function everyWritingProviderDry(
 
  @param view - dryness per provider
 
- @param writing - the providers whose wet reading keeps the run going
+ @param writing - providers whose wet reading keeps the run going
 
- @returns The idle providers in spending order
+ @returns Idle providers in spending order
 
  @example
  ```ts
@@ -153,9 +153,9 @@ export function idleWetProviders(
 
  @param view - dryness per provider
 
- @param provider - the provider read
+ @param provider - provider read
 
- @returns The word for the measured clause
+ @returns Word for the measured clause
 
  @example
  ```ts
@@ -220,7 +220,7 @@ const DRY_CLAUSES: readonly (readonly [
 
  @param idle - providers that read wet but serve no seat that writes
 
- @returns The clauses joined as a list ending in "and", without the closing period
+ @returns Clauses joined as a list ending in "and", without the closing period
 
  @example
  ```ts
@@ -689,7 +689,7 @@ export function providerServing(
  @param neuralwatt - what the run knows of NeuralWatt's day, which the refusal that ends the run states the return
  time from; absent where the caller has none
 
- @param writing - the providers whose wet reading keeps the run going (`WritingReach`); every provider where the caller
+ @param writing - providers whose wet reading keeps the run going (`WritingReach`); every provider where the caller
  knows no roster
 
  @returns Provider to call, or why none can be

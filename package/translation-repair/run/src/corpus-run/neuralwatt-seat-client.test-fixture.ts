@@ -67,7 +67,7 @@ const SYNTHETIC_WET_PERCENT = 50;
 /**
  The anchor of the account's day, which is known.
 
- @returns The day start as a time of day
+ @returns Day start as a time of day
 
  @example
  ```ts
@@ -107,7 +107,7 @@ type NeuralWattSeatClient = {
 
  @param msBeforeReturn - how long before NeuralWatt's day starts again the wall clock reads
 
- @param spent - the first NeuralWatt reading, the spent day unless the case says otherwise
+ @param spent - first NeuralWatt reading, the spent day unless the case says otherwise
 
  @param syntheticWet - whether Synthetic, the only other configured provider, has budget
 
@@ -117,10 +117,10 @@ type NeuralWattSeatClient = {
 
  @param lagging - whether the account still reads the spent day after the return (default: the new day shows)
 
- @param now - the monotonic clock the budgets count a return's distance on, a frozen one for a case that waits for
+ @param now - monotonic clock the budgets count a return's distance on, a frozen one for a case that waits for
  nothing (default: the real clock, for a case that sleeps)
 
- @returns The client the reader takes, and the energy reads counted
+ @returns Client the reader takes, and the energy reads counted
 
  @example
  ```ts

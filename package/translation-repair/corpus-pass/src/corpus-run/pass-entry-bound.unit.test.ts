@@ -26,7 +26,7 @@ const HOUR_MS = 3_600_000;
 
  @param passLeftMs - what the pass has left, absent for a pass that bounds nothing
 
- @returns A client standing in for the pass's
+ @returns Client standing in for the pass's
 
  @example
  ```ts

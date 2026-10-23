@@ -42,7 +42,7 @@ function unreadableMeter(): MeterState {
 
  @param meter - what the provider's meter said
 
- @returns The state word the line prints
+ @returns State word the line prints
 
  @example
  ```ts

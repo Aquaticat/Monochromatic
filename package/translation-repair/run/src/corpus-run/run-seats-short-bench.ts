@@ -79,8 +79,8 @@ export type SeatReadingClient = Pick<
  */
 export type WarnedState = {
   /**
-   The providers held and the benches unmet when the line was last written, none before one was written or once it
-   was forgotten.
+   The providers held and the benches unmet when the line was last written, none before one was
+   written or once it was forgotten.
    */
   signature: string;
 };

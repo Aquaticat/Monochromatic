@@ -21,9 +21,9 @@ const SECONDS_PER_HOUR = 3_600;
  A duration in hours, minutes and seconds, each unit named only where it is not zero, rounded up to a whole second so
  a wait is never stated shorter than it is.
 
- @param ms - the duration in milliseconds
+ @param ms - duration in milliseconds
 
- @returns The words, `0 s` for no time
+ @returns Words, `0 s` for no time
 
  @example
  ```ts

@@ -175,7 +175,7 @@ const ALL_METERS_WET: Readonly<Record<keyof BudgetView, MeterState>> = {
 
  @param providerHolds - scripted holds, none when absent
 
- @param writingProviders - the providers that serve a writing-bench seat, the run's roster when absent
+ @param writingProviders - providers that serve a writing-bench seat, the run's roster when absent
 
  @returns Client with only the seat reader's surface
 
