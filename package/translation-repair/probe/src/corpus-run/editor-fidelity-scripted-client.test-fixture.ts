@@ -38,6 +38,24 @@ export type Asked = {
 };
 
 /**
+ The text exchange, which the editor never makes.
+
+ @throws {@link Error} always, since a call here means the stage changed what it asks
+ */
+function unusedChatText(): never {
+  throw new Error('chatText unused',);
+}
+
+/**
+ The quota read, which the editor never makes.
+
+ @throws {@link Error} always, since a call here means the stage changed what it asks
+ */
+function unusedQuotas(): never {
+  throw new Error('quotas unused',);
+}
+
+/**
  Client answering every ask with one scripted report.
 
  @param report - what each ask returns
@@ -61,28 +79,26 @@ export function scriptedClient(
   },
 ): ModelClient {
   return {
-    chatText: function chatText(): never {
-      throw new Error('chatText unused',);
-    },
-    chatJson: async function chatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {
-      asked.modelIds.push(request.modelId,);
-      asked.sheets.push(request.messages,);
+    chatText: unusedChatText,
+    chatJson: function chatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {
+      asked.modelIds
+        .push(request.modelId,);
+      asked.sheets
+        .push(request.messages,);
       if (!request.validate(report,)) {
-        return {
+        return Promise.resolve({
           kind: 'schema-mismatch',
           rawText: JSON.stringify(report,),
           detail: 'scripted report failed the editor guard',
-        };
+        },);
       }
-      return {
+      return Promise.resolve({
         kind: 'ok',
         value: report,
         rawText: JSON.stringify(report,),
-      };
+      },);
     },
-    quotas: function quotas(): never {
-      throw new Error('quotas unused',);
-    },
+    quotas: unusedQuotas,
   };
 }
 

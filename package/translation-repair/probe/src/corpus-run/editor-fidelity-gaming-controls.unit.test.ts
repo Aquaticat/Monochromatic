@@ -264,6 +264,26 @@ const CONTROLS: readonly Control[] = [
 ];
 
 /**
+ Says in a word how a control is expected to read.
+
+ @param control - control read
+
+ @returns The word for a reply with no landed edit, or the fix kind with whether something else changed
+
+ @example
+ ```ts
+ const word = readsWord({ control, },);
+ ```
+ */
+function readsWord({ control, }: { readonly control: Control; },): string {
+  if ((typeof control.reads) === 'string')
+    return control.reads;
+  return control.reads.collateral
+    ? `${control.reads.fixed} with collateral`
+    : control.reads.fixed;
+}
+
+/**
  The row a control produces.
 
  @param control - control read
@@ -292,11 +312,9 @@ await describe({
   children: [
     ...CONTROLS.map(function itReads(control,) {
       return it({
-        name: `READS ${control.name.toUpperCase()} as ${
-          typeof control.reads === 'string' ? control.reads : control.reads.fixed
-        }${
-          (typeof control.reads !== 'string') && control.reads.collateral ? ' with collateral' : ''
-        }, ${control.counts ? 'counted' : 'not counted'} in the headline (re-check measured: ${control.measured})`,
+        name: `READS ${control.name.toUpperCase()} as ${readsWord({ control, },)}, ${
+          control.counts ? 'counted' : 'not counted'
+        } in the headline (re-check measured: ${control.measured})`,
         fn: async () => {
           /**
            How the trial read, and what the tally of that one row makes of it.
@@ -307,12 +325,13 @@ await describe({
             rows: [row,],
           },);
           expect(tally.fixed,).toBe(control.counts ? 1 : 0,);
-          if (typeof control.reads === 'string') {
+          if ((typeof control.reads) === 'string') {
             expect(row.reading.kind,).toBe(control.reads,);
             return;
           }
           expect(row.reading.kind,).toBe('answered',);
-          expect(row.reading.kind === 'answered' && row.reading.score,).toStrictEqual(control.reads,);
+          if (row.reading.kind === 'answered')
+            expect(row.reading.score,).toStrictEqual(control.reads,);
         },
       },);
     },),
@@ -324,9 +343,9 @@ await describe({
         /**
          Every control's row, in order.
          */
-        const rows: EditorFidelityRow[] = [];
-        for (const control of CONTROLS)
-          rows.push(await rowOfControl({ control, },),);
+        const rows = await Promise.all(CONTROLS.map(function rowOf(control,): Promise<EditorFidelityRow> {
+          return rowOfControl({ control, },);
+        },),);
         const tally = editorTallyOf({
           cardId: LOW_CARD,
           rows,
