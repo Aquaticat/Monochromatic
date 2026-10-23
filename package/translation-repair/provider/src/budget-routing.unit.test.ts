@@ -670,6 +670,35 @@ await describe({
         },),
 
         it({
+          name: 'PRINTS ONLY A VALIDATED INSTANT as the weekly return: a value with a space and a newline, an empty one and a '
+            + 'spelling the logger does not write read `unreadable`, so no snapshot can forge a field or a line',
+          fn: async () => {
+            /**
+             The return field printed for each weekly return a snapshot might carry.
+             */
+            const returned = [
+              'a synthetic=wet\nINJECT',
+              '',
+              '2026-10-23T05:03:47Z',
+              '2026-10-23T05:03:47.000Z',
+            ].map(function returnFieldFor(nextRegenAt,): string | undefined {
+              return syntheticMeterLevel({
+                quota: { weekly: { percentRemaining: 0, nextRegenAt, }, },
+              },)
+                .find(function isReturn(field,): boolean {
+                  return field.startsWith('syntheticWeeklyReturn',);
+                },);
+            },);
+            expect(returned,).toEqual([
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=unreadable',
+              'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
+            ],);
+          },
+        },),
+
+        it({
           name: 'separates active throttling from an emptied budget, which route the same way',
           fn: async () => {
             /**

@@ -70,7 +70,7 @@ const WEEKLY_TEXT = '{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00
 
 /**
  Body of the live reading of 2026-10-23 at 03:28:16 UTC (HTTP 200, 269 characters): the weekly block is named
- `planWeeklyLimit` and carries `nextRegenPercent`, there is no `weeklyTokenLimit`, no `freeToolCalls` and no five-hour
+ `planWeeklyLimit` and carries `nextRegenPercent` (which the reader ignores), there is no `weeklyTokenLimit`, no `freeToolCalls` and no five-hour
  block. The values of `planWeeklyLimit` are the measured ones; the other blocks hold the measured key types with invented numbers.
  */
 const RENAMED_WEEKLY_SHAPE = JSON.stringify({
@@ -122,8 +122,8 @@ await describe({
     },),
 
     it({
-      name: 'READS THE WEEKLY BLOCK FROM `planWeeklyLimit`, the name of the live reading of 2026-10-23, and keeps its '
-        + '`nextRegenPercent`',
+      name: 'READS THE WEEKLY BLOCK FROM `planWeeklyLimit`, the name of the live reading of 2026-10-23, and models only the '
+        + 'two fields a decision reads',
       fn: async () => {
         /**
          Snapshot read from the measured body.
@@ -133,7 +133,6 @@ await describe({
           weekly: {
             percentRemaining: 0,
             nextRegenAt: '2026-10-23T05:03:47.000Z',
-            nextRegenPercent: 2,
           },
         },);
         expect(Object.hasOwn(
@@ -144,24 +143,23 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS `nextRegenPercent` from a `weeklyTokenLimit` block that carries it, and leaves the property absent where '
-        + 'the block does not',
+      name: 'IGNORES `nextRegenPercent` as it ignores `subscription`: no property of it is read, and a null or mistyped value does '
+        + 'not refuse a read whose decision fields are sound',
       fn: async () => {
         /**
-         Snapshot of a body whose older-named block carries the percent.
+         Weekly windows read from bodies whose block carries the percent as a number, a null, a string and an object.
          */
-        const carrying = parseQuotaSnapshot({
-          bodyText: '{"weeklyTokenLimit":{"percentRemaining":50,"nextRegenAt":"2026-10-23T05:03:47.000Z","nextRegenPercent":2}}',
+        const windows = ['2', 'null', '"2"', '{}',].map(function windowWith(percent,): unknown {
+          return parseQuotaSnapshot({
+            bodyText: `{"planWeeklyLimit":{"percentRemaining":0,"nextRegenAt":"2026-10-23T05:03:47.000Z","nextRegenPercent":${percent}}}`,
+          },).weekly;
         },);
-        expect(carrying.weekly,).toEqual({
-          percentRemaining: 50,
-          nextRegenAt: '2026-10-23T05:03:47.000Z',
-          nextRegenPercent: 2,
-        },);
-        expect(Object.hasOwn(
-          parseQuotaSnapshot({ bodyText: `{"weeklyTokenLimit":${WEEKLY_TEXT}}`, },).weekly,
-          'nextRegenPercent',
-        ),).toBe(false,);
+        expect(windows,).toEqual([
+          { percentRemaining: 0, nextRegenAt: '2026-10-23T05:03:47.000Z', },
+          { percentRemaining: 0, nextRegenAt: '2026-10-23T05:03:47.000Z', },
+          { percentRemaining: 0, nextRegenAt: '2026-10-23T05:03:47.000Z', },
+          { percentRemaining: 0, nextRegenAt: '2026-10-23T05:03:47.000Z', },
+        ],);
       },
     },),
 
@@ -198,19 +196,77 @@ await describe({
     },),
 
     it({
-      name: 'NAMES `planWeeklyLimit` AND ITS OWN KEYS when a field inside that block is refused, and refuses a mistyped '
-        + '`nextRegenPercent`',
+      name: 'NAMES `planWeeklyLimit` AND ITS OWN KEYS when a field inside that block is refused, or when the block is no object',
       fn: async () => {
         expect([
           refusalOf({ bodyText: '{"planWeeklyLimit":{"percentRemaining":"0","nextRegenAt":"x"}}', },),
-          refusalOf({ bodyText: '{"planWeeklyLimit":{"percentRemaining":0,"nextRegenAt":"x","nextRegenPercent":"2"}}', },),
           refusalOf({ bodyText: '{"planWeeklyLimit":"nope"}', },),
         ],).toEqual([
           'Synthetic /quotas body violated expectations: planWeeklyLimit.percentRemaining is not a number; received '
             + 'planWeeklyLimit:object; planWeeklyLimit holds percentRemaining:string, nextRegenAt:string',
-          'Synthetic /quotas body violated expectations: planWeeklyLimit.nextRegenPercent is not a number; received '
-            + 'planWeeklyLimit:object; planWeeklyLimit holds percentRemaining:number, nextRegenAt:string, nextRegenPercent:string',
           'Synthetic /quotas body violated expectations: planWeeklyLimit is not an object; received planWeeklyLimit:string',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A `nextRegenAt` THAT IS NOT AN ISO-8601 INSTANT as the logger writes one, naming the field and the block\'s keys '
+        + 'and never the value: a value with a space and a newline, an empty one, a date-time with no zone, and one with no milliseconds',
+      fn: async () => {
+        /**
+         The values refused, as JSON text, with a secret-shaped one among them whose text must not reach the message.
+         */
+        const values = [
+          '"a synthetic=wet\\nINJECT-SECRET"',
+          '""',
+          '"2026-10-23T05:03:47"',
+          '"2026-10-23T05:03:47Z"',
+        ];
+        /**
+         The refusals of the two block names for every value.
+         */
+        const messages = values.flatMap(function refusedUnder(value,): readonly string[] {
+          return ['weeklyTokenLimit', 'planWeeklyLimit',].map(function refusedAt(name,): string {
+            return refusalOf({ bodyText: `{"${name}":{"percentRemaining":0,"nextRegenAt":${value}}}`, },);
+          },);
+        },);
+        expect(messages.map(function stripped(message,): string {
+          return message.replace(/^Synthetic \/quotas body violated expectations: /v, '',);
+        },),).toEqual(values.flatMap(function expectedFor(): readonly string[] {
+          return ['weeklyTokenLimit', 'planWeeklyLimit',].map(function expectedAt(name,): string {
+            return `${name}.nextRegenAt is not an ISO-8601 instant; received ${name}:object; ${name} holds `
+              + 'percentRemaining:number, nextRegenAt:string';
+          },);
+        },),);
+        expect(messages.join('\n',).includes('INJECT-SECRET',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS A NULL KEY AS ABSENT when the other weekly name carries a valid block, in both directions, and still REFUSES a '
+        + 'non-null key that is no object, and a body whose only weekly key is null',
+      fn: async () => {
+        expect([
+          parseQuotaSnapshot({ bodyText: `{"weeklyTokenLimit":null,"planWeeklyLimit":${WEEKLY_TEXT}}`, },).weekly,
+          parseQuotaSnapshot({ bodyText: `{"weeklyTokenLimit":${WEEKLY_TEXT},"planWeeklyLimit":null}`, },).weekly,
+        ],).toEqual([
+          { percentRemaining: 87.5, nextRegenAt: '2026-07-17T00:10:00.000Z', },
+          { percentRemaining: 87.5, nextRegenAt: '2026-07-17T00:10:00.000Z', },
+        ],);
+        expect([
+          refusalOf({ bodyText: `{"weeklyTokenLimit":"nope","planWeeklyLimit":${WEEKLY_TEXT}}`, },),
+          refusalOf({ bodyText: `{"weeklyTokenLimit":${WEEKLY_TEXT},"planWeeklyLimit":[]}`, },),
+          refusalOf({ bodyText: '{"weeklyTokenLimit":null}', },),
+          refusalOf({ bodyText: '{"weeklyTokenLimit":null,"planWeeklyLimit":null}', },),
+        ],).toEqual([
+          'Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received '
+            + 'weeklyTokenLimit:string, planWeeklyLimit:object',
+          'Synthetic /quotas body violated expectations: planWeeklyLimit is not an object; received '
+            + 'weeklyTokenLimit:object, planWeeklyLimit:array',
+          'Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received '
+            + 'weeklyTokenLimit:null',
+          'Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received '
+            + 'weeklyTokenLimit:null, planWeeklyLimit:null',
         ],);
       },
     },),

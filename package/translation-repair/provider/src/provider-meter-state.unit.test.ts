@@ -304,7 +304,8 @@ await describe({
 
     describe({
       name: 'the Synthetic meter on the body that renamed the weekly block',
-      concurrency: DEFAULT_CONCURRENCY,
+      // ONE CASE AT A TIME: one case diverts `console.warn` across an await to swallow the refusal it provokes.
+      concurrency: 1,
       children: [
         it({
           name: 'READS DRY, NOT UNREADABLE, from a real client on the measured body, and STATES the return the body names',
@@ -324,6 +325,49 @@ await describe({
                 'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
               ],
             },);
+          },
+        },),
+
+        it({
+          name: 'READS WET, with no weekly return stated, from a real client on the renamed block while weekly budget is left',
+          fn: async () => {
+            const { transport, } = recordedTransport({
+              replies: [{
+                status: 200,
+                bodyText: SPENT_RENAMED_WEEKLY_BODY.replace('"percentRemaining":0', '"percentRemaining":12.5',),
+              },],
+            },);
+            const meters = await readEveryMeter({
+              synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+            },);
+
+            expect(meters.synthetic,).toEqual({
+              state: 'wet',
+              fields: ['syntheticWeekly=12.5%', 'syntheticFiveHour=none', 'syntheticThrottled=none',],
+            },);
+          },
+        },),
+
+        it({
+          name: 'READS UNREADABLE, never a forged field, from a real client on a renamed block whose return is no instant',
+          fn: async () => {
+            const { transport, } = recordedTransport({
+              replies: [{
+                status: 200,
+                bodyText: SPENT_RENAMED_WEEKLY_BODY.replace('2026-10-23T05:03:47.000Z', 'a synthetic=wet\\nINJECT',),
+              },],
+            },);
+            const { result: meters, } = await warnLinesDuring({
+              run: async function readForgedBody() {
+                return await readEveryMeter({
+                  synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
+                  signal: AbortSignal.timeout(HANG_STOP_MS,),
+                },);
+              },
+            },);
+
+            expect(meters.synthetic,).toEqual({ state: 'unreadable', fields: [], },);
           },
         },),
 
