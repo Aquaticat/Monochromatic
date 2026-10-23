@@ -118,6 +118,36 @@ function fixtureText(
     .join('\n',);
 }
 
+/**
+ Whether the fixtures of a family render a sheet builder.
+
+ @param files - every file of the family
+
+ @param prefix - how the fixtures' file names open
+
+ @param name - builder looked for
+
+ @returns Whether a fixture mentions the builder as a call
+
+ @example
+ ```ts
+ const rendered = isRendered({ files, prefix: 'rendered-sheets', name: 'buildCatMessages', },);
+ ```
+ */
+function isRendered(
+  {
+    files,
+    prefix,
+    name,
+  }: {
+    readonly files: readonly SourceText[];
+    readonly prefix: string;
+    readonly name: string;
+  },
+): boolean {
+  return fixtureText({ files, prefix, },).includes(`${name}(`,);
+}
+
 await describe({
   name: 'rendered-sheets census (ledger X17)',
   children: [
@@ -138,17 +168,13 @@ await describe({
           .flatMap(function buildersOf({ text, },): readonly string[] {
             return buildersIn({ text, },);
           },);
-        /**
-         The fixtures' text.
-         */
-        const fixtures = fixtureText({ files, prefix: 'rendered-sheets', },);
         expectRecordAsListed({
           found: {
             // The census reads the builders at all: two it must find.
             readsBuilders: builders.includes('buildCriticMessages',)
               && builders.includes('buildArchiveBlockReviewMessages',),
             unrendered: builders.filter(function unrendered(name,): boolean {
-              return !fixtures.includes(`${name}(`,);
+              return !isRendered({ files, prefix: 'rendered-sheets', name, },);
             },),
           },
           listed: {
@@ -176,17 +202,54 @@ await describe({
           .flatMap(function buildersOf({ text, },): readonly string[] {
             return buildersIn({ text, },);
           },);
-        /**
-         The system prompt guard's stage fixtures' text.
-         */
-        const fixtures = fixtureText({ files, prefix: 'system-prompt-stages', },);
         expectRecordAsListed({
           found: {
             unguarded: builders.filter(function unguarded(name,): boolean {
-              return !fixtures.includes(`${name}(`,);
+              return !isRendered({ files, prefix: 'system-prompt-stages', name, },);
             },),
           },
           listed: { unguarded: [], },
+        },);
+      },
+    },),
+    it({
+      name: 'COUNTS A BUILDER ONLY WHERE A FIXTURE CALLS IT, not where a comment, a string or a longer name holds its '
+        + 'name (F11 of the re-check of the second fix round)',
+      fn: async () => {
+        /**
+         Fixture that calls one builder and names three others without calling them.
+         */
+        const fixture: SourceText = {
+          path: 'cat-package/rendered-sheets-cats.test-fixture.ts',
+          text: [
+            '// buildCommentedMessages(): not called',
+            'const note = \'buildQuotedMessages(\';',
+            'rebuildPrefixedMessages({});',
+            'buildCalledMessages({});',
+          ].join('\n',),
+          isTest: true,
+        };
+        /**
+         Rendered or not, for each builder the fixture holds.
+         */
+        const rendered = Object.fromEntries(
+          [
+            'buildCalledMessages',
+            'buildCommentedMessages',
+            'buildQuotedMessages',
+            'buildPrefixedMessages',
+          ].map(function readOne(name,): readonly [string, boolean] {
+            return [name, isRendered({ files: [fixture,], prefix: 'rendered-sheets', name, },),];
+          },),
+        );
+        expectRecordAsListed({
+          found: rendered,
+          listed: {
+            buildCalledMessages: true,
+            buildCommentedMessages: false,
+            buildQuotedMessages: false,
+            buildPrefixedMessages: false,
+          },
         },);
       },
     },),
