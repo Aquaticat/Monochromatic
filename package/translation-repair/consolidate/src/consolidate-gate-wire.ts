@@ -16,7 +16,10 @@ import {
   withoutTranslatorsNotes,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
-import { renderedBreakPrompt, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  renderedBreakContract,
+  renderedBreakFacts,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   citedReferenceCandidateLines,
   type SliceSyntax,
@@ -525,26 +528,36 @@ export function buildConsolidateGateMessages(
       ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
       : CONTEST_POLICY,
     subject.lineStructured ? JUDGE_LINE_STRUCTURE_CLAUSE : '',
-    renderedBreakPrompt({
+    // THE INSTRUCTION ONLY: the measured counts ride in the user turn (R4).
+    renderedBreakContract({
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,
       ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
-      renderings: [
-        {
-          label: 'CANDIDATE "consolidated"',
-          text: subject.consolidatedText,
-        },
-        {
-          label: 'CANDIDATE "standing"',
-          text: subject.standingText,
-        },
-      ],
     },),
   ]
     .filter(function hasPolicy(part,): boolean {
       return part !== '';
     },)
     .join('\n\n',);
+
+  /**
+   Measured break counts of the original and of both candidates, none where the instruction is not due.
+   */
+  const breakFacts = renderedBreakFacts({
+    sourceText: subject.sourceText,
+    archiveText: subject.incumbentText,
+    ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+    renderings: [
+      {
+        label: 'CANDIDATE "consolidated"',
+        text: subject.consolidatedText,
+      },
+      {
+        label: 'CANDIDATE "standing"',
+        text: subject.standingText,
+      },
+    ],
+  },);
 
   return [
     {
@@ -567,6 +580,13 @@ export function buildConsolidateGateMessages(
         'CANDIDATE "standing":',
         `${fence}\n${subject.standingText}\n${fence}`,
         '',
+        ...((breakFacts === '')
+          ? []
+          : [
+            'RENDERED LINE STRUCTURE, measured facts:',
+            `${fence}\n${breakFacts}\n${fence}`,
+            '',
+          ]),
         ...refusalBlock,
         ...disputeBlock,
         ...referenceBlock,

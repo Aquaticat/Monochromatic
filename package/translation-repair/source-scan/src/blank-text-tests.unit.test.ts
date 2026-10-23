@@ -1067,7 +1067,7 @@ const HELD_TESTS: Readonly<Record<string, {
     why: ASSEMBLED,
   },
   'consolidate/consolidate-gate-wire.ts#buildConsolidateGateMessages': {
-    tests: 1,
+    tests: 2,
     why: ASSEMBLED,
   },
   'consolidate/consolidate-gate-wire.ts#hasPolicy': {
@@ -1858,7 +1858,7 @@ const HELD_TESTS: Readonly<Record<string, {
     why: ARCHIVE_ABSENT,
   },
   'lane-contest/lane-contest-wire.ts#buildLaneContestMessages': {
-    tests: 1,
+    tests: 2,
     why: ASSEMBLED,
   },
   'lane-contest/lane-contest-wire.ts#hasPolicy': {
@@ -2047,7 +2047,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 2,
     why: ASSEMBLED,
   },
-  'corpus-source/rendered-break-prompt.ts#renderedBreakPrompt': {
+  'corpus-source/rendered-break-prompt.ts#sourceBreakCounts': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
@@ -2194,11 +2194,15 @@ const HELD_TESTS: Readonly<Record<string, {
     why: SENTINEL,
   },
   'translate-floor/translate-wire.ts#buildTranslateMessages': {
-    tests: 5,
+    tests: 6,
     why: 'blocks the package assembled for the sheet, written empty when it has none, and the archive text '
       + 'of the slice, empty where the archive holds nothing',
   },
   'translate-floor/translate-wire.ts#isPresent': {
+    tests: 1,
+    why: ASSEMBLED,
+  },
+  'translate-stage/translated-slate-criteria.ts#translatedSlateBreakEvidence': {
     tests: 1,
     why: ASSEMBLED,
   },

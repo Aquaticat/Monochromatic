@@ -331,6 +331,38 @@ await describe({
         },);
       },),
 
+    ...STAGES.filter(function hasBreaks({ name, },): boolean {
+      return name.endsWith('source only with breaks',) || (name === 'translate challenge slate');
+    },)
+      .map(function breaksCaseOf(stage,) {
+        return it({
+          name: `KEEPS THE BREAK COUNTS OUT OF THE SYSTEM TEXT OF THE ${stage.name.toUpperCase()} SHEET AND IN THE USER TURN (R4): the `
+            + 'fixed instruction is cached, and the measured counts of the call follow the text they measure',
+          fn: async () => {
+            /**
+             Words that open every measured line of the facts.
+             */
+            const counted = 'explicit breaks by top-level block: ';
+            for (const [subject, count,] of [
+              [CAT_SUBJECT, '[1]',],
+              [DOG_SUBJECT, '[2]',],
+            ] as const) {
+              /**
+               The conversation this stage builds for the subject.
+               */
+              const messages = stage.render({ subject, },);
+              expect(systemTextOf({ messages, },),).toContain('RENDERED LINE STRUCTURE (formatting evidence',);
+              expect(systemTextOf({ messages, },),).not.toContain(counted,);
+              /**
+               The turns that are not the system prompt, as the model reads them.
+               */
+              const others = notSystem({ messages, },);
+              expect(JSON.stringify(others,),).toContain(`ORIGINAL ${counted}${count}`,);
+            }
+          },
+        },);
+      },),
+
     it({
       name: 'NAMES EVERY STAGE ONCE: a variant renamed twice would be rendered twice and read once',
       fn: async () => {

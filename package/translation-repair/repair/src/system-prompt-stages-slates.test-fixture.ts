@@ -27,6 +27,7 @@ import {
   translateSelectionTask,
 } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
+  translatedSlateBreakEvidence,
   translatedSlateCriteria,
   translateSlateEvidence,
 } from '@monochromatic-dev/translation-repair-translate-stage';
@@ -282,33 +283,39 @@ export const SLATE_STAGES: readonly PromptStage[] = [
           sourceText: subject.verseSource,
           archiveText: '',
           lineStructured: false,
-          slate: [
-            {
-              index: 1,
-              text: subject.repair,
-              hash: 'slate/1',
-              origin: 'fresh',
-              producer: {
-                kind: 'model',
-                modelId: SEAT_HYPER_ONLY,
-              },
-            },
-            {
-              index: 2,
-              text: `${subject.repairQuote}${subject.lineBreak}${subject.archive}`,
-              hash: 'slate/2',
-              origin: 'fresh',
-              producer: {
-                kind: 'model',
-                modelId: SEAT_HYPER_ONLY,
-              },
-            },
-          ],
         },),
-        evidence: translatedEvidence({
-          subject,
-          sourceText: subject.verseSource,
-        },),
+        evidence: [
+          ...translatedEvidence({
+            subject,
+            sourceText: subject.verseSource,
+          },),
+          ...translatedSlateBreakEvidence({
+            sourceText: subject.verseSource,
+            archiveText: '',
+            slate: [
+              {
+                index: 1,
+                text: subject.repair,
+                hash: 'slate/1',
+                origin: 'fresh',
+                producer: {
+                  kind: 'model',
+                  modelId: SEAT_HYPER_ONLY,
+                },
+              },
+              {
+                index: 2,
+                text: `${subject.repairQuote}${subject.lineBreak}${subject.archive}`,
+                hash: 'slate/2',
+                origin: 'fresh',
+                producer: {
+                  kind: 'model',
+                  modelId: SEAT_HYPER_ONLY,
+                },
+              },
+            ],
+          },),
+        ],
         rendered: [
           subject.repair,
           `${subject.repairQuote}${subject.lineBreak}${subject.archive}`,
