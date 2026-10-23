@@ -30,7 +30,13 @@ export {
   createClaudeClient,
   type ClaudeClient,
 } from './claude-client.ts';
+export {
+  type ClaudeAttemptBound,
+  claudeAttemptBound,
+  reportClaudeAbandonedSpend,
+} from './claude-abandoned-spend.ts';
 export { claudeCostOf, } from './claude-cost.ts';
+export { oneWayFlag, } from './one-way-flag.ts';
 export {
   claudeSpendNow,
   type ClaudeSpend,

@@ -28,6 +28,7 @@ import type {
   ModelCaller,
 } from './chat-contract.ts';
 import { chatJsonThrough, } from './chat-json-through.ts';
+import { reportClaudeAbandonedSpend, } from './claude-abandoned-spend.ts';
 import { buildClaudeBody, } from './claude-body.ts';
 import {
   CLAUDE_MODELS,
@@ -43,6 +44,7 @@ import {
 } from './claude-cost.ts';
 import { claudeIdFor, } from './claude-reach.ts';
 import { claudeStreamFactsOf, } from './claude-stream-facts.ts';
+import { oneWayFlag, } from './one-way-flag.ts';
 import {
   createRequestPace,
   type RequestPace,
@@ -151,40 +153,6 @@ export type ClaudeClient = ModelCaller & {
    */
   readonly pace: Pick<RequestPace, 'waitMs'>;
 };
-
-/**
- A flag that can be raised and never lowered, so a fact met once in a run (a billing error, the first limits line)
- cannot be forgotten by a later call.
-
- CARRIED BY AN ABORT CONTROLLER, whose signal goes aborted once and stays: raising again changes nothing, and nothing
- here grows or rebinds.
-
- @returns The flag's reader and its raiser
-
- @example
- ```ts
- const refused = oneWayFlag();
- refused.raise();
- ```
- */
-function oneWayFlag(): {
-  readonly isRaised: () => boolean;
-  readonly raise: () => void;
-} {
-  /**
-   Aborted once the flag is raised.
-   */
-  const raised = new AbortController();
-  return {
-    isRaised: function isRaised(): boolean {
-      return raised.signal
-        .aborted;
-    },
-    raise: function raise(): void {
-      raised.abort();
-    },
-  };
-}
 
 /**
  Refuses a success reply whose event stream stopped before its terminator or reported an error.
@@ -594,6 +562,19 @@ export function createClaudeClient(
           },
           policy: retryPolicy,
           verify: wholeMessage,
+          // EVERY ATTEMPT THAT DELIVERED A STREAM AND FAILED WAS BILLED, the retried ones included, and is written at
+          // its bound as it fails (`claude-abandoned-spend.ts`), as the Bedrock, NeuralWatt and OpenRouter clients
+          // write theirs. The reckoning is a log line and a meter, both synchronous, and the ladder's contract is
+          // asynchronous for the Bedrock ledger's write.
+          onAbandonedAttempt: function reckonAbandoned(): Promise<void> {
+            reportClaudeAbandonedSpend({
+              label,
+              prices: card.prices,
+              requestBodyBytes: Buffer.byteLength(bodyJson,),
+              maxTokens,
+            },);
+            return Promise.resolve();
+          },
         },
       },);
       if (!isSuccessStatus({ status: reply.status, },)) {
