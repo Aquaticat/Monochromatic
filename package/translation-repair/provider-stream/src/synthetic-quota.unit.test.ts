@@ -189,6 +189,56 @@ await describe({
     },),
 
     it({
+      name: 'READS TWO BLOCKS THAT AGREE ON `percentRemaining` AND DIFFER IN `nextRegenAt` (two instants, or an instant and a value '
+        + 'that is none) with the return marked unreadable, and one warning naming both blocks and the field, never a value',
+      fn: async () => {
+        /**
+         Bodies carrying both names with a spent percent, the first block's `nextRegenAt` member and then the second's, as JSON text;
+         the empty text stands for a missing key and the forged one carries a secret-shaped value.
+         */
+        const bodies = [
+          ['"nextRegenAt":"2026-10-23T05:03:47.000Z",', '"nextRegenAt":"2026-10-23T06:00:00.000Z",',],
+          ['"nextRegenAt":"2026-10-23T05:03:47.000Z",', '',],
+          [String.raw`"nextRegenAt":"a synthetic=wet\nINJECT-SECRET",`, '"nextRegenAt":"2026-10-23T05:03:47.000Z",',],
+        ].map(function bodyOf([first, second,],): string {
+          return `{"weeklyTokenLimit":{${first}"percentRemaining":0},"planWeeklyLimit":{${second}"percentRemaining":0}}`;
+        },);
+        /**
+         The windows read from the bodies, beside every warning written meanwhile.
+         */
+        const { result: windows, warned, } = await warnLinesDuring({
+          run: async function readDisagreeingBlocks() {
+            return bodies.map(function windowOf(bodyText,): unknown {
+              return parseQuotaSnapshot({ bodyText, },).weekly;
+            },);
+          },
+        },);
+        expect(windows,).toEqual([{ percentRemaining: 0, }, { percentRemaining: 0, }, { percentRemaining: 0, },],);
+        expect(windows.some(function hasReturn(window,): boolean {
+          return Object.hasOwn(
+            window as object,
+            'nextRegenAt',
+          );
+        },),).toBe(false,);
+        /**
+         The warning of two blocks that agree on the percent and differ in the return.
+         */
+        const disagreement = '[translation-repair] [weeklyWindowFromBody] Synthetic /quotas weeklyTokenLimit and planWeeklyLimit '
+          + 'agree on percentRemaining and differ in nextRegenAt; the return reads unreadable';
+        expect(warned,).toEqual([
+          disagreement,
+          '[translation-repair] [weeklyWindowOf] Synthetic /quotas planWeeklyLimit.nextRegenAt is missing or no ISO-8601 instant as '
+            + 'the logger writes one; the return reads unreadable',
+          disagreement,
+          '[translation-repair] [weeklyWindowOf] Synthetic /quotas weeklyTokenLimit.nextRegenAt is missing or no ISO-8601 instant as '
+            + 'the logger writes one; the return reads unreadable',
+          disagreement,
+        ],);
+        expect(warned.join('\n',).includes('INJECT-SECRET',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'REFUSES A BODY WITH NEITHER WEEKLY NAME, naming both candidates and the keys the body held',
       fn: async () => {
         expect(refusalOf({ bodyText: '{"subscription":{"limit":1},"search":{"hourly":{}}}', },),).toBe(
