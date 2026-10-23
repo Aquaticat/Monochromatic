@@ -283,6 +283,8 @@ await describe({
         const dryStop = createPassDryStop({
           l: levelCapturingLogger({ lines, },),
           passLeftMs: () => 3_600_000,
+          // A frozen clock: the wait is the whole 301 s the refusal named.
+          now: () => 1_000,
           waitMs: async function waitMs({ ms, },): Promise<void> {
             waits.push(ms,);
           },

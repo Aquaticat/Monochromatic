@@ -35,16 +35,18 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 // refusal arrived. Either way the gate logs one line when it trips and hands out its stop note once.
 //
 // A REFUSAL THAT NAMES A RETURN THE PASS CAN USE PARKS THE PASS INSTEAD OF STOPPING IT (the review of 2026-10-22, M2,
-// open to the owner's veto). The router bounds its own wait at 300 s because a call carries a 360 s deadline, so a
+// open to the owner's veto). The router bounds the sum of its waits at 300 s (the budget layer's own refusal cooldown;
+// the 360 s call deadline is armed after routing and does not cut the router's wait), so a
 // NeuralWatt day starting again 301 s away ended the call with a refusal that states the distance
 // (`neuralwattReturnsInMs`). When that return lies inside what the pass has left, ending the run would throw away the
 // energy that is about to come back, so the gate parks: the shared signal aborts so the entry in flight ends, the queue
 // puts that entry back at the front with no verdict (`runAttemptQueue`'s `interrupted`), waits out the return before
 // asking whether the pass goes on (`beforeNext`, which is `awaitPark`), and the attempt that follows starts on a live
-// signal. The wait sits between entries, outside every exchange, so no call deadline cuts it. A refusal that names no
-// return, or one past what the pass has left, trips as before and states the time. A refusal that arrives within a
-// minute of a park's end trips, since the account has then not shown the energy it should: parking again would wait a
-// day in a loop.
+// signal. The wait sits between entries, outside every exchange, so no call deadline cuts it, and it is for what is
+// left of the return when the queue asks (the return is stored as an instant on the gate's clock). A refusal that names
+// no return, or one past what the pass has left, trips as before and states the time. A refusal for the day start of a
+// park that has ended trips, since the account has then not rolled to the new day it should have: parking again would
+// wait a day in a loop.
 
 /**
  Logger root for the gate, naming the entry whose call tripped it.
@@ -78,12 +80,6 @@ function unboundedPass(): number {
 async function waitOutPark({ ms, }: { readonly ms: number; },): Promise<void> {
   await wait(ms,);
 }
-
-/**
- How long after a park ends a dry refusal trips the gate instead of parking again: the budgets' freshness window
- (`BUDGET_FRESH_MS`, 60 s in the provider package), within which a reading can still be the one taken before the return.
- */
-export const PARK_SETTLE_MS = 60_000;
 
 /**
  Gate that turns the first every-provider-dry refusal into a stop of the whole pass, or a park until the energy returns.
@@ -140,9 +136,19 @@ export type PassDryStop = {
  */
 type DryPark = {
   /**
-   Milliseconds to wait, the distance the refusal named.
+   Milliseconds the refusal named between itself and the return, which the park log states.
    */
   readonly returnsInMs: number;
+
+  /**
+   The instant the return falls at on the gate's clock, so a park waits for what is left of it.
+   */
+  readonly atMs: number;
+
+  /**
+   The day start of the spent day the return is for, none where the refusal named no dryness.
+   */
+  readonly dayStart?: string;
 
   /**
    The time of day the return falls at, with its zone.
@@ -180,9 +186,10 @@ type DryStopState = {
   readonly parks: DryPark[];
 
   /**
-   When the last park ended on the gate's clock, absent before the first.
+   The day start of each spent day a park has waited out: a refusal for one of them means the account has not shown the
+   new day, and the gate trips.
    */
-  parkEndedAt?: number;
+  readonly endedParks: string[];
 };
 
 /**
@@ -300,14 +307,22 @@ function refuseOn(
    */
   const left = passLeftMs();
   /**
-   Whether the refusal names a return the pass can wait for, and no park ended just before it.
+   The day start of the spent day the refusal was made on, none where it names no dryness.
+   */
+  const dayStart = (error.neuralwattDryness
+    ?.kind
+    === 'spent-day') ? error.neuralwattDryness
+      .dayStart : undefined;
+  /**
+   Whether the refusal names a return the pass can wait for, and not for a spent day a park has already waited out.
    */
   const parkable = (error.neuralwattReturnsInMs !== undefined) && (error.neuralwattReturnsAt !== undefined)
     && returnFitsWithin({
       returnsInMs: error.neuralwattReturnsInMs,
       boundMs: left,
     },)
-    && ((state.parkEndedAt === undefined) || ((now() - state.parkEndedAt) >= PARK_SETTLE_MS));
+    && ((dayStart === undefined) || (!state.endedParks
+      .includes(dayStart,)));
   /**
    Logger pre-tagged with this function's name.
    */
@@ -319,7 +334,9 @@ function refuseOn(
     state.parks
       .push({
         returnsInMs: nonNullishOrThrow(error.neuralwattReturnsInMs,),
+        atMs: now() + nonNullishOrThrow(error.neuralwattReturnsInMs,),
         returnsAt: nonNullishOrThrow(error.neuralwattReturnsAt,),
+        ...((dayStart === undefined) ? {} : { dayStart, }),
       },);
     rl.warn(
       'every provider is out of budget, so the pass is parked until NeuralWatt\'s energy returns at '
@@ -351,7 +368,8 @@ function refuseOn(
 
  @param waitMs - waits out a park, injectable so a test does not wait; `wait` by default
 
- @param now - the gate's clock, on which a refusal right after a park is told from a later one; `monotonicMs` by default
+ @param now - the gate's clock, on which a park's return is an instant and what is left of it is waited for;
+ `monotonicMs` by default
 
  @returns Gate whose signal aborts on the first every-provider-dry refusal a guarded client meets
 
@@ -382,6 +400,7 @@ export function createPassDryStop(
     noted: false,
     stopNote: '',
     parks: [],
+    endedParks: [],
   };
 
   /**
@@ -474,10 +493,15 @@ export function createPassDryStop(
       const [park,] = state.parks;
       if (park === undefined)
         return;
-      await waitMs({ ms: park.returnsInMs, },);
+      await waitMs({ ms: Math.max(
+        0,
+        park.atMs - now(),
+      ), },);
       state.parks
         .splice(0,);
-      state.parkEndedAt = now();
+      if (park.dayStart !== undefined)
+        state.endedParks
+          .push(park.dayStart,);
       state.controller = new AbortController();
       tagged({
         tag: createPassDryStop.name,

@@ -575,6 +575,8 @@ await describe({
         const waits: number[] = [];
         const dryStop = createPassDryStop({
           passLeftMs: () => 3_600_000,
+          // A frozen gate clock: the park waits the whole 301 s the refusal named.
+          now: () => 1_000,
           waitMs: async function waitMs({ ms, },): Promise<void> {
             waits.push(ms,);
           },
