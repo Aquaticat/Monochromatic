@@ -350,8 +350,10 @@ await describe({
     },),
 
     it({
-      name: 'ENDS WITHOUT RESUMING when the budget is gone after the wait, since the wait came before the stop check',
-      fn: async () => {
+      name: 'ENDS WITHOUT RESUMING when the budget is gone after the wait, since the wait came before the stop check, '
+        + 'and names the entry the pause cut short as not attempted again',
+      fn: async (ctx,) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
         /**
          Attempts made.
          */
@@ -375,6 +377,24 @@ await describe({
           },
         },);
         expect(attempts,).toEqual(['tabby',],);
+        expect(printed.lines,).toEqual([
+          'NOT RESUMED tabby: a pause cut its attempt short and the pass ended after the pause, so it was not '
+            + 'attempted again in this invocation and stays resumable',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES NO ENTRY WHEN THE BUDGET ENDS THE PASS WITH NO PAUSE IN PLAY, since nothing was cut short',
+      fn: async (ctx,) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        await runAttemptQueue({
+          pending: [{ id: 'tabby', },],
+          cachedCountFor: async () => 0,
+          stopBeforeNext: () => true,
+          attempt: async (): Promise<AttemptOutcome> => ({ kind: 'settled', }),
+        },);
+        expect(printed.lines,).toEqual([],);
       },
     },),
 
