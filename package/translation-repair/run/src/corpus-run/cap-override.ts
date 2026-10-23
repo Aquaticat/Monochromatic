@@ -120,23 +120,30 @@ export function resolveHardCapMinutes(
 
  @param perCallMs - deadline one exchange is allowed
 
- @returns Whether an exchange can finish inside an attempt
+ @param claudeCallMs - deadline a Claude exchange is allowed, which the ceiling must outlast too
+
+ @returns Whether the longest exchange can finish inside an attempt
 
  @example
  ```ts
- const roomy = capOutlastsOneCall({ capMs, perCallMs, },);
+ const roomy = capOutlastsOneCall({ capMs, perCallMs, claudeCallMs, },);
  ```
  */
 export function capOutlastsOneCall(
   {
     capMs,
     perCallMs,
+    claudeCallMs,
   }: {
     readonly capMs: number;
     readonly perCallMs: number;
+    readonly claudeCallMs: number;
   },
 ): boolean {
-  return capMs > perCallMs;
+  return capMs > Math.max(
+    perCallMs,
+    claudeCallMs,
+  );
 }
 
 /**
@@ -151,24 +158,29 @@ export function capOutlastsOneCall(
 
  @param perCallMs - deadline one exchange is allowed
 
- @returns Line naming both numbers and what follows from them
+ @param claudeCallMs - deadline a Claude exchange is allowed
+
+ @returns Line naming the three numbers and what follows from them
 
  @example
  ```ts
- console.log(capTooTightNote({ capMs, perCallMs, },),);
+ console.log(capTooTightNote({ capMs, perCallMs, claudeCallMs, },),);
  ```
  */
 export function capTooTightNote(
   {
     capMs,
     perCallMs,
+    claudeCallMs,
   }: {
     readonly capMs: number;
     readonly perCallMs: number;
+    readonly claudeCallMs: number;
   },
 ): string {
   return `CAP TOO TIGHT: an attempt runs ${String(capMs,)}ms, which is not longer than the `
-    + `${String(perCallMs,)}ms one model exchange is allowed. Attempts are cut before an `
+    + `${String(Math.max(perCallMs, claudeCallMs,),)}ms one model exchange is allowed `
+    + `(${String(perCallMs,)}ms by default, ${String(claudeCallMs,)}ms for a Claude exchange). Attempts are cut before an `
     + 'exchange can return, so no slice caches, every attempt reports no progress, and the '
     + 'queue drops the entry as stalled after its second try. Raise the ceiling above one '
     + 'exchange to buy anything, or keep it here to exercise the stall path deliberately.';

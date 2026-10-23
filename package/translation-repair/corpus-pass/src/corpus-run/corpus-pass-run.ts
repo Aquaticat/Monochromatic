@@ -34,6 +34,7 @@ import {
   prepareRunsLayout,
   PROVIDERS_LEFT_OFF,
   readRequiredProviders,
+  RUN_CALL_CONFIG,
   RUN_PER_CALL_TIMEOUT_MS,
 } from '@monochromatic-dev/translation-repair-run/ts';
 
@@ -174,6 +175,8 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
       done: done.size,
       softBudgetMs: SOFT_BUDGET_MS,
       hardCapMs,
+      perCallMs: RUN_PER_CALL_TIMEOUT_MS,
+      claudeCallMs: RUN_CALL_CONFIG.claudeCallTimeoutMs,
     },
   },),);
 
@@ -181,6 +184,7 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
     hardCapMs,
     builtInCapMinutes: HARD_CAP_MINUTES,
     perCallMs: RUN_PER_CALL_TIMEOUT_MS,
+    claudeCallMs: RUN_CALL_CONFIG.claudeCallTimeoutMs,
     spendCeilingUsd,
     graceNote: input.graceNote,
     writerNote: input.writerNote,

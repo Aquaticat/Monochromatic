@@ -21,6 +21,8 @@ import {
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   assertOneWireModelPerBench,
+  CLAUDE_COMPLETION_CAP,
+  claudeCallDeadlineMs,
   DECISION_ONLY_ROSTER_IDS,
   holdSet,
   ROSTER_MODEL_IDS,
@@ -960,6 +962,7 @@ export const RUN_PER_CALL_TIMEOUT_MS = 360_000;
    perCallTimeoutMs: 240_000,
    streamFirstContentMs: 150_000,
    streamIdleMs: 60_000,
+   claudeCallTimeoutMs: 460_000,
  };
  ```
  */
@@ -968,6 +971,16 @@ export type RunCallConfig = {
    Total-duration deadline one model exchange was granted.
    */
   readonly perCallTimeoutMs: number;
+
+  /**
+   Total-duration deadline a Claude exchange ran under: the larger of
+   `perCallTimeoutMs` and the deadline a Claude card's completion cap needs at
+   the floor rate (`claudeCallDeadlineMs`), which the Claude client arms in
+   place of a shorter one. Absent on artifacts stamped before this field
+   existed, whose Claude calls ran under that same larger deadline without the
+   stamp saying so.
+   */
+  readonly claudeCallTimeoutMs: number;
 
   /**
    Silence allowed before a stream's first content or reasoning delta. Named
@@ -992,7 +1005,8 @@ export type RunCallConfig = {
 
  @param streamIdleMs - silence allowed between pieces of generated text
 
- @returns The three knobs, unchanged, to stamp on an artifact
+ @returns The three knobs, unchanged, and the deadline a Claude exchange runs
+ under beside them, to stamp on an artifact
 
  @throws {@link StreamBoundsOutsideCallTimeoutError} when a bound is not a
  positive finite number shorter than the deadline (ledger B804)
@@ -1007,7 +1021,7 @@ export function runCallConfigOf(
     perCallTimeoutMs,
     streamFirstContentMs,
     streamIdleMs,
-  }: RunCallConfig,
+  }: Omit<RunCallConfig, 'claudeCallTimeoutMs'>,
 ): RunCallConfig {
   requireStreamBoundsInsideCallTimeout({
     perCallTimeoutMs,
@@ -1018,6 +1032,10 @@ export function runCallConfigOf(
     perCallTimeoutMs,
     streamFirstContentMs,
     streamIdleMs,
+    claudeCallTimeoutMs: Math.max(
+      perCallTimeoutMs,
+      claudeCallDeadlineMs({ maxTokens: CLAUDE_COMPLETION_CAP, },),
+    ),
   };
 }
 

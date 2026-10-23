@@ -263,8 +263,9 @@ await describe({
           name: 'ACCEPTS a ceiling longer than one exchange, which is the only shape that can buy a slice',
           fn: async () => {
             expect(capOutlastsOneCall({
-              capMs: 420_000,
+              capMs: 520_000,
               perCallMs: 360_000,
+              claudeCallMs: 460_000,
             },),).toBe(true,);
           },
         },),
@@ -276,6 +277,7 @@ await describe({
             expect(capOutlastsOneCall({
               capMs: 360_000,
               perCallMs: 360_000,
+              claudeCallMs: 360_000,
             },),).toBe(false,);
           },
         },),
@@ -324,6 +326,7 @@ await describe({
             const note = capTooTightNote({
               capMs: 300_000,
               perCallMs: 360_000,
+              claudeCallMs: 460_000,
             },);
 
             expect(note.includes('300000',),).toBe(true,);
@@ -358,6 +361,7 @@ await describe({
             const note = capTooTightNote({
               capMs: 300_000,
               perCallMs: 360_000,
+              claudeCallMs: 460_000,
             },);
 
             expect(note.includes('no slice caches',),).toBe(true,);
