@@ -25,6 +25,7 @@ import {
   judgeSeatsFor,
   phaseBenches,
   reachableSeats,
+  RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
@@ -350,15 +351,15 @@ await describe({
           },
         },),
         it({
-          name: 'NAMES THE WRITER BENCH BESIDE THE WIDE BENCH when the page consistency phase starts with Bedrock '
+          name: 'NAMES THE WRITER BENCH BESIDE THE LATE BENCH when the page consistency phase starts with Bedrock '
             + 'alone wet, since its carry asks the translate stage\'s writers after its judges, and names nothing '
             + 'when every provider is wet',
           fn: async () => {
             /**
-             Wide seats Bedrock serves under that view.
+             Late judges Bedrock serves under that view.
              */
-            const wideReachable = reachableSeats({
-              seats: RUN_WIDE_SEATS,
+            const lateReachable = reachableSeats({
+              seats: RUN_LATE_JUDGES,
               dry: BEDROCK_ALONE,
             },).length;
             /**
@@ -374,8 +375,8 @@ await describe({
               names: phaseBenches({ phase: 'page consistency', },),
               dry: BEDROCK_ALONE,
             },),).toEqual([
-              `wide ${String(wideReachable,)} of ${String(RUN_WIDE_SEATS.length,)} reachable, quorum ${
-            String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)
+              `late ${String(lateReachable,)} of ${String(RUN_LATE_JUDGES.length,)} reachable, quorum ${
+            String(rosterQuorumSize({ rosterSize: RUN_LATE_JUDGES.length, },),)
           }`,
               `translators ${String(writersReachable,)} of ${String(RUN_TRANSLATORS.length,)} reachable, quorum ${
             String(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),)
