@@ -111,6 +111,9 @@ Tradeoffs:
 ## Upstream filing decision
 
 Filing upstream is out of scope by the owner's rule for this provider, so no issue or comment is drafted.
+The `.out-of-scope/` directory was checked and no entry names Synthetic,
+so the exemption rests on the owner's rule as relayed in the task brief, not on a file there.
+The six constraints and the duplicate search were therefore not walked.
 Synthetic's `/v2/quotas` shape is not documented in a contract that promises key names,
 and the repository records it from live readings only.
 The next live reading that changes a key name again is refused with the body's keys and types,
