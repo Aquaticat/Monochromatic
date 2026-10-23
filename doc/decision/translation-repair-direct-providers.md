@@ -365,8 +365,23 @@ before the reason,
 so the cap on the reason never cuts them,
 and not `ERROR` or `INCOMPLETE`.
 The status comes from the gate's answer for that entry's own failure (`parkedFor`):
-the gate keeps the failure it chose to park for and answers true for that very object only,
+the gate keeps the failure it chose to park for,
+and every other parking failure it sees while the park lasts
+(attempts run one at a time,
+so each belongs to the attempt that parked),
+and answers true for those very objects only,
 never from whether the gate happens to be parked or from the class of the failure.
+It answers for all of them because the layers that choose which failure an entry ends with
+(`runGatherRound` in `stage-round.ts`,
+`image-reading-contain.ts`,
+and `mapOverlapped` in `overlapped-map.ts`)
+choose by another order than the failures' arrival at the gate:
+the order in which the asks caught them,
+the roster slot order,
+and the order of insertion with the run-ending failures searched first.
+The entry may therefore end with a parking failure that was not the first the gate saw.
+This was the lead's ruling after the eighth re-check,
+open to the owner's veto.
 When the budget ends the pass after the wait,
 the queue prints `NOT RESUMED <id>` for the entry the park cut short,
 so the log names the entry a later pass must resume.

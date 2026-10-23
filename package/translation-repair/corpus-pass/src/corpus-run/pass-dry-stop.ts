@@ -129,9 +129,9 @@ export type PassDryStop = {
   readonly parked: () => boolean;
 
   /**
-   Whether the park in force is for this very failure: the object the gate chose to park for when it recorded the park,
-   and no other, so an entry that failed for another reason, or with another parking failure, is not mistaken for the
-   one the pass waits to resume.
+   Whether the park in force is for this very failure: the object the gate chose to park for, or another parking
+   failure it saw while the park lasted (queue attempts run one at a time, so each belongs to the attempt that parked),
+   and no other, so an entry that failed for another reason is not mistaken for the one the pass waits to resume.
    */
   readonly parkedFor: (args: { readonly error: unknown; },) => boolean;
 
@@ -156,6 +156,12 @@ type DryPark = {
    The failure the gate chose to park for, which `parkedFor` answers by identity.
    */
   readonly refusal: EveryProviderDryError | WritingBenchUnreachableError;
+
+  /**
+   The other parking failures the gate saw while the park lasted, in the order they arrived: a layer above the guard may
+   rethrow any of them, so `parkedFor` answers for each of them as it does for `refusal`.
+   */
+  readonly seen: (EveryProviderDryError | WritingBenchUnreachableError)[];
 
   /**
    Milliseconds the refusal named between itself and the return, which the park log states.
@@ -313,7 +319,8 @@ function isParkingRefusal(error: unknown,): error is EveryProviderDryError | Wri
 
  @param now - the gate's clock
 
- @mutates state - holds the cause, or the park, and aborts the controller, the first time only
+ @mutates state - holds the cause, or the park, and aborts the controller, the first time only; records a further
+ parking failure on the park in force
 
  @example
  ```ts
@@ -335,11 +342,22 @@ function refuseOn(
     readonly now: () => number;
   },
 ): void {
-  // A PARK OR A TRIP IS MADE ONCE: calls of the same entry that meet the dry router after the first are the same event.
-  if ((!isParkingRefusal(error,)) || (state.cause !== undefined)
-    || (state.parks
-      .length
-      > 0))
+  if (!isParkingRefusal(error,))
+    return;
+  /**
+   The park in force, none where the pass is not parked.
+   */
+  const [parked,] = state.parks;
+  // A PARK OR A TRIP IS MADE ONCE: calls of the same entry that meet the dry router after the first are the same event,
+  // but the failure each raises is kept, since the entry may end with any of them.
+  if (parked !== undefined) {
+    if (!parked.seen
+      .includes(error,))
+      parked.seen
+        .push(error,);
+    return;
+  }
+  if (state.cause !== undefined)
     return;
   /**
    The failure as a refusal the gate acts on: the router's every-provider-dry refusal, or a writing bench error that
@@ -385,6 +403,7 @@ function refuseOn(
     state.parks
       .push({
         refusal,
+        seen: [],
         returnsInMs: nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
         atMs: readAtMs + nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
         returnsAt: nonNullishOrThrow(refusal.neuralwattReturnsAt,),
@@ -554,7 +573,16 @@ export function createPassDryStop(
        The one park in force, none where the pass is not parked.
        */
       const [park,] = state.parks;
-      return (park !== undefined) && (park.refusal === error);
+      if (park === undefined)
+        return false;
+      /**
+       Every parking failure the park answers for, typed unknown so any failure can be looked up in it.
+       */
+      const answered: readonly unknown[] = [
+        park.refusal,
+        ...park.seen,
+      ];
+      return answered.includes(error,);
     },
 
     awaitPark: async function awaitPark(): Promise<void> {
