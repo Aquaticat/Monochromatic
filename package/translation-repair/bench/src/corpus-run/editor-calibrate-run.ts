@@ -200,7 +200,10 @@ export async function runEditorCalibrate(
    drawn or anything is printed: a calibration started for a card it then ran without would print a standing over the
    wrong editors. Only the editors move; the critics, the panel, the judges and the checkers stay the whole roster.
    */
-  const chair = editorChairFor({ line, },);
+  const {
+    editors: chairEditors,
+    named: chairNamed,
+  } = editorChairFor({ line, },);
 
   /**
    How many slices may be in flight at once.
@@ -229,9 +232,9 @@ export async function runEditorCalibrate(
         many: 'slices',
       },)
     }, `
-      + `${String(chair.editors.length,)} ${
+      + `${String(chairEditors.length,)} ${
         wordForCount({
-          count: chair.editors.length,
+          count: chairEditors.length,
           one: 'model',
           many: 'models',
         },)
@@ -247,11 +250,11 @@ export async function runEditorCalibrate(
 
   // THE EDITORS ARE NAMED BY ID WHEN A LAUNCH NAMED THEM, because the header counts them and a count cannot say which
   // card a log was seated with. A launch that names none prints nothing more, so its log reads as it always has.
-  if (chair.named) {
-    console.log(`editor-calibrate: editors ${chair.editors.join(', ',)}`,);
+  if (chairNamed) {
+    console.log(`editor-calibrate: editors ${chairEditors.join(', ',)}`,);
     // ONE EDITOR HAS NOBODY TO BE JUDGED AGAINST: a slate of one candidate ships without a vote, so the standing holds
     // no round and the only reading left is how often the edit shipped, which the closing paragraph says is no preference.
-    if (chair.editors.length === 1) {
+    if (chairEditors.length === 1) {
       console.log(
         'editor-calibrate: one editor is seated, so every slate holds one candidate and ships without a vote; '
           + 'the editor standing will hold no judged round, and EDITORS SHIPPED, which is not a preference, '
@@ -319,7 +322,7 @@ export async function runEditorCalibrate(
       return runEditorLane({
         slice,
         client,
-        editorModelIds: chair.editors,
+        editorModelIds: chairEditors,
         stageSettings: {
           grace: writerGrace,
           contestLedger,
@@ -330,7 +333,7 @@ export async function runEditorCalibrate(
   },);
 
   printEditorCalibrateStandings({
-    roster: chair.editors,
+    roster: chairEditors,
     refinerRoster: EDITOR_LANE_REFINERS,
     perSlice,
   },);
