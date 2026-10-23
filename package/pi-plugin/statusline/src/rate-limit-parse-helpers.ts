@@ -423,7 +423,8 @@ const COMMON_YEAR_MONTH_DAYS = [
 const FEBRUARY_INDEX = 1;
 
 /**
- Years divisible by this are leap years, unless divisible by {@link CENTURY_YEARS} and not by {@link LEAP_CENTURY_YEARS}.
+ Years divisible by this are leap years, unless divisible by {@link CENTURY_YEARS} and not by
+ {@link LEAP_CENTURY_YEARS}.
  */
 const LEAP_CYCLE_YEARS = 4;
 
@@ -436,6 +437,12 @@ const CENTURY_YEARS = 100;
  Years divisible by this are leap years even when divisible by {@link CENTURY_YEARS}.
  */
 const LEAP_CENTURY_YEARS = 400;
+
+/**
+ First minute or second value that is no minute of an hour or second of a minute: 60 is no minute, and a leap second is
+ not an instant here.
+ */
+const FIRST_NON_MINUTE_OR_SECOND = 60;
 
 /**
  First hour value that is no hour of a day: 24 is the end-of-day spelling of midnight, which is not an instant here.
@@ -460,18 +467,62 @@ function isLeapYear(year: number,): boolean {
 }
 
 /**
- Tells whether the day and hour of text already known to have the shape of an ISO-8601 date and time are real.
+ Tells whether a zone designator already known to have the shape `Z`, `+HH:MM` or `-HH:MM` names a real offset.
  
- @param text - text whose first nineteen characters have the shape `YYYY-MM-DDTHH:MM:SS`
+ @param zone - the zone designator
  
- @returns true when the day lies within the named month of the named year and the hour is below 24
+ @returns true for `Z`, and for an offset whose hours are below 24 and minutes below 60
  
  @example
  ```ts
- hasRealDayAndHour('2026-04-31T05:03:47Z'); // false
+ isRealZone('+24:00'); // false
  ```
  */
-function hasRealDayAndHour(text: string,): boolean {
+function isRealZone(zone: string,): boolean {
+  if (zone === 'Z')
+    return true;
+
+  /**
+   The offset after its sign.
+   */
+  const unsignedOffset = zone.slice(1,);
+  /**
+   Hours and minutes of the offset, as text.
+   */
+  const offsetFields = unsignedOffset.split(':',);
+  /**
+   Hours and minutes of the offset.
+   */
+  const [offsetHour = 0, offsetMinute = 0,] = offsetFields.map(Number,);
+
+  return (offsetHour < FIRST_NON_HOUR)
+    && (offsetMinute < FIRST_NON_MINUTE_OR_SECOND);
+}
+
+/**
+ Tells whether every field of text already known to have the shape of an ISO-8601 instant with a zone is in range.
+ 
+ Month 01 to 12, day within the month by the Gregorian leap rule, hour 00 to 23, minute and second 00 to 59, offset
+ hours 00 to 23 and offset minutes 00 to 59. The verdict never rests on the engine's `Date.parse`.
+ 
+ @param text - text whose first nineteen characters have the shape `YYYY-MM-DDTHH:MM:SS`
+ 
+ @param zone - the zone designator that ends the text
+ 
+ @returns true when every field is in range
+ 
+ @example
+ ```ts
+ hasRealFields({ text: '2026-04-31T05:03:47Z', zone: 'Z' }); // false
+ ```
+ */
+function hasRealFields({
+  text,
+  zone,
+}: Readonly<{
+  text: string;
+  zone: string;
+}>,): boolean {
   /**
    Leading `YYYY-MM-DDTHH:MM:SS` of the text.
    */
@@ -492,9 +543,13 @@ function hasRealDayAndHour(text: string,): boolean {
    */
   const [year = 0, month = 0, day = 0,] = dateFields.map(Number,);
   /**
-   Hour of the time half.
+   Hour, minute and second fields of the time half, as text.
    */
-  const hour = Number(timePart.split(':',)[0],);
+  const timeFields = timePart.split(':',);
+  /**
+   Hour, minute and second of the time half.
+   */
+  const [hour = 0, minute = 0, second = 0,] = timeFields.map(Number,);
   /**
    Days in the named month of a year that is no leap year, absent for a month outside one to twelve.
    */
@@ -511,7 +566,10 @@ function hasRealDayAndHour(text: string,): boolean {
 
   return (day >= 1)
     && (day <= monthDays)
-    && (hour < FIRST_NON_HOUR);
+    && (hour < FIRST_NON_HOUR)
+    && (minute < FIRST_NON_MINUTE_OR_SECOND)
+    && (second < FIRST_NON_MINUTE_OR_SECOND)
+    && isRealZone(zone,);
 }
 
 /**
@@ -520,10 +578,10 @@ function hasRealDayAndHour(text: string,): boolean {
  
  Checked on the untrimmed text, so a trailing newline, a year alone, a month-name form, a local time without a zone and
  an offset without its colon are all outside it. `Date.parse` reads those leniently, and reads the zone-less ones in the
- process's time zone. The day is checked here against the month's length by the Gregorian leap rule, because
- `Date.parse` rolls a day past the month into the next one (2026-04-31 becomes 2026-05-01), and hour 24 is refused as an
- end-of-day spelling where an instant is wanted. `Date.parse` in the caller still rejects an impossible month, minute,
- second and offset.
+ process's time zone. Every field range is checked here, so the verdict never depends on the engine: month 01 to 12,
+ the day against the month's length by the Gregorian leap rule (`Date.parse` rolls 2026-04-31 into May), hour 00 to 23
+ (24 is an end-of-day spelling where an instant is wanted), minute and second 00 to 59, offset hours 00 to 23 and offset
+ minutes 00 to 59. The caller's `Date.parse` only turns the accepted text into a number.
  
  @param text - candidate reset text
  
@@ -573,10 +631,17 @@ function isIsoInstantWithZone(text: string,): boolean {
   if ((!hasFraction) && (fractionLength > 0))
     return false;
 
-  if (!(ISO_ZONE_SHAPES as readonly string[]).includes(fractionAndZone.slice(fractionLength,),))
+  /**
+   Shape of the zone designator that ends the text.
+   */
+  const zoneShape = fractionAndZone.slice(fractionLength,);
+  if (!(ISO_ZONE_SHAPES as readonly string[]).includes(zoneShape,))
     return false;
 
-  return hasRealDayAndHour(text,);
+  return hasRealFields({
+    text,
+    zone: text.slice(text.length - zoneShape.length,),
+  },);
 }
 
 /**

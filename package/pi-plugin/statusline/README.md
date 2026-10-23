@@ -67,7 +67,10 @@ when either name holds a value that is not a readable block,
 or when neither name is present.
 Every reset timestamp (`nextRegenAt` and the search and free-tool `renewsAt`) must be an ISO-8601 instant with a zone,
 `Z` or an offset such as `-04:00`; other text is refused,
-as is a day past its month's length (Gregorian leap rule) and hour 24.
+as is any field out of range:
+month 01 to 12, a day past its month's length (Gregorian leap rule), hour 00 to 23,
+minute and second 00 to 59, offset hours 00 to 23 and offset minutes 00 to 59.
+The reader checks these ranges itself and does not rely on the engine's date parser to refuse them.
 
 ## Colors
 
