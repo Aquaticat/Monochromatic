@@ -87,8 +87,8 @@ type SchemaNode = {
 /**
  Every schema node under a schema and the schema itself, a name under `properties` read as a name and not as a keyword.
 
- A BOUNDED WALK OVER THE SCHEMA'S OWN NESTING, which a stage writes by hand; a `$ref` is a string here and is
- not followed.
+ A BOUNDED WALK OVER THE SCHEMA'S OWN NESTING, which a stage writes by hand; a `$ref` is a string here
+ and is not followed.
 
  @param schema - node read
 
@@ -502,8 +502,8 @@ function complexityRefusalsOf({ nodes, }: { readonly nodes: readonly SchemaNode[
 /**
  The first thing a schema carries that the page lists as not supported and no keyword allowlist can see: an `allOf`
  member that holds a `$ref`, an `enum` member that is not a string, a number, a Boolean or null, a `$ref` into another
- document, a `$ref` that names no schema, a recursive `$ref`, and a request past the limits on optional and
- union-typed parameters.
+ document, a `$ref` that names no schema, a recursive `$ref`, and a request past the limits on optional
+ and union-typed parameters.
 
  @param schema - schema as the stage wrote it
 

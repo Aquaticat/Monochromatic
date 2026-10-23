@@ -50,7 +50,11 @@ const PAST_NAP_MS = 121_000;
 
  @example
  ```ts
- const ended = await napWalk({ sinon, nap: signal => sleepFor(NAP_MS, undefined, { signal, },), ticks: [PAST_NAP_MS,], },);
+ const ended = await napWalk({
+   sinon,
+   nap: signal => sleepFor(NAP_MS, undefined, { signal, },),
+   ticks: [PAST_NAP_MS,],
+ },);
  ```
  */
 async function napWalk(
@@ -131,8 +135,8 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES A node:timers/promises WAIT UNENDED BEFORE ITS FIGURE (R9 control arm): the rig advances that clock '
-        + 'and no further, so the end of a nap on the fake clock is the clock\'s doing and not the release\'s',
+      name: 'LEAVES A node:timers/promises WAIT UNENDED BEFORE ITS FIGURE (R9 control arm): the rig advances that '
+        + 'clock and no further, so the end of a nap on the fake clock is the clock\'s doing and not the release\'s',
       fn: async ctx => {
         expect(await napWalk({
           sinon: ctx.sinon,

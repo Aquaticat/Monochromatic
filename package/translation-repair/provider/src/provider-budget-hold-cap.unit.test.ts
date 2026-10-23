@@ -152,10 +152,10 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A BOUND THAT IS NOT A FINITE WHOLE NUMBER OF MILLISECONDS ABOVE ZERO when the budgets are built '
-        + '(R8): the type says number and nothing at run time did, so Infinity reintroduced the unbounded hold the '
-        + 'bound exists to end and NaN made the cut return NaN. Every value is refused with the class that names it '
-        + 'and the value it was given',
+      name: 'REFUSES A BOUND THAT IS NOT A FINITE WHOLE NUMBER OF MILLISECONDS GREATER THAN ZERO when the budgets are '
+        + 'built (R8): the type says number and nothing at run time did, so Infinity reintroduced the unbounded hold '
+        + 'the bound exists to end and NaN made the cut return NaN. Every value is refused with the class that names '
+        + 'it and the value it was given',
       fn: async () => {
         for (const [maxHoldMs, shown,] of [
           [Number.POSITIVE_INFINITY, 'Infinity',],

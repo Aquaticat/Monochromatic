@@ -42,8 +42,8 @@ import {
 // WHAT THE ALLOWLIST CANNOT SEE IS REFUSED IN `claude-schema-refusals.ts`: a named backreference (`\k` outside a class,
 // refused here with the numbered ones), an `allOf` member that holds a `$ref`, an `enum` member that is not a string,
 // a number, a Boolean or null, a `$ref` into another document, a `$ref` that names no schema, a recursive `$ref`, and a
-// request past the page's limits of 24 optional and 16 union-typed parameters. That file's header quotes the page for
-// each.
+// request past the page's limits of 24 optional and 16 union-typed parameters. That file's header quotes the
+// page for each.
 //
 // A KEYWORD THE FEATURE REFUSES THAT NO SDK STRIPS STOPS THE BODY: `oneOf`, `not`, `if`, `then`, `else`,
 // `patternProperties`, `propertyNames`, `contains`, `prefixItems` and any other keyword outside `ALLOWED_KEYWORDS`

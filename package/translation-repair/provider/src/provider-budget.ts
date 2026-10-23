@@ -306,7 +306,8 @@ function notHeldOut(): boolean {
 }
 
 /**
- Raised when the longest hold a budgets instance may state is not a finite whole number of milliseconds above zero.
+ Raised when the longest hold a budgets instance may state is not a finite whole number of
+ milliseconds greater than zero.
 
  CHECKED AT RUN TIME, where the budgets are built, since the type says `number` and so admits `Infinity`, which brings
  back the unbounded hold the bound exists to end, and `NaN`, which made the cut return `NaN`. The value is quoted back
@@ -326,7 +327,7 @@ export class HoldBoundError extends Error {
   /**
    Names the setting and quotes the number it was given.
 
-   @param maxHoldMs - the value the caller passed, whatever number it was
+   @param maxHoldMs - value the caller passed, whatever number it was
 
    @example
    ```ts
@@ -335,7 +336,7 @@ export class HoldBoundError extends Error {
    */
   public constructor({ maxHoldMs, }: { readonly maxHoldMs: number; },) {
     super(
-      `maxHoldMs must be a finite whole number of milliseconds above zero, received ${String(maxHoldMs,)}`,
+      `maxHoldMs must be a finite whole number of milliseconds greater than zero, received ${String(maxHoldMs,)}`,
     );
     this.name = 'HoldBoundError';
   }
@@ -383,7 +384,7 @@ export class HoldBoundError extends Error {
 
  @returns Budget view plus the correction a refused call feeds back, and the states the meters gave
 
- @throws {@link HoldBoundError} when `maxHoldMs` is not a finite whole number of milliseconds above zero
+ @throws {@link HoldBoundError} when `maxHoldMs` is not a finite whole number of milliseconds greater than zero
 
  @example
  ```ts

@@ -189,8 +189,8 @@ function endingHolds(
 
  @param view - dryness every read answers
 
- @param capMs - longest a hold the client reports lasts; the short window unless a case waits the hold out on a
- fake clock
+ @param capMs - longest a hold the client reports lasts; the short window unless a case waits the hold
+ out on a fake clock
 
  @returns Client beside its read counter and its hold setter
 
