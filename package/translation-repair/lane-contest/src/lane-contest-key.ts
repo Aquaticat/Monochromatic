@@ -319,11 +319,13 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  key hashes the version, the shape of the run and the texts, not the schema, so only the number retires a record.
  `f9e4fc3097` is an ancestor of `33ca9974f2`, which set this number (`git merge-base --is-ancestor`), and it is not an
  ancestor of `8864316eb2`, the tip of runs zheermao23 and XingZ6018, so no record written by code without it can stand
- at this number. `git branch --all --contains 33ca9974f2` lists no branch (it lists branches only), and checking each
- entry of `git worktree list` with `git merge-base --is-ancestor` finds the commit in `tr-w289` and `tr-w305` alone,
- both at detached heads (checked 2026-10-23), so no build outside those two worktrees, and no record such a build wrote,
- holds the number. The one bump covers both the system text and the schemas, and the number does not move twice for one
- release.
+ at this number. Measured at 2026-10-23T07:30Z: `git branch --all --contains 33ca9974f2` lists only the marker of a
+ detached head (`* (no branch)`) and no branch name, and checking the heads of the 86 entries of `git worktree list`
+ with `git merge-base --is-ancestor` finds the commit in `tr-w289`, `tr-w305` and `tr-w314`, all at detached heads
+ (`tr-w314` is a review worktree at `c98d140b3f`). That set is a reading at that time and grows with each review
+ worktree, so the argument that holds is the one before it: no record written by code without the commit can stand at
+ this number. The one bump covers both the system text and the schemas, and the number does not move twice
+ for one release.
  */
 export const LANE_CONTEST_CACHE_VERSION = 17;
 

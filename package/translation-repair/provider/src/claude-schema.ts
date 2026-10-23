@@ -188,8 +188,8 @@ const SUPPORTED_FORMATS: ReadonlySet<unknown> = new Set([
 
  @param value - value the node gives it
 
- @returns True for a bound the feature lists as unsupported, a `minItems` other than 0 or 1, and a `format` off the
- page's list
+ @returns True for a bound the feature lists as unsupported, a `minItems` other than 0 or 1, and a
+ `format` off the page's list
 
  @example
  ```ts

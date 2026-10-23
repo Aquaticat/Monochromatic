@@ -87,8 +87,8 @@ type SchemaNode = {
 /**
  Every schema node under a schema and the schema itself, a name under `properties` read as a name and not as a keyword.
 
- A BOUNDED WALK OVER THE SCHEMA'S OWN NESTING, which a stage writes by hand; a `$ref` is a string here and is not
- followed.
+ A BOUNDED WALK OVER THE SCHEMA'S OWN NESTING, which a stage writes by hand; a `$ref` is a string here and is
+ not followed.
 
  @param schema - node read
 

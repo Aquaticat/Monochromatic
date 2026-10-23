@@ -24,8 +24,8 @@ const RELEASED_REPLY: TransportReply = {
 };
 
 /**
- Builds a transport whose reply lands after the given delay, and which gives up the moment the exchange's signal
- aborts.
+ Builds a transport whose reply lands after the given delay, and which gives up the moment the exchange's
+ signal aborts.
 
  @param landMs - delay in milliseconds, on whichever timer function is global when the exchange is made
 

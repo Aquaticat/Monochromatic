@@ -146,7 +146,7 @@ type MeterReading = {
 
  @example
  ```ts
- const budgets: ProviderBudgets = createProviderBudgets({ synthetic, hyper, openrouter, },);
+ const budgets: ProviderBudgets = createProviderBudgets({ synthetic, hyper, openrouter, maxHoldMs: 25_200_000, },);
  ```
  */
 export type ProviderBudgets = {
@@ -196,7 +196,12 @@ export type ProviderBudgets = {
 
  @example
  ```ts
- const budgets: ProviderBudgetsWithStates = createProviderBudgets({ synthetic, hyper, openrouter, },);
+ const budgets: ProviderBudgetsWithStates = createProviderBudgets({
+   synthetic,
+   hyper,
+   openrouter,
+   maxHoldMs: 25_200_000,
+ },);
  ```
  */
 export type ProviderBudgetsWithStates = ProviderBudgets & {
@@ -365,8 +370,8 @@ export class HoldBoundError extends Error {
  @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out, which a run sets to its hard
  cap or, where its command has none, to a named bound with a reason (REQUIRED, with no unbounded default: a provider
  whose `Retry-After` states 99,999,999,999 seconds held that provider out for about 3,170 years): a hold past it can
- never be waited out, so a longer stated wait is cut to it and logged once for each provider with the value the
- provider stated
+ never be waited out, so a longer stated wait is cut to it and logged once for each provider with the
+ value the provider stated
 
  @param heldOut - whether the run holds a provider out for a reason its meter cannot show, such as a refused
  credential; the `METERS` line prints such a provider as dry. It changes only the printed word, never the routed view

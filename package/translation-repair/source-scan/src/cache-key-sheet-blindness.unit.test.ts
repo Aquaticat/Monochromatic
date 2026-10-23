@@ -102,8 +102,8 @@ await describe({
             'utf8',
           );
           expect(sheetImportsOf({ text, },),).toEqual([],);
-          // THE VERSION IS KEY INPUT, which is what makes a moved number retire a record: the constant is read inside
-          // the file.
+          // THE VERSION IS KEY INPUT, which is what makes a moved number retire a record: the constant is read
+          // inside the file.
           expect(text.includes(`${constant},`,),).toBe(true,);
         },
       },);
