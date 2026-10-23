@@ -689,6 +689,35 @@ await describe({
     },),
 
     it({
+      name: 'CARRIES NO FAILURE OF AN EARLIER PARK INTO A LATER ONE: after the first park has ended and the gate parks '
+        + 'again for a refusal of another spent day, the failures the first park saw are not the second\'s',
+      fn: async () => {
+        const dryStop = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
+        /**
+         The refusal that parks the pass the first time.
+         */
+        const first = spentDayRefusal({ dayStart: DAY_ONE, },);
+        /**
+         A further parking failure the first park saw.
+         */
+        const second = benchErrorBefore({ returnsInMs: 301_000, },);
+        /**
+         The refusal for the next spent day, which parks the pass again.
+         */
+        const again = spentDayRefusal({ dayStart: DAY_TWO, },);
+        dryStop.trip({ error: first, },);
+        dryStop.trip({ error: second, },);
+        expect(dryStop.parkedFor({ error: second, },).parked,).toBe(true,);
+        await dryStop.awaitPark();
+        dryStop.trip({ error: again, },);
+        expect(dryStop.parked(),).toBe(true,);
+        expect(dryStop.parkedFor({ error: again, },).parked,).toBe(true,);
+        expect(dryStop.parkedFor({ error: first, },),).toEqual({ parked: false, },);
+        expect(dryStop.parkedFor({ error: second, },),).toEqual({ parked: false, },);
+      },
+    },),
+
+    it({
       name: 'ANSWERS THE PARK\'S OWN RETURN for every failure it answers for, never the failure\'s: a second parking '
         + 'refusal that carries no NeuralWatt return and one that carries another distance, met during the park, '
         + 'get the distance and the time the park waits for, and an ordinary failure gets none',
