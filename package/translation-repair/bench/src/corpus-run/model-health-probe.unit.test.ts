@@ -83,7 +83,24 @@ async function askWith(
 
 await describe({
   name: askModelHealth.name,
+  // SEQUENTIAL: one case spies on the process-wide signal factory.
+  concurrency: 1,
   children: [
+    it({
+      name: 'ARMS NO CALLER-SIDE TIMEOUT SIGNAL (F1 of the re-check of the second fix round): the client arms the deadline '
+        + 'from `exchangeTimeoutMs`, and a signal that aborts at the same figure would cut a Claude call before the '
+        + 'Claude deadline',
+      fn: async (ctx) => {
+        const timeoutSignal = ctx.sinon.spy(
+          AbortSignal,
+          'timeout',
+        );
+        const { requests, } = await askWith({ reply: HEALTHY, },);
+
+        expect(requests[0]?.exchangeTimeoutMs,).toBe(TIMEOUT_MS,);
+        expect(timeoutSignal.callCount,).toBe(0,);
+      },
+    },),
     it({
       name: 'LOGS the outcome kind and the whole raw reply for an answer in the shape asked for',
       fn: async () => {

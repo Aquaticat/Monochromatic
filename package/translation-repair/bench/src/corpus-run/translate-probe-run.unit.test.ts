@@ -16,11 +16,19 @@ import {
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  createClaudeClient,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
+import { armedDeadlinesDuring, } from '@monochromatic-dev/translation-repair-provider/ts/armed-deadlines.test-fixture.ts';
+import {
+  CLAUDE_CAT_KEY,
+  claudeStreamOf,
+  PLAIN_USAGE,
+} from '@monochromatic-dev/translation-repair-provider/ts/claude-client.test-fixture.ts';
+import { scripted, } from '@monochromatic-dev/translation-repair-provider/ts/direct-client.test-fixture.ts';
 import { probeTranslate, } from '../../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -127,6 +135,8 @@ type Probed = {
 
  @param sinon - the case's own sandbox
 
+ @param perCallTimeoutMs - deadline the probe is handed, the harness's stop figure unless a case states its own
+
  @returns Clients built, lines printed and the refusal if any
 
  @example
@@ -140,11 +150,13 @@ async function probeOver(
     newClient,
     roster,
     sinon,
+    perCallTimeoutMs = HANG_STOP_MS,
   }: {
     readonly files: Readonly<Record<string, string>>;
     readonly newClient: () => ModelClient;
     readonly roster: readonly RosterModelId[];
     readonly sinon: Parameters<typeof divertingConsoleLog>[0]['sinon'];
+    readonly perCallTimeoutMs?: number;
   },
 ): Promise<Probed> {
   await using corpus = await makeProbeCorpus({ files, },);
@@ -184,7 +196,7 @@ async function probeOver(
       pin: corpus.pin,
       newClient: counting,
       editorModelIds: roster,
-      perCallTimeoutMs: HANG_STOP_MS,
+      perCallTimeoutMs,
       log: logger,
       stageSettings: SCRIPTED_STAGE_SETTINGS,
     },);
@@ -244,9 +256,80 @@ const SOURCE_PAGE = '# 猫\n\n猫睡觉。\n\n猫吃鱼。\n';
  */
 const TARGET_PAGE = '# Cat\n\nThe cat naps.\n';
 
+/**
+ The deadline the run hands every call, as `RUN_PER_CALL_TIMEOUT_MS` in the run package holds it.
+ */
+const RUN_DEADLINE_MS = 360_000;
+
+/**
+ The deadline a Claude seat is armed with: 32,000 tokens at the floor rate of 80 a second, and a minute more.
+ */
+const CLAUDE_DEADLINE_MS = 460_000;
+
 await describe({
   name: probeTranslate.name,
+  // SEQUENTIAL: one case wraps the process-wide timer function and one spies on the process-wide signal factory.
+  concurrency: 1,
   children: [
+    it({
+      name: 'ARMS NO CALLER-SIDE TIMEOUT SIGNAL (F1 of the re-check of the second fix round): a signal that aborts at the '
+        + 'per-call figure cuts a Claude call at 360,000 ms whatever deadline the client arms inside',
+      fn: async (ctx) => {
+        const timeoutSignal = ctx.sinon.spy(
+          AbortSignal,
+          'timeout',
+        );
+        const probed = await probeOver({
+          files: {
+            'people/Mittens/page.md': SOURCE_PAGE,
+            'people/Mittens/page.en.md': TARGET_PAGE,
+          },
+          newClient: function oneVoice(): ModelClient {
+            return scriptedClient({ script: { [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'The cat naps and eats fish.', }, },);
+          },
+          roster: ROSTER,
+          sinon: ctx.sinon,
+        },);
+
+        expect(probed.refusal,).toBe('',);
+        expect(timeoutSignal.callCount,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'ARMS A CLAUDE SEAT AT THE CLAUDE DEADLINE, 460,000 MS, WHEN THE PROBE IS HANDED THE RUN\'S 360,000',
+      fn: async (ctx) => {
+        const { transport, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({
+              text: '{"translation":"The cat naps."}',
+              stopReason: 'end_turn',
+              usage: PLAIN_USAGE,
+            },),
+          },],
+        },);
+        const { armed, result, } = await armedDeadlinesDuring({
+          run: async () =>
+            await probeOver({
+              files: {
+                'people/Mittens/page.md': SOURCE_PAGE,
+                'people/Mittens/page.en.md': TARGET_PAGE,
+              },
+              newClient: function claudeVoice(): ModelClient {
+                return createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, },);
+              },
+              roster: ['claude-sonnet-5-5',],
+              sinon: ctx.sinon,
+              perCallTimeoutMs: RUN_DEADLINE_MS,
+            },),
+        },);
+
+        expect(result.refusal,).toBe('',);
+        expect(result.lines.includes('HEARD 1/1',),).toBe(true,);
+        expect(armed.includes(CLAUDE_DEADLINE_MS,),).toBe(true,);
+        expect(armed.includes(RUN_DEADLINE_MS,),).toBe(false,);
+      },
+    },),
     it({
       name: 'PRINTS the section, the slice and what each heard voice rendered, with the finding for the seat that stayed silent',
       fn: async (ctx) => {
