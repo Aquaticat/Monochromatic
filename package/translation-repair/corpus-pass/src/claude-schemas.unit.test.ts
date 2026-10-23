@@ -40,6 +40,8 @@ import {
 } from '@monochromatic-dev/translation-repair-provider';
 import { CLAUDE_SCHEMA_PRODUCERS, } from '../dist/final/node/index.mjs';
 import {
+  buildersOf,
+  callersOf,
   declaringFilesOf,
   familySources,
   type SourceFile,
@@ -61,6 +63,78 @@ const NOT_STAGE_SCHEMAS: ReadonlySet<string> = new Set([
 ]);
 
 //endregion Not stage schemas
+
+//region Shared builders
+// Functions that build an answer schema when called, so one file holds the schema text and several files each make a
+// schema of their own. The search for the text `json_schema` finds the file that holds the builder and no caller.
+
+/**
+ One shared builder, the file that declares it and the files that call it.
+ */
+type SharedBuilder = {
+  /**
+   The function's name.
+   */
+  readonly builder: string;
+
+  /**
+   Path of the file that declares it, which is a producer in the list.
+   */
+  readonly declaredIn: string;
+
+  /**
+   Each file that calls it, with the name of the schema it makes where the list holds that schema by name.
+   */
+  readonly callers: readonly {
+    readonly file: string;
+    readonly schemaName?: string;
+  }[];
+};
+
+/**
+ A builder as the case that reads the source finds it: the callers are paths.
+ */
+type BuilderCallerFiles = {
+  readonly builder: string;
+  readonly declaredIn: string;
+  readonly callers: readonly string[];
+};
+
+/**
+ Every builder of an answer schema that more than one file can call, and every file that calls it. A stage that adds a
+ call, or a builder of its own, fails the case that reads these until it is listed here, and a caller that names its
+ schema fails the case after it until the producer list holds a schema of that name. The consistency builders make
+ their schemas per ask from the labels shown, so the producer list holds one sample of each, and their callers carry
+ no schema name here.
+ */
+const SHARED_BUILDERS: readonly SharedBuilder[] = [
+  {
+    builder: 'consistencyChoiceResponseFormat',
+    declaredIn: 'consistency/src/consistency-choice.ts',
+    callers: [
+      { file: 'corpus-pass/src/corpus-run/pass-consistency-carry-ask.ts', },
+      { file: 'corpus-pass/src/corpus-run/pass-consistency-run-off.ts', },
+    ],
+  },
+  {
+    builder: 'consistencyResponseFormat',
+    declaredIn: 'consistency/src/consistency-wire.ts',
+    callers: [
+      { file: 'corpus-pass/src/corpus-run/pass-consistency-ask.ts', },
+    ],
+  },
+  {
+    builder: 'contestResponseFormat',
+    declaredIn: 'lane-contest/src/contest-ballot-wire.ts',
+    callers: [
+      { file: 'consolidate/src/consolidate-gate-stage.ts', schemaName: 'consolidate_gate', },
+      { file: 'consolidate/src/consolidation-polish-gate-stage.ts', schemaName: 'consolidation_polish_gate', },
+      { file: 'lane-contest/src/lane-contest-stage.ts', schemaName: 'lane_contest', },
+    ],
+  },
+];
+
+//endregion Shared builders
 
 //region Rules
 // What the feature accepts, written out here on its own so the case does not lean on the sanitiser it checks.
@@ -435,12 +509,17 @@ await describe({
         /**
          Files of the family's source that write a `json_schema` response format.
          */
-        const declaring = declaringFilesOf({ sources: await familySources(), },);
+        const declaring = declaringFilesOf({ sources: await familySources(), notStageSchemas: NOT_STAGE_SCHEMAS, },);
         expect(declaring.toSorted(),).toEqual([
           ...CLAUDE_SCHEMA_PRODUCERS.map(function fileOf({ file, },): string {
             return file;
           },),
           ...NOT_STAGE_SCHEMAS,
+          ...SHARED_BUILDERS.flatMap(function callerFilesOf({ callers, },): readonly string[] {
+            return callers.map(function fileOfCaller({ file, },): string {
+              return file;
+            },);
+          },),
         ].toSorted(),);
       },
     },),
@@ -454,7 +533,10 @@ await describe({
         /**
          Files found over the family's source with the imaginary files beside it.
          */
-        const declaring = declaringFilesOf({ sources: [...await familySources(), ...IMAGINARY_SOURCES,], },);
+        const declaring = declaringFilesOf({
+          sources: [...await familySources(), ...IMAGINARY_SOURCES,],
+          notStageSchemas: NOT_STAGE_SCHEMAS,
+        },);
         expect(declaring.filter(function isImaginary(file,): boolean {
           return file.startsWith('imaginary/',);
         },).toSorted(),).toEqual([
@@ -462,6 +544,64 @@ await describe({
           'imaginary/src/dog-gate-stage.ts',
           'imaginary/src/dog-wire.ts',
         ],);
+      },
+    },),
+
+    it({
+      name: 'LISTS EVERY SHARED BUILDER OF AN ANSWER SCHEMA AND EVERY FILE THAT CALLS IT, so a fourth stage that calls '
+        + 'the contest builder, or a builder added beside it, is named here before its schema goes unread',
+      fn: async () => {
+        /**
+         The family's source.
+         */
+        const sources = await familySources();
+        /**
+         Builders found, and the callers of each, in the shape of the list.
+         */
+        const found = buildersOf({ sources, notStageSchemas: NOT_STAGE_SCHEMAS, },)
+          .map(function listed(builder,): BuilderCallerFiles {
+            return {
+              builder: builder.name,
+              declaredIn: builder.file,
+              callers: callersOf({ sources, builder, },).toSorted(),
+            };
+          },)
+          .toSorted(function byName(left, right,): number {
+            return left.builder.localeCompare(right.builder,);
+          },);
+        expect(found,).toEqual(SHARED_BUILDERS.map(function listed(shared,): BuilderCallerFiles {
+          return {
+            builder: shared.builder,
+            declaredIn: shared.declaredIn,
+            callers: shared.callers.map(function fileOfCaller({ file, },): string {
+              return file;
+            },).toSorted(),
+          };
+        },),);
+      },
+    },),
+
+    it({
+      name: 'HOLDS THE SCHEMA OF EVERY NAMED CALLER OF A SHARED BUILDER IN THE PRODUCER LIST, under the builder\'s own '
+        + 'file, so the walks of this file read what each stage sends',
+      fn: async () => {
+        /**
+         Listed schemas of each producer file, by the schema's name.
+         */
+        const namesByFile = new Map(CLAUDE_SCHEMA_PRODUCERS.map(function namesOf({ file, formats, },) {
+          return [file, formats.map(function nameOf(format,): string {
+            return format.json_schema.name;
+          },),] as const;
+        },),);
+        expect(SHARED_BUILDERS.flatMap(function missingFor({ declaredIn, callers, },): readonly string[] {
+          return callers.flatMap(function missingOf({ file, schemaName, },): readonly string[] {
+            if (!namesByFile.has(declaredIn,))
+              return [`${declaredIn} is no producer`,];
+            return (schemaName === undefined) || (namesByFile.get(declaredIn,) ?? []).includes(schemaName,)
+              ? []
+              : [`${file} makes ${schemaName}, which ${declaredIn} does not list`,];
+          },);
+        },),).toEqual([],);
       },
     },),
 
