@@ -350,24 +350,45 @@ await describe({
         },),
 
         it({
-          name: 'READS UNREADABLE, never a forged field, from a real client on a renamed block whose return is no instant',
+          name: 'READS DRY WITH THE RETURN UNREADABLE, never a forged field, from a real client on a renamed block whose return is '
+            + 'no instant as the logger writes one (a forged string, no milliseconds, a number, a missing key), and logs no value',
           fn: async () => {
-            const { transport, } = recordedTransport({
-              replies: [{
-                status: 200,
-                bodyText: SPENT_RENAMED_WEEKLY_BODY.replace('2026-10-23T05:03:47.000Z', String.raw`a synthetic=wet\nINJECT`,),
-              },],
+            /**
+             The measured body with the `nextRegenAt` member replaced by each text, the empty text dropping the member.
+             */
+            const bodies = [
+              '"nextRegenAt":"a synthetic=wet\\nINJECT",',
+              '"nextRegenAt":"2026-10-23T05:03:47Z",',
+              '"nextRegenAt":5,',
+              '',
+            ].map(function bodyWith(member,): string {
+              return SPENT_RENAMED_WEEKLY_BODY.replace('"nextRegenAt":"2026-10-23T05:03:47.000Z",', member,);
             },);
-            const { result: meters, } = await warnLinesDuring({
-              run: async function readForgedBody() {
-                return await readEveryMeter({
-                  synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
-                  signal: AbortSignal.timeout(HANG_STOP_MS,),
-                },);
-              },
-            },);
+            for (const bodyText of bodies) {
+              const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText, },], },);
+              const { result: meters, warned, } = await warnLinesDuring({
+                run: async function readBodyWithoutInstant() {
+                  return await readEveryMeter({
+                    synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
+                    signal: AbortSignal.timeout(HANG_STOP_MS,),
+                  },);
+                },
+              },);
 
-            expect(meters.synthetic,).toEqual({ state: 'unreadable', fields: [], },);
+              expect(meters.synthetic,).toEqual({
+                state: 'dry',
+                fields: [
+                  'syntheticWeekly=0%',
+                  'syntheticFiveHour=none',
+                  'syntheticThrottled=none',
+                  'syntheticWeeklyReturn=unreadable',
+                ],
+              },);
+              expect(warned,).toEqual([
+                '[translation-repair] [weeklyWindowOf] Synthetic /quotas planWeeklyLimit.nextRegenAt is missing or no ISO-8601 '
+                  + 'instant as the logger writes one; the return reads unreadable',
+              ],);
+            }
           },
         },),
 

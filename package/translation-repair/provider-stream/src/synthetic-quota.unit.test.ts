@@ -14,6 +14,7 @@ import {
   parseQuotaSnapshot,
   QuotaShapeError,
 } from '../dist/final/node/index.mjs';
+import { warnLinesDuring, } from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
 
 /**
  Recorded-shaped body with invented numbers;
@@ -98,6 +99,8 @@ function refusalOf({ bodyText, }: { readonly bodyText: string; },): string {
 
 await describe({
   name: parseQuotaSnapshot.name,
+  // ONE CASE AT A TIME: a case diverts the process-wide `console.warn` across an await to read what the parser warned.
+  concurrency: 1,
   children: [
     it({
       name: 'parses a body WITHOUT the five-hour block into a snapshot with no five-hour window, as the live reading of '
@@ -210,35 +213,66 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A `nextRegenAt` THAT IS NOT AN ISO-8601 INSTANT as the logger writes one, naming the field and the block\'s keys '
-        + 'and never the value: a value with a space and a newline, an empty one, a date-time with no zone, and one with no milliseconds',
+      name: 'READS DRY WITH THE RETURN MARKED UNREADABLE when `nextRegenAt` is no instant as the logger writes one (a space and a '
+        + 'newline, an empty string, no zone, no milliseconds, a number, a null, a missing key): the window keeps `percentRemaining` '
+        + 'and no raw string, and one warning names the block and the field, never the value',
       fn: async () => {
         /**
-         The values refused, as JSON text, with a secret-shaped one among them whose text must not reach the message.
+         The `nextRegenAt` members tried, as JSON text, with a secret-shaped one among them whose text must reach no log line; the
+         empty text stands for a missing key.
          */
-        const values = [
-          String.raw`"a synthetic=wet\nINJECT-SECRET"`,
-          '""',
-          '"2026-10-23T05:03:47"',
-          '"2026-10-23T05:03:47Z"',
+        const members = [
+          String.raw`,"nextRegenAt":"a synthetic=wet\nINJECT-SECRET"`,
+          ',"nextRegenAt":""',
+          ',"nextRegenAt":"2026-10-23T05:03:47"',
+          ',"nextRegenAt":"2026-10-23T05:03:47Z"',
+          ',"nextRegenAt":5',
+          ',"nextRegenAt":null',
+          '',
         ];
-        /**
-         The refusals of the two block names for every value.
-         */
-        const messages = values.flatMap(function refusedUnder(value,): readonly string[] {
-          return ['weeklyTokenLimit', 'planWeeklyLimit',].map(function refusedAt(name,): string {
-            return refusalOf({ bodyText: `{"${name}":{"percentRemaining":0,"nextRegenAt":${value}}}`, },);
-          },);
+        for (const name of ['weeklyTokenLimit', 'planWeeklyLimit',]) {
+          for (const member of members) {
+            const { result: weekly, warned, } = await warnLinesDuring({
+              run: async function readUnreadableReturn() {
+                return parseQuotaSnapshot({ bodyText: `{"${name}":{"percentRemaining":0${member}}}`, },).weekly;
+              },
+            },);
+            expect(weekly,).toEqual({ percentRemaining: 0, },);
+            expect(Object.hasOwn(
+              weekly,
+              'nextRegenAt',
+            ),).toBe(false,);
+            expect(warned,).toEqual([
+              `[translation-repair] [weeklyWindowOf] Synthetic /quotas ${name}.nextRegenAt is missing or no ISO-8601 instant as the `
+                + 'logger writes one; the return reads unreadable',
+            ],);
+            expect(`${JSON.stringify(weekly,)}\n${warned.join('\n',)}`.includes('INJECT-SECRET',),).toBe(false,);
+          }
+        }
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE SPENT PERCENT OF A RETURN WITH NO MILLISECONDS, the valid time in another spelling that refused the whole '
+        + 'body, and WARNS NOTHING for an instant spelled as the logger writes one',
+      fn: async () => {
+        const { result: unspelled, warned: warnedForUnspelled, } = await warnLinesDuring({
+          run: async function readNoMilliseconds() {
+            return parseQuotaSnapshot({
+              bodyText: '{"planWeeklyLimit":{"percentRemaining":0,"nextRegenAt":"2026-10-23T05:03:47Z"}}',
+            },);
+          },
         },);
-        expect(messages.map(function stripped(message,): string {
-          return message.replace('Synthetic /quotas body violated expectations: ', '',);
-        },),).toEqual(values.flatMap(function expectedFor(): readonly string[] {
-          return ['weeklyTokenLimit', 'planWeeklyLimit',].map(function expectedAt(name,): string {
-            return `${name}.nextRegenAt is not an ISO-8601 instant; received ${name}:object; ${name} holds `
-              + 'percentRemaining:number, nextRegenAt:string';
-          },);
-        },),);
-        expect(messages.join('\n',).includes('INJECT-SECRET',),).toBe(false,);
+        expect(unspelled,).toEqual({ weekly: { percentRemaining: 0, }, },);
+        expect(warnedForUnspelled.length,).toBe(1,);
+
+        const { result: spelled, warned: warnedForSpelled, } = await warnLinesDuring({
+          run: async function readMeasuredBody() {
+            return parseQuotaSnapshot({ bodyText: RENAMED_WEEKLY_SHAPE, },);
+          },
+        },);
+        expect(spelled.weekly,).toEqual({ percentRemaining: 0, nextRegenAt: '2026-10-23T05:03:47.000Z', },);
+        expect(warnedForSpelled,).toEqual([],);
       },
     },),
 
@@ -499,12 +533,6 @@ await describe({
               + 'rollingFiveHourLimit:object, weeklyTokenLimit:object; weeklyTokenLimit holds '
               + 'percentRemaining:string, nextRegenAt:string',
           },
-          {
-            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":5}}',
-            message: 'Synthetic /quotas body violated expectations: weeklyTokenLimit.nextRegenAt is not a string; received '
-              + 'rollingFiveHourLimit:object, weeklyTokenLimit:object; weeklyTokenLimit holds '
-              + 'percentRemaining:number, nextRegenAt:number',
-          },
         ];
         for (const { bodyText, message, } of variants) {
           /** Value caught from parse of the mistyped body. */
@@ -532,15 +560,15 @@ await describe({
           refusalOf({ bodyText: '{}', },),
           refusalOf({ bodyText: '{"rollingFiveHourLimit":"full","weeklyTokenLimit":5,"search":null,"x":[1],"y":true}', },),
           refusalOf({ bodyText: '[1,2]', },),
-          refusalOf({ bodyText: '{"weeklyTokenLimit":{"percentRemaining":87}}', },),
+          refusalOf({ bodyText: '{"weeklyTokenLimit":{"nextRegenAt":"2026-07-17T00:10:00.000Z"}}', },),
           refusalOf({ bodyText: '<html>maintenance</html>', },),
         ],).toEqual([
           'Synthetic /quotas body violated expectations: neither weeklyTokenLimit nor planWeeklyLimit is an object; received {}',
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
             + 'rollingFiveHourLimit:string, weeklyTokenLimit:number, search:null, x:array, y:boolean',
           'Synthetic /quotas body violated expectations: body is not a JSON object; received array',
-          'Synthetic /quotas body violated expectations: weeklyTokenLimit.nextRegenAt is not a string; received '
-            + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentRemaining:number',
+          'Synthetic /quotas body violated expectations: weeklyTokenLimit.percentRemaining is not a number; received '
+            + 'weeklyTokenLimit:object; weeklyTokenLimit holds nextRegenAt:string',
           'Synthetic /quotas body violated expectations: body is not valid JSON',
         ],);
       },

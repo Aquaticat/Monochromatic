@@ -694,6 +694,13 @@ await describe({
               'syntheticWeeklyReturn=unreadable',
               'syntheticWeeklyReturn=2026-10-23T05:03:47.000Z',
             ],);
+            // A window the parser marked unreadable carries no `nextRegenAt` at all.
+            expect(syntheticMeterLevel({ quota: { weekly: { percentRemaining: 0, }, }, },),).toEqual([
+              'syntheticWeekly=0%',
+              'syntheticFiveHour=none',
+              'syntheticThrottled=none',
+              'syntheticWeeklyReturn=unreadable',
+            ],);
           },
         },),
 
