@@ -109,6 +109,12 @@ const NO_HOLDS = {
 
 /**
  The hold the router registers on a refusal from a meter that reads dry.
+
+ A READING UNDER A HOLD SLEEPS ITS SHORTEST HOLD ONCE WHEN A BENCH IT LEANS ON IS SHORT OF QUORUM, on the real clock
+ (`run/src/corpus-run/run-seats-read.ts`, `readDrynessPastShortBench`). This file's views under this hold are short in
+ one of them (the padded view, 3 of 8 wide seats against a quorum of 4 with the Claude key reading dry), and the
+ describe took 300.3 s at `f2f77b0701` and at the tip of the second review. `viewClient` therefore reports every hold as
+ ending within {@link SHORT_HOLD_MS}, whatever a case names, and a case that needs a hold to run names this one.
  */
 const DRY_HOLD_MS = 300_000;
 
@@ -137,6 +143,33 @@ const SHORT_HOLD_MS = 40;
  Logger the hooks write to.
  */
 const l = tagged({ tag: 'pass-reseat-test', },);
+
+/**
+ The holds a rig reports: each one a case names, ended within the short window a case can wait out.
+
+ @param holds - holds as the case set them
+
+ @returns The same providers held, none for longer than {@link SHORT_HOLD_MS}
+
+ @example
+ ```ts
+ const reported = endingHolds({ holds: { ...NO_HOLDS, synthetic: DRY_HOLD_MS, }, },); // synthetic: 40
+ ```
+ */
+function endingHolds(
+  { holds, }: { readonly holds: typeof NO_HOLDS; },
+): typeof NO_HOLDS {
+  return {
+    neuralwatt: Math.min(holds.neuralwatt, SHORT_HOLD_MS,),
+    synthetic: Math.min(holds.synthetic, SHORT_HOLD_MS,),
+    bedrock: Math.min(holds.bedrock, SHORT_HOLD_MS,),
+    deepseek: Math.min(holds.deepseek, SHORT_HOLD_MS,),
+    xiaomi: Math.min(holds.xiaomi, SHORT_HOLD_MS,),
+    anthropic: Math.min(holds.anthropic, SHORT_HOLD_MS,),
+    hyper: Math.min(holds.hyper, SHORT_HOLD_MS,),
+    openrouter: Math.min(holds.openrouter, SHORT_HOLD_MS,),
+  };
+}
 
 /**
  Builds a client whose holds can change between chunks and which counts
@@ -172,7 +205,7 @@ function viewClient(
         return view;
       },
       providerMeterStates: metersAllWet,
-      providerHolds: () => ({ ...holds, }),
+      providerHolds: () => endingHolds({ holds, },),
     },
   };
 }
@@ -275,6 +308,60 @@ await describe({
                 [SEAT_OPENROUTER_ONLY_CHECKER, SEAT_BEDROCK_ONLY_VISION_UNSEATED, SEAT_OPENROUTER_ONLY,].join(',',)
               } unserved-checkers=none`,
             ],);
+          },
+        },),
+        it({
+          name: 'SEATS THE WIDE BENCH AT ITS QUORUM WITH THE CLAUDE KEY WET AND SHORT OF IT WITH THE KEY DRY, as the live '
+            + 'roster seats Haiku 5.5 (the fleet models the Claude provider in both of its states): the padded view with '
+            + 'the key wet reads 4 of 8 wide seats and waits for nothing, and with the key dry reads 3 of 8 against a quorum of 4, '
+            + 'waits the hold out once and seats what it reads',
+          fn: async () => {
+            /** Rig of the padded view with the Claude key wet, under a running Synthetic hold. */
+            const wet = viewClient({ view: { ...NEURALWATT_AND_BEDROCK, anthropic: false, }, },);
+            wet.holds.synthetic = DRY_HOLD_MS;
+            /** Rig of the padded view with the Claude key dry, under the same hold. */
+            const dry = viewClient({ view: NEURALWATT_AND_BEDROCK, },);
+            dry.holds.synthetic = DRY_HOLD_MS;
+            /** Lines the wet rig's hook wrote. */
+            const wetLines: string[] = [];
+            /** Lines the dry rig's hook wrote. */
+            const dryLines: string[] = [];
+            /** Roster the hook hands the driver, Claude key wet. */
+            const wetSeating = await lanesHooksFor({
+              client: wet.client,
+              signal: new AbortController().signal,
+              entryId: 'mittens',
+              l: capturingLogger({ messages: wetLines, },),
+            },).beforeSlice({ lane: 'repair', },);
+            /** Roster the hook hands the driver, Claude key dry. */
+            const drySeating = await lanesHooksFor({
+              client: dry.client,
+              signal: new AbortController().signal,
+              entryId: 'mittens',
+              l: capturingLogger({ messages: dryLines, },),
+            },).beforeSlice({ lane: 'repair', },);
+            /**
+             The lines either hook wrote that say a bench was short of its quorum.
+             */
+            const shortLines = (lines: readonly string[],): readonly string[] => lines.filter(function isShort(line,): boolean {
+              return line.includes('short of quorum',);
+            },);
+
+            expect(shortLines(wetLines,),).toEqual([],);
+            expect(shortLines(dryLines,),).toHaveLength(1,);
+            expect(shortLines(dryLines,)[0],).toContain('wide 3 of 8 reachable, quorum 4',);
+            expect(shortLines(dryLines,)[0],).toContain(`waiting ${String(SHORT_HOLD_MS,)}ms for the shortest hold to end`,);
+            // THE CLAUDE KEY IS NOT THE HOLD: the hold waited out is Synthetic's, and the dry arm seats the same bench after it,
+            // with Haiku 5.5 unserved, where the wet arm seats Haiku first.
+            expect(wetSeating.repairModels?.checkerModelIds,).toEqual([
+              'claude-haiku-5-5',
+              'google.gemma-4-31b',
+              'hf:Qwen/Qwen3.8-27B',
+            ],);
+            expect(drySeating.repairModels?.checkerModelIds,).not.toContain('claude-haiku-5-5',);
+            expect(dryLines.filter(function isChunkLine(line,): boolean {
+              return line.includes('chunk re-seated under a hold',);
+            },).join('\n',),).not.toContain('claude-haiku-5-5',);
           },
         },),
         it({
