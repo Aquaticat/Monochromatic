@@ -309,7 +309,7 @@ a release runs once per version,
 and a cold build cannot carry a stale artifact into attested bytes.
 This is a deviation from the owner's wish for caching in general,
 and the owner may veto it;
-the first dry run records the cold time that a cache would be measured against.
+the cold time that a cache would be measured against is in "First dry run".
 
 ### Runner disk
 
@@ -322,15 +322,97 @@ That debug build is also a time cost:
 the `runtime` task compiles every dependency in the dev profile
 (optimized by `[profile.dev.package."*"]`)
 before the release build compiles them again,
-so the first dry run's total will exceed a plain release build such as the music player's 25 min 10 s.
-The runner's free disk was not measured from here.
+and the measured total of the whole `bundle` task is in "First dry run".
 A step removes the preinstalled Android SDK,
 .NET,
 GHC and CodeQL directories,
 which the job does not use,
 and prints `df` before and after that step,
-after the image build and after the bundle,
-so the first dry run shows the real figures.
+after the image build and after the bundle.
+The first dry run showed that the runner had 85 GB free before the step,
+so the step may be dropped.
+
+## First dry run
+
+The workflow was dispatched on `main` as a dry run on 2026-10-22 (run 39832705367).
+The `build` job took 15 min 37 s from set-up to the failing step.
+It passed every step up to the renderer gate,
+and failed there (see "The renderer gate on a fresh cargo volume").
+Measured on that run:
+
+- Podman 4.9.3,
+  mise 2026.10.9,
+  node 26.12.0,
+  and the image's `rustc 1.99.1 (58cf8f9c3 2026-10-13)`,
+  `cargo 1.99.1` and `cargo-about 0.9.2`.
+- Step times:
+  base image 1 min 04 s,
+  IDE image 1 min 30 s,
+  `bundle` 10 min 26 s (the task printed `Finished in 625.54s`),
+  against 25 min 10 s for the music player's Alpine release build.
+  The container bound was 4 CPUs,
+  12g memory,
+  1024 processes and 4096 open files.
+- The bounded container with `--pids-limit=1024` and `--ulimit nofile=4096:4096` ran,
+  so rootless podman on the runner accepts those limits.
+- Disk on `/` (145 GB):
+  85 GB available at the start,
+  104 GB after the step that removes the preinstalled SDKs (it freed 18 GB and took 1 min 50 s),
+  101 GB after the images,
+  96 GB after `bundle`.
+  The build itself used about 8 GB,
+  so the removal step was not needed on this image.
+  It stays until a second run confirms the figures,
+  and the owner may drop it.
+- The `--version` check printed `monochromatic-ide 0.1.0`.
+  The dynamic section was exactly `ld-linux-x86-64.so.2 libc.so.6 libfontconfig.so.1 libgcc_s.so.1 libm.so.6`
+  and the newest glibc symbol version was 2.39,
+  as measured on the installed binary.
+- The tracked-files check passed,
+  so the build did not rewrite `Cargo.lock`.
+
+### The renderer gate on a fresh cargo volume
+
+`mise run //package/desktop-app/ide:inspect:no-software-renderer` stopped with
+`no matching package named async-net found`,
+required by `i-slint-backend-testing v1.18.1`,
+and cargo's note that `--frozen` is offline mode.
+The cause is the second positive control of the task,
+`--features slint/mcp`.
+It enables a feature that no build of the package uses,
+so its crates (`async-net` among them) are not in `Cargo.lock` and `cargo fetch` never resolves them.
+`--frozen` cannot download registry index entries,
+and the volume on the runner is new in every run,
+while the author's long-lived `ide-cargo` volume already held the entries from earlier work.
+The `--all-features` request and the `slint/renderer-software` control resolved offline without trouble.
+
+Reproduced locally on 2026-10-22 with the bound at 2 GiB and 2 CPUs for the probes:
+after `cargo fetch` on a new volume,
+the `slint/mcp` request failed with the same message under cargo 1.99.1,
+the runner's version;
+the whole task chain `bundle`,
+then the gate,
+on another new volume failed at the same command.
+On that volume,
+`cargo fetch` again and `cargo metadata --locked --all-features` with the network did not help,
+and `cargo tree --locked` with the network and the same arguments did,
+after which the offline command passed.
+
+The fix is in the task,
+not in the workflow:
+`inspect:no-software-renderer` now makes one pass per request with the network on and `--locked`
+(the same lock file,
+nothing written) before its offline checks.
+A workflow step would have to repeat the task's feature list,
+and a developer with a new volume would hit the same failure.
+The checks themselves are unchanged and still run offline with `--frozen`,
+so the gate is neither dropped nor weakened.
+If the network is down the pass reports that it was skipped,
+and the offline checks use the entries the volume holds.
+The task ran on a new volume in the failing state,
+passed,
+and printed its success line (the software renderer is not linked,
+and both controls reach it).
 
 ## Checks run before landing
 
@@ -360,6 +442,20 @@ a copy of it as `dist/monochromatic-ide` of the worktree) because a release buil
   a glibc floor of 2.38,
   and a different executable.
 - `mise run //package/desktop-app/ide:inspect:no-software-renderer` passed.
+- After the fix of "The renderer gate on a fresh cargo volume",
+  the gate chain was run against a real build from a new cargo volume
+  (the `bundle` task through a wrapper that named another volume and the runner's cargo 1.99.1,
+  8 CPUs and 24g memory;
+  5 min 6 s):
+  the tracked-files check,
+  the `--version` check,
+  the library and glibc check (newest symbol 2.39),
+  `inspect:bundle` with the three window-free checks (1,255 embedded files,
+  449 crates covered),
+  the notices file (581,554 bytes),
+  the packaging (23,457,136 bytes),
+  the archive check,
+  and the checksums step all passed.
 - The version-bump procedure of the runbook was run on a scratch copy of the package with the version set to `0.1.1`:
   the `cargo fetch` of the `fetch` task,
   run in the build image,
@@ -375,30 +471,25 @@ a copy of it as `dist/monochromatic-ide` of the worktree) because a release buil
 
 ## Not verified locally
 
-Only a real runner can prove these,
-and the first dry run is the check:
+Only a real runner can prove these.
+The first dry run (section "First dry run") proved the build and the first three gates,
+and stopped at the fourth:
 
-- The whole build on a standard `ubuntu-24.04` runner:
-  time,
-  disk,
-  memory,
-  and that the Fedora 41 image builds there (downloads from `ziglang.org`,
-  `sh.rustup.rs`,
-  `get.nexte.st` and the Fedora mirrors,
-  and the compile of `cargo-about` from source).
-- `--pids-limit` and `--ulimit` under rootless podman 4.9.3 on the runner image.
-- The glibc and library gates on the binary this runner's image produces.
-  The measured numbers come from the installed binary,
-  which was built by the same container flow on the author's machine.
-- Whether `usage`-style task arguments work with mise 2026.10.9 without the `usage` CLI.
-  They did with mise 2026.10.0 and no `usage` on `PATH`:
-  `mise run //package/desktop-app/ide:inspect:bundle --help` printed the argument help.
+- The steps after "Check that no software renderer is linked" have not run on a runner:
+  "Check the single executable" (`inspect:bundle` with `usage`-style task arguments under mise 2026.10.9,
+  which worked with mise 2026.10.0 and no `usage` on `PATH`),
+  the notices file,
+  the packaging,
+  and the archive check.
+  Their shell was run locally against a build from a fresh cargo volume (section "Checks run before landing").
 - Attestation,
   the artifact upload and download steps,
+  the checksums job,
   and the `gh release create` call itself.
   The release step is the music player's,
   which has run successfully many times,
-  but the IDE's workflow has not run.
+  but the IDE's workflow has not got that far.
+- Whether the `old-cache-folders-removed` check can run on a runner.
 
 ## Consequences
 
@@ -438,8 +529,8 @@ and the first dry run is the check:
 - The `jdx/mise-action` pin is shared with the music player;
   a person updates it (`doc/runbook/release-the-music-player.md`,
   "The mise version pin").
-- Cold builds cost run time on every release,
-  unmeasured until the first dry run.
+- Cold builds cost run time on every release:
+  15 min 37 s for the `build` job up to the renderer gate in the first dry run.
 
 ## Alternatives rejected
 

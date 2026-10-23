@@ -171,7 +171,7 @@ jobs:
     needs: detect
     if: ${{ needs.detect.outputs.should_build == 'true' }}
     runs-on: ubuntu-24.04
-    # Not measured on a runner yet: the first dry run records the cold time in doc/decision/ide-releases.md.
+    # The first dry run took 15 min 37 s up to the renderer gate (doc/decision/ide-releases.md, "First dry run").
     timeout-minutes: 150
     permissions:
       contents: read
