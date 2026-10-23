@@ -224,19 +224,40 @@ const SLATE_SHORT: BudgetView = { ...SLATE_AND_WIDE_SHORT, synthetic: false, };
  ```
  */
 function hookOverDayEnd({ lines, }: { readonly lines: string[]; },) {
-  const state: { view: BudgetView; held: readonly ProviderName[]; asks: number; } = {
+  const state: {
+    view: BudgetView;
+    held: readonly ProviderName[];
+    asks: number;
+    waitHold: boolean;
+    waitReads: number;
+  } = {
     view: SLATE_AND_WIDE_SHORT,
     held: [],
     asks: 0,
+    waitHold: false,
+    waitReads: 0,
   };
   const hook = reseatHookFor({
     client: {
-      providerDryness: async () => state.view,
+      providerDryness: async () => {
+        // A reading that waits for the short hold (5 ms) finds every bench back after the wait, and the hold ends.
+        if (state.waitHold) {
+          state.waitReads += 1;
+          if (state.waitReads > 1) {
+            state.waitHold = false;
+            state.waitReads = 0;
+            return ALL_WET;
+          }
+        }
+        return state.view;
+      },
       providerMeterStates: metersAllWet,
       providerHolds: () => {
         state.asks += 1;
         return providerRecord({
           of: function heldFor(provider,): number {
+            if (state.waitHold && (provider === 'neuralwatt'))
+              return 5;
             return state.held.includes(provider,) ? leftAfter({ asks: state.asks, },) : 0;
           },
         },);
@@ -266,7 +287,7 @@ function hookOverDayEnd({ lines, }: { readonly lines: string[]; },) {
 /**
  Runs slices one after another through the hook.
 
- @param hook - the hook under test
+ @param hook - hook under test
 
  @param count - how many slices
 
@@ -349,9 +370,9 @@ await describe({
     },),
 
     it({
-      name: 'KEYS THE ONE WARNING ON WHAT IT IS ABOUT, NOT ON ITS TEXT: with NeuralWatt dry on a spent day whose return '
-        + 'is named past the pass, and every figure in the text shrinking from slice to slice, 40 slices under a '
-        + 'Xiaomi hold write one warning; a change of the held providers, a change of the short benches, and the '
+      name: 'KEYS THE ONE WARNING ON WHAT IT IS ABOUT, NOT ON ITS TEXT: with NeuralWatt dry on a spent day whose '
+        + 'return is named past the pass, and every figure in the text shrinking from slice to slice, 40 slices under '
+        + 'a Xiaomi hold write one warning; a change of the held providers, a change of the short benches, and the '
         + 'holds ending and coming back each write one more',
       fn: async () => {
         const lines: string[] = [];
@@ -381,6 +402,49 @@ await describe({
         state.held = ['xiaomi',];
         await runSlices({ hook, count: 5, },);
         expect(shortWarningsOf({ lines, },),).toHaveLength(5,);
+      },
+    },),
+
+    it({
+      name: 'SAYS A SHORT BENCH AGAIN AFTER A CLEAN READING BETWEEN: under one unchanged Xiaomi hold the bench is '
+        + 'short and warned once, every bench is back for five slices, and the bench falling short again writes one '
+        + 'more',
+      fn: async () => {
+        const lines: string[] = [];
+        const { hook, state, } = hookOverDayEnd({ lines, },);
+        state.held = ['xiaomi',];
+        await runSlices({ hook, count: 5, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(1,);
+
+        state.view = ALL_WET;
+        await runSlices({ hook, count: 5, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(1,);
+
+        state.view = SLATE_AND_WIDE_SHORT;
+        await runSlices({ hook, count: 5, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'SAYS A SHORT BENCH AGAIN AFTER A READING THAT WAITED: the same Xiaomi hold and the same short benches are '
+        + 'warned once, a reading that waits 5 ms for a NeuralWatt hold finds them back, and the next reading finding '
+        + 'them short again writes one more',
+      fn: async () => {
+        const lines: string[] = [];
+        const { hook, state, } = hookOverDayEnd({ lines, },);
+        state.view = SLATE_SHORT;
+        state.held = ['xiaomi',];
+        await runSlices({ hook, count: 3, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(1,);
+
+        state.waitHold = true;
+        await runSlices({ hook, count: 1, },);
+        expect(state.waitHold,).toBe(false,);
+        const afterWait = shortWarningsOf({ lines, },).length;
+
+        await runSlices({ hook, count: 3, },);
+        expect(shortWarningsOf({ lines, },).length - afterWait,).toBe(1,);
       },
     },),
   ],
