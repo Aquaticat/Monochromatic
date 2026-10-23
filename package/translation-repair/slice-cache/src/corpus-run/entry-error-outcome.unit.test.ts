@@ -39,6 +39,16 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { relayingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
 
+/**
+ What the gate answers for a failure it did not park for.
+ */
+const NOT_PARKED = { parked: false, } as const;
+
+/**
+ The return the gate answers for a failure it parked for.
+ */
+const PARK_RETURN = { parked: true, returnsInMs: 301_000, returnsAt: '19:15:08 UTC', } as const;
+
 await describe({
   name: '',
   children: [
@@ -237,8 +247,8 @@ await describe({
               endRun: function endRun(): void {
                 gate.parked = true;
               },
-              parked: function parked(): boolean {
-                return gate.parked;
+              parked: function parked() {
+                return gate.parked ? PARK_RETURN : NOT_PARKED;
               },
             },),).toEqual({ kind: 'resumable-failure', },);
             /**
@@ -259,8 +269,8 @@ await describe({
               durationMs: 5,
               aborted: false,
               endRun: function endRun(): void {},
-              parked: function parked(): boolean {
-                return gate.parked;
+              parked: function parked() {
+                return gate.parked ? PARK_RETURN : NOT_PARKED;
               },
             },),).toEqual({ kind: 'resumable-failure', },);
             expect(printed.lines.some(function failed(text,): boolean {
@@ -295,8 +305,8 @@ await describe({
               durationMs: 5,
               aborted: true,
               endRun: function endRun(): void {},
-              parked: function parked(): boolean {
-                return true;
+              parked: function parked() {
+                return PARK_RETURN;
               },
             },);
             /**
@@ -318,10 +328,6 @@ await describe({
           fn: async (ctx) => {
             using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
             /**
-             What the gate answers: the return the park waits for.
-             */
-            const parkReturn = { returnsInMs: 301_000, returnsAt: '19:15:08 UTC', };
-            /**
              A parking refusal of the entry that names no return.
              */
             const noReturn = new EveryProviderDryError({ measured: 'every meter dry', },);
@@ -341,7 +347,7 @@ await describe({
               aborted: true,
               endRun: function endRun(): void {},
               parked: function parked() {
-                return parkReturn;
+                return PARK_RETURN;
               },
             },);
             tallyCaughtEntry({
@@ -351,7 +357,7 @@ await describe({
               aborted: true,
               endRun: function endRun(): void {},
               parked: function parked() {
-                return parkReturn;
+                return PARK_RETURN;
               },
             },);
             tallyCaughtEntry({
@@ -361,7 +367,7 @@ await describe({
               aborted: false,
               endRun: function endRun(): void {},
               parked: function parked() {
-                return undefined;
+                return NOT_PARKED;
               },
             },);
             expect(printed.lines.filter(function tally(text,): boolean {
@@ -385,16 +391,17 @@ await describe({
           fn: async (ctx) => {
             using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
             /**
-             The bench error whose time carries another zone than the one its writer gives.
+             The bench error the entry ended with.
              */
             const lanes = new WritingBenchUnreachableError({
               phase: 'lanes',
               clauses: ['editors 0 of 3 reachable, floor 2',],
               neuralwattReturnsInMs: 301_000,
-              neuralwattReturnsAt: '19:15:08 CEST',
+              neuralwattReturnsAt: '19:15:08 UTC',
             },);
             /**
-             Tallies the entry as the pass does once it has parked for the failure.
+             Tallies the entry as the pass does once it has parked, for a return whose time carries another zone than
+             the one its writer gives.
              */
             function tallyParked(): void {
               tallyCaughtEntry({
@@ -403,8 +410,8 @@ await describe({
                 durationMs: 5,
                 aborted: true,
                 endRun: function endRun(): void {},
-                parked: function parked(): boolean {
-                  return true;
+                parked: function parked() {
+                  return { parked: true, returnsInMs: 301_000, returnsAt: '19:15:08 CEST', };
                 },
               },);
             }
@@ -436,8 +443,8 @@ await describe({
               durationMs: 5,
               aborted: true,
               endRun: function endRun(): void {},
-              parked: function parked(): boolean {
-                return true;
+              parked: function parked() {
+                return PARK_RETURN;
               },
             },),).toEqual({ kind: 'stopped', },);
             expect(tallyCaughtEntry({
@@ -446,8 +453,8 @@ await describe({
               durationMs: 5,
               aborted: true,
               endRun: function endRun(): void {},
-              parked: function parked(): boolean {
-                return false;
+              parked: function parked() {
+                return NOT_PARKED;
               },
             },),).toEqual({ kind: 'stopped', },);
             expect(printed.lines.some(function parkedLine(text,): boolean {
@@ -478,9 +485,9 @@ await describe({
               durationMs: 5,
               aborted: false,
               endRun: function endRun(): void {},
-              parked: function parked({ error, },): boolean {
+              parked: function parked({ error, },) {
                 asked.push(error,);
-                return error !== reset;
+                return (error === reset) ? NOT_PARKED : PARK_RETURN;
               },
             },);
             expect(asked,).toEqual([reset,],);

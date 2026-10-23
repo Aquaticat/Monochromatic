@@ -622,15 +622,21 @@ await describe({
          The bench error with a return that fits.
          */
         const bench = benchErrorBefore({ returnsInMs: 301_000, },);
-        expect(dryStop.parkedFor({ error: bench, },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: bench, },),).toEqual({ parked: false, },);
         dryStop.trip({ error: bench, },);
         expect(dryStop.parked(),).toBe(true,);
-        expect(dryStop.parkedFor({ error: bench, },),).toBe(true,);
+        expect(dryStop.parkedFor({ error: bench, },),).toEqual({
+          parked: true,
+          returnsInMs: 301_000,
+          returnsAt: '19:15:08 UTC',
+        },);
         // Another entry's parking failure, with the same class and the same return, is not the park's own.
-        expect(dryStop.parkedFor({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },),).toBe(false,);
-        expect(dryStop.parkedFor({ error: benchErrorBefore({ returnsInMs: 301_000, }), },),).toBe(false,);
-        expect(dryStop.parkedFor({ error: new Error('connection reset',), },),).toBe(false,);
-        expect(dryStop.parkedFor({ error: benchErrorBefore({}), },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },),).toEqual({ parked: false, },);
+        expect(dryStop.parkedFor({ error: benchErrorBefore({ returnsInMs: 301_000, }), },),).toEqual(
+          { parked: false, },
+        );
+        expect(dryStop.parkedFor({ error: new Error('connection reset',), },),).toEqual({ parked: false, },);
+        expect(dryStop.parkedFor({ error: benchErrorBefore({}), },),).toEqual({ parked: false, },);
       },
     },),
 
@@ -664,11 +670,11 @@ await describe({
         dryStop.trip({ error: second, },);
         dryStop.trip({ error: ordinary, },);
         dryStop.trip({ error: noReturn, },);
-        expect(dryStop.parkedFor({ error: first, },),).toBe(true,);
-        expect(dryStop.parkedFor({ error: second, },),).toBe(true,);
-        expect(dryStop.parkedFor({ error: ordinary, },),).toBe(false,);
-        expect(dryStop.parkedFor({ error: noReturn, },),).toBe(false,);
-        expect(dryStop.parkedFor({ error: unseen, },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: first, },),).toMatchObject({ parked: true, },);
+        expect(dryStop.parkedFor({ error: second, },),).toMatchObject({ parked: true, },);
+        expect(dryStop.parkedFor({ error: ordinary, },),).toEqual({ parked: false, },);
+        expect(dryStop.parkedFor({ error: noReturn, },),).toEqual({ parked: false, },);
+        expect(dryStop.parkedFor({ error: unseen, },),).toEqual({ parked: false, },);
 
         await dryStop.awaitPark();
         /**
@@ -676,9 +682,9 @@ await describe({
          */
         const late = spentDayRefusal({ dayStart: DAY_ONE, },);
         dryStop.trip({ error: late, },);
-        expect(dryStop.parkedFor({ error: first, },),).toBe(false,);
-        expect(dryStop.parkedFor({ error: second, },),).toBe(false,);
-        expect(dryStop.parkedFor({ error: late, },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: first, },),).toEqual({ parked: false, },);
+        expect(dryStop.parkedFor({ error: second, },),).toEqual({ parked: false, },);
+        expect(dryStop.parkedFor({ error: late, },),).toEqual({ parked: false, },);
       },
     },),
 
@@ -706,11 +712,11 @@ await describe({
         /**
          What the park waits for.
          */
-        const parkReturn = { returnsInMs: 301_000, returnsAt: '19:15:08 UTC', };
+        const parkReturn = { parked: true, returnsInMs: 301_000, returnsAt: '19:15:08 UTC', };
         expect(dryStop.parkedFor({ error: first, },),).toEqual(parkReturn,);
         expect(dryStop.parkedFor({ error: noReturn, },),).toEqual(parkReturn,);
         expect(dryStop.parkedFor({ error: nearer, },),).toEqual(parkReturn,);
-        expect(dryStop.parkedFor({ error: new Error('connection reset',), },),).toBeUndefined();
+        expect(dryStop.parkedFor({ error: new Error('connection reset',), },),).toEqual({ parked: false, },);
       },
     },),
 

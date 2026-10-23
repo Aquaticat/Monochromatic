@@ -13,6 +13,7 @@ import {
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { refusalText, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run/ts';
+import type { ParkAnswer, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Pass dry stop
@@ -129,11 +130,13 @@ export type PassDryStop = {
   readonly parked: () => boolean;
 
   /**
-   Whether the park in force is for this very failure: the object the gate chose to park for, or another parking
-   failure it saw while the park lasted (queue attempts run one at a time, so each belongs to the attempt that parked),
-   and no other, so an entry that failed for another reason is not mistaken for the one the pass waits to resume.
+   Whether the park in force is for this very failure, and the return it waits for where it is: the object the gate
+   chose to park for, or another parking failure it saw while the park lasted (queue attempts run one at a time, so
+   each belongs to the attempt that parked), and no other, so an entry that failed for another reason is not mistaken
+   for the one the pass waits to resume. The distance and the time are the park's own, whatever the failure carries,
+   since a further parking failure may name no return or another distance.
    */
-  readonly parkedFor: (args: { readonly error: unknown; },) => boolean;
+  readonly parkedFor: (args: { readonly error: unknown; },) => ParkAnswer;
 
   /**
    Waits until the return the park is for, logging the end, and gives the gate a live signal again; nothing where the
@@ -381,7 +384,10 @@ function refuseOn(
   // A PARK OR A TRIP IS MADE ONCE: calls of the same entry that meet the dry router after the first are the same event,
   // but the failure each raises is kept, since the entry may end with any of them.
   if (parked !== undefined) {
-    recordOnPark({ park: parked, error, },);
+    recordOnPark({
+      park: parked,
+      error,
+    },);
     return;
   }
   if (state.cause !== undefined)
@@ -595,13 +601,13 @@ export function createPassDryStop(
         > 0;
     },
 
-    parkedFor: function parkedFor({ error, }: { readonly error: unknown; },): boolean {
+    parkedFor: function parkedFor({ error, }: { readonly error: unknown; },): ParkAnswer {
       /**
        The one park in force, none where the pass is not parked.
        */
       const [park,] = state.parks;
       if (park === undefined)
-        return false;
+        return { parked: false, };
       /**
        Every parking failure the park answers for, typed unknown so any failure can be looked up in it.
        */
@@ -609,7 +615,13 @@ export function createPassDryStop(
         park.refusal,
         ...park.seen,
       ];
-      return answered.includes(error,);
+      if (!answered.includes(error,))
+        return { parked: false, };
+      return {
+        parked: true,
+        returnsInMs: park.returnsInMs,
+        returnsAt: park.returnsAt,
+      };
     },
 
     awaitPark: async function awaitPark(): Promise<void> {
