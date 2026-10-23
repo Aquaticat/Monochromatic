@@ -14,7 +14,6 @@ import type { TranslateModels, } from '@monochromatic-dev/translation-repair-tra
 import {
   fetchTransport,
   type ModelTransport,
-  type QuotaSnapshot,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   assertOneWireModelPerBench,
@@ -42,6 +41,7 @@ import {
 import type { ProviderOff, } from './providers-off.ts';
 import { configureProviders, } from './run-providers.ts';
 import { writingProvidersOf, } from './run-writing-providers.ts';
+import { unconfiguredSyntheticQuota, } from './run-unconfigured-quota.ts';
 import { refusingCulledSeats, } from '../culled-seat-guard.ts';
 import { resolveGit, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { defaultRunsDirIn, } from './runs-layout.ts';
@@ -996,36 +996,6 @@ export async function resolveRunsDir(): Promise<string> {
  Logger root for the corpus-run wiring layer.
  */
 const l = contextRoot({ tag: 'translation-repair', },);
-
-/* oxlint-disable require-await, typescript/require-await -- compatibility meter contract is asynchronous */
-/**
- Synthetic quota shape used only when Hyper is sole configured provider.
-
- Router receives absent Synthetic as dry directly;
- this compatibility method keeps client surface stable for observational callers.
-
- @returns Explicitly exhausted synthetic quota
-
- @example
- ```ts
- const quota = await unconfiguredSyntheticQuota();
- ```
- */
-async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
-  return {
-    fiveHour: {
-      remaining: 0,
-      max: 0,
-      limited: true,
-      nextTickAt: '',
-    },
-    weekly: {
-      percentRemaining: 0,
-      nextRegenAt: '',
-    },
-  };
-}
-/* oxlint-enable require-await, typescript/require-await */
 
 /**
  The providers that keep a run going while they read wet: those that serve a model seated in a writing bench, the

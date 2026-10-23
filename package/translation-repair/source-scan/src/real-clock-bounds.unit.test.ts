@@ -285,6 +285,20 @@ const CUT_TO_SHORT_WINDOW = 'a hold the production budgets cut to the file\'s sh
   + 'that stands still; the seat reading waits that window out once, so no case waits for the named value';
 
 /**
+ Why a wait stated to the pure cut keeps its value: the cut returns the figure it cuts to and sleeps nothing, so no
+ case waits for the stated value.
+ */
+const PURE_WAIT_CUT = 'a wait handed to the pure cut of a stated wait, which returns the figure it cuts to and sleeps '
+  + 'nothing; no case waits for the stated value';
+
+/**
+ Why a hold the reseat rig registers keeps its value: the rig reports every hold cut to the file's short window
+ (`endingHolds`), except in the one case that sets the cap to the hold and waits it out on a fake clock.
+ */
+const RIG_REPORTS_SHORT_WINDOW = 'a hold the file\'s rig reports cut to its short window (40 ms), or, in the one case '
+  + 'that sets the cap to the hold, waited out on a fake clock; no case waits for the named value on the real clock';
+
+/**
  Why a deadline handed to a client keeps its value: the client arms a timer with it, the case reads the delay back
  from the timer and clears it, and the scripted transport answers at once, so no case waits for it.
  */
@@ -544,6 +558,16 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'other',
     reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-defaults.unit.test.ts#cut: statedWaitMs: STATED_MS': {
+    count: 1,
+    bound: 'other',
+    reason: PURE_WAIT_CUT,
+  },
+  'provider/provider-budget-defaults.unit.test.ts#cut: statedWaitMs: statedWaitMs': {
+    count: 1,
+    bound: 'other',
+    reason: PURE_WAIT_CUT,
   },
   'provider/provider-budget-hold-cap.unit.test.ts#cappedBudgets: rateLimitBackoffMs: 1_000': {
     count: 1,
@@ -852,6 +876,11 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'other',
     reason: SAME_TURN_METER,
+  },
+  'corpus-pass/corpus-run/pass-reseat.unit.test.ts#<module>: holds.synthetic = DRY_HOLD_MS': {
+    count: 6,
+    bound: 'other',
+    reason: RIG_REPORTS_SHORT_WINDOW,
   },
   'corpus-pass/corpus-run/pass-reseat.unit.test.ts#<module>: statedWaitMs: DRY_HOLD_MS': {
     count: 2,

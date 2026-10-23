@@ -28,6 +28,18 @@ import {
   readEveryMeter,
   routesAsDry,
 } from './provider-meters.ts';
+import {
+  createWaitCap,
+  HoldBoundError,
+  holdEndsNever,
+  noLevelBeforeReading,
+  notHeldOut,
+  type PaymentMark,
+  spendableBeforeReading,
+  systemClock,
+  unmarkedPayment,
+  unreadBeforeReading,
+} from './provider-budget-defaults.ts';
 
 //region Provider budget
 // ASKS FOR METERS, NOT CLIENTS. Every parameter is narrowed to the one method
@@ -250,144 +262,6 @@ export type ProviderBudgetsWithStates = ProviderBudgets & NeuralWattCause & {
 };
 
 /**
- The reading before any meter has answered: nothing is dry.
-
- @returns Spendable
-
- @example
- ```ts
- const view = providerRecord({ of: spendableBeforeReading, },);
- ```
- */
-function spendableBeforeReading(): boolean {
-  return false;
-}
-
-/**
- The level before any meter has answered: no number at all.
-
- @returns Empty
-
- @example
- ```ts
- const levels = providerRecord({ of: noLevelBeforeReading, },);
- ```
- */
-function noLevelBeforeReading(): string {
-  return '';
-}
-
-/**
- Whether a provider last refused us for payment, and the meter level it
- read then.
-
- @example
- ```ts
- const mark: PaymentMark = { marked: true, level: 'openrouterUsd=0.01', };
- ```
- */
-type PaymentMark = {
-  marked: boolean;
-  level: string;
-};
-
-/**
- The mark before any provider has refused us for payment: none.
-
- @returns Unmarked
-
- @example
- ```ts
- const marks = providerRecord({ of: unmarkedPayment, },);
- ```
- */
-function unmarkedPayment(): PaymentMark {
-  return {
-    marked: false,
-    level: '',
-  };
-}
-
-/**
- The state before any meter has answered: nothing was read.
-
- @returns Unreadable
-
- @example
- ```ts
- const states = providerRecord({ of: unreadBeforeReading, },);
- ```
- */
-function unreadBeforeReading(): MeterState {
-  return 'unreadable';
-}
-
-/**
- The hold of a run that holds no provider out for a reason its meter cannot show.
-
- @returns Not held
-
- @example
- ```ts
- const held = notHeldOut();
- ```
- */
-function notHeldOut(): boolean {
-  return false;
-}
-
-/**
- Raised when the longest hold a budgets instance may state is not a finite whole number of
- milliseconds greater than zero.
-
- CHECKED AT RUN TIME, where the budgets are built, since the type says `number` and so admits `Infinity`, which brings
- back the unbounded hold the bound exists to end, and `NaN`, which made the cut return `NaN`. The value is quoted back
- because it is the thing to fix.
-
- @example
- ```ts
- throw new HoldBoundError({ maxHoldMs: Number.POSITIVE_INFINITY, },);
- ```
- */
-export class HoldBoundError extends Error {
-  /**
-   Declares this message safe to print whole: the name of the setting and the number the caller gave it.
-   */
-  readonly messageNamesOnly: true = true;
-
-  /**
-   Names the setting and quotes the number it was given.
-
-   @param maxHoldMs - value the caller passed, whatever number it was
-
-   @example
-   ```ts
-   new HoldBoundError({ maxHoldMs: 0, },);
-   ```
-   */
-  public constructor({ maxHoldMs, }: { readonly maxHoldMs: number; },) {
-    super(
-      `maxHoldMs must be a finite whole number of milliseconds greater than zero, received ${String(maxHoldMs,)}`,
-    );
-    this.name = 'HoldBoundError';
-  }
-}
-
-/**
- The system clock, the wall clock outside a test.
-
- @returns The current instant
-
- @example
- ```ts
- const at = systemClock();
- ```
- */
-function systemClock(): Date {
-  return new Date();
-}
-
-/**
  Builds the cached budget view every provider is routed by.
 
  @param neuralwatt - first provider's energy meter, which is all this reads
@@ -574,16 +448,7 @@ export function createProviderBudgets(
   /**
    Until when each provider is held out by a refusal, zero for never.
    */
-  const heldUntil: Record<ProviderName, number> = {
-    neuralwatt: 0,
-    synthetic: 0,
-    hyper: 0,
-    bedrock: 0,
-    deepseek: 0,
-    xiaomi: 0,
-    anthropic: 0,
-    openrouter: 0,
-  };
+  const heldUntil: Record<ProviderName, number> = providerRecord({ of: holdEndsNever, },);
 
   /**
    When NeuralWatt's spent day starts again, as the last meter reading named it.
@@ -635,47 +500,9 @@ export function createProviderBudgets(
   }
 
   /**
-   Providers whose stated wait was cut to {@link maxHoldMs} and logged, so the cut is written once for each provider
-   and not on every refusal that repeats it.
+   Cuts a wait a refusal states for itself to the longest hold the run can use, logging the first cut of each provider.
    */
-  const cutLogged = new Set<ProviderName>();
-
-  /**
-   Cuts a wait a refusal states for itself to the longest hold the run can use.
-
-   @param provider - provider that stated the wait
-
-   @param statedWaitMs - wait the refusal stated, in milliseconds
-
-   @returns Stated wait, or {@link maxHoldMs} where it is longer
-   */
-  function cappedWait(
-    {
-      provider,
-      statedWaitMs,
-    }: {
-      readonly provider: ProviderName;
-      readonly statedWaitMs: number;
-    },
-  ): number {
-    if (statedWaitMs <= maxHoldMs)
-      return statedWaitMs;
-    if (!cutLogged.has(provider,)) {
-      cutLogged.add(provider,);
-      /**
-       Logger pre-tagged with this function's name.
-       */
-      const rl = tagged({
-        tag: cappedWait.name,
-        l,
-      },);
-      rl.warn(
-        `${provider}: refusal stated a wait of ${String(statedWaitMs,)}ms, capped at ${String(maxHoldMs,)}ms, `
-          + 'the longest hold this run can use',
-      );
-    }
-    return maxHoldMs;
-  }
+  const cappedWait = createWaitCap({ maxHoldMs, },);
 
   /**
    Reads every meter once, for everyone waiting on this reading.

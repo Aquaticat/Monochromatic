@@ -78,6 +78,7 @@ export {
   runCallConfigOf,
 } from './corpus-run/run-call-config.ts';
 export { readRunCorpusPinSetting, } from './corpus-run/run-corpus-pin.ts';
+export { unconfiguredSyntheticQuota, } from './corpus-run/run-unconfigured-quota.ts';
 export {
   belowFloorWritingBenches,
   benchesOf,
