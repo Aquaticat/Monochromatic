@@ -18,7 +18,7 @@ import {
 /**
  One node met in a walk, with the node that holds it and the field of that node it sits in.
  */
-export type Visit = {
+type Visit = {
   /**
    The node.
    */
@@ -202,7 +202,7 @@ export function nodesAt({
  // => true
  ```
  */
-export function isTypeNode({ node, }: { readonly node: TreeNode; },): boolean {
+function isTypeNode({ node, }: { readonly node: TreeNode; },): boolean {
   return node.type
     .startsWith('TS',)
     && (!TYPE_MARKED_EXPRESSION_KINDS.has(node.type,));
@@ -238,7 +238,7 @@ export function isFunctionNode({ node, }: { readonly node: TreeNode; },): boolea
  const visits = visitsUnder({ root: program, skips: isTypeVisit, },);
  ```
  */
-export function visitsUnder(
+function visitsUnder(
   {
     root,
     skips,
@@ -560,7 +560,7 @@ function isFunctionVisit({ node, }: Visit,): boolean {
  const returned = returnedExpressionsOf({ fn: declaration, },);
  ```
  */
-export function returnedExpressionsOf({ fn, }: { readonly fn: TreeNode; },): readonly TreeNode[] {
+function returnedExpressionsOf({ fn, }: { readonly fn: TreeNode; },): readonly TreeNode[] {
   /**
    The body of the function.
    */

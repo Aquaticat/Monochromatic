@@ -10,7 +10,7 @@ import {
 /**
  One builder, the files searched and the paths the search lists as the callers of the builder.
  */
-export type CallerCase = Pick<FormCase, 'files' | 'name'> & {
+type CallerCase = Pick<FormCase, 'files' | 'name'> & {
   /**
    Name of the builder whose callers are listed.
    */

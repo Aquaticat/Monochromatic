@@ -134,7 +134,7 @@ function valueOf({ resolved, }: { readonly resolved: Resolved; },): Resolved {
 
  @example
  ```ts
- const next = memberOf({ family, of: { kind: 'free', name: 'kit', }, member: 'build', },);
+ const next = memberOf({ family, of: { kind: 'free', name: 'kit', }, member: 'build', seen: new Set<string>(), },);
  // => { kind: 'free', name: 'kit.build' }
  ```
  */
@@ -212,7 +212,7 @@ function memberOf(
  const resolved = resolveName({ family, file: 'a/src/a.ts', name: 'build', seen: new Set<string>(), },);
  ```
  */
-export function resolveName(
+function resolveName(
   {
     family,
     file,
@@ -397,7 +397,7 @@ export function resolvePath(
  const resolved = resolveExport({ family, file: 'a/src/index.ts', name: 'build', seen: new Set<string>(), },);
  ```
  */
-export function resolveExport(
+function resolveExport(
   {
     family,
     file,
