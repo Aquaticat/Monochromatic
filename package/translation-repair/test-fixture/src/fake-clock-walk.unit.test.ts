@@ -40,6 +40,16 @@ const NAP_MS = 120_000;
 const PAST_NAP_MS = 121_000;
 
 /**
+ The real milliseconds the rig is given to stop waiting for a walk that does not end after its release.
+ */
+const SHORT_HANG_STOP_MS = 200;
+
+/**
+ The real milliseconds after which the case calls the rig hung, far past {@link SHORT_HANG_STOP_MS}.
+ */
+const HUNG_RIG_BOUND_MS = 5_000;
+
+/**
  Walks one nap on the fake clock.
 
  @param sinon - case's own sandbox
@@ -151,10 +161,100 @@ await describe({
     },),
 
     it({
-      name: 'PUTS node:timers/promises BACK WHEN THE WALK ENDS (R9): a wait in a case that follows is real, not a '
-        + 'wait on a clock whose case has finished',
-      fn: async () => {
+      name: 'PUTS node:timers/promises BACK WHEN THE WALK ENDS (R9): during the walk the wait is the rig\'s, and when '
+        + 'the walk has returned it is the real one again, so a wait in a case that follows is real, not a wait on a '
+        + 'clock whose case has finished (F9 of the re-check of fix round 6: asserted inside the walking case, where it '
+        + 'does not depend on a case before it having walked)',
+      fn: async ctx => {
+        /**
+         Whether the wait the walk's nap sees is the real one, read while the walk runs.
+         */
+        const seen: boolean[] = [];
+        await napWalk({
+          sinon: ctx.sinon,
+          nap: (signal) => {
+            seen.push(sleepFor === REAL_SLEEP_FOR,);
+            return sleepFor(
+              NAP_MS,
+              undefined,
+              { signal, },
+            );
+          },
+          ticks: [PAST_NAP_MS,],
+        },);
+
+        expect(seen,).toEqual([false,],);
         expect(sleepFor,).toBe(REAL_SLEEP_FOR,);
+      },
+    },),
+
+    it({
+      name: 'FAILS THE CASE WHEN THE WALK DOES NOT END AFTER THE RELEASE (F9 of the re-check of fix round 6): a sleep '
+        + 'the release provokes is on the fake clock, which nobody ticks again, so the rig stops waiting at its hang '
+        + 'stop and says so, where it waited for ever',
+      fn: async ctx => {
+        /**
+         Ends the nap loop when the walk is released.
+         */
+        const stop = new AbortController();
+
+        /**
+         Ends the real wait that stands for a hung rig once the outcome is known.
+         */
+        const known = new AbortController();
+
+        /**
+         What the rig does with a walk that sleeps again after its release: the error it throws, or that it ended.
+         */
+        async function walkOutcome(): Promise<unknown> {
+          try {
+            await walkOnFakeClock({
+              sinon: ctx.sinon,
+              walkOnce: async function sleepsAfterTheRelease(): Promise<void> {
+                await new Promise<void>(function released(resolve,): void {
+                  stop.signal.addEventListener(
+                    'abort',
+                    () => resolve(),
+                  );
+                },);
+                await sleepFor(NAP_MS,);
+              },
+              firstCall: Promise.resolve(),
+              release: () => stop.abort(),
+              ticks: [1,],
+              cutCount: () => 0,
+              waitForEnd: false,
+              hangStopMs: SHORT_HANG_STOP_MS,
+            },);
+            return 'ended';
+          }
+          catch (error) {
+            return error;
+          }
+        }
+
+        /**
+         The real wait after which the rig is called hung, which a rig that stops by itself never reaches.
+         */
+        async function hungAfterTheBound(): Promise<string> {
+          try {
+            await REAL_SLEEP_FOR(
+              HUNG_RIG_BOUND_MS,
+              undefined,
+              { signal: known.signal, },
+            );
+          }
+          catch {
+            // The outcome arrived first and ended this wait, which is the wait's purpose.
+          }
+          return 'hung';
+        }
+
+        const outcome = await Promise.race([walkOutcome(), hungAfterTheBound(),],);
+        known.abort();
+
+        expect(outcome,).toBeInstanceOf(Error,);
+        expect(String(outcome,),).toContain('did not end after the release',);
       },
     },),
   ],
