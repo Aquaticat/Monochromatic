@@ -43,8 +43,9 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 //
 // THE RULES FOR THE TWO NAMES. A key whose value is `null` or that is missing counts as absent, so a deprecated key kept as `null`
 // beside a valid block does not blind the meter; a key that holds anything else but an object is refused. Two blocks that read the
-// same are accepted and two that read differently are refused, since which one a reader should believe is then unknowable. A body
-// with no usable key under either name is refused, naming both.
+// same are accepted, and two that differ in `percentRemaining` are refused, since which one a reader should believe is then
+// unknowable. Two that agree on `percentRemaining` and differ in `nextRegenAt` are read with no return and one warning naming both
+// blocks and the field, since the return decides nothing. A body with no usable key under either name is refused, naming both.
 //
 // ONLY THE FIELDS A DECISION READS ARE MODELED. `nextRegenPercent` (what the next regeneration returns) is ignored as `subscription`
 // is, so a mistyped value of it cannot refuse a body whose `percentRemaining` is sound. `nextRegenAt` decides nothing: only
@@ -583,8 +584,9 @@ type WeeklyReading = {
 /**
  Reads the weekly window from whichever key a body carries it under.
 
- BOTH KEYS ARE ACCEPTED (see the region comment): the block under either name, two blocks that read the same, and a refusal for two
- that differ. A key that is missing or `null` counts as absent; a key that holds anything else but an object is refused. A body with
+ BOTH KEYS ARE ACCEPTED (see the region comment): the block under either name, two blocks that read the same, two that agree on
+ `percentRemaining` and differ in `nextRegenAt` (read with the return marked unreadable, and a warning), and a refusal for two that
+ differ in `percentRemaining`. A key that is missing or `null` counts as absent; a key that holds anything else but an object is refused. A body with
  no usable key is refused naming both.
 
  @param parsed - the parsed body
@@ -592,7 +594,7 @@ type WeeklyReading = {
  @returns The typed weekly window
 
  @throws {@link QuotaShapeError} when no key holds a block, a key holds a value that is neither `null` nor an object,
- `percentRemaining` is missing or mistyped, or the two blocks of a body that carries both read differently
+ `percentRemaining` is missing or mistyped, or the two blocks of a body that carries both differ in `percentRemaining`
 
  @example
  ```ts
@@ -642,14 +644,34 @@ function weeklyWindowFromBody(
     },);
   if (second === undefined)
     return first.weekly;
-  if (JSON.stringify(first.weekly,) === JSON.stringify(second.weekly,))
+  if (first.weekly
+    .percentRemaining
+    !== second.weekly
+      .percentRemaining)
+    throw new QuotaShapeError({
+      detail: `${first.blockName} and ${second.blockName} are both present and read differently`,
+      received: `${receivedShapeOf({ parsed, },)}; ${first.blockName} holds ${describedKeysOf({ record: first.block, },)}; `
+        + `${second.blockName} holds ${describedKeysOf({ record: second.block, },)}`,
+    },);
+  if (first.weekly
+    .nextRegenAt
+    === second.weekly
+      .nextRegenAt)
     return first.weekly;
 
-  throw new QuotaShapeError({
-    detail: `${first.blockName} and ${second.blockName} are both present and read differently`,
-    received: `${receivedShapeOf({ parsed, },)}; ${first.blockName} holds ${describedKeysOf({ record: first.block, },)}; `
-      + `${second.blockName} holds ${describedKeysOf({ record: second.block, },)}`,
-  },);
+  // THE BLOCKS AGREE ON THE ONLY FIELD A DECISION READS, so the body is not refused for the log-only return: which instant is
+  // right is unknowable, and neither is carried.
+  tagged({
+    tag: weeklyWindowFromBody.name,
+    l,
+  },)
+    .warn(
+    `Synthetic /quotas ${first.blockName} and ${second.blockName} agree on percentRemaining and differ in nextRegenAt; `
+      + 'the return reads unreadable',
+    );
+
+  return { percentRemaining: first.weekly
+    .percentRemaining, };
 }
 
 /**

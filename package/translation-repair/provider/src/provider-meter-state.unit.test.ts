@@ -399,6 +399,43 @@ await describe({
         },),
 
         it({
+          name: 'READS DRY WITH THE RETURN UNREADABLE from a real client on a body carrying both weekly names that agree on the '
+            + 'percent and differ in the return, and warns once naming both blocks and the field',
+          fn: async () => {
+            /**
+             The measured body with the old name added beside the new one, spent to 0 % in both and returning at another instant.
+             */
+            const bodyText = SPENT_RENAMED_WEEKLY_BODY.replace(
+              '"planWeeklyLimit"',
+              '"weeklyTokenLimit":{"nextRegenAt":"2026-10-23T06:00:00.000Z","percentRemaining":0},"planWeeklyLimit"',
+            );
+            const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText, },], },);
+            const { result: meters, warned, } = await warnLinesDuring({
+              run: async function readDisagreeingBlocks() {
+                return await readEveryMeter({
+                  synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
+                  signal: AbortSignal.timeout(HANG_STOP_MS,),
+                },);
+              },
+            },);
+
+            expect(meters.synthetic,).toEqual({
+              state: 'dry',
+              fields: [
+                'syntheticWeekly=0%',
+                'syntheticFiveHour=none',
+                'syntheticThrottled=none',
+                'syntheticWeeklyReturn=unreadable',
+              ],
+            },);
+            expect(warned,).toEqual([
+              '[translation-repair] [weeklyWindowFromBody] Synthetic /quotas weeklyTokenLimit and planWeeklyLimit agree on '
+                + 'percentRemaining and differ in nextRegenAt; the return reads unreadable',
+            ],);
+          },
+        },),
+
+        it({
           name: 'ROUTES SYNTHETIC AS DRY and reports the dry state to the seat reader, from the budget layer over a real client',
           fn: async () => {
             const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText: SPENT_RENAMED_WEEKLY_BODY, },], },);
