@@ -180,9 +180,17 @@ function inventedReader(
   return function readInvented({ specs, },): Promise<readonly ReviewedFidelityReference[]> {
     readFor.push(specs,);
     return Promise.resolve(specs.map(function referenceOf(spec,): ReviewedFidelityReference {
+      /**
+       The invented reference, whose pages the pool specification's ranges must index into.
+       */
+      const invented = inventedReference();
       return {
-        ...inventedReference(),
-        spec,
+        ...invented,
+        spec: {
+          ...spec,
+          source: invented.spec.source,
+          archive: invented.spec.archive,
+        },
       };
     },),);
   };

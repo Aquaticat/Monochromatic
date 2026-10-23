@@ -56,6 +56,16 @@ export function inventedReference(): ReviewedFidelityReference {
 }
 
 /**
+ Heading of the section holding the reviewed passage, in the original of the headed pages.
+ */
+export const HEADED_SOURCE_HEADING = '## 正文';
+
+/**
+ Heading of the section holding the reviewed passage, in the archive of the headed pages.
+ */
+export const HEADED_ARCHIVE_HEADING = '## Body';
+
+/**
  Source of the section before the reviewed passage in the headed pages.
  */
 export const HEADED_SOURCE_BEFORE = '## 前言\n猫在书店里睡觉。';
@@ -76,8 +86,8 @@ export const HEADED_ARCHIVE_BEFORE = '## Preface\nThe cat slept in the bookshop.
 export const HEADED_ARCHIVE_AFTER = '## Afterword\nThe cat came home at night.';
 
 /**
- The invented reference on pages of three headed sections, the reviewed passage in the middle one, so that the
- sections either side of it are its neighbours.
+ The invented reference on pages of three headed sections, the reviewed passage in the middle one below its heading,
+ so that the heading slice and the section after are the slices either side of it.
 
  @returns The reference with its pages and the archive range of the passage moved to match
 
@@ -95,8 +105,8 @@ export function headedReference(): ReviewedFidelityReference {
    Pages of three sections, aligned by position.
    */
   const pages = {
-    sourceFile: `${HEADED_SOURCE_BEFORE}\n\n## 正文\n${REVIEW_SOURCE}\n\n${HEADED_SOURCE_AFTER}\n`,
-    archiveFile: `${HEADED_ARCHIVE_BEFORE}\n\n## Body\n${REVIEW_REFERENCE}\n\n${HEADED_ARCHIVE_AFTER}\n`,
+    sourceFile: `${HEADED_SOURCE_BEFORE}\n\n${HEADED_SOURCE_HEADING}\n${REVIEW_SOURCE}\n\n${HEADED_SOURCE_AFTER}\n`,
+    archiveFile: `${HEADED_ARCHIVE_BEFORE}\n\n${HEADED_ARCHIVE_HEADING}\n${REVIEW_REFERENCE}\n\n${HEADED_ARCHIVE_AFTER}\n`,
   };
   /**
    Where the passage begins in the headed archive.

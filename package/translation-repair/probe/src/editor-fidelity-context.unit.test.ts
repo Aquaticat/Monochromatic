@@ -19,8 +19,10 @@ import {
 import {
   HEADED_ARCHIVE_AFTER,
   HEADED_ARCHIVE_BEFORE,
+  HEADED_ARCHIVE_HEADING,
   HEADED_SOURCE_AFTER,
   HEADED_SOURCE_BEFORE,
+  HEADED_SOURCE_HEADING,
   headedReference,
   inventedReference,
 } from './editor-fidelity.test-fixture.ts';
@@ -29,11 +31,37 @@ await describe({
   name: editorSheetContextOf.name,
   children: [
     it({
-      name: 'TAKES THE SECTION BEFORE AND THE SECTION AFTER THE PASSAGE as the neighbouring original and the '
-        + 'neighbouring translation, in document order, joined by a blank line, as the pipeline\'s window readers '
-        + 'give them for a slice',
+      name: 'TAKES THE SLICE BEFORE AND THE SLICE AFTER THE PASSAGE as the neighbouring original and the neighbouring '
+        + 'translation, joined by a blank line, as the pipeline\'s window readers give them: for a passage below '
+        + 'its heading the slice before is the heading, as it is for the first paragraph of a section in production',
       fn: async () => {
         const context = editorSheetContextOf({ reference: headedReference(), },);
+        expect(context.neighbouringSourceText,).toBe(`${HEADED_SOURCE_HEADING}\n\n${HEADED_SOURCE_AFTER}`,);
+        expect(context.neighbouringIncumbentText,).toBe(`${HEADED_ARCHIVE_HEADING}\n\n${HEADED_ARCHIVE_AFTER}`,);
+      },
+    },),
+
+    it({
+      name: 'TAKES THE SECTION BEFORE AND THE SECTION AFTER when the passage range covers its heading too, so the '
+        + 'slices over the passage count as one position and the neighbours lie outside it',
+      fn: async () => {
+        /**
+         The headed reference with its passage range moved up to the heading.
+         */
+        const reference = headedReference();
+        const headingAt = reference.pages.archiveFile.indexOf(HEADED_ARCHIVE_HEADING,);
+        const context = editorSheetContextOf({
+          reference: {
+            ...reference,
+            spec: {
+              ...reference.spec,
+              archive: {
+                ...reference.spec.archive,
+                startOffset: headingAt,
+              },
+            },
+          },
+        },);
         expect(context.neighbouringSourceText,).toBe(`${HEADED_SOURCE_BEFORE}\n\n${HEADED_SOURCE_AFTER}`,);
         expect(context.neighbouringIncumbentText,).toBe(`${HEADED_ARCHIVE_BEFORE}\n\n${HEADED_ARCHIVE_AFTER}`,);
       },

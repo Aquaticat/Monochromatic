@@ -24,7 +24,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import {
   HEADED_ARCHIVE_AFTER,
-  HEADED_SOURCE_BEFORE,
+  HEADED_SOURCE_HEADING,
   headedReference,
   inventedReference,
   LOW_CARD,
@@ -329,7 +329,7 @@ await describe({
         /**
          The two neighbours as the sheet's JSON writes them.
          */
-        const before = jsonEscaped({ text: HEADED_SOURCE_BEFORE, },);
+        const before = jsonEscaped({ text: HEADED_SOURCE_HEADING, },);
         const after = jsonEscaped({ text: HEADED_ARCHIVE_AFTER, },);
         expect(sheet.includes(before,),).toBe(true,);
         expect(sheet.includes(after,),).toBe(true,);
