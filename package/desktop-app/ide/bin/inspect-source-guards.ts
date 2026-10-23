@@ -165,7 +165,7 @@ const cases: Guard[] = [
     after: 'if true {',
     native: true,
     test: 'a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view',
-    failure: 'the window shows an error'
+    failure: 'tile texture pixels'
   },
   {
     name: 'clip-edges',

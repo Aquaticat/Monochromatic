@@ -1721,10 +1721,30 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `Cargo.toml`). Dry run dispatched from `main`: `gh workflow run ide-release.yml --ref main -f dry-run=true`, run
     `39832705367`, watched by a bounded background `gh run watch`; on its end: download the artifacts, check archive,
     notices and `SHA256SUMS`, run the extracted binary `--version`, record the cold build time in the decision, send
-    failures back to the agent. Two owner decisions still to ask before the first real release: (1) licensing of the
-    shipped bytes (Slint used under `GPL-3.0-only` by the `about.toml` default that the owner never decided, inside a
-    package whose manifest says `LGPL-3.0-or-later`); (2) toolchain and reproducibility (the stable compiler comes
-    from the unpinned Fedora image, not `mise.lock`; no caches; whether to pin the image, Zig and nextest later).
+    failures back to the agent. Owner answers of 2026-10-22 (asked through the question tool): (1) licensing of the
+    shipped bytes: "Keep as shipped (Recommended)" (Slint used under `GPL-3.0-only`, release notes say so, manifest
+    unchanged); (2) toolchain: "Leave unpinned, record rustc (Recommended)" (stable compiler from the Fedora image,
+    the release notes record the `rustc` version, no caches). Dry run `39832705367` RESULT: failed. `detect` and
+    every `build` step up to and including the glibc/shared-library check passed (cold build 15m37s in total, so
+    the 150-minute timeout is generous); the step "Check that no software renderer is linked" failed: `cargo tree
+    --frozen --all-features` in the container found no `async-net` (required by `i-slint-backend-testing`) in the
+    offline index of the fresh `ide-cargo` volume, so `checksums` and `release` were skipped and the later build
+    steps (`inspect:bundle`, notices, packaging, archive check) have not run on a runner. Verified: `async-net` is
+    absent from `Cargo.lock` (`rg -c` exit 1) and is an optional dependency of `i-slint-backend-testing` 1.18.1
+    (`[dependencies.async-net] optional = true`). Not yet verified: why `cargo tree --frozen --all-features` asks the
+    offline index for it on a fresh volume while the long-lived local volume answers; the fresh-volume reproduction
+    decides it. Fix sent to the same agent
+    (`a286368be67434dfd`, fresh branch off `origin/main`): reproduce with a fresh volume, fix at the cause without
+    weakening the gate, run every gate it can reproduce locally against the fresh volume, record the cold time.
+    Then: land, dispatch dry run 2, repeat until green, then download and verify the artifacts.
+    Guard sweep finding (disposable copy, unit `conv2-guards`): `clip-chosen` removed run fails with status 100 at
+    `src/native/tile_reads.rs:187:45` (`tile texture pixels`) because the stacked tile reads no texture for a line
+    past the raster limit; the guard still bites but its expected `failure` text (`the window shows an error`) was
+    stale since the stacking landing. Changed the text to `tile texture pixels` (the only case with it); re-proof in
+    unit `conv2-guards2` with `clip-chosen`, `clip-edges`, `failed-job-freed`, `minimap-scroll-notes-bands`: all four
+    accepted in baseline, removed and restored ("Source guard controls passed ... 4 of 168 guards", 236 s), so the
+    converted `.ts` script runs end to end. 164 of 168 guards remain unrun since the stacking and minimap landings;
+    a full sweep is still a candidate real job. Conversion agent worktree and branches removed.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
