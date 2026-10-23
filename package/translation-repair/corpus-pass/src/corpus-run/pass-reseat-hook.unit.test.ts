@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
+import type { JudgeSeatPhase, } from '@monochromatic-dev/translation-repair-run';
 import {
   type ProviderName,
   providerRecord,
@@ -210,11 +211,24 @@ const SLATE_AND_WIDE_SHORT: BudgetView = {
 const SLATE_SHORT: BudgetView = { ...SLATE_AND_WIDE_SHORT, synthetic: false, };
 
 /**
+ DeepSeek and Xiaomi the only wet providers: the translators of the page consistency, a phase that goes on without its
+ writers, stand below the floor of two.
+ */
+const WRITERS_BELOW_FLOOR: BudgetView = {
+  ...SLATE_AND_WIDE_SHORT,
+  bedrock: true,
+  deepseek: false,
+  xiaomi: false,
+};
+
+/**
  The hook for a consolidation whose NeuralWatt reads dry on a spent day with a return named past what the pass has
  left, under stated holds that shrink with every ask: the day-end shape, where every figure in a warning's text moves
  from one slice to the next.
 
  @param lines - receives what the readings log
+
+ @param phase - phase the hook re-seats for
 
  @returns The hook and the state the case moves: the view the readings find and the providers held
 
@@ -223,7 +237,15 @@ const SLATE_SHORT: BudgetView = { ...SLATE_AND_WIDE_SHORT, synthetic: false, };
  const { hook, state, } = hookOverDayEnd({ lines: [], },);
  ```
  */
-function hookOverDayEnd({ lines, }: { readonly lines: string[]; },) {
+function hookOverDayEnd(
+  {
+    lines,
+    phase = 'consolidation',
+  }: {
+    readonly lines: string[];
+    readonly phase?: JudgeSeatPhase;
+  },
+) {
   const state: {
     view: BudgetView;
     held: readonly ProviderName[];
@@ -276,7 +298,7 @@ function hookOverDayEnd({ lines, }: { readonly lines: string[]; },) {
       ),
     },
     signal: new AbortController().signal,
-    phase: 'consolidation',
+    phase,
     unseated: UNSEATED,
     seatingOf: () => ({ seating: RESEATED, line: 'slice re-seated under a hold', }),
     l: levelCapturingLogger({ lines, },),
@@ -445,6 +467,26 @@ await describe({
 
         await runSlices({ hook, count: 3, },);
         expect(shortWarningsOf({ lines, },).length - afterWait,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'WRITES THE ERROR LINE OF A PHASE THAT GOES ON WITHOUT ITS WRITERS ONCE PER STATE: the page consistency, '
+        + 'with its translators below the floor under an unchanged hold, names the bench once over five slices',
+      fn: async () => {
+        const lines: string[] = [];
+        const { hook, state, } = hookOverDayEnd({ lines, phase: 'page consistency', },);
+        state.view = WRITERS_BELOW_FLOOR;
+        state.held = ['xiaomi',];
+        await runSlices({ hook, count: 5, },);
+        /**
+         The error lines naming the bench below its floor.
+         */
+        const errors = lines.filter(function isBenchError(line,): boolean {
+          return line.startsWith('error',) && line.includes('writing bench unreachable',);
+        },);
+        expect(errors,).toHaveLength(1,);
+        expect(errors[0],).toContain('the phase goes on without its writers',);
       },
     },),
   ],

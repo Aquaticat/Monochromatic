@@ -490,7 +490,7 @@ await describe({
 
     it({
       name: 'THROWS A FAILURE THAT CARRIES A NEURALWATT RETURN although an earlier position failed for another reason, '
-        + 'since the pass may park on it (the precedence of the every-provider-dry refusal), and says it parks the run',
+        + 'since the pass may park on it, and says only that it names a return the run\'s gate may park on',
       fn: async () => {
         const run = gatedRun({ count: 3, },);
         /**
@@ -531,14 +531,15 @@ await describe({
         expect(await failure,).toBe(bench,);
         expect(lines,).toEqual([
           'warn [mapOverlapped] cat a failed (refused by Error), and the failure thrown is cat c\'s, '
-            + 'which parks the run',
+            + 'which names a NeuralWatt return the run\'s gate may park on',
         ],);
       },
     },),
 
     it({
-      name: 'THROWS THE EVERY-PROVIDER-DRY REFUSAL OVER A BENCH ERROR THAT CARRIES A RETURN in either arrival order: the '
-        + 'refusal ends the run and the bench error only may be parked on, so what arrived first does not decide it',
+      name: 'THROWS THE EVERY-PROVIDER-DRY REFUSAL OVER A BENCH ERROR THAT CARRIES A RETURN in either arrival order: '
+        + 'the refusal ends the run and the bench error only may be parked on, so what arrived first does not '
+        + 'decide it',
       fn: async () => {
         /**
          A bench error standing in for the run package's, which this package cannot import.

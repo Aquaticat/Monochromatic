@@ -211,8 +211,8 @@ await describe({
         },),
 
         it({
-          name: 'PRINTS AN ENTRY THE GATE PARKED FOR AS PARKED, never ERROR or INCOMPLETE, with the reason: the hook is told '
-            + 'first, the gate is then asked whether it parked, and the entry is still filed as it was',
+          name: 'PRINTS AN ENTRY THE GATE PARKED FOR AS PARKED, never ERROR or INCOMPLETE, with the reason: the hook '
+            + 'is told first, the gate is then asked whether it parked, and the entry is still filed as it was',
           fn: async (ctx) => {
             using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
             /**
@@ -264,6 +264,122 @@ await describe({
             },),).toEqual({ kind: 'resumable-failure', },);
             expect(printed.lines.some(function failed(text,): boolean {
               return text.startsWith('TALLY Dog status=ERROR',);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'KEEPS THE RETURN ON THE PARKED LINE WHATEVER THE REASON COSTS: the lanes with editors, refiners and '
+            + 'translators all below their floor make a reason longer than the cap, and the status, the distance and '
+            + 'the time of day come before it so the cap trims only the reason',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             The bench error of the real clause shapes, three benches below their floor and the spent day stated.
+             */
+            const lanes = new WritingBenchUnreachableError({
+              phase: 'lanes',
+              clauses: [
+                'editors 0 of 3 reachable, floor 2',
+                'refiners 0 of 3 reachable, floor 2',
+                'translators 0 of 8 reachable, floor 2',
+                'NeuralWatt reads dry and its day starts again at 19:15:08 UTC',
+              ],
+              neuralwattReturnsInMs: 301_000,
+              neuralwattReturnsAt: '19:15:08 UTC',
+            },);
+            tallyCaughtEntry({
+              entryId: 'Cat',
+              error: lanes,
+              durationMs: 5,
+              aborted: true,
+              endRun: function endRun(): void {},
+              parked: function parked(): boolean {
+                return true;
+              },
+            },);
+            /**
+             The one tally line printed.
+             */
+            const [line,] = printed.lines.filter(function tally(text,): boolean {
+              return text.startsWith('TALLY ',);
+            },);
+            expect(line,).toContain('TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08 UTC ms=5 ',);
+            expect(line?.indexOf('returnsAt=',) ?? -1,).toBeLessThan(line?.indexOf(' error=',) ?? -1,);
+            expect(line?.indexOf('returnsAt=',) ?? -1,).toBeGreaterThan(-1,);
+          },
+        },),
+
+        it({
+          name: 'PRINTS THE ALL-DRY REFUSAL THE GATE PARKED FOR AS PARKED too, with the same return fields and not '
+            + 'INCOMPLETE, and prints a refusal the gate did not park for as INCOMPLETE',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             The router's refusal naming a return.
+             */
+            const dry = new EveryProviderDryError({
+              measured: 'every meter dry',
+              neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+              neuralwattDryness: { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 301_000, },
+              neuralwattReturnsInMs: 301_000,
+            },);
+            expect(tallyCaughtEntry({
+              entryId: 'Cat',
+              error: dry,
+              durationMs: 5,
+              aborted: true,
+              endRun: function endRun(): void {},
+              parked: function parked(): boolean {
+                return true;
+              },
+            },),).toEqual({ kind: 'stopped', },);
+            expect(tallyCaughtEntry({
+              entryId: 'Dog',
+              error: dry,
+              durationMs: 5,
+              aborted: true,
+              endRun: function endRun(): void {},
+              parked: function parked(): boolean {
+                return false;
+              },
+            },),).toEqual({ kind: 'stopped', },);
+            expect(printed.lines.some(function parkedLine(text,): boolean {
+              return text.startsWith('TALLY Cat status=PARKED returnsInMs=301000 returnsAt=19:15:08 UTC ms=5 ',);
+            },),).toBe(true,);
+            expect(printed.lines.some(function incompleteLine(text,): boolean {
+              return text.startsWith('TALLY Dog status=INCOMPLETE ms=5 ',);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'ASKS THE GATE WHETHER IT PARKED FOR THIS FAILURE, naming the failure, so a failure the gate did not '
+            + 'park for is never printed as PARKED',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             What the gate was asked about.
+             */
+            const asked: unknown[] = [];
+            /**
+             The failure that has nothing to do with the park.
+             */
+            const reset = new Error('connection reset',);
+            tallyCaughtEntry({
+              entryId: 'Cat',
+              error: reset,
+              durationMs: 5,
+              aborted: false,
+              endRun: function endRun(): void {},
+              parked: function parked({ error, },): boolean {
+                asked.push(error,);
+                return error !== reset;
+              },
+            },);
+            expect(asked,).toEqual([reset,],);
+            expect(printed.lines.some(function failed(text,): boolean {
+              return text.startsWith('TALLY Cat status=ERROR ',);
             },),).toBe(true,);
           },
         },),

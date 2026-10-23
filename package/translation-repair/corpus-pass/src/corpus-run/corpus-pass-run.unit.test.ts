@@ -1100,5 +1100,62 @@ await describe({
         expect(stops[0],).toContain('the seat reading found every meter dry',);
       },
     },),
+    it({
+      name: 'GIVES EVERY ENTRY THE RUN\'S ANSWER TO WHETHER IT PARKED FOR A FAILURE: the entry that hands the gate a '
+        + 'refusal naming a return 5 ms away is told the run is parked for it, an unrelated failure is not, and the '
+        + 'entry is attempted again after the park',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+        /**
+         What the entry was told about its park, per attempt.
+         */
+        const told: { forRefusal?: boolean; forOther?: boolean; } = {};
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: {
+            settle: async function settle({ entry, endRun, parked, },): Promise<EntryOutcome> {
+              watched.settled.push(entry.id,);
+              if (watched.settled.length === 1) {
+                /**
+                 The refusal that names a return the pass can wait for.
+                 */
+                const dry = new EveryProviderDryError({
+                  measured: 'the seat reading found every meter dry',
+                  neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+                  neuralwattReturnsInMs: 5,
+                },);
+                nonNullishOrThrow(endRun,)({ error: dry, },);
+                told.forRefusal = nonNullishOrThrow(parked,)({ error: dry, },);
+                told.forOther = nonNullishOrThrow(parked,)({ error: new Error('connection reset',), },);
+              }
+              return { kind: 'stopped', };
+            },
+          },
+        },);
+
+        expect(told,).toEqual({ forRefusal: true, forOther: false, },);
+        expect(watched.settled,).toEqual(['tabby', 'tabby',],);
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toEqual([],);
+      },
+    },),
   ],
 },);

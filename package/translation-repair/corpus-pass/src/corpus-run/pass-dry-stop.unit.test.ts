@@ -609,6 +609,25 @@ await describe({
     },),
 
     it({
+      name: 'ANSWERS WHETHER IT PARKED FOR A GIVEN FAILURE, not whether it is parked: nothing before the trip, the '
+        + 'parking failure after it, and never an unrelated failure or a bench error with no return',
+      fn: async () => {
+        const dryStop = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
+        /**
+         The bench error with a return that fits.
+         */
+        const bench = benchErrorBefore({ returnsInMs: 301_000, },);
+        expect(dryStop.parkedFor({ error: bench, },),).toBe(false,);
+        dryStop.trip({ error: bench, },);
+        expect(dryStop.parked(),).toBe(true,);
+        expect(dryStop.parkedFor({ error: bench, },),).toBe(true,);
+        expect(dryStop.parkedFor({ error: spentDayRefusal({ dayStart: DAY_ONE, },), },),).toBe(true,);
+        expect(dryStop.parkedFor({ error: new Error('connection reset',), },),).toBe(false,);
+        expect(dryStop.parkedFor({ error: benchErrorBefore({}), },),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'LEAVES A WRITING BENCH ERROR ALONE when it carries no return, or one past what the pass has left, or the '
         + 'day start of a park that has ended: the entry ends as before, the pass is neither parked nor tripped, and '
         + 'no stop line is written',
