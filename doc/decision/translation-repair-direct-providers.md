@@ -124,33 +124,123 @@ so the `METERS` line shows `xiaomi=wet xiaomiUsdSpent=...`.
 Exhaustion is learned from the 402.
 
 Because that meter never reads dry by itself,
-the run-ending stop (`EveryProviderDryError`) fires only once Xiaomi has refused a call for payment as well.
-Until then Xiaomi reads wet,
-and a run that holds a funded Xiaomi never reaches the stop.
-That is intended,
-by the owner's ruling of 2026-10-22 (open to the owner's veto):
-only dryness of every provider the run holds ends the run,
-and a model whose own providers are all dry while another provider is wet is a lost seat.
+Xiaomi reads dry only once it has refused a call for payment.
+Whether its wet reading hides a dry fleet depends on what it serves.
+
+A wet provider counts against "every provider dry" only if it serves a model seated in a writing bench,
+that is an editor,
+a refiner or a translator,
+so that a writing bench could still reach its floor from it.
+The run-wide stop,
+the router's all-dry hold wait and the seat reader's written refusal all read that one predicate.
+**The predicate is open to the owner's veto**
+(the lead's ruling of 2026-10-22 on the review's M3,
+made after the review found the first form of D4 hid a fleet that could write nothing).
+It is derived from the roster,
+not listed:
+`RUN_WRITING_PROVIDERS` in `run/src/corpus-run/run-config.ts` takes every model seated as an editor,
+refiner or translator and marks the providers that serve it (`reachOf`),
+and `createRoutingClient` receives the record as `writing`.
+On the roster of 2026-10-22 every provider counts except Xiaomi,
+whose only seat is a checker.
+A funded Xiaomi serving only checkers therefore no longer keeps the run going:
+the stop fires,
+and its text says "Xiaomi reads wet but serves no seat that writes".
+A roster that seats a writer on Xiaomi makes its wet reading count again with no edit.
+
+Per-call routing is unchanged,
+which keeps D4:
+a model whose own providers are all dry while another provider is wet is a lost seat
+(`NoProviderForModelError`),
+and the run goes on.
 Xiaomi,
 wet,
-is such a provider:
-it still buys MiMo V2.6 Flash for its own seat.
-A fleet that is dry except for Xiaomi therefore loses the seat of every other model (`NoProviderForModelError`)
-and the run goes on.
-An earlier version of this passage read Xiaomi as dry for a model it does not serve
-(`dryForTheModelAsked` in `budget-routing.ts`,
-added and removed on 2026-10-22),
-so that the stop could fire while Xiaomi was configured;
-the ruling removed it,
-and restoring it is one revert.
-The `EveryProviderDryError` text says "Xiaomi has refused a call for payment" in every case now.
-The `NoProviderForModelError` for a lost seat names the model and how each provider read
-(`modelDarkReason` in `model-dark-reason.ts`),
-and the router logs it as `<model> went dark: ...`.
+is such a provider for the models it does not serve,
+and it still buys MiMo V2.6 Flash for its own seat.
 A funded real-meter provider that serves only some models (DeepSeek,
 for one) behaves the same way:
-it keeps its own wet reading,
-so a model it does not serve is a lost seat per call and the run does not stop.
+it keeps its own wet reading for per-call routing.
+The first form of D4 read Xiaomi as dry for a model it does not serve
+(`dryForTheModelAsked` in `budget-routing.ts`,
+added and removed on 2026-10-22);
+that form stays removed.
+To restore the stop for a funded Xiaomi,
+change `routeProviderFor` in `provider/src/budget-routing.ts` and `readBudgetsPastHolds` in
+`provider/src/budget-hold-wait.ts` to treat `writing` as every provider (`EVERY_PROVIDER_COUNTS`),
+or revert the range `11cddf0a37..8a54f4c72e` that introduced D4 together with the commits that built on it.
+The `NoProviderForModelError` for a lost seat names the model and how each provider read
+(`modelDarkReason` in `model-dark-reason.ts`),
+and the router logs it as `<model> went dark: ...`,
+once per model per 300 s.
+
+## NeuralWatt's day start
+
+A NeuralWatt reading that is dry because the day's energy is spent carries its return:
+the UTC time of day the day starts again,
+never midnight,
+counted down on the budget layer's monotonic clock,
+plus a margin of one second.
+The case is XingZ6019 (2026-10-22):
+NeuralWatt dry 48 s before its day started,
+a writing bench short of its floor,
+and the entry stopped 48 s before the energy came back.
+The budget layer reports the return as a hold,
+so every wait that already waits out holds waits for it,
+and it reads the meter again at the return whatever the age of the cached reading.
+Only the true cause is stated:
+a blocked key states `keyBlockedUntil`,
+energy held by calls in flight (the settled spend alone leaves more than the smallest estimate) names no return,
+a day the account still shows spent after its return passed is the account lagging and names no return either,
+and a refusal names the day start only when the day-start hold is the one that won.
+
+**The bounds are open to the owner's veto.**
+Three waits meet it,
+each bounded by what can cut it.
+
+- A router call waits for a return at most 300 s (`NEURALWATT_RETURN_WAIT_BOUND_MS`),
+  because a call carries a deadline of 360 s that would cut anything longer.
+  The distance is compared without its margin.
+  A return past 300 s ends the call with the all-dry refusal,
+  which states the time of day and the distance (`at 19:15:08 UTC (in 5 min 1 s)`)
+  and carries the distance as `neuralwattReturnsInMs`.
+  A refusal made after a wait carries none.
+- The seat reader sits outside every exchange,
+  so no call deadline applies.
+  It waits for the return at any distance,
+  as it waits for Hyper's stated holds (923 s and 2 h 25 m on record),
+  bounded by the entry's abort.
+- The pass parks when every provider reads dry and the return is known and inside what the pass has left,
+  which is the shorter of the soft budget remaining and the hard cap.
+  The run ends only when the return is unknown or past what the pass has left,
+  and the stop line states the return time.
+
+The park works at the seam between entries,
+because the wait must sit outside any exchange:
+
+1. The dry gate (`pass-dry-stop.ts`) receives the refusal,
+   records a park instead of tripping,
+   logs the start with the reason and the UTC return time,
+   and aborts the shared signal so the entry in flight ends.
+2. The queue (`runAttemptQueue`) sees the pass is parked,
+   puts that entry back at the front with no verdict line,
+   so none of `REATTEMPT`,
+   `STALLED` and `INCOMPLETE` is printed,
+   and calls the gate's wait before asking the budget whether the pass goes on.
+3. The gate waits the distance,
+   logs the end,
+   and gives the pass a fresh signal.
+4. A refusal that arrives within 60 s of a park's end trips instead of parking again,
+   since the account has then not shown the energy it should,
+   and parking again would wait a day in a loop.
+
+Known costs of the park:
+the attempt it interrupts is already counted in the attempt map,
+its `TALLY` line says `INCOMPLETE`,
+and the wait is the full distance from the moment the entry ends,
+not from the refusal.
+A long NeuralWatt hold also makes the per-slice re-seating (`pass-reseat-hook.ts`) read the seats on every slice
+while it runs,
+as it does for any hold.
 
 How the hold behaves,
 in both directions (pinned in `provider-budget-xiaomi-hold.unit.test.ts`):
