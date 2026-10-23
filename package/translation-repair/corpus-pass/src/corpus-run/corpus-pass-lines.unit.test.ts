@@ -134,9 +134,11 @@ await describe({
               done: 0,
               softBudgetMs: 259_200_000,
               hardCapMs: 25_200_000,
+              perCallMs: 360_000,
+              claudeCallMs: 460_000,
             }, },),).toBe(
               'START tip=deadbeef pipeline=sha256-tree-v1:cafe files=189 pending=1 done=0 soft=259200000ms '
-                + 'hard=25200000ms',
+                + 'hard=25200000ms call=360000ms claude-call=460000ms',
             );
           },
         },),
@@ -151,8 +153,11 @@ await describe({
               done: 3,
               softBudgetMs: 60_000,
               hardCapMs: 90_000,
+              perCallMs: 360_000,
+              claudeCallMs: 460_000,
             }, },),).toBe(
-              'START tip=deadbeef pipeline=sha256-tree-v1:cafe files=1 pending=12 done=3 soft=60000ms hard=90000ms',
+              'START tip=deadbeef pipeline=sha256-tree-v1:cafe files=1 pending=12 done=3 soft=60000ms hard=90000ms '
+                + 'call=360000ms claude-call=460000ms',
             );
           },
         },),
@@ -218,6 +223,25 @@ await describe({
                 + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
                 + 'path deliberately.',
             ],);
+          },
+        },),
+        it({
+          name: 'WARNS of a ceiling between the default exchange and a Claude exchange (F2 of the re-check of the '
+            + 'second fix round), naming both deadlines',
+          fn: async () => {
+            /**
+             Lines for a ceiling that outlasts the default exchange and not a Claude one.
+             */
+            const lines = passLaunchLines({
+              ...UNCHANGED,
+              hardCapMs: 400_000,
+              claudeCallMs: 460_000,
+            },);
+
+            expect(lines.length,).toBe(2,);
+            expect(lines[1]?.startsWith('CAP TOO TIGHT: an attempt runs 400000ms',),).toBe(true,);
+            expect(lines[1]?.includes('460000ms',),).toBe(true,);
+            expect(lines[1]?.includes('360000ms',),).toBe(true,);
           },
         },),
         it({

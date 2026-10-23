@@ -287,7 +287,25 @@ await describe({
             expect(capOutlastsOneCall({
               capMs: 300_000,
               perCallMs: 360_000,
+              claudeCallMs: 460_000,
             },),).toBe(false,);
+          },
+        },),
+        it({
+          name:
+            'REFUSES A CEILING BETWEEN THE TWO DEADLINES (F2 of the re-check of the second fix round): it outlasts the '
+              + 'default exchange and cuts a Claude exchange that its own deadline allows',
+          fn: async () => {
+            expect(capOutlastsOneCall({
+              capMs: 400_000,
+              perCallMs: 360_000,
+              claudeCallMs: 460_000,
+            },),).toBe(false,);
+            expect(capOutlastsOneCall({
+              capMs: 500_000,
+              perCallMs: 360_000,
+              claudeCallMs: 460_000,
+            },),).toBe(true,);
           },
         },),
       ],
@@ -310,6 +328,23 @@ await describe({
 
             expect(note.includes('300000',),).toBe(true,);
             expect(note.includes('360000',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'NAMES THE CLAUDE DEADLINE BESIDE THE DEFAULT ONE (F2 of the re-check of the second fix round)',
+          fn: async () => {
+            /**
+             Note built over a ceiling between the two deadlines.
+             */
+            const note = capTooTightNote({
+              capMs: 400_000,
+              perCallMs: 360_000,
+              claudeCallMs: 460_000,
+            },);
+
+            expect(note.includes('400000',),).toBe(true,);
+            expect(note.includes('360000',),).toBe(true,);
+            expect(note.includes('460000',),).toBe(true,);
           },
         },),
         it({
