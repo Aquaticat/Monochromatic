@@ -5,7 +5,7 @@ import type {
   RunClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { settleEntry, } from './pass-entry.ts';
+import type { settleEntry, } from './pass-entry-settle.ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PassPictureSources, } from './pass-visual-evidence.ts';
 import type { OverlapSetting, } from '@monochromatic-dev/translation-repair-slice-cache/ts';

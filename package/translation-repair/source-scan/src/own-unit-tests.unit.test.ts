@@ -674,6 +674,7 @@ const ALLOWLIST: readonly string[] = [
   'corpus-pass/corpus-run/pass-entry-artifact.ts',
   'corpus-pass/corpus-run/pass-entry-caches.ts',
   'corpus-pass/corpus-run/pass-entry-persist.ts',
+  'corpus-pass/corpus-run/pass-entry-settle.ts',
   'corpus-pass/corpus-run/pass-footnote-relabel-read.ts',
   'corpus-pass/corpus-run/pass-insertion-reseat.ts',
   'corpus-pass/corpus-run/pass-lanes.ts',

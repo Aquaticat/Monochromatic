@@ -413,6 +413,16 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: 'how long a refusal holds a dry Hyper meter out for a case that waits that hold out for real, handed in by '
       + 'the case (40 ms), so the wait cannot end before it on any machine',
   },
+  'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 7 * HOUR_MS': {
+    count: 2,
+    bound: 'other',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer is armed',
+  },
+  'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 1_000': {
+    count: 1,
+    bound: 'other',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer is armed',
+  },
   'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: cooldownMs: 40': {
     count: 1,
     bound: 'reached',

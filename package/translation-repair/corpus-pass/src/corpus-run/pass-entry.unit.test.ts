@@ -2421,7 +2421,7 @@ await describe({
         /**
          The bound each seat reading asked the holds for.
          */
-        const asked: (number | undefined)[] = [];
+        const asked: number[] = [];
         const base = entryClient({ served: [], },);
         await settleEntry({
           client: {
@@ -2429,7 +2429,7 @@ await describe({
             // A pass with a year left, far past the entry's cap.
             passLeftMs: () => Number.MAX_SAFE_INTEGER,
             providerHolds: function recordBound(bound,) {
-              asked.push(bound?.returnBoundMs,);
+              asked.push(bound?.returnBoundMs ?? Number.POSITIVE_INFINITY,);
               return base.providerHolds();
             },
           },
@@ -2450,7 +2450,7 @@ await describe({
         },);
         expect(asked.length,).toBeGreaterThan(0,);
         expect(asked.every(function isWithinCap(bound,): boolean {
-          return (bound !== undefined) && (bound <= HANG_STOP_MS);
+          return bound <= HANG_STOP_MS;
         },),).toBe(true,);
       },
     },),
