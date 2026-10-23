@@ -655,7 +655,8 @@ await describe({
               writers: ROUND_WINDOW_WRITERS,
               newClient: shippingLaneClient,
               reaches: noReaches(),
-              editorBenchStart: PINNED_EDITOR_BENCH_START,
+              // A BENCH OF ONE HAS ONE START: the pinned start of the six-seat bench would fall outside it.
+              editorBenchStart: 0,
             },);
 
             expect(printed.lines,).toContain('  claude-sonnet-5-5-effort-low: wrote shipping text on 1 of 1 slice',);

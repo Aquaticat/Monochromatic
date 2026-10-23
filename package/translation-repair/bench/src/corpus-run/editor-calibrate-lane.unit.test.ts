@@ -173,7 +173,8 @@ await describe({
               slice: benchSliceOf({ entryId: 'mittens', index: 0, },),
               client: shippingLaneClient(),
               editorModelIds: ['claude-sonnet-5-5-effort-low',],
-              stageSettings: { ...SCRIPTED_STAGE_SETTINGS, editorBenchStart: PINNED_EDITOR_BENCH_START, },
+              // A BENCH OF ONE HAS ONE START: the pinned start of the six-seat bench would fall outside it.
+              stageSettings: { ...SCRIPTED_STAGE_SETTINGS, editorBenchStart: 0, },
             },);
 
             expect(rounds.editorShipped,).toEqual(['claude-sonnet-5-5-effort-low',],);
@@ -181,8 +182,8 @@ await describe({
               {
                 producers: [
                   {
-                    kind: 'composite',
-                    contributors: ['claude-sonnet-5-5-effort-low',],
+                    kind: 'model',
+                    modelId: 'claude-sonnet-5-5-effort-low',
                   },
                 ],
                 ballots: [],
