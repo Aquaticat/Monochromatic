@@ -178,6 +178,54 @@ await describe({
     },),
 
     it({
+      name: 'CARRIES THE DISTANCE ON THE BENCH ERROR WHEN NEURALWATT\'S RETURN LIFTS THE WRITING BENCH TO ITS FLOOR: '
+        + 'with Synthetic the only wet provider the lanes\' editors, refiners and translators are below the floor, '
+        + 'NeuralWatt back reaches it, and the error carries the milliseconds, the time of day and the spent day, '
+        + 'for the pass to park on',
+      fn: async () => {
+        const { client, } = clientBefore({ msBeforeReturn: 700, passLeftMs: 600, now: FROZEN, },);
+        const refusal = await rejectionOf({
+          promise: readPhaseSeats({
+            client,
+            phase: 'lanes',
+            signal: SIGNAL,
+            l: levelCapturingLogger({ lines: [], },),
+            pollMs: 5,
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
+        expect((refusal as WritingBenchUnreachableError).neuralwattReturnsInMs,).toBe(700,);
+        expect((refusal as WritingBenchUnreachableError).neuralwattReturnsAt,).toBe('19:15:08 UTC',);
+        expect((refusal as WritingBenchUnreachableError).neuralwattDryness?.kind,).toBe('spent-day',);
+      },
+    },),
+
+    it({
+      name: 'CARRIES NO DISTANCE ON THE BENCH ERROR WHEN THE ACCOUNT NAMES NO RETURN (the control): the day start has '
+        + 'passed and the account still shows the day spent, so there is no return to park for',
+      fn: async () => {
+        const { client, } = clientBefore({
+          msBeforeReturn: -60,
+          passLeftMs: 600,
+          lagging: true,
+          now: FROZEN,
+        },);
+        const refusal = await rejectionOf({
+          promise: readPhaseSeats({
+            client,
+            phase: 'lanes',
+            signal: SIGNAL,
+            l: levelCapturingLogger({ lines: [], },),
+            pollMs: 5,
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
+        expect((refusal as WritingBenchUnreachableError).neuralwattReturnsInMs,).toBeUndefined();
+        expect((refusal as WritingBenchUnreachableError).neuralwattReturnsAt,).toBeUndefined();
+      },
+    },),
+
+    it({
       name: 'WAITS FOR NO RETURN WHEN THE BOUND IS ZERO OR BELOW, the pass or the entry\'s cap already spent: a return '
         + '5 away with a bound of -1 refuses at once and the sentence reads 0 s, never a negative number',
       fn: async () => {

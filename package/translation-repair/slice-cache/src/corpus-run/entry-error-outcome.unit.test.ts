@@ -11,6 +11,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
+import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run';
 import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';
 import { PromptPayloadStoreError, } from '@monochromatic-dev/translation-repair-stage';
@@ -159,6 +160,50 @@ await describe({
               },
             },),).toEqual({ kind: 'resumable-failure', },);
             expect(told,).toEqual([dry,],);
+          },
+        },),
+
+        it({
+          name: 'TELLS THE RUN OF A WRITING BENCH ERROR THAT CARRIES NEURALWATT\'S RETURN, for the pass to park on, '
+            + 'and files the entry as it does any bench error; a bench error with no return tells it nothing',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+            /**
+             What the run was told, in order.
+             */
+            const told: unknown[] = [];
+            /**
+             The bench error with the return that would lift it.
+             */
+            const withReturn = new WritingBenchUnreachableError({
+              phase: 'lanes',
+              clauses: ['editors 0 of 3 reachable, floor 2',],
+              neuralwattReturnsInMs: 301_000,
+              neuralwattReturnsAt: '19:15:08 UTC',
+            },);
+            expect(tallyCaughtEntry({
+              entryId: 'Cat',
+              error: withReturn,
+              durationMs: 5,
+              aborted: false,
+              endRun: function endRun({ error, },): void {
+                told.push(error,);
+              },
+            },),).toEqual({ kind: 'resumable-failure', },);
+            expect(told,).toEqual([withReturn,],);
+            expect(tallyCaughtEntry({
+              entryId: 'Cat',
+              error: new WritingBenchUnreachableError({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },),
+              durationMs: 5,
+              aborted: false,
+              endRun: function endRun({ error, },): void {
+                told.push(error,);
+              },
+            },),).toEqual({ kind: 'resumable-failure', },);
+            expect(told,).toEqual([withReturn,],);
+            expect(printed.lines.some(function failed(line,): boolean {
+              return line.startsWith('TALLY Cat status=ERROR',);
+            },),).toBe(true,);
           },
         },),
 

@@ -21,6 +21,7 @@ import {
   NOBODY_REFUSED,
   readBudgetsPastHolds,
 } from '@monochromatic-dev/translation-repair-provider';
+import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run';
 import { createPassDryStop, } from '../../dist/final/node/index.mjs';
 import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -105,6 +106,42 @@ function spentDayRefusal({ dayStart, }: { readonly dayStart: string; },): EveryP
     neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
     neuralwattDryness: { kind: 'spent-day', dayStart, returnsInMs: 301_000, },
     neuralwattReturnsInMs: 301_000,
+  },);
+}
+
+/**
+ A bench error for a writing bench below its floor with Synthetic wet, carrying the NeuralWatt return that would lift it.
+
+ @param returnsInMs - milliseconds to the return, absent for an error that carries none
+
+ @param dayStart - the day start of the spent day the return is for
+
+ @returns The error
+
+ @example
+ ```ts
+ const error = benchErrorBefore({ returnsInMs: 301_000, dayStart: DAY_ONE, },);
+ ```
+ */
+function benchErrorBefore(
+  {
+    returnsInMs,
+    dayStart = DAY_ONE,
+  }: {
+    readonly returnsInMs?: number;
+    readonly dayStart?: string;
+  },
+): WritingBenchUnreachableError {
+  return new WritingBenchUnreachableError({
+    phase: 'lanes',
+    clauses: ['editors 0 of 3 reachable, floor 2',],
+    ...((returnsInMs === undefined)
+      ? {}
+      : {
+        neuralwattReturnsInMs: returnsInMs,
+        neuralwattReturnsAt: '19:15:08 UTC',
+        neuralwattDryness: { kind: 'spent-day', dayStart, returnsInMs, },
+      }),
   },);
 }
 
@@ -473,6 +510,66 @@ await describe({
         dryStop.trip({ error: refusal, },);
         expect(dryStop.tripped(),).toBe(false,);
         expect(dryStop.parked(),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'PARKS ON A WRITING BENCH ERROR THAT CARRIES NEURALWATT\'S RETURN, as on the all-dry refusal: Synthetic '
+        + 'reads wet, the bench is below its floor, the return lifts it and lies 301 s away inside what the pass has '
+        + 'left, so the pass is parked and not tripped, waits for the return, and resumes',
+      fn: async () => {
+        /**
+         Milliseconds the park waited for.
+         */
+        const waits: number[] = [];
+        const lines: string[] = [];
+        const dryStop = createPassDryStop({
+          l: levelCapturingLogger({ lines, },),
+          passLeftMs: () => 3_600_000,
+          now: () => 1_000,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        dryStop.trip({ error: benchErrorBefore({ returnsInMs: 301_000, },), },);
+        expect(dryStop.parked(),).toBe(true,);
+        expect(dryStop.tripped(),).toBe(false,);
+        expect(dryStop.signal.aborted,).toBe(true,);
+        expect(lines[0],).toContain('parked',);
+        expect(lines[0],).toContain('writing bench',);
+        expect(lines[0],).toContain('19:15:08 UTC',);
+        await dryStop.awaitPark();
+        expect(waits,).toEqual([301_000,],);
+        expect(dryStop.parked(),).toBe(false,);
+        expect(dryStop.signal.aborted,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A WRITING BENCH ERROR ALONE when it carries no return, or one past what the pass has left, or the '
+        + 'day start of a park that has ended: the entry ends as before, the pass is neither parked nor tripped, and '
+        + 'no stop line is written',
+      fn: async () => {
+        /**
+         Pass that has 300 s left.
+         */
+        const dryStop = createPassDryStop({ passLeftMs: () => 300_000, waitMs: async () => {}, },);
+        dryStop.trip({ error: benchErrorBefore({}), },);
+        dryStop.trip({ error: benchErrorBefore({ returnsInMs: 301_000, }), },);
+        expect(dryStop.parked(),).toBe(false,);
+        expect(dryStop.tripped(),).toBe(false,);
+        expect(dryStop.signal.aborted,).toBe(false,);
+        expect(dryStop.takeStopNotes(),).toEqual([],);
+
+        /**
+         Pass that parks once, then meets the bench error for the same day start.
+         */
+        const parking = createPassDryStop({ passLeftMs: () => 3_600_000, waitMs: async () => {}, },);
+        parking.trip({ error: benchErrorBefore({ returnsInMs: 301_000, }), },);
+        await parking.awaitPark();
+        parking.trip({ error: benchErrorBefore({ returnsInMs: 301_000, }), },);
+        expect(parking.parked(),).toBe(false,);
+        expect(parking.tripped(),).toBe(false,);
       },
     },),
 
