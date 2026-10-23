@@ -213,15 +213,23 @@ and each task sets it to its own name.
 - `editor-fidelity-probe`:
   seats each card `--candidates` names alone as the editor of an inserted sentence or an altered number,
   and scores the patched text without a model.
+  The sheet is the one the corpus pass sends an editor,
+  built by `buildEditorMessages` through `gatherEditorProposals`,
+  with the sections either side of the passage,
+  the declared names and the whole original page.
   The trials are the frozen pool's:
   the three source-reviewed references and heading sections drawn from the same corpus pin by a stated rule,
-  at least forty trials in all,
+  forty trials in all,
   held as ids,
   offsets and hashes with no corpus text.
-  A fix is exact,
-  or equal to the clean text once whitespace runs are collapsed.
+  The headline is the **clean fix**:
+  a patched text equal to the clean text,
+  or equal to it once whitespace runs are collapsed and trailing whitespace is ignored.
+  A reply that removes the defect and changes something else is **defect only**,
+  has its own line and is never counted in the headline.
   Collateral is a change to text outside the defect.
   Refused and unusable replies are counted apart.
+  Every EDITOR line is printed pooled and for each kind of defect.
   Options after `--` are `--only` with entry ids of the pool,
   `--cap n`
   (default 64,
@@ -231,9 +239,14 @@ and each task sets it to its own name.
   (a deletion is refused,
   because its fix is a sentence the editor must write),
   `--candidates` with seatable Claude card ids,
-  `--candidates-alone` (required)
-  and `--max-usd n` (default 2).
-  Prints the per-arm cost ceiling before any call,
+  `--candidates-alone` (required),
+  `--max-usd n` (default 2)
+  and `--bench-spent-usd n`
+  (what the earlier arms of the bench measured;
+  the arm is refused when it and `--max-usd` together pass 20).
+  Prints the manifest digest,
+  the pool,
+  the per-arm cost ceiling and the decision rule before any call,
   and refuses each call,
   ending the arm,
   when the spend so far plus that call's ceiling would pass `--max-usd`.
@@ -246,6 +259,27 @@ and each task sets it to its own name.
   and the arm ends with a `GUARD total=` line.
   Only the Claude key is read.
   Spends quota.
+- `editor-fidelity-pool-draw`:
+  draws the pool from the pinned corpus clone and writes `src/editor-fidelity-pool-drawn*.ts`,
+  ids,
+  offsets and hashes only.
+  Options after `--` are `--seed` (default `round-4`),
+  `--want` (trials the pool holds,
+  reviewed ones counted;
+  default 40),
+  `--out` (the directory the files go to)
+  and `--check`
+  (compares the files in `--out` with a fresh draw,
+  then reads every committed reference through the hash-verifying reader and runs the scoreability check on its trials).
+  Reads the corpus clone,
+  calls no provider.
+- `editor-fidelity-read`:
+  checks the log of every arm of the bench and prints one `PASS` or `FAIL` line for each check,
+  then `CHECKS n pass, n fail`,
+  and exits 6 when any check failed.
+  Pass the arm logs after `--`.
+  The exit status of an arm is read from `<arm>.exit` beside `<arm>.log`.
+  Spends nothing.
 - `damage-sample`:
   draws shipped regions at random and asks a human the same source-anchored damage question the probe asks,
   with the probe's verdict kept in the manifest.
@@ -261,6 +295,114 @@ and each task sets it to its own name.
   no list at all),
   to separate a suppressing prompt from a dismissing screen from a hard judgement.
   Spends quota.
+
+## Editor fidelity bench
+
+The bench asks which effort of the Sonnet 5.5 card should edit,
+by running the one pool of forty trials through four arms:
+`claude-sonnet-5-5-effort-low`,
+`claude-sonnet-5-5-effort-medium` twice
+(the second run measures how far two identical arms differ),
+and `claude-sonnet-5-5-effort-high`.
+The owner ruled 20 USD for all four arms together;
+the caps named here add to 19.
+
+### Decision rule
+
+Written before any arm runs,
+and printed on the `RULE` line of every arm's log:
+
+> clean fix is exact plus equivalent,
+> read pooled and per kind of defect;
+> an effort differs from the default (medium) only when its pooled clean fix count is further from the mean of the two
+> medium arms than the larger of 3 and the two medium arms' own difference,
+> and neither kind moves against it;
+> any other difference,
+> and any tie,
+> keeps the default effort
+
+### Launching the arms
+
+One arm at a time,
+each as its own systemd user unit,
+launched through the root `mise.toml` key path
+(`mise exec`) with every provider key but the Claude key unset,
+from a frozen copy of the built probe so that a later build cannot change what an arm ran.
+Run from the repository root of the checkout that holds the sealed key file.
+
+```bash
+# README.md (editor fidelity bench): prepare, once, at the commit the bench runs
+SHA=$(git rev-parse --short=10 HEAD)
+mise run //package/translation-repair/probe:build
+cp -r package/translation-repair/probe/dist/final/node "package/translation-repair/probe/node_modules/.frozen-dist-$SHA"
+BENCH="$HOME/temp/agent/editor-fidelity-bench-$SHA"
+mkdir --parents "$BENCH"
+```
+
+Each arm is the same command with its own name,
+card,
+cap and `--bench-spent-usd`
+(the sum of the `GUARD total=` of the arms already run,
+rounded up to the cent;
+0 for the first).
+The arms in order are `low` with the low card and `--max-usd 3`,
+`medium-a` with the medium card and `--max-usd 4`,
+`medium-b` with the medium card and `--max-usd 4`,
+and `high` with the high card and `--max-usd 8`.
+The first:
+
+```bash
+# README.md (editor fidelity bench): arm 1 of 4, low
+ARM=low; CARD=claude-sonnet-5-5-effort-low; MAXUSD=3; SPENT=0
+mkdir --parents "$BENCH/$ARM"
+systemd-run --user --wait --collect "--unit=tr-edfid-$ARM" --property=MemoryMax=2G --property=CPUQuota=100% \
+  "--working-directory=$PWD" "--setenv=PATH=$PATH" "--setenv=HOME=$HOME" \
+  --setenv=TRANSLATION_REPAIR_STARTED_BY=editor-fidelity-probe "--setenv=TRANSLATION_REPAIR_RUNS_DIR=$BENCH/$ARM" \
+  "--property=StandardOutput=truncate:$BENCH/$ARM.log" \
+  mise exec -- env --unset=TRANSLATION_REPAIR_NEURALWATT_API_KEY --unset=TRANSLATION_REPAIR_SYNTHETIC_API_KEY \
+  --unset=TRANSLATION_REPAIR_CHARM_HYPER_API_KEY --unset=TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY \
+  --unset=DEEPSEEK_API_KEY --unset=TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY --unset=TRANSLATION_REPAIR_OPENROUTER_API_KEY \
+  node "package/translation-repair/probe/node_modules/.frozen-dist-$SHA/editor-fidelity-probe.mjs" \
+  --candidates "$CARD" --candidates-alone --max-usd "$MAXUSD" --bench-spent-usd "$SPENT"
+echo $? > "$BENCH/$ARM.exit"
+```
+
+The other three differ in the first line only:
+
+```bash
+# README.md (editor fidelity bench): the first line of arms 2 to 4
+ARM=medium-a; CARD=claude-sonnet-5-5-effort-medium; MAXUSD=4; SPENT=<measured so far>
+ARM=medium-b; CARD=claude-sonnet-5-5-effort-medium; MAXUSD=4; SPENT=<measured so far>
+ARM=high; CARD=claude-sonnet-5-5-effort-high; MAXUSD=8; SPENT=<measured so far>
+```
+
+Before each later arm,
+read the earlier arm's `GUARD total=` line from its log.
+After the last arm,
+check all four together:
+
+```bash
+# README.md (editor fidelity bench): the read step
+mise run //package/translation-repair/probe:editor-fidelity-read -- \
+  "$BENCH/low.log" "$BENCH/medium-a.log" "$BENCH/medium-b.log" "$BENCH/high.log"
+```
+
+An arm with a `FAIL` line is not evidence,
+whatever its clean fix count says.
+The checks are the exit status,
+the manifest line,
+the pool line,
+the ceiling line,
+the guard line,
+the arm's `EDITOR` line,
+the row count,
+no `[error]` line,
+the `SEAT` line (`threw` stated,
+nothing unreachable,
+no withheld or dark seat),
+and the identity of the `SPEND` lines' sum with the `GUARD total=`;
+and across the arms,
+the same manifest digest in every one and a bench total under 20 USD.
 
 ## Family dependencies
 
