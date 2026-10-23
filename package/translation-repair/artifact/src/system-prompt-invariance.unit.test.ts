@@ -24,6 +24,7 @@ import {
   CAT_SUBJECT,
   DOG_SUBJECT,
   FENCED_SUBJECT,
+  MARKED_SUBJECT,
   type PromptMessages,
   type PromptStage,
   type PromptSubject,
@@ -31,6 +32,7 @@ import {
 import { PREPARATION_STAGES, } from '@monochromatic-dev/translation-repair-repair/ts/system-prompt-stages-preparation.test-fixture.ts';
 import { SLATE_STAGES, } from '@monochromatic-dev/translation-repair-repair/ts/system-prompt-stages-slates.test-fixture.ts';
 import { WRITER_STAGES, } from '@monochromatic-dev/translation-repair-repair/ts/system-prompt-stages-writers.test-fixture.ts';
+import { BREAK_STAGES, } from './system-prompt-stages-breaks.test-fixture.ts';
 import { CARRY_STAGES, } from './system-prompt-stages-carry.test-fixture.ts';
 import { CONSISTENCY_STAGES, } from './system-prompt-stages-consistency.test-fixture.ts';
 import { PAGE_STAGES, } from './system-prompt-stages-pages.test-fixture.ts';
@@ -45,6 +47,7 @@ const STAGES: readonly PromptStage[] = [
   ...PAGE_STAGES,
   ...CONSISTENCY_STAGES,
   ...CARRY_STAGES,
+  ...BREAK_STAGES,
 ];
 
 /**
@@ -85,11 +88,13 @@ function systemTextsOf(
   readonly cat: string;
   readonly dog: string;
   readonly fenced: string;
+  readonly marked: string;
 } {
   return {
     cat: systemTextOf({ messages: stage.render({ subject: CAT_SUBJECT, },), },),
     dog: systemTextOf({ messages: stage.render({ subject: DOG_SUBJECT, },), },),
     fenced: systemTextOf({ messages: stage.render({ subject: FENCED_SUBJECT, },), },),
+    marked: systemTextOf({ messages: stage.render({ subject: MARKED_SUBJECT, },), },),
   };
 }
 
@@ -189,21 +194,91 @@ function fenceStatedBy(
   };
 }
 
+/**
+ Opening mark a subject with a stray run of two opening marks is given: one more than the longest run.
+ */
+const FORCED_MARK_OPEN = '⟦⟦⟦';
+
+/**
+ Closing mark that goes with it.
+ */
+const FORCED_MARK_CLOSE = '⟧⟧⟧';
+
+/**
+ Words that open the sentence naming the marks, after the word a sheet calls its paragraphs.
+ */
+const MARKS_OPENING = ' the repeated wording is enclosed between ';
+
+/**
+ Reads the marks the sentence in a consistency sheet's user turn names.
+
+ @param stage - stage to render
+
+ @param subject - subject to render it for
+
+ @returns The opening and the closing mark named (empty where the user turn has no such sentence)
+
+ @example
+ ```ts
+ const read = marksStatedBy({ stage, subject: CAT_SUBJECT, },);
+ ```
+ */
+function marksStatedBy(
+  {
+    stage,
+    subject,
+  }: {
+    readonly stage: PromptStage;
+    readonly subject: PromptSubject;
+  },
+): {
+  readonly open: string;
+  readonly close: string;
+} {
+  /**
+   The user turn, whole.
+   */
+  const user = notSystem({ messages: stage.render({ subject, },), },)
+    .map(function contentOf({ content, },): string {
+      if ((typeof content) !== 'string')
+        return '';
+      return content;
+    },)
+    .join('\n',);
+  if (!user.includes(MARKS_OPENING,))
+    return { open: '', close: '', };
+  /**
+   The sentence from the first mark on.
+   */
+  const named = user.slice(user.indexOf(MARKS_OPENING,) + MARKS_OPENING.length,);
+  /**
+   Where the first mark ends.
+   */
+  const between = named.indexOf(' and ',);
+  return {
+    open: named.slice(0, between,),
+    close: named.slice(between + ' and '.length, named.indexOf(';',),),
+  };
+}
+
 await describe({
   name: 'the system prompt of every stage',
   concurrency: 1,
   children: [
     ...STAGES.map(function caseOf(stage,) {
       return it({
-        name: `IS THE SAME TEXT FOR THREE SUBJECTS, ONE FORCING A LONGER FENCE, IN THE ${stage.name.toUpperCase()} SHEET (R4): the cache breakpoint on `
+        name: `IS THE SAME TEXT FOR FOUR SUBJECTS, ONE FORCING A LONGER FENCE AND ONE LONGER MARKS, IN THE ${stage.name.toUpperCase()} SHEET (R4): the cache breakpoint on `
           + 'the system block is written once and read on every later call, never rewritten for each subject',
         fn: async () => {
-          const { cat, dog, fenced, } = systemTextsOf({ stage, },);
+          const { cat, dog, fenced, marked, } = systemTextsOf({ stage, },);
           expect(cat.length,).toBeGreaterThan(0,);
           expect(dog,).toBe(cat,);
           // A SUBJECT WHOSE TEXTS FORCE A LONGER FENCE gets the same system text: the fence and its length are stated in
           // the user turn, so a text holding a run of equals signs writes no second cache entry.
           expect(fenced,).toBe(cat,);
+          // A SUBJECT WHOSE TEXTS HOLD A STRAY RUN OF THE CONSISTENCY MARKS gets the same system text: the marks are
+          // stated in the user turn too.
+          expect(marked,).toBe(cat,);
           // THE SUBJECTS REACH THE BUILDER: the turns that are not the system prompt differ, so an equal system
           // text is not the result of a render that ignored its subject.
           expect(otherTurnsOf({ stage, },).dog,).not.toBe(otherTurnsOf({ stage, },).cat,);
@@ -238,6 +313,20 @@ await describe({
               stated: FORCED_FENCE,
               longestFenceLine: FORCED_FENCE,
             },);
+          },
+        },);
+      },),
+
+    ...STAGES.filter(function isMarked({ name, },): boolean {
+      return name.startsWith('consistency',) || name.startsWith('carry',);
+    },)
+      .map(function marksCaseOf(stage,) {
+        return it({
+          name: `STATES IN THE USER TURN THE MARKS THE ${stage.name.toUpperCase()} PARAGRAPHS CARRY (R4): the sentence naming the `
+            + 'marks is in the user turn with the true marks, including for a text holding a stray run of them',
+          fn: async () => {
+            expect(marksStatedBy({ stage, subject: CAT_SUBJECT, },),).toEqual({ open: '⟦', close: '⟧', },);
+            expect(marksStatedBy({ stage, subject: MARKED_SUBJECT, },),).toEqual({ open: FORCED_MARK_OPEN, close: FORCED_MARK_CLOSE, },);
           },
         },);
       },),

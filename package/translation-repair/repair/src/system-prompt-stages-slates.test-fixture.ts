@@ -295,7 +295,7 @@ export const SLATE_STAGES: readonly PromptStage[] = [
             },
             {
               index: 2,
-              text: `${subject.repairQuote}<br/>${subject.archive}`,
+              text: `${subject.repairQuote}${subject.lineBreak}${subject.archive}`,
               hash: 'slate/2',
               origin: 'fresh',
               producer: {
@@ -311,7 +311,7 @@ export const SLATE_STAGES: readonly PromptStage[] = [
         },),
         rendered: [
           subject.repair,
-          `${subject.repairQuote}<br/>${subject.archive}`,
+          `${subject.repairQuote}${subject.lineBreak}${subject.archive}`,
         ],
         declineConsequence: LEAVES_PASSAGE_UNTRANSLATED,
         sourceText: subject.verseSource,

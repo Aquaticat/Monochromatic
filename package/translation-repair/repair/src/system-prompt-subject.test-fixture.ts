@@ -87,6 +87,17 @@ type SubjectWords = {
    the fence a sheet encloses its blocks in; empty for none.
    */
   readonly underline: string;
+
+  /**
+   A stray run of the marks the consistency sheets enclose repeated wording in, set between the sentences of every
+   shown text; empty for none.
+   */
+  readonly stray: string;
+
+  /**
+   The explicit line break the verse writes, so the two subjects count different numbers of breaks.
+   */
+  readonly lineBreak: string;
 };
 
 /**
@@ -154,9 +165,24 @@ export type PromptSubject = {
   readonly title: string;
 
   /**
-   An original with an explicit line break and no archive rendering.
+   An original with explicit line breaks and no archive rendering.
    */
   readonly verseSource: string;
+
+  /**
+   A rendering of that original with its lines run together.
+   */
+  readonly verseFlat: string;
+
+  /**
+   The explicit line break the verse writes, as the subject spells it.
+   */
+  readonly lineBreak: string;
+
+  /**
+   A rendering of that original that keeps its line break.
+   */
+  readonly verseBroken: string;
 
   /**
    The archive block the original does not claim.
@@ -257,13 +283,15 @@ function subjectOf(
    */
   const repairQuote = `That night the ${words.animal} fell asleep on the ${words.place}.`;
   /**
-   What joins the sentences of an original: nothing, or the underline on a line of its own.
+   What joins the sentences of an original: nothing, the underline on a line of its own, or the stray marks.
    */
-  const joinOriginal = (words.underline === '') ? '' : `\n${words.underline}\n`;
+  const joinOriginal = (words.underline === '') ? words.stray : `\n${words.underline}\n`;
   /**
    What joins the sentences of an English text: a space, or the underline on a line of its own.
    */
-  const joinEnglish = (words.underline === '') ? ' ' : `\n${words.underline}\n`;
+  const joinEnglish = (words.underline === '')
+    ? ((words.stray === '') ? ' ' : ` ${words.stray} `)
+    : `\n${words.underline}\n`;
   /**
    The original passage.
    */
@@ -317,7 +345,10 @@ function subjectOf(
     wording: `那晚${words.originalAnimal}在${words.originalPlace}上睡着了`,
     prefix: `所以${words.originalAnimal}`,
     title: `${words.originalAnimal}之歌`,
-    verseSource: `${words.originalAnimal}睡着了。<br/>它梦见了鱼。`,
+    verseSource: `${words.originalAnimal}睡着了。${words.lineBreak}它梦见了鱼。`,
+    lineBreak: words.lineBreak,
+    verseFlat: `The ${words.animal} fell asleep. It dreamed of fish.`,
+    verseBroken: `The ${words.animal} fell asleep.${words.lineBreak}It dreamed of fish.`,
     aside: `The ${words.animal} was the favourite of the whole street.${joinEnglish}${TRANSLATORS_NOTE}`,
     asideRevised: `The ${words.animal} was a favourite of the neighbours.${joinEnglish}${TRANSLATORS_NOTE}`,
     archiveQuote,
@@ -376,6 +407,8 @@ export const CAT_SUBJECT: PromptSubject = subjectOf({
     name: 'Mittens',
     address: 'mittens',
     underline: '',
+    stray: '',
+    lineBreak: '<br/>',
   },
 },);
 
@@ -392,6 +425,8 @@ export const DOG_SUBJECT: PromptSubject = subjectOf({
     name: 'Biscuit',
     address: 'biscuit',
     underline: '',
+    stray: '',
+    lineBreak: '<br/><br/>',
   },
 },);
 
@@ -409,6 +444,27 @@ export const FENCED_SUBJECT: PromptSubject = subjectOf({
     name: 'Biscotti',
     address: 'biscotti',
     underline: '===========',
+    stray: '',
+    lineBreak: '<br/>',
+  },
+},);
+
+/**
+ A fourth subject whose texts hold a stray run of two of the marks the consistency sheets enclose repeated wording in, so a
+ sheet that chooses its marks against the shown texts chooses three where the cat gets one.
+ */
+export const MARKED_SUBJECT: PromptSubject = subjectOf({
+  words: {
+    originalAnimal: '小兔子',
+    originalPlace: '草地',
+    animal: 'bunny',
+    place: 'meadow',
+    originalName: '团团',
+    name: 'Clover',
+    address: 'clover',
+    underline: '',
+    stray: '⟦⟦',
+    lineBreak: '<br/>',
   },
 },);
 
