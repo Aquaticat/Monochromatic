@@ -25,8 +25,9 @@ import { neuralWattIsDry, } from './neuralwatt-meter.ts';
  300 s hold waited out leaves no room for a return 250 s away, which ends the call with its refusal at once.
 
  THE 360 s CALL DEADLINE (`RUN_PER_CALL_TIMEOUT_MS` in the run package, which this package cannot import) DOES NOT REACH
- THE ROUTER'S WAIT: it is armed inside the per-model slot of each client, after routing, and the router waits on the
- call's own abort signal (`stage-round.ts`: the caller's abort and the straggler cut). The bound is therefore the
+ THE ROUTER'S WAIT: `armCallDeadline` arms it inside the per-model slot of each client (`neuralwatt-client.ts`), after
+ routing, and the router waits on the call's own `request.signal` (`provider-router.ts`), which is the stage's
+ `roundSignal` (`stage-round.ts`: the caller's abort and the straggler cut). The bound is therefore the
  budget layer's own refusal cooldown (`REFUSAL_COOLDOWN_MS`, 300 s, in `provider-budget.ts`): the longest it holds a
  provider on its own judgment. A return past it ends the call with the refusal, which states the time and the
  distance, and the pass parks until the return when it has the time (`pass-dry-stop.ts`). The seat reader sits outside
