@@ -1321,6 +1321,40 @@ await describe({
     },),
 
     it({
+      name: 'TAKES THE SCHEMA\'S SPELLING of a routed answer that differs from a listed value only in its capital, '
+        + 'so the guard reads the voice and no second provider is asked',
+      fn: async () => {
+        const { callers, called, } = stubProviders({ text: { synthetic: '{"spot":"Windowsill"}', }, },);
+        const { budgets, } = stubBudgets({},);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+        const outcome = await client.chatJson({
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          messages: MESSAGES,
+          signal: SIGNAL,
+          responseFormat: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'nap_spot',
+              schema: {
+                type: 'object',
+                properties: { spot: { type: 'string', enum: ['windowsill', 'radiator',], }, },
+              },
+            },
+          },
+          validate: function isListedSpot(value: unknown,): value is { readonly spot: string; } {
+            return isJsonRecord(value,) && ((value.spot === 'windowsill') || (value.spot === 'radiator'));
+          },
+        },);
+
+        expect(called,).toEqual(['synthetic',],);
+        expect(outcome.kind === 'ok' ? outcome.value : undefined,).toEqual({ spot: 'windowsill', },);
+      },
+    },),
+
+    it({
       name: 'RERAISES the last refusal once every provider serving the model has refused on budget, '
         + 'rather than returning a silence no caller can read',
       fn: async () => {
