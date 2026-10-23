@@ -13,18 +13,25 @@ import { judgeSeatsFor, } from './run-seats.ts';
 import {
   type BenchName,
   benchShortfalls,
+  reachableSeats,
 } from './run-seats-wait.ts';
 
 //region Holds that cure a short bench
-// A HOLD IS WAITED FOR ONLY WHEN THE PROVIDER, BACK, WOULD CURE A BENCH THAT STANDS SHORT. The seat reader waits
+// A HOLD IS WAITED FOR ONLY WHEN THE PROVIDER, BACK, WOULD HELP CURE A BENCH THAT STANDS SHORT. The seat reader waits
 // while a bench the phase leans on stands short and a hold runs; a hold on a provider whose return leaves every such
-// bench as short as it is (it serves no seat of the bench, or only seats the wet providers already reach) buys nothing,
-// however
-// long it is waited for, so it is left out of what the reader waits on. The question is asked of the roster itself:
-// the seats are derived again with the providers back (`judgeSeatsFor`, which reads each seat's reach through
-// `reachOf`), never from a list of provider names, so a roster change moves the answer without an edit here.
-// Providers whose holds run together are judged together: a provider counts when the benches the held providers cure
-// between them stay short without it, so two holds that only cure a bench jointly are both waited for.
+// bench as short as it is (it serves no seat of the bench, or only seats the wet providers already reach) buys
+// nothing, however long it is waited for, so it is left out of what the reader waits on. The question is asked of the
+// roster itself: the seats are derived again with the providers back (`judgeSeatsFor`, which reads each seat's reach
+// through `reachOf`), never from a list of provider names, so a roster change moves the answer without an edit here.
+//
+// THE TEST IS "WOULD HELP", NOT "IS NECESSARY" (round 5, the ruling open to the owner's veto). The held providers are
+// judged together: the benches they cure between them are the ones that matter, and a held provider counts when its
+// own return adds a reachable seat to one of those benches. Two holds that only cure a bench jointly are both waited
+// for, and so are two holds that each cure it alone; a necessity test (the bench stays short without this provider)
+// counted neither of the second pair and seated the bench short without a wait. The cost of the looser test is a
+// counted hold that turns out not to be needed: the loop reads the benches again after every wait, so that costs one
+// extra read and no extra wall time, since the wait was for the shortest counted hold and the loop ends as soon as
+// the benches are met.
 
 /**
  The view with some providers back: dry for none of them, as before for the rest.
@@ -105,8 +112,39 @@ function unmetBenchNames(
 }
 
 /**
- How long each provider's hold counts for the seat reader's wait: the hold itself where the provider's return helps cure
- a bench that stands short, none otherwise.
+ Seats of a bench some wet provider serves in a view, the bench derived again for that view.
+
+ @param dry - dryness per provider the bench is derived for
+
+ @param name - bench asked about
+
+ @returns How many of its seats the router could send somewhere
+
+ @example
+ ```ts
+ const reachable = reachableCountOf({ dry, name: 'wide', },);
+ ```
+ */
+function reachableCountOf(
+  {
+    dry,
+    name,
+  }: {
+    readonly dry: BudgetView;
+    readonly name: BenchName;
+  },
+): number {
+  return reachableSeats({
+    seats: benchesOf({ seats: judgeSeatsFor({ dry, }), },)[name],
+    dry,
+    reach: (name === 'readers') ? 'vision' : 'text',
+  },)
+    .length;
+}
+
+/**
+ How long each provider's hold counts for the seat reader's wait: the hold itself where the held providers cure a bench
+ between them and this provider's return adds a reachable seat to it, none otherwise.
 
  @param holds - how long each provider's refusal still holds it out
 
@@ -166,19 +204,20 @@ export function holdsThatCureShortBenches(
       if (!held.includes(provider,))
         return 0;
       /**
-       Benches still unmet when every held provider but this one is back.
+       The view with this provider alone back.
        */
-      const unmetWithout = unmetBenchNames({
-        dry: viewWithBack({
-          dry,
-          back: held.filter(function isOther(other,): boolean {
-            return other !== provider;
-          },),
-        },),
-        names,
+      const backAlone = viewWithBack({
+        dry,
+        back: [provider,],
       },);
-      return cured.some(function needsProvider(name,): boolean {
-        return unmetWithout.has(name,);
+      return cured.some(function addsSeat(name,): boolean {
+        return reachableCountOf({
+          dry: backAlone,
+          name,
+        }) > reachableCountOf({
+          dry,
+          name,
+        });
       },)
         ? holds[provider]
         : 0;

@@ -811,7 +811,13 @@ not the shapes the case happens to need:
 a provider that cures a short bench,
 one that serves seats of it and cannot cure it,
 one that serves none of its seats,
-and a dry key that is a meter reading and holds `0`.
+a dry key that is a meter reading and holds `0`,
+and two or more holds that each cure the bench alone
+(a necessity test,
+"the bench stays short without this provider",
+counts neither of them,
+so the reader seated the bench short with two curing holds running;
+round 5 found it).
 The shapes come from the roster through `reachOf`,
 and a case that asserts a wait asserts the control (a hold that must be waited for)
 beside the hold that must not be.
@@ -821,6 +827,12 @@ What enforces it:
 habit and review;
 `run-seats-cure.unit.test.ts` pins the shape on this tree's roster
 (NeuralWatt and Bedrock wet,
-the wide bench 3 of 7 against a quorum of 4),
+the wide bench 3 of 7 against a quorum of 4,
+with Synthetic and Hyper held,
+Synthetic and OpenRouter held,
+and,
+with NeuralWatt wet,
+Synthetic,
+Bedrock and Hyper held),
 and `run-seats-hold-need.unit.test.ts` pins it for the translate lane.
 The ruling is the lead's and is open to the owner's veto.
