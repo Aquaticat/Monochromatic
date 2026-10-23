@@ -445,6 +445,33 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES A $ref THAT RESOLVES TO NOTHING, naming the node that holds it (R8), and sends one that '
+        + 'resolves',
+      fn: async () => {
+        /**
+         Refusal for a pointer into a definition nobody wrote.
+         */
+        const refusal = refusalTextOf({
+          schema: {
+            type: 'object',
+            properties: { ghost: { $ref: '#/$defs/nobody', }, },
+            $defs: { cat: { type: 'string', }, },
+          },
+        },);
+        expect(refusal,).toContain('ClaudeSchemaKeywordError',);
+        expect(refusal,).toContain('names no schema',);
+        expect(refusal,).toContain('root.ghost',);
+        expect(refusalTextOf({
+          schema: {
+            type: 'object',
+            properties: { cat: { $ref: '#/$defs/cat', }, },
+            $defs: { cat: { type: 'string', }, },
+          },
+        },),).toBe('',);
+      },
+    },),
+
+    it({
       name: 'REFUSES AN enum MEMBER THAT IS NOT A STRING, A NUMBER, A BOOLEAN OR NULL (N5): the page allows no complex '
         + 'type in an enum',
       fn: async () => {

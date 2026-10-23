@@ -126,7 +126,7 @@ await describe({
 
     it({
       name: 'REFUSES A $ref BACK TO THE ROOT AND A CYCLE BETWEEN TWO DEFINITIONS, and follows a definition used twice '
-        + 'once, a pointer with an escaped segment, and a pointer that names nothing, none of which is a cycle',
+        + 'once and a pointer with an escaped segment, none of which is a cycle',
       fn: async () => {
         expect(structuralRefusalOf({
           schema: { type: 'object', properties: { child: { $ref: '#', }, }, },
@@ -148,9 +148,40 @@ await describe({
               mother: { $ref: '#/$defs/cat', },
               father: { $ref: '#/$defs/cat', },
               uncle: { $ref: '#/$defs/a~1b', },
-              ghost: { $ref: '#/$defs/nobody', },
             },
             $defs: { cat: { type: 'string', }, 'a/b': { type: 'string', }, },
+          },
+        },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A $ref THAT NAMES NOTHING IN THE DOCUMENT (R8): a pointer into a definition nobody wrote is an '
+        + 'HTTP 400 at the first call, and was passed here because the walk stopped at a target it could not find. '
+        + 'The control arms are a pointer that resolves and a pointer to a Boolean schema',
+      fn: async () => {
+        expect(structuralRefusalOf({
+          schema: {
+            type: 'object',
+            properties: { ghost: { $ref: '#/$defs/nobody', }, },
+            $defs: { cat: { type: 'string', }, },
+          },
+        },),).toEqual([{ refusedKeyword: 'a $ref that names no schema', schemaPath: 'root.ghost', },],);
+        expect(structuralRefusalOf({
+          schema: { type: 'object', properties: { ghost: { $ref: '#/nope', }, }, },
+        },),).toEqual([{ refusedKeyword: 'a $ref that names no schema', schemaPath: 'root.ghost', },],);
+        expect(structuralRefusalOf({
+          schema: {
+            type: 'object',
+            properties: { cat: { $ref: '#/$defs/cat', }, },
+            $defs: { cat: { type: 'object', properties: { kitten: { $ref: '#/$defs/missing', }, }, }, },
+          },
+        },),).toEqual([{ refusedKeyword: 'a $ref that names no schema', schemaPath: 'root.cat', },],);
+        expect(structuralRefusalOf({
+          schema: {
+            type: 'object',
+            properties: { cat: { $ref: '#/$defs/cat', }, any: { $ref: '#/$defs/anything', }, },
+            $defs: { cat: { type: 'string', }, anything: true, },
           },
         },),).toEqual([],);
       },
