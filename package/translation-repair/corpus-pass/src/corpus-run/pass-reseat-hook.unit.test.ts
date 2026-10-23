@@ -19,6 +19,10 @@ import {
 
 import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider';
 import {
+  type ProviderName,
+  providerRecord,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
   levelCapturingLogger,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { reseatHookFor, } from '../../dist/final/node/index.mjs';
@@ -124,7 +128,7 @@ const WIDE_ONE_SHORT: BudgetView = {
 function leftAfter({ asks, }: { readonly asks: number; },): number {
   return Math.max(
     1,
-    30_000 - (asks * 1_000),
+    10_000_000 - (asks * 1_000),
   );
 }
 
@@ -187,6 +191,105 @@ function shortWarningsOf({ lines, }: { readonly lines: readonly string[]; },): r
   },);
 }
 
+/**
+ Bedrock the only wet provider: the consolidation's slate and wide benches are both short, and NeuralWatt reads dry.
+ */
+const SLATE_AND_WIDE_SHORT: BudgetView = {
+  neuralwatt: true,
+  synthetic: true,
+  bedrock: false,
+  deepseek: true,
+  xiaomi: true,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
+ Bedrock and Synthetic wet: only the consolidation's slate bench is short, and NeuralWatt reads dry.
+ */
+const SLATE_SHORT: BudgetView = { ...SLATE_AND_WIDE_SHORT, synthetic: false, };
+
+/**
+ The hook for a consolidation whose NeuralWatt reads dry on a spent day with a return named past what the pass has
+ left, under stated holds that shrink with every ask: the day-end shape, where every figure in a warning's text moves
+ from one slice to the next.
+
+ @param lines - receives what the readings log
+
+ @returns The hook and the state the case moves: the view the readings find and the providers held
+
+ @example
+ ```ts
+ const { hook, state, } = hookOverDayEnd({ lines: [], },);
+ ```
+ */
+function hookOverDayEnd({ lines, }: { readonly lines: string[]; },) {
+  const state: { view: BudgetView; held: readonly ProviderName[]; asks: number; } = {
+    view: SLATE_AND_WIDE_SHORT,
+    held: [],
+    asks: 0,
+  };
+  const hook = reseatHookFor({
+    client: {
+      providerDryness: async () => state.view,
+      providerMeterStates: metersAllWet,
+      providerHolds: () => {
+        state.asks += 1;
+        return providerRecord({
+          of: function heldFor(provider,): number {
+            return state.held.includes(provider,) ? leftAfter({ asks: state.asks, },) : 0;
+          },
+        },);
+      },
+      neuralwattDryness: () => ({
+        kind: 'spent-day',
+        dayStart: '2026-10-22T19:15:08.000Z',
+        returnsInMs: Math.max(
+          1,
+          18_000_000 - (state.asks * 1_000),
+        ),
+      }),
+      passLeftMs: () => Math.max(
+        1,
+        3_600_000 - (state.asks * 1_000),
+      ),
+    },
+    signal: new AbortController().signal,
+    phase: 'consolidation',
+    unseated: UNSEATED,
+    seatingOf: () => ({ seating: RESEATED, line: 'slice re-seated under a hold', }),
+    l: levelCapturingLogger({ lines, },),
+  },);
+  return { hook, state, };
+}
+
+/**
+ Runs slices one after another through the hook.
+
+ @param hook - the hook under test
+
+ @param count - how many slices
+
+ @example
+ ```ts
+ await runSlices({ hook, count: 40, },);
+ ```
+ */
+async function runSlices(
+  {
+    hook,
+    count,
+  }: {
+    readonly hook: () => Promise<unknown>;
+    readonly count: number;
+  },
+): Promise<void> {
+  await Array.from({ length: count, },).reduce(async function nextSlice(previous: Promise<unknown>,): Promise<unknown> {
+    await previous;
+    return await hook();
+  }, Promise.resolve(),);
+}
+
 await describe({
   name: reseatHookFor.name,
   concurrency: 1,
@@ -242,6 +345,42 @@ await describe({
         await hook();
         await hook();
         expect(shortWarningsOf({ lines, },),).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'KEYS THE ONE WARNING ON WHAT IT IS ABOUT, NOT ON ITS TEXT: with NeuralWatt dry on a spent day whose return '
+        + 'is named past the pass, and every figure in the text shrinking from slice to slice, 40 slices under a '
+        + 'Xiaomi hold write one warning; a change of the held providers, a change of the short benches, and the '
+        + 'holds ending and coming back each write one more',
+      fn: async () => {
+        const lines: string[] = [];
+        const { hook, state, } = hookOverDayEnd({ lines, },);
+        state.held = ['xiaomi',];
+        await runSlices({ hook, count: 40, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(1,);
+
+        // A second provider held: new signature.
+        state.held = ['xiaomi', 'deepseek',];
+        await runSlices({ hook, count: 5, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(2,);
+
+        // Back to the first set: another change.
+        state.held = ['xiaomi',];
+        await runSlices({ hook, count: 5, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(3,);
+
+        // The same hold, fewer short benches (the slate alone): another change.
+        state.view = SLATE_SHORT;
+        await runSlices({ hook, count: 5, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(4,);
+
+        // The hold ends, a slice runs free, and the same hold comes back: said again.
+        state.held = [];
+        await runSlices({ hook, count: 1, },);
+        state.held = ['xiaomi',];
+        await runSlices({ hook, count: 5, },);
+        expect(shortWarningsOf({ lines, },),).toHaveLength(5,);
       },
     },),
   ],
