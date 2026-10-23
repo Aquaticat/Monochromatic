@@ -41,7 +41,8 @@ import {
 import {
   metersAllWet,
 } from '@monochromatic-dev/translation-repair-provider/ts/meter-states.test-fixture.ts';
-import { readJudgeSeats, } from '../../dist/final/node/index.mjs';
+import { type JudgeSeatPhase, readJudgeSeats, } from '../../dist/final/node/index.mjs';
+import { shortWarningOf, } from './run-seats-short-warning.test-fixture.ts';
 
 /**
  NeuralWatt and Bedrock wet and every other provider dry: the wide bench is 3 of 8 reachable against a quorum of 4.
@@ -94,6 +95,37 @@ const WIDE_THREE_SHORT: BudgetView = {
 };
 
 /**
+ NeuralWatt, Bedrock, DeepSeek and Xiaomi wet and the rest dry: the wide bench is 3 of 8 reachable against a
+ quorum of 4, and the editors, refiners and translators the lanes phase also leans on are each at their quorum, so
+ the wide bench is the only one short. The Claude key back makes the wide bench 4 of 8.
+ */
+const WIDE_ONLY_SHORT: BudgetView = {
+  neuralwatt: false,
+  synthetic: true,
+  bedrock: false,
+  deepseek: false,
+  xiaomi: false,
+  anthropic: true,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
+ NeuralWatt, DeepSeek and Xiaomi wet and the rest dry: the readers bench is 1 of 6 reachable against a pair. Synthetic,
+ Bedrock, Hyper or OpenRouter back reach the pair, and the Claude key back adds no reader.
+ */
+const READERS_ONE_SHORT: BudgetView = {
+  neuralwatt: false,
+  synthetic: true,
+  bedrock: true,
+  deepseek: false,
+  xiaomi: false,
+  anthropic: true,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
  Reads one phase's seats over a scripted view under holds that all end with the first wait, counting the dryness reads.
 
  @param held - providers the holds are on, each for the short hold
@@ -101,6 +133,8 @@ const WIDE_THREE_SHORT: BudgetView = {
  @param lines - receives what the reading logs
 
  @param view - dryness every read returns (the wide bench one seat short by default)
+
+ @param phase - phase the seats are read for (the lane contest by default)
 
  @returns Dryness reads the reading took: 1 without a wait, 2 with one
 
@@ -114,10 +148,12 @@ async function readsUnderHolds(
     held,
     lines,
     view = WIDE_ONE_SHORT,
+    phase = 'lane contest',
   }: {
     readonly held: readonly ProviderName[];
     readonly lines: string[];
     readonly view?: BudgetView;
+    readonly phase?: JudgeSeatPhase;
   },
 ): Promise<number> {
   /**
@@ -142,7 +178,7 @@ async function readsUnderHolds(
           : NO_HOLDS;
       },
     },
-    phase: 'lane contest',
+    phase,
     signal: new AbortController().signal,
     l: levelCapturingLogger({ lines, },),
     pollMs: 5,
@@ -184,6 +220,8 @@ async function readsUnderHold(
 
  @param lines - what the reading logged
 
+ @param phase - phase the seats were read for (the lane contest by default)
+
  @returns Line, empty where the reading wrote no such warning (a case that expects one then fails on its content)
 
  @example
@@ -191,10 +229,16 @@ async function readsUnderHold(
  const warning = noWaitWarningOf({ lines, },);
  ```
  */
-function noWaitWarningOf({ lines, }: { readonly lines: readonly string[]; },): string {
-  return lines.find(function isNoWaitWarning(line,): boolean {
-    return line.startsWith('warn JUDGE SEATS phase=lane contest',) && line.includes('short of quorum',);
-  },) ?? '';
+function noWaitWarningOf(
+  {
+    lines,
+    phase = 'lane contest',
+  }: {
+    readonly lines: readonly string[];
+    readonly phase?: JudgeSeatPhase;
+  },
+): string {
+  return shortWarningOf({ lines, phase, },);
 }
 
 await describe({
@@ -229,12 +273,40 @@ await describe({
     },),
 
     it({
-      name: 'WAITS OUT A HOLD ON THE CLAUDE KEY WHEN ITS RETURN CURES THE SHORTFALL (the control for the Claude key as '
-        + 'the held provider): with the Claude key back the wide bench is 4 of 8 against a quorum of 4, so the wait '
-        + 'buys the quorum and the line announcing it prints the Claude key\'s hold',
+      name: 'DOES NOT WAIT OUT A HOLD ON THE CLAUDE KEY IN THE LANE CONTEST, WHICH JUDGES WITH THE LATE BENCH: the '
+        + 'Claude key back makes the wide bench 4 of 8 but the late bench stays 3 of 7 against a quorum of 4 '
+        + '(Haiku sits on the wide bench only), so the wait buys nothing and the line says the hold would not help',
       fn: async () => {
         const lines: string[] = [];
-        expect(await readsUnderHold({ held: 'anthropic', lines, },),).toBe(2,);
+        expect(await readsUnderHold({ held: 'anthropic', lines, },),).toBe(1,);
+        expect(noWaitWarningOf({ lines, },),).toContain('held: anthropic (1 s); it would not help cure a short bench',);
+        expect(noWaitWarningOf({ lines, },),).toContain(' late 3 of 7 reachable, quorum 4',);
+      },
+    },),
+
+    it({
+      name: 'DOES NOT WAIT OUT A HOLD ON THE CLAUDE KEY IN THE PAGE CONSISTENCY PASS, WHICH ASKS THE LATE BENCH: the '
+        + 'wide bench is 3 of 8 and the Claude key back makes it 4 of 8, but the late bench the pass asks stays '
+        + '3 of 7 against a quorum of 4, so the wait buys nothing',
+      fn: async () => {
+        const lines: string[] = [];
+        expect(
+          await readsUnderHolds({ held: ['anthropic',], lines, view: WIDE_ONLY_SHORT, phase: 'page consistency', },),
+        ).toBe(1,);
+        expect(noWaitWarningOf({ lines, phase: 'page consistency', },),).toContain(' late 3 of 7 reachable, quorum 4',);
+      },
+    },),
+
+    it({
+      name: 'WAITS OUT A HOLD ON THE CLAUDE KEY IN A PHASE WHOSE JUDGING BENCH IS THE WIDE ONE (the control for the '
+        + 'Claude key as the held provider): the lanes phase seats critics and panel from the wide bench, which is 3 '
+        + 'of 8 and with the Claude key back 4 of 8 against a quorum of 4, so the wait buys the quorum and the line '
+        + 'announcing it prints the Claude key\'s hold',
+      fn: async () => {
+        const lines: string[] = [];
+        expect(
+          await readsUnderHolds({ held: ['anthropic',], lines, view: WIDE_ONLY_SHORT, phase: 'lanes', },),
+        ).toBe(2,);
         /**
          The line announcing the wait, which prints each provider's hold as the wait counts it.
          */
@@ -293,6 +365,32 @@ await describe({
         },);
         expect(waiting,).toContain('synthetic 40ms',);
         expect(waiting,).toContain('deepseek 0ms',);
+      },
+    },),
+
+    it({
+      name: 'WAITS FOR SYNTHETIC ONLY WHEN THE CLAUDE KEY IS HELD BESIDE IT IN THE PICTURES PHASE: with NeuralWatt, '
+        + 'DeepSeek and Xiaomi wet the readers are 1 of 6 against a pair, Synthetic back cures them and the Claude '
+        + 'key back adds no reader (Haiku and the other Claude models transcribe no pictures), so the hold the wait '
+        + 'counts is Synthetic\'s alone',
+      fn: async () => {
+        const lines: string[] = [];
+        expect(
+          await readsUnderHolds({
+            held: ['synthetic', 'anthropic',],
+            lines,
+            view: READERS_ONE_SHORT,
+            phase: 'pictures',
+          },),
+        ).toBe(2,);
+        /**
+         The line announcing the wait, which prints each provider's hold as the wait counts it.
+         */
+        const waiting = lines.find(function isWaiting(line,): boolean {
+          return line.includes('waiting ',);
+        },);
+        expect(waiting,).toContain('synthetic 40ms',);
+        expect(waiting,).toContain('anthropic 0ms',);
       },
     },),
 

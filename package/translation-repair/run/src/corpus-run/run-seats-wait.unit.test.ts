@@ -325,7 +325,7 @@ await describe({
         },),
         it({
           name: 'NAMES EVERY PHASE\'S BENCHES as the table in `run-seats-wait.ts` documents them, the insertion '
-            + 'admission on the wide bench it asks as the preparation does (ledger X12), so a phase never waits on '
+            + 'admission on the roster it asks as the preparation does (ledger X12), so a phase never waits on '
             + 'a bench it does not ask nor starts past one it does',
           fn: async () => {
             /**
@@ -346,14 +346,14 @@ await describe({
                 return [phase, phaseBenches({ phase, },),];
               },),),
             ).toEqual({
-              preparation: ['wide',],
+              preparation: ['roster',],
               pictures: ['readers',],
-              'insertion admission': ['wide',],
-              lanes: ['wide', 'editors', 'refiners', 'translators',],
+              'insertion admission': ['roster',],
+              lanes: ['wide', 'select', 'editors', 'refiners', 'translators',],
               'translate lane': ['translators', 'select',],
-              'lane contest': ['wide',],
-              consolidation: ['slate', 'wide',],
-              'page consistency': ['wide', 'translators',],
+              'lane contest': ['late',],
+              consolidation: ['slate', 'late',],
+              'page consistency': ['late', 'translators',],
             },);
           },
         },),
