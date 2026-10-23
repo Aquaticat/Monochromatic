@@ -642,9 +642,9 @@ await describe({
       },
     },),
     it({
-      name: 'PARKS AND REQUEUES THE ENTRY A WRITING BENCH ERROR ENDED when the error carries NeuralWatt\'s return inside '
-        + 'what the pass has left: the entry is attempted again after the wait with no verdict printed for the first '
-        + 'attempt, and an error without a return ends the entry as before',
+      name: 'PARKS AND REQUEUES THE ENTRY A WRITING BENCH ERROR ENDED when the error carries NeuralWatt\'s return '
+        + 'inside what the pass has left: the entry is attempted again after the wait with no verdict printed for '
+        + 'the first attempt, and an error without a return ends the entry as before',
       fn: async (ctx) => {
         resetRunSpend();
         using printed = relayingConsoleLog({ sinon: ctx.sinon, },);

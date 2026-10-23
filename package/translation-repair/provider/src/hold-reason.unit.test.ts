@@ -125,16 +125,16 @@ await describe({
         },),
 
         it({
-          name: 'SAYS THE RETURN IS PAST WHAT THE PASS HAS LEFT only when it is, and adds nothing for a return inside '
-            + 'it',
+          name: 'SAYS THE RETURN IS PAST WHAT THE PASS HAS LEFT only when it is, and adds nothing for a '
+            + 'return inside it',
           fn: async () => {
             /**
              A spent day 700 s from its return.
              */
             const dryness = { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 700_000, } as const;
             expect(dryCauseClausesOf({ dryness, passLeftMs: 600_000, },),).toEqual([
-              'NeuralWatt reads dry and its day starts again at 19:15:08 UTC (in 11 min 40 s), which is past the 10 '
-                + 'min '
+              'NeuralWatt reads dry and its day starts again at 19:15:08 UTC (in 11 min 40 s), which is past '
+                + 'the 10 min '
                 + 'this pass has left',
             ],);
             expect(dryCauseClausesOf({ dryness, passLeftMs: 700_000, },),).toEqual([
@@ -149,7 +149,11 @@ await describe({
             /**
              A spent day an hour from its return.
              */
-            const dryness = { kind: 'spent-day', dayStart: '2026-10-22T19:15:08.000Z', returnsInMs: 3_600_000, } as const;
+            const dryness = {
+              kind: 'spent-day',
+              dayStart: '2026-10-22T19:15:08.000Z',
+              returnsInMs: 3_600_000,
+            } as const;
             expect(dryCauseClausesOf({ dryness, passLeftMs: 1_200_000, boundOwner: 'entry', },),).toEqual([
               'NeuralWatt reads dry and its day starts again at 19:15:08 UTC (in 1 h), which is past the 20 min '
                 + 'the entry has left',

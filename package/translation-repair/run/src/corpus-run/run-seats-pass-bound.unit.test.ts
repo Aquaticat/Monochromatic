@@ -1,6 +1,6 @@
 /**
- Tests what the seat reader says and does when the return it was told of lies past what the pass has left, and the
- bound itself.
+ Tests what the seat reader says and does when the return it was told of lies past what the pass has
+ left, and the bound itself.
 
  The reader refuses at once for such a return, and the words it refuses with state the return as past the pass in every
  place it speaks: the error line of a phase that goes on, the warning of a bench short of quorum, and the run-ending

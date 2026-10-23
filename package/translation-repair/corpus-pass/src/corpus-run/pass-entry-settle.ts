@@ -27,11 +27,9 @@ import type {
 /**
  Runs one chosen entry to settlement, then retires its cache if it settled.
 
- Never throws for a failed entry. A pass over a corpus stops for a broken
- SCHEDULER, not for a broken document: an entry that aborts on its ceiling or
- raises out of a stage records `status=ERROR` and the pass continues to the
- next one. Anything raised here would therefore end the run, which is why
- nothing is.
+ Never throws for a failed entry. A pass over a corpus stops for a broken SCHEDULER, not for a broken document: an entry
+ that aborts on its ceiling or raises out of a stage records `status=ERROR` and the pass continues to the next one.
+ Anything raised here would therefore end the run, which is why nothing is.
 
  Returns scheduling disposition so quality interruption cannot masquerade as
  cache-progress reason for fresh whole-entry attempt.
@@ -47,8 +45,7 @@ import type {
  @param declinedDir - directory a decline record is written into when the
  archive's note says the whole page is the author's own English
 
- @param sliceCacheDir - root under which this entry claims its own cache
- subdirectory
+ @param sliceCacheDir - root under which this entry claims its own cache subdirectory
 
  @param tip - repository head recorded into the artifact
 

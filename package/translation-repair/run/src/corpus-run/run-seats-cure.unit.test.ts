@@ -179,17 +179,17 @@ async function readsUnderHold(
 
  @param lines - what the reading logged
 
- @returns The line, none where the reading wrote no such warning
+ @returns The line, empty where the reading wrote no such warning (a case that expects one then fails on its content)
 
  @example
  ```ts
  const warning = noWaitWarningOf({ lines, },);
  ```
  */
-function noWaitWarningOf({ lines, }: { readonly lines: readonly string[]; },): string | undefined {
+function noWaitWarningOf({ lines, }: { readonly lines: readonly string[]; },): string {
   return lines.find(function isNoWaitWarning(line,): boolean {
     return line.startsWith('warn JUDGE SEATS phase=lane contest',) && line.includes('short of quorum',);
-  },);
+  },) ?? '';
 }
 
 await describe({
@@ -305,8 +305,8 @@ await describe({
     },),
 
     it({
-      name: 'NAMES BOTH SKIPPED HOLDS WITH "neither": DeepSeek and Xiaomi held, and neither would help cure the wide '
-        + 'bench',
+      name: 'NAMES BOTH SKIPPED HOLDS WITH "neither": DeepSeek and Xiaomi held, and neither would help cure '
+        + 'the wide bench',
       fn: async () => {
         const lines: string[] = [];
         await readsUnderHolds({ held: ['deepseek', 'xiaomi',], lines, },);
@@ -317,13 +317,13 @@ await describe({
 
     it({
       name: 'SAYS NO NEURALWATT RETURN ONLY WHEN NEURALWATT IS DRY WITH NONE INSIDE WHAT THE PASS HAS LEFT: with '
-        + 'NeuralWatt wet the clause is absent, and with NeuralWatt dry and no hold on it the clause follows the '
-        + 'skipped holds',
+        + 'NeuralWatt wet the clause is absent, and with NeuralWatt dry and no hold on it the clause '
+        + 'follows the skipped holds',
       fn: async () => {
         /**
          The warning of a reading over a view, with DeepSeek held.
          */
-        async function warningOver({ view, }: { readonly view: BudgetView; },): Promise<string | undefined> {
+        async function warningOver({ view, }: { readonly view: BudgetView; },): Promise<string> {
           const lines: string[] = [];
           await readsUnderHolds({
             held: ['deepseek',],

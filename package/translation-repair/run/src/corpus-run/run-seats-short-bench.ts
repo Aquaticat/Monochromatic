@@ -16,7 +16,7 @@ import { judgeSeatsFor, } from './run-seats.ts';
 import {
   holdsThatCureShortBenches,
   shortBenchesWithCure,
-  skippedHoldsWords,
+  noWaitWordsOf,
 } from './run-seats-hold-need.ts';
 import {
   holdsWithinPass,
@@ -217,11 +217,12 @@ export async function readDrynessPastShortBench(
     /**
      What the reading says in place of a wait: the running holds it skipped and why, or that no return was named.
      */
-    const noWait = skippedHoldsWords({
+    const noWait = noWaitWordsOf({
       running,
       counted: holds,
       dry: first,
-    },) ?? NO_WAITABLE_RETURN;
+      nothingHeld: NO_WAITABLE_RETURN,
+    },);
     /**
      The unreachable benches with why NeuralWatt reads dry, so a refusal states the true cause.
      */

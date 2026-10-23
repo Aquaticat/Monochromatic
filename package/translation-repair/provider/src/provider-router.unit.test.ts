@@ -880,8 +880,8 @@ await describe({
 
     it({
       name: 'ENDS THE RUN, with the stop line naming Xiaomi, when every provider reads dry but Xiaomi and Xiaomi '
-        + 'serves only checker seats in the run\'s roster, and loses the seat as before when Xiaomi serves a writer '
-        + 'seat',
+        + 'serves only checker seats in the run\'s roster, and loses the seat as before when Xiaomi serves '
+        + 'a writer seat',
       fn: async () => {
         /**
          Providers that serve a model seated in a writing bench, Xiaomi not among them.

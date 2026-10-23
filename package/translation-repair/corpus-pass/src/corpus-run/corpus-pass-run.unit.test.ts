@@ -715,8 +715,8 @@ await describe({
          */
         const clock = { now: 1_000, };
         /**
-         What the client read at the first entry, then after the clock ran to 20 min short of the soft budget, then a
-         minute later.
+         What the client read at the first entry, then after the clock ran to 20 min short of the soft budget,
+         then a minute later.
          */
         const seen: number[] = [];
 

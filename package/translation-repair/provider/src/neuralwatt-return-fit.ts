@@ -4,8 +4,7 @@ import { durationWordsOf, } from './duration-words.ts';
 // ONE COMPARISON OF A NEURALWATT RETURN AGAINST A BOUND, shared by every site that decides whether a return can be
 // waited for: the hold the budgets name (`neuralwatt-return-mark.ts`), the clause a refusal adds when the return lies
 // past the pass (`hold-reason.ts`), and the pass's park (`pass-dry-stop.ts`). The distance compared is the one the
-// refusal
-// states, margin included, so the three cannot disagree on a return that sits within the margin of the bound.
+// refusal states, margin included, so the three cannot disagree on a return that sits within the margin of the bound.
 
 /**
  Whose bound a pass-left figure is: the entry's own hard cap when that is the smaller of the two bounds an entry runs

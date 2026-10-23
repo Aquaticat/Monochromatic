@@ -193,7 +193,10 @@ await describe({
             expect(told,).toEqual([withReturn,],);
             expect(tallyCaughtEntry({
               entryId: 'Cat',
-              error: new WritingBenchUnreachableError({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },),
+              error: new WritingBenchUnreachableError({
+                phase: 'lanes',
+                clauses: ['editors 0 of 3 reachable, floor 2',],
+              },),
               durationMs: 5,
               aborted: false,
               endRun: function endRun({ error, },): void {

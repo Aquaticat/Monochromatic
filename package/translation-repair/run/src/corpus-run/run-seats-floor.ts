@@ -95,8 +95,8 @@ export class WritingBenchUnreachableError extends Error {
 
    @param clauses - one clause per bench below the floor
 
-   @param neuralwattReturnsInMs - milliseconds until NeuralWatt's day starts again, where that return lifts the bench to
-   its floor
+   @param neuralwattReturnsInMs - milliseconds until NeuralWatt's day starts again, where that return
+   lifts the bench to its floor
 
    @param neuralwattReturnsAt - the time of day the return falls at, with its zone
 
@@ -118,8 +118,8 @@ export class WritingBenchUnreachableError extends Error {
     },
   ) {
     /**
-     The sentence about the returns, one of two fixed sentences that name at most the UTC time of day NeuralWatt's day
-     starts at.
+     The sentence about the returns, one of two fixed sentences that name at most the UTC time of day
+     NeuralWatt's day starts at.
      */
     const returnSentence = (neuralwattReturnsInMs === undefined)
       ? 'no provider has named a return the pass can wait for, so the entry stops for a pass that has the bench'

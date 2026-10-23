@@ -77,8 +77,8 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'IS THE 48 SECONDS XINGZ6019 STOOD SHORT FOR: spent at 19:14:20 UTC, the day starting again at 19:15:08 '
-        + 'UTC',
+      name: 'IS THE 48 SECONDS XINGZ6019 STOOD SHORT FOR: spent at 19:14:20 UTC, the day starting again '
+        + 'at 19:15:08 UTC',
       fn: async () => {
         expect(drynessAt({ at: '2026-10-23T19:14:20.000Z', },),).toEqual(spentDayIn({ returnsInMs: 48_000, },),);
         expect(drynessAt({ at: '2026-10-22T19:14:20.000Z', },),).toEqual(spentDayIn({ returnsInMs: 48_000, },),);

@@ -34,8 +34,8 @@ await describe({
     },),
 
     it({
-      name: 'COUNTS THE RETURN AS PASSED TWO MILLISECONDS EARLY, the slack for a timer that fires a hair before its '
-        + 'time',
+      name: 'COUNTS THE RETURN AS PASSED TWO MILLISECONDS EARLY, the slack for a timer that fires a hair '
+        + 'before its time',
       fn: async () => {
         const clock = { now: 1_000, };
         const mark = createNeuralWattReturnMark({ now: () => clock.now, },);

@@ -102,8 +102,8 @@ type NeuralWattSeatClient = {
 };
 
 /**
- The seat reader's client over the real budgets, with NeuralWatt dry for the spent day and Synthetic the only wet
- provider.
+ The seat reader's client over the real budgets, with NeuralWatt dry for the spent day and
+ Synthetic the only wet provider.
 
  @param msBeforeReturn - how long before NeuralWatt's day starts again the wall clock reads
 

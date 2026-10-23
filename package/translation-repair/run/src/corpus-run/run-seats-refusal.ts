@@ -73,8 +73,7 @@ export function writingProvidersOfClient(
 /**
  The clauses of an unreachable writing bench with why NeuralWatt reads dry, only the true cause: a blocked key states
  its own time, energy held by calls in flight says so, a day the account still shows spent says that, and a spent day
- with a
- return states the time and the distance.
+ with a return states the time and the distance.
 
  @param clauses - one clause per writing bench below its floor
 
@@ -341,11 +340,12 @@ export function writtenRefusal(
       clauses,
       // THE RETURN IS CARRIED ONLY WHEN IT REACHES THE FLOOR: a wet provider that cannot lift the bench would leave the
       // pass parked for a return that changes nothing. The roster answers it (`returnLiftsWritingBenches`).
-      ...(((returnsInMs !== undefined) && dry.neuralwatt && returnLiftsWritingBenches({
-        dry,
-        back: ['neuralwatt',],
-        names: phaseBenches({ phase, },),
-      },))
+      ...(((returnsInMs !== undefined) && dry.neuralwatt
+        && returnLiftsWritingBenches({
+          dry,
+          back: ['neuralwatt',],
+          names: phaseBenches({ phase, },),
+        },))
         ? returnCarriedBy({
           returnsInMs,
           ...((dryness === undefined) ? {} : { dryness, }),

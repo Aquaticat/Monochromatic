@@ -76,8 +76,8 @@ export type RunClient = ModelClient & {
 
   /**
    Why NeuralWatt reads dry in the last reading, so the seat reader's refusal states only the true cause, and whether
-   the hold that keeps it out is its day start (`NeuralWattCause`). Absent on a client built over budgets that report
-   none.
+   the hold that keeps it out is its day start (`NeuralWattCause`). Absent on a client built over
+   budgets that report none.
    */
   readonly neuralwattDryness?: NeuralWattCause['neuralwattDryness'];
 

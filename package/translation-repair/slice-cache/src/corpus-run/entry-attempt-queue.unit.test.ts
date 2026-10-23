@@ -311,8 +311,8 @@ await describe({
     },),
     it({
       name: 'RESUMES AN ENTRY A WAIT INTERRUPTED at the front of the queue after the wait, reading no verdict for the '
-        + 'interrupted attempt: no REATTEMPT, no STALLED, no INCOMPLETE line, and the entries behind it keep their '
-        + 'order',
+        + 'interrupted attempt: no REATTEMPT, no STALLED, no INCOMPLETE line, and the entries behind it '
+        + 'keep their order',
       fn: async (ctx,) => {
         /**
          What happened, in order: attempts by id, and the waits taken before an attempt.

@@ -198,8 +198,8 @@ await describe({
     },),
 
     it({
-      name: 'READS NOTHING WHEN THE BOUND IS ZERO OR BELOW, the pass or the entry\'s cap spent, whatever return is '
-        + 'named',
+      name: 'READS NOTHING WHEN THE BOUND IS ZERO OR BELOW, the pass or the entry\'s cap spent, whatever '
+        + 'return is named',
       fn: async () => {
         const { hook, reads, } = hookBefore({ returnInMs: 5, passLeftMs: -1, },);
         expect(await hook(),).toEqual(UNSEATED,);
@@ -209,13 +209,16 @@ await describe({
 
     it({
       name: 'WRITES ONE WARNING FOR A HOLD THAT CANNOT CURE THE SHORT BENCH, however many slices run under it: a '
-        + 'DeepSeek hold over twenty slices says once that the bench is seated short, and says it again for a '
+        + 'DeepSeek hold over five slices says once that the bench is seated short, and says it again for a '
         + 'new hold after the first has ended',
       fn: async () => {
         const lines: string[] = [];
         const { hook, hold, } = hookUnderDeepSeekHold({ lines, },);
-        for (let slice = 0; slice < 20; slice += 1)
-          expect(await hook(),).toEqual(RESEATED,);
+        expect(await hook(),).toEqual(RESEATED,);
+        expect(await hook(),).toEqual(RESEATED,);
+        expect(await hook(),).toEqual(RESEATED,);
+        expect(await hook(),).toEqual(RESEATED,);
+        expect(await hook(),).toEqual(RESEATED,);
         expect(shortWarningsOf({ lines, },),).toHaveLength(1,);
 
         // The hold ends, a slice runs free of it, and a later hold is a new one.

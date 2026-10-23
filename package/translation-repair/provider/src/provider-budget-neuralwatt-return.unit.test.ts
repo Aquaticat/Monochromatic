@@ -96,8 +96,8 @@ const FRESH_DAY: Reading = {
 
  @param staysSpent - whether every later reading still shows the spent day (default: the new day shows from the second)
 
- @param hyperCooldownMs - when given, the fleet carries a Hyper meter that reads dry and a refusal holds it out this
- long
+ @param hyperCooldownMs - when given, the fleet carries a Hyper meter that reads dry and a
+ refusal holds it out this long
 
  @returns Budgets that trust a reading for {@link FRESH_MS} and add no margin to a return
 

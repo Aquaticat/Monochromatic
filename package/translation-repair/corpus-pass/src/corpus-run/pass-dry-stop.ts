@@ -269,26 +269,22 @@ function returnNoteOf(
 }
 
 /**
- The failure as a refusal the gate acts on.
+ Whether a failure is a refusal the gate acts on.
 
  @param error - what a guarded call raised, or what ended an entry
 
- @returns The router's every-provider-dry refusal, or a writing bench error that carries a NeuralWatt return; none for
- any other failure
+ @returns Whether it is the router's every-provider-dry refusal, or a writing bench error that
+ carries a NeuralWatt return
 
  @example
  ```ts
- const refusal = refusalOf({ error, },);
+ if (isParkingRefusal(error,))
+   state.parks.push(parkFor(error,));
  ```
  */
-function refusalOf(
-  { error, }: { readonly error: unknown; },
-): EveryProviderDryError | WritingBenchUnreachableError | undefined {
-  if (error instanceof EveryProviderDryError)
-    return error;
-  return ((error instanceof WritingBenchUnreachableError) && (error.neuralwattReturnsInMs !== undefined))
-    ? error
-    : undefined;
+function isParkingRefusal(error: unknown,): error is EveryProviderDryError | WritingBenchUnreachableError {
+  return (error instanceof EveryProviderDryError)
+    || ((error instanceof WritingBenchUnreachableError) && (error.neuralwattReturnsInMs !== undefined));
 }
 
 /**
@@ -326,17 +322,17 @@ function refuseOn(
     readonly now: () => number;
   },
 ): void {
-  /**
-   The failure as a refusal the gate acts on: the router's every-provider-dry refusal, or a writing bench error that
-   carries the NeuralWatt return which would lift the bench.
-   */
-  const refusal = refusalOf({ error, },);
   // A PARK OR A TRIP IS MADE ONCE: calls of the same entry that meet the dry router after the first are the same event.
-  if ((refusal === undefined) || (state.cause !== undefined)
+  if ((!isParkingRefusal(error,)) || (state.cause !== undefined)
     || (state.parks
       .length
       > 0))
     return;
+  /**
+   The failure as a refusal the gate acts on: the router's every-provider-dry refusal, or a writing bench error that
+   carries the NeuralWatt return which would lift the bench.
+   */
+  const refusal = error;
 
   /**
    Milliseconds the pass has left.
@@ -382,7 +378,8 @@ function refuseOn(
       }, so the pass is parked until NeuralWatt's energy returns at `
         + `${nonNullishOrThrow(refusal.neuralwattReturnsAt,)} `
         + `(in ${durationWordsOf({ ms: nonNullishOrThrow(refusal.neuralwattReturnsInMs,), },)}); `
-        + `the entry in flight is left resumable and the pass resumes then (cause: ${refusalText({ error: refusal, },)})`,
+        + 'the entry in flight is left resumable and the pass resumes then '
+        + `(cause: ${refusalText({ error: refusal, },)})`,
     );
     state.controller
       .abort(refusal,);

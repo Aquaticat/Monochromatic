@@ -68,8 +68,8 @@ function viewWithBack(
 }
 
 /**
- Benches the phase leans on that cannot do their work in a view: short of their quorum, or a writing bench below its
- floor.
+ Benches the phase leans on that cannot do their work in a view: short of their quorum, or a
+ writing bench below its floor.
 
  @param dry - dryness per provider the benches are derived for
 
@@ -185,7 +185,8 @@ export function returnLiftsWritingBenches(
     names,
     dry: after,
   },)
-    .length === 0;
+    .length
+    === 0;
 }
 
 /**
@@ -272,8 +273,8 @@ export function holdsThatCureShortBenches(
 }
 
 /**
- The words naming the running holds the seat reader did not wait for and why, with NeuralWatt's return when it is dry
- and none lies inside what the pass has left.
+ The words a reading that does not wait says in place of a wait: the running holds it skipped and why, with NeuralWatt's
+ return when it is dry and none lies inside what the pass has left.
 
  @param running - how long each provider's refusal still holds it out, as the reader read it
 
@@ -281,25 +282,29 @@ export function holdsThatCureShortBenches(
 
  @param dry - dryness per provider, holds folded in
 
- @returns The words, or none where every running hold is waited for or none runs
+ @param nothingHeld - the words for a reading where no hold is skipped (none runs, or every one is waited for)
+
+ @returns The words
 
  @example
  ```ts
  // => 'held: xiaomi (2 h), deepseek (40 min); neither would help cure a short bench'
- const said = skippedHoldsWords({ running, counted, dry, },);
+ const said = noWaitWordsOf({ running, counted, dry, nothingHeld: 'no provider has named a return', },);
  ```
  */
-export function skippedHoldsWords(
+export function noWaitWordsOf(
   {
     running,
     counted,
     dry,
+    nothingHeld,
   }: {
     readonly running: ProviderRecord<number>;
     readonly counted: ProviderRecord<number>;
     readonly dry: BudgetView;
+    readonly nothingHeld: string;
   },
-): string | undefined {
+): string {
   /**
    Providers with a hold running that the reader does not wait for.
    */
@@ -307,7 +312,7 @@ export function skippedHoldsWords(
     return (running[provider] > 0) && (counted[provider] === 0);
   },);
   if (skipped.length === 0)
-    return undefined;
+    return nothingHeld;
   /**
    Why none of them is waited for, in the count of the list.
    */

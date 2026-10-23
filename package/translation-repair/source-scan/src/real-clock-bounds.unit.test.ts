@@ -439,14 +439,14 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 7 * HOUR_MS': {
     count: 2,
     bound: 'other',
-    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer '
-      + 'is armed',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and '
+      + 'no timer is armed',
   },
   'corpus-pass/corpus-run/pass-entry-bound.unit.test.ts#<module>: hardCapMs: 1_000': {
     count: 1,
     bound: 'other',
-    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and no timer '
-      + 'is armed',
+    reason: 'an entry\'s hard cap read against a monotonic clock the case moves by hand; nothing sleeps and '
+      + 'no timer is armed',
   },
   'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: cooldownMs: 40': {
     count: 1,
@@ -457,14 +457,14 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'corpus-pass/corpus-run/pass-dry-stop.unit.test.ts#<module>: freshForMs: 600_000': {
     count: 1,
     bound: 'other',
-    reason: 'the cache window of a budget reading, longer than the case runs so the one reading stands; the case moves '
-      + 'no clock',
+    reason: 'the cache window of a budget reading, longer than the case runs so the one reading stands; the '
+      + 'case moves no clock',
   },
   'provider/provider-budget-neuralwatt-return.unit.test.ts#<module>: statedWaitMs: 120_000': {
     count: 1,
     bound: 'read back',
-    reason: 'a refusal\'s stated wait handed to the budget layer on the case\'s own scripted clock, which sleeps '
-      + 'nothing',
+    reason: 'a refusal\'s stated wait handed to the budget layer on the case\'s own scripted clock, '
+      + 'which sleeps nothing',
   },
   'run/corpus-run/run-seats-read.unit.test.ts#<module>: hold openrouter: 60_000': {
     count: 1,

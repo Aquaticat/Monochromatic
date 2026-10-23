@@ -92,8 +92,7 @@ const DAY_TWO = '2026-10-23T19:15:08.000Z';
 
  @param dayStart - the day start the reading named
 
- @returns The refusal, carrying the distance, the time of day and the dryness the pass tells one spent day from the next
- by
+ @returns The refusal, carrying the distance, the time of day and the dryness that tells one spent day from the next
 
  @example
  ```ts
@@ -110,7 +109,7 @@ function spentDayRefusal({ dayStart, }: { readonly dayStart: string; },): EveryP
 }
 
 /**
- A bench error for a writing bench below its floor with Synthetic wet, carrying the NeuralWatt return that would lift it.
+ A bench error for a writing bench below its floor with Synthetic wet, carrying the NeuralWatt return that lifts it.
 
  @param returnsInMs - milliseconds to the return, absent for an error that carries none
 
@@ -422,8 +421,8 @@ await describe({
 
     it({
       name: 'STOPS ON A DRY REFUSAL FOR THE SAME DAY START AS THE PARK THAT ENDED, however long after: the account has '
-        + 'not rolled to a new day, and parking again would wait a day in a loop; a refusal for the next day start '
-        + 'parks again',
+        + 'not rolled to a new day, and parking again would wait a day in a loop; a refusal for the next day '
+        + 'start parks again',
       fn: async () => {
         /**
          Clock the gate reads, moved by the case.

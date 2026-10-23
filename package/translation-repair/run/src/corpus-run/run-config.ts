@@ -1191,8 +1191,8 @@ export const RUN_WRITING_PROVIDERS: ProviderRecord<boolean> = writingProvidersOf
 
  @param promptPayloadDir - optional durable payload checkpoint beneath run root
 
- @param passLeftMs - what the pass has left, which bounds the seat reader's wait for NeuralWatt's return; absent outside
- a pass
+ @param passLeftMs - what the pass has left, which bounds the seat reader's wait for NeuralWatt's
+ return; absent outside a pass
 
  @param off - providers left off, whose keys are read as unset; the owner's rulings by
  default (`PROVIDERS_LEFT_OFF`), an empty list in a case that exercises an off provider's client
@@ -1273,8 +1273,8 @@ export function runClientFrom(
       callers: clients,
       budgets,
       credentialHolds,
-      // The providers whose wet reading keeps the run going; a wet provider outside it is no budget to buy writing
-      // with.
+      // The providers whose wet reading keeps the run going; a wet provider outside it is no budget
+      // to buy writing with.
       writing: RUN_WRITING_PROVIDERS,
       // Hyper paces its calls to the account's hourly limit; while that
       // window is full, a model another provider serves goes there instead
