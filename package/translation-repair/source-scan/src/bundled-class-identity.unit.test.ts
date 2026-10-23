@@ -191,6 +191,16 @@ function withoutChain({ value, }: { readonly value: unknown; },): unknown {
  thrower side (`extends B` or `new B` in a package that bundles `b`), because it derives from or builds the copy and
  compares nothing, so no test is made there.
 
+ Also outside the scan, each shown by a planted file to give no site (round 9 re-check, rerun in round 10), one reason
+ each:
+ - a conditional class operand (`e instanceof (c ? B : Error)`): the operand is a conditional, not a name
+ - an operand in parentheses (`e instanceof (B)`, `(e.constructor) === B`): only an optional chain is unwrapped
+ - an operand under an `as` assertion (`(e.constructor as unknown) === B`): the assertion wraps the node it reads
+ - an operand under a `!` assertion (`e.constructor! === B`, `e.constructor === B!`): wrapped as the `as` form is
+ - `B.prototype.isPrototypeOf(e)`: a method call on a prototype, not a comparison
+ - `B[Symbol.hasInstance](e)`: a call on a computed member, not a comparison
+ - `switch (e.constructor) { case B: }`, `[B].includes(e.constructor)`: the class is a case or an element
+
  @param node - node read
 
  @returns Name of the class tested against, empty where the node tests none
