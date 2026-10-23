@@ -357,25 +357,31 @@ await describe({
              The measured body with the `nextRegenAt` member replaced by each text, the empty text dropping the member.
              */
             const bodies = [
-              '"nextRegenAt":"a synthetic=wet\\nINJECT",',
+              String.raw`"nextRegenAt":"a synthetic=wet\nINJECT",`,
               '"nextRegenAt":"2026-10-23T05:03:47Z",',
               '"nextRegenAt":5,',
               '',
             ].map(function bodyWith(member,): string {
               return SPENT_RENAMED_WEEKLY_BODY.replace('"nextRegenAt":"2026-10-23T05:03:47.000Z",', member,);
             },);
-            for (const bodyText of bodies) {
-              const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText, },], },);
-              const { result: meters, warned, } = await warnLinesDuring({
-                run: async function readBodyWithoutInstant() {
-                  return await readEveryMeter({
+            /**
+             The meter record read from each body by a real client, beside every warning written meanwhile.
+             */
+            const { result: records, warned, } = await warnLinesDuring({
+              run: async function readBodiesWithoutInstant() {
+                return await Promise.all(bodies.map(async function readBody(bodyText,) {
+                  const { transport, } = recordedTransport({ replies: [{ status: 200, bodyText, },], },);
+                  const meters = await readEveryMeter({
                     synthetic: createSyntheticClient({ apiKey: 'test-key', transport, },),
                     signal: AbortSignal.timeout(HANG_STOP_MS,),
                   },);
-                },
-              },);
+                  return meters.synthetic;
+                },),);
+              },
+            },);
 
-              expect(meters.synthetic,).toEqual({
+            expect(records,).toEqual(bodies.map(function dryWithUnreadableReturn() {
+              return {
                 state: 'dry',
                 fields: [
                   'syntheticWeekly=0%',
@@ -383,12 +389,12 @@ await describe({
                   'syntheticThrottled=none',
                   'syntheticWeeklyReturn=unreadable',
                 ],
-              },);
-              expect(warned,).toEqual([
-                '[translation-repair] [weeklyWindowOf] Synthetic /quotas planWeeklyLimit.nextRegenAt is missing or no ISO-8601 '
-                  + 'instant as the logger writes one; the return reads unreadable',
-              ],);
-            }
+              };
+            },),);
+            expect(warned,).toEqual(bodies.map(function warningOfBody() {
+              return '[translation-repair] [weeklyWindowOf] Synthetic /quotas planWeeklyLimit.nextRegenAt is missing or no ISO-8601 '
+                + 'instant as the logger writes one; the return reads unreadable';
+            },),);
           },
         },),
 

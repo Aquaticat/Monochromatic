@@ -230,25 +230,41 @@ await describe({
           ',"nextRegenAt":null',
           '',
         ];
-        for (const name of ['weeklyTokenLimit', 'planWeeklyLimit',]) {
-          for (const member of members) {
-            const { result: weekly, warned, } = await warnLinesDuring({
-              run: async function readUnreadableReturn() {
+        /**
+         The two block names, each tried with every member.
+         */
+        const names = ['weeklyTokenLimit', 'planWeeklyLimit',] as const;
+        /**
+         The windows read from every body, in the order of the names and then the members, beside every warning written meanwhile.
+         */
+        const { result: windows, warned, } = await warnLinesDuring({
+          run: async function readUnreadableReturns() {
+            return names.flatMap(function readUnder(name,): readonly unknown[] {
+              return members.map(function readWith(member,): unknown {
                 return parseQuotaSnapshot({ bodyText: `{"${name}":{"percentRemaining":0${member}}}`, },).weekly;
-              },
+              },);
             },);
-            expect(weekly,).toEqual({ percentRemaining: 0, },);
-            expect(Object.hasOwn(
-              weekly,
-              'nextRegenAt',
-            ),).toBe(false,);
-            expect(warned,).toEqual([
-              `[translation-repair] [weeklyWindowOf] Synthetic /quotas ${name}.nextRegenAt is missing or no ISO-8601 instant as the `
-                + 'logger writes one; the return reads unreadable',
-            ],);
-            expect(`${JSON.stringify(weekly,)}\n${warned.join('\n',)}`.includes('INJECT-SECRET',),).toBe(false,);
-          }
-        }
+          },
+        },);
+        expect(windows,).toEqual(names.flatMap(function expectedUnder(): readonly unknown[] {
+          return members.map(function expectedWith(): unknown {
+            return { percentRemaining: 0, };
+          },);
+        },),);
+        // ABSENT rather than present and undefined: the property must not exist at all.
+        expect(windows.some(function hasReturn(window,): boolean {
+          return Object.hasOwn(
+            window as object,
+            'nextRegenAt',
+          );
+        },),).toBe(false,);
+        expect(warned,).toEqual(names.flatMap(function warningsUnder(name,): readonly string[] {
+          return members.map(function warningWith(): string {
+            return `[translation-repair] [weeklyWindowOf] Synthetic /quotas ${name}.nextRegenAt is missing or no ISO-8601 instant `
+              + 'as the logger writes one; the return reads unreadable';
+          },);
+        },),);
+        expect(`${JSON.stringify(windows,)}\n${warned.join('\n',)}`.includes('INJECT-SECRET',),).toBe(false,);
       },
     },),
 

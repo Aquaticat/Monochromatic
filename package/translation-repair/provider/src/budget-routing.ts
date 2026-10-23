@@ -715,8 +715,10 @@ const NO_WINDOW = 'none';
  A SPENT WEEKLY BUDGET STATES ITS RETURN: `syntheticWeeklyReturn=` the instant the reply names for the next regeneration
  (`nextRegenAt`, 2026-10-23T05:03:47.000Z in the reply of that day, where the next regeneration returns 2% of the limit), so a dry
  record says when it can end instead of leaving a reader to ask the provider. A reading with weekly budget left prints no such field.
- ONLY AN INSTANT AS THE LOGGER WRITES ONE IS PRINTED (`isIsoStampText`); the reader refuses any other value, and a snapshot built
- another way whose value is not one prints `syntheticWeeklyReturn=unreadable`, so no string can add a field or a line to the record.
+ ONLY AN INSTANT AS THE LOGGER WRITES ONE IS PRINTED (`isIsoStampText`); the reader drops any other value and keeps no raw string,
+ and a window with no `nextRegenAt`, or a snapshot built another way whose value is not one, prints `syntheticWeeklyReturn=unreadable`,
+ so no string can add a field or a line to the record. THE PRINTED INSTANT PASSES A SPELLING CHECK, NOT A PLAUSIBILITY CHECK: a past or
+ far-future instant (`1970-01-01T00:00:00.000Z`, `+275760-09-13T00:00:00.000Z`) prints as given.
 
  @param quota - snapshot the dryness verdict was read from
 
@@ -752,7 +754,7 @@ export function syntheticMeterLevel(
   const returnFields = (weekly.percentRemaining <= 0)
     ? [
       `syntheticWeeklyReturn=${
-        isIsoStampText({ text: weekly.nextRegenAt, },)
+        ((weekly.nextRegenAt !== undefined) && isIsoStampText({ text: weekly.nextRegenAt, },))
           ? weekly.nextRegenAt
           : 'unreadable'
       }`,

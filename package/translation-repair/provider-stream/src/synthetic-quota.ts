@@ -1,5 +1,8 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { isIsoStampText, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Quota snapshot
 // Typed view over `GET /v2/quotas`. Only the fields budget decisions consume are modeled: the weekly credit limit (spend pacing)
@@ -28,14 +31,15 @@ import { isIsoStampText, } from '@monochromatic-dev/translation-repair-markup/ts
 // of each, or the type of a body that is no object, and, when the fault is a field inside a block, that block's own key names with
 // the JSON type of each; never a value (`QuotaShapeError`).
 //
-// THE WEEKLY BLOCK IS NAMED `planWeeklyLimit` SINCE A TIME BETWEEN 2026-10-22 19:32:44 UTC AND 22:21:58 UTC, AND THIS READER TAKES
-// EITHER NAME. A corpus pass parsed a body with `weeklyTokenLimit` (421 characters) at 19:32:44 UTC on 2026-10-22 and was refused
-// `weeklyTokenLimit is not an object; received subscription:object, search:object, planWeeklyLimit:object` from 22:21:58 UTC on, on
-// every later read of that pass. A keyed `GET https://api.synthetic.new/v2/quotas` at 2026-10-23 03:28:16 UTC answered HTTP 200 with
+// THE WEEKLY BLOCK IS NAMED `planWeeklyLimit` SINCE A TIME BETWEEN 2026-10-22 22:20:53 UTC AND 22:21:58 UTC, AND THIS READER TAKES
+// EITHER NAME. A corpus pass parsed a body with `weeklyTokenLimit` (420 characters) in a read that ended at 22:20:53 UTC on
+// 2026-10-22 (the weekly credit read 34.3 % then), and was refused `weeklyTokenLimit is not an object; received
+// subscription:object, search:object, planWeeklyLimit:object` by the read that ended at 22:21:58 UTC (285 characters) and by every read
+// the log shows after it. A keyed `GET https://api.synthetic.new/v2/quotas` at 2026-10-23 03:28:16 UTC answered HTTP 200 with
 // 269 characters whose top-level keys were `subscription`, `search` and `planWeeklyLimit`, each an object, and no
 // `weeklyTokenLimit` and no `freeToolCalls`; the values of `planWeeklyLimit` were `nextRegenAt` (a string), `percentRemaining` (a
-// number, 0 then) and `nextRegenPercent` (a number, 2 then). Whether the rename came with the weekly credit reaching 0 % or with a
-// deploy is not known, so both names are read.
+// number, 0 then) and `nextRegenPercent` (a number, 2 then). The credit read 34.3 % at the last parsed read, so a deploy is likelier
+// than the credit reaching 0 % as the cause of the rename, but the log shows no credit after that read, so both names are read.
 //
 // THE RULES FOR THE TWO NAMES. A key whose value is `null` or that is missing counts as absent, so a deprecated key kept as `null`
 // beside a valid block does not blind the meter; a key that holds anything else but an object is refused. Two blocks that read the
@@ -43,9 +47,18 @@ import { isIsoStampText, } from '@monochromatic-dev/translation-repair-markup/ts
 // with no usable key under either name is refused, naming both.
 //
 // ONLY THE FIELDS A DECISION READS ARE MODELED. `nextRegenPercent` (what the next regeneration returns) is ignored as `subscription`
-// is, so a mistyped value of it cannot refuse a body whose `percentRemaining` and `nextRegenAt` are sound. `nextRegenAt` is read
-// only as an instant the way the logger writes one (`isIsoStampText`), because the meter prints it into the `METERS` line; a value
-// that is not one is refused naming the field and never the value. See `doc/troubleshooting/synthetic-quota-weekly-block-renamed.md`.
+// is, so a mistyped value of it cannot refuse a body whose `percentRemaining` is sound. `nextRegenAt` decides nothing: only
+// `percentRemaining` makes a meter dry, and the return is a field of a log line. So it is carried only as an instant the way the
+// logger writes one (`isIsoStampText`), because the meter prints it. A value that is not one (missing, not a string, another
+// spelling of a valid time) does NOT refuse the body, since a refused body reads `unreadable`, which routes as spendable, the
+// failure this reading was fixed for. The window then keeps `percentRemaining` and has no `nextRegenAt` property at all (the raw
+// string is never kept), the meter prints `syntheticWeeklyReturn=unreadable`, and one warning names the block and the field, never
+// the value. See `doc/troubleshooting/synthetic-quota-weekly-block-renamed.md`.
+
+/**
+ Logger root for the quota reader.
+ */
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Budget-relevant quota state at one instant.
@@ -107,9 +120,10 @@ export type QuotaSnapshot = {
     readonly percentRemaining: number;
 
     /**
-     ISO timestamp of next credit regeneration, validated as an instant spelled the way `Date.prototype.toISOString` writes one.
+     ISO timestamp of next credit regeneration, carried only as an instant spelled the way `Date.prototype.toISOString` writes
+     one; ABSENT when the reply's value was missing, not a string or spelled another way (see the region comment).
      */
-    readonly nextRegenAt: string;
+    readonly nextRegenAt?: string;
   };
 };
 
@@ -492,9 +506,9 @@ function fiveHourWindowOf(
 
  @param block - the weekly block of that body
 
- @returns The typed weekly window
+ @returns The typed weekly window, with no `nextRegenAt` where the block's value was no instant as the logger writes one
 
- @throws {@link QuotaShapeError} when a field is missing or mistyped, or `nextRegenAt` is no instant as the logger writes one
+ @throws {@link QuotaShapeError} when `percentRemaining` is missing or not a number
 
  @example
  ```ts
@@ -526,27 +540,24 @@ function weeklyWindowOf(
       blockName,
       block,
     },);
-  if ((typeof nextRegenAt) !== 'string')
-    throw blockRefusal({
-      detail: `${blockName}.nextRegenAt is not a string`,
-      parsed,
-      blockName,
-      block,
-    },);
-  // THE FIELD IS PRINTED INTO A LOG LINE LATER, so a string that is no instant is refused here and never carried (a space or a
-  // newline in it would forge a field or a line).
-  if (!isIsoStampText({ text: nextRegenAt, },))
-    throw blockRefusal({
-      detail: `${blockName}.nextRegenAt is not an ISO-8601 instant`,
-      parsed,
-      blockName,
-      block,
-    },);
+  // THE FIELD IS PRINTED INTO A LOG LINE LATER, so a string that is no instant is never carried (a space or a newline in it would
+  // forge a field or a line); and it decides nothing, so it never refuses the body either.
+  if (((typeof nextRegenAt) === 'string') && isIsoStampText({ text: nextRegenAt, },))
+    return {
+      percentRemaining,
+      nextRegenAt,
+    };
 
-  return {
-    percentRemaining,
-    nextRegenAt,
-  };
+  tagged({
+    tag: weeklyWindowOf.name,
+    l,
+  },)
+    .warn(
+    `Synthetic /quotas ${blockName}.nextRegenAt is missing or no ISO-8601 instant as the logger writes one; `
+      + 'the return reads unreadable',
+    );
+
+  return { percentRemaining, };
 }
 
 /**
@@ -580,8 +591,8 @@ type WeeklyReading = {
 
  @returns The typed weekly window
 
- @throws {@link QuotaShapeError} when no key holds a block, a key holds a value that is neither `null` nor an object, a field is
- missing, mistyped or no instant, or the two blocks of a body that carries both read differently
+ @throws {@link QuotaShapeError} when no key holds a block, a key holds a value that is neither `null` nor an object,
+ `percentRemaining` is missing or mistyped, or the two blocks of a body that carries both read differently
 
  @example
  ```ts

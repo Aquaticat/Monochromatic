@@ -3,8 +3,8 @@
 ## Symptom
 
 A corpus pass started on 2026-10-22 (`XingZ6020`) parsed Synthetic's quota body at its first read, 19:32:44 UTC
-(421 characters).
-From 22:21:58 UTC on, every read of that pass was refused with this warning,
+(421 characters), and at every read up to 22:20:53 UTC (413 to 422 characters).
+Every read the log shows after 22:21:58 UTC was refused with this warning,
 copied from line 12621 of `/var/mnt/encrypted/temp/agent/corpus-pass-XingZ6020.log`
 and wrapped here at spaces to fit the width (the log line is one line):
 
@@ -37,10 +37,32 @@ The values of `planWeeklyLimit` were
 `{"nextRegenAt":"2026-10-23T05:03:47.000Z","percentRemaining":0,"nextRegenPercent":2}`.
 The body held no `weeklyTokenLimit` and no `freeToolCalls`.
 The reading of 2026-10-19 at 14:35 UTC had `weeklyTokenLimit` and `freeToolCalls`
-(`doc/troubleshooting/translation-repair-provider-concurrency.md`, section on the removed limits),
-and the pass parsed a body at 19:32:44 UTC on 2026-10-22 that the old reader accepted,
-so the rename happened between 19:32:44 UTC and 22:21:58 UTC on 2026-10-22.
-Whether it came with the weekly credit reaching 0 percent or with a deploy is not known.
+(`doc/troubleshooting/translation-repair-provider-concurrency.md`, section on the removed limits).
+
+The rename happened after 22:20:53 UTC and before 22:21:58 UTC on 2026-10-22.
+The pass log shows both ends as fresh reads, not cached ones.
+The meter cache trusts a reading for 60 seconds and stamps it when the read begins
+(`package/translation-repair/provider/src/provider-budget.ts:70` and `:736`):
+
+```ts
+// provider-budget.ts:70 and :736
+const BUDGET_FRESH_MS = 60_000;
+    if ((now() - cache.startedAt) >= freshForMs)
+      await readNow({ signal, },);
+```
+
+`takeReading` awaits `readEveryMeter` and only then logs the `METERS` line (`provider-budget.ts:641`),
+so a `METERS` line is printed after a read that finished, never from the cache.
+The `METERS` line at line 12568 of the pass log, 22:20:54.193 UTC, follows the line
+`stream quotas: completed, elapsed 232ms ... 420 raw chars` of 22:20:53.109 UTC (line 12561),
+a body the old reader parsed, and it reads `synthetic=wet syntheticWeekly=34.31539395918367%`.
+No further `METERS` or `stream quotas` line appears before line 12620, the `stream quotas: completed,
+elapsed 221ms ... 285 raw chars` read that ended at 22:21:58.963 UTC and was refused (the warning is line 12621).
+The refused read began at 22:21:58.742 UTC, about 66 seconds after the wet one began (22:20:52.877 UTC),
+which the 60-second cache permits.
+
+The credit read 34.3 percent at the last parsed read, so a deploy is likelier than the credit reaching 0 percent
+as the cause of the rename, but the log shows no credit after that read, so it is not proved either way.
 
 The reader looked the weekly block up under one key only.
 At `0fa4950b88`, `package/translation-repair/provider-stream/src/synthetic-quota.ts`, in `parseQuotaSnapshot`:
@@ -98,6 +120,7 @@ Reproduce the failure keyless, with no provider call, by running the red test fi
 
 ```sh
 # run from a checkout of this repository
+D="$(mktemp --directory "${HOME}/temp/agent/synthetic-repro.XXXXXXXX")"
 git show 0fa4950b88:package/translation-repair/provider-stream/src/synthetic-quota.ts \
   > "$D/synthetic-quota.ts"
 git show 2376d5eb37:package/translation-repair/provider-stream/src/synthetic-quota.unit.test.ts \
@@ -125,49 +148,67 @@ Bodies that read cleanly:
 - the 2026-10-23 shape with `planWeeklyLimit`, which a real client reads as `dry` at 0 percent
   (with `syntheticWeeklyReturn=2026-10-23T05:03:47.000Z`) and as `wet` with budget left (no return field),
 - a deprecated key kept as `null` beside a valid block under the other name, in either direction,
-- a block carrying `nextRegenPercent` of any type, which is ignored.
+- a block carrying `nextRegenPercent` of any type, which is ignored,
+- a block whose `nextRegenAt` is missing, not a string, or a string that is no instant spelled the way
+  `Date.prototype.toISOString` writes one (a value with a space and a newline, an empty one, a date-time with no zone,
+  and one with no milliseconds): the window keeps `percentRemaining`, so a spent block still reads `dry`,
+  the window carries no `nextRegenAt` at all, the meter prints `syntheticWeeklyReturn=unreadable`,
+  and one warning names the block and the field, never the value
+  (`Synthetic /quotas planWeeklyLimit.nextRegenAt is missing or no ISO-8601 instant as the logger writes one;
+  the return reads unreadable`).
 
 Bodies that are refused, each naming the field and the block's own keys and never a value:
 
 - no weekly key under either name, or only `null` ones,
 - a weekly key that holds neither `null` nor an object,
-- a weekly field of the wrong type,
-- a `nextRegenAt` that is not an instant spelled the way `Date.prototype.toISOString` writes one
-  (`isIsoStampText`, `package/translation-repair/markup/src/iso-stamp-text.ts`): a value with a space and a newline,
-  an empty one, a date-time with no zone, and one with no milliseconds,
+- a `percentRemaining` that is missing or not a number,
 - both names present with blocks that read differently.
 
 ## Verified workarounds
 
-The reader takes both names (`weeklyWindowFromBody`, `synthetic-quota.ts:597`):
+The reader takes both names (`weeklyWindowFromBody`, `synthetic-quota.ts:608`):
 
 ```ts
   const readings = WEEKLY_BLOCK_NAMES.flatMap(function readCarried(blockName,): readonly WeeklyReading[] {
 ```
 
-It validates `nextRegenAt` as an instant in `weeklyWindowOf` (`synthetic-quota.ts:538`):
+It carries `nextRegenAt` only as an instant in `weeklyWindowOf` (`synthetic-quota.ts:545`), and otherwise warns and
+keeps the window without it:
 
 ```ts
-  if (!isIsoStampText({ text: nextRegenAt, },))
+  if (((typeof nextRegenAt) === 'string') && isIsoStampText({ text: nextRegenAt, },))
 ```
 
 The meter prints the return of a spent weekly budget as `syntheticWeeklyReturn=<nextRegenAt>` in its `METERS` fields
-(`syntheticMeterLevel`, `budget-routing.ts:752-760`), and `unreadable` where the value is not an instant.
+(`syntheticMeterLevel`, `budget-routing.ts:753-761`), and `unreadable` where the window has no instant:
 
-The lead's rulings of 2026-10-23, open to the owner's veto:
+```ts
+        ((weekly.nextRegenAt !== undefined) && isIsoStampText({ text: weekly.nextRegenAt, },))
+```
 
-- `nextRegenAt` is validated at parse because the meter prints it into a log line,
+The printed instant passes a spelling check, not a plausibility check:
+a past instant such as `1970-01-01T00:00:00.000Z` or a far-future one such as `+275760-09-13T00:00:00.000Z`
+prints as given, and the comment of `syntheticMeterLevel` says so.
+
+The maintainer's working rulings of 2026-10-23, open to the owner's veto:
+
+- `nextRegenAt` is carried only as a validated instant because the meter prints it into a log line,
   where a space or a newline would forge a field or a line.
+  A value that is no instant does not refuse the body, because the field decides nothing:
+  the window keeps `percentRemaining`, marks the return unreadable and warns.
 - `nextRegenPercent` is not modeled, because nothing reads it and the parser models only the fields a decision reads.
 - A `null` weekly key counts as absent, so a deprecated key kept as `null` does not blind the meter.
 
 Tradeoffs:
 
-- A `nextRegenAt` that is a valid time in another spelling (no milliseconds, an offset) is refused,
-  and a refused body reads `unreadable`, which routes as spendable.
-  That is the failure this document is about, kept for a field whose only use is a log line;
-  the refusal names the field, so the next reading shows it.
-- Two blocks that differ are refused. No body is known to carry both.
+- A `nextRegenAt` that is a valid time in another spelling (no milliseconds, an offset) loses only the stated return:
+  the meter still reads `dry` or `wet` from `percentRemaining`,
+  prints `syntheticWeeklyReturn=unreadable` for a spent block,
+  and the warning names the block and the field, so the next reading shows it.
+  The first ruling of that day refused the whole body, which read `unreadable` and routed as spendable,
+  the failure this document is about, for a field whose only use is a log line.
+- Two blocks of one body that differ only in the spelling of `nextRegenAt` read differently
+  (one window has the instant, the other none) and are refused. No body is known to carry both.
 - The stated return is a field of the `METERS` line only.
   The router and the seat reader still decide on the dry bit and on refusal holds;
   a dry meter does not create a hold, so the seat reader says `no provider has named its return` for Synthetic.
