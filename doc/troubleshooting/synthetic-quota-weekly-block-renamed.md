@@ -123,7 +123,8 @@ a merge keeps them, and a squash or a rebase would not:
 and `61528e1180` (red) with `90a480dcea` (third fix, which keeps the window and marks the return unreadable
 where `nextRegenAt` is no instant, instead of refusing the body),
 and `4e1db8a35a` (red) with `bc367f792f` (fourth fix, which reads two blocks that agree on `percentRemaining`
-and differ in `nextRegenAt` with the return marked unreadable, instead of refusing the body).
+and differ in `nextRegenAt` with the return marked unreadable, instead of refusing the body),
+and `218443fc90` (red) with `9371655ffd` (fifth fix, which logs one warning, not two, for such a pair).
 The reading used is the one of 2026-10-23 03:28:16 UTC described in the Root cause section,
 with invented numbers in the blocks other than `planWeeklyLimit`.
 
@@ -151,7 +152,7 @@ QuotaShapeError: Synthetic /quotas body violated expectations: weeklyTokenLimit 
 received subscription:object, search:object, planWeeklyLimit:object
 ```
 
-At `bc367f792f` the cases pass under `mise run //package/translation-repair/provider-stream:test:unit`
+At `9371655ffd` the cases pass under `mise run //package/translation-repair/provider-stream:test:unit`
 and `mise run //package/translation-repair/provider:test:unit`.
 
 Bodies that read cleanly:
