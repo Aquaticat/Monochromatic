@@ -1737,6 +1737,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (`a286368be67434dfd`, fresh branch off `origin/main`): reproduce with a fresh volume, fix at the cause without
     weakening the gate, run every gate it can reproduce locally against the fresh volume, record the cold time.
     Then: land, dispatch dry run 2, repeat until green, then download and verify the artifacts.
+    Agent hand-back (branch `fix/ide-release-no-renderer-prefetch`, tip `5e1a86d63f`): the failing command was the
+    second positive control (`--features slint/mcp`), not `--all-features`; those crates are never resolved by
+    `cargo fetch` and `--frozen` cannot download index entries, while the long-lived local volume already held them.
+    Fix in the task `inspect:no-software-renderer` (not the workflow): one network-enabled `--locked` pass per request
+    before the unchanged offline checks. I read the diff (11 lines in `mise.toml`, doc and runbook updates, one
+    workflow comment) and ran `lint`, `test:bin` 71, `test` and `inspect:no-software-renderer` on the merged
+    snapshot: all 0. LANDED: merge tip `08d1525b83` on `origin/main`, ancestry confirmed. Agent-reported, not
+    re-run by me: the full chain on a fresh volume (`bundle` 5 min 6 s locally, `inspect:bundle` 3 checks, 581,554
+    byte notices, 23,457,136 byte archive); runner timings from run 1 (base image 1 min 04 s, IDE image 1 min 30 s,
+    `bundle` 10 min 26 s; about 8 GB disk used). Dry run 2: run `39878025410`, watched in the background.
     Guard sweep finding (disposable copy, unit `conv2-guards`): `clip-chosen` removed run fails with status 100 at
     `src/native/tile_reads.rs:187:45` (`tile texture pixels`) because the stacked tile reads no texture for a line
     past the raster limit; the guard still bites but its expected `failure` text (`the window shows an error`) was
