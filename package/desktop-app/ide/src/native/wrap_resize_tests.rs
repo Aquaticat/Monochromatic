@@ -1182,15 +1182,25 @@ fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
 /// The headless renderer cannot draw a window that large,
 /// so the size is reported without a
 ///  frame.
+/// The lines are long,
+/// so each of them is broken again at the new width,
+/// and the work is read from the shaper's own counters:
+/// the step's counters only record a measurement that ended within its allowance,
+/// and one that ran out of it has broken lines by then and records none.
 #[test]
 fn a_view_taller_than_the_clip_cap_is_left_to_the_worker() {
-    let (_project, opened) = open(&"a short line\n".repeat(5000));
+    let (_project, opened) = open(&long_text(5000));
     settled(&opened);
     let window = &opened.window;
     let text_width = 3600.0;
     let cap = tile_cap(wrap_width(text_width).expect("a width"), 1.0, 1.0e9);
     let height = cap + 400.0;
     start_counting(&opened);
+    let brought_in = |reader: &Reader| {
+        let current = reader.source.borrow();
+        return current.shaper.shaped_rows() + current.shaper.rebroken_rows();
+    };
+    let before = brought_in(&opened);
     change_width(&opened, text_width, height);
     let step = spent(&opened);
     assert!(
@@ -1208,7 +1218,7 @@ fn a_view_taller_than_the_clip_cap_is_left_to_the_worker() {
         "the window thread painted a tile for a view past the cap: {step:?}"
     );
     assert_eq!(
-        step.shaped + step.rebroken,
+        brought_in(&opened) - before,
         0,
         "the window thread brought in lines for a view past the cap: {step:?}"
     );
