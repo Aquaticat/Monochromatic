@@ -37,6 +37,7 @@ import {
   runClientFrom,
   RunsDirectoryBusyError,
 } from '@monochromatic-dev/translation-repair-run';
+import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-repair-provider';
 import type { EntryOutcome, } from '@monochromatic-dev/translation-repair-slice-cache';
 import {
   digestPipeline,
@@ -54,6 +55,7 @@ import {
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
 import { relayingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { makeCorpusPassClone, } from './corpus-pass-clone.test-fixture.ts';
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { NO_PICTURE_SOURCES, } from './pass-picture-sources.test-fixture.ts';
@@ -125,6 +127,10 @@ type Overrides = {
    */
   readonly transport?: CorpusPassInput['transport'];
 
+  /**
+   Producers of answer schemas the pass-start check reads.
+   */
+  readonly schemaProducers?: CorpusPassInput['schemaProducers'];
 };
 
 /**
@@ -312,6 +318,46 @@ function nothingWatched(): Watched {
     clients: [],
     holds: [],
     atFirstSettle: { stalePageThere: true, },
+  };
+}
+
+/**
+ A producer of one answer schema that writes `oneOf`, which the Claude route cannot send.
+
+ @param file - file the producer stands for
+ @param name - the schema's own name
+
+ @returns Producer of that one schema
+
+ @example
+ ```ts
+ const producer = oneOfProducer({ file: 'cat/src/pick-wire.ts', name: 'pick', },);
+ ```
+ */
+function oneOfProducer(
+  {
+    file,
+    name,
+  }: {
+    readonly file: string;
+    readonly name: string;
+  },
+): { readonly file: string; readonly formats: readonly JsonSchemaResponseFormat[]; } {
+  return {
+    file,
+    formats: [{
+      type: 'json_schema',
+      json_schema: {
+        name,
+        strict: true,
+        schema: {
+          type: 'object',
+          properties: { pick: { oneOf: [{ type: 'string', }, { type: 'integer', },], }, },
+          required: ['pick',],
+          additionalProperties: false,
+        },
+      },
+    },],
   };
 }
 
@@ -829,6 +875,76 @@ await describe({
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=0 done=0 `
             + 'soft=259200000ms hard=25200000ms call=360000ms claude-call=460000ms',
         ],);
+        expect(watched.clients,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES THE PASS BEFORE ANY PROVIDER IS ASKED when a stage schema carries a keyword the Claude route '
+        + 'cannot send (N2 of the re-check of fix rounds 3 and 4), naming each schema and its keyword, with nothing '
+        + 'printed, no client built, no entry settled and no lock taken',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [{
+          id: 'tabby',
+          sourceText: '猫睡觉。\n',
+          targetText: 'The cat naps.\n',
+        },], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+
+        /**
+         What the pass refused with.
+         */
+        const refusal = await rejectionOf(async function asked(): Promise<void> {
+          await runPass({
+            typed: [],
+            clone,
+            runsDir: runs.path,
+            pipelineDir: built.dir,
+            watched,
+            overrides: {
+              schemaProducers: [
+                oneOfProducer({ file: 'cat/src/pick-wire.ts', name: 'pick', },),
+                oneOfProducer({ file: 'cat/src/choose-wire.ts', name: 'choose', },),
+              ],
+            },
+          },);
+        },);
+
+        expect((refusal as Error).message,).toContain('cat/src/pick-wire.ts (pick)',);
+        expect((refusal as Error).message,).toContain('cat/src/choose-wire.ts (choose)',);
+        expect((refusal as Error).message,).toContain('"oneOf" at root.pick',);
+        expect(printed.lines,).toEqual([],);
+        expect(watched.clients,).toEqual([],);
+        expect(watched.settled,).toEqual([],);
+        expect(await readdir(runs.path,),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES UNDER --plan TOO, which promises zero quota and so verifies the schemas it will send',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+
+        await expect(runPass({
+          typed: ['--plan',],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: { schemaProducers: [oneOfProducer({ file: 'cat/src/pick-wire.ts', name: 'pick', },),], },
+        },),).rejects.toThrow('cat/src/pick-wire.ts (pick)',);
+        expect(printed.lines,).toEqual([],);
         expect(watched.clients,).toEqual([],);
       },
     },),
