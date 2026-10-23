@@ -1,4 +1,7 @@
-import type { BudgetView, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type {
+  BudgetView,
+  NeuralWattDryness,
+} from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { JudgeSeats, } from './run-seats.ts';
 import {
@@ -50,6 +53,10 @@ export const WRITING_BENCH_FLOOR = 2;
  Stops an entry whose phase cannot write: a writing bench it leans on has
  fewer reachable seats than the floor and no provider has named a return the pass can wait for.
 
+ WHEN NEURALWATT'S RETURN WOULD LIFT THE BENCH TO ITS FLOOR the error carries the return as well (the distance, the
+ time of day and the spent day, as the all-dry refusal carries them), and the pass may park for it instead of leaving
+ the entry to an error (`pass-dry-stop.ts`). It is carried only when the roster says the return reaches the floor.
+
  @example
  ```ts
  throw new WritingBenchUnreachableError({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },);
@@ -67,27 +74,66 @@ export class WritingBenchUnreachableError extends Error {
   readonly clauses: readonly string[];
 
   /**
+   Milliseconds until NeuralWatt's spent day starts again, present only when that return lifts the bench to its floor.
+   */
+  readonly neuralwattReturnsInMs?: number;
+
+  /**
+   The time of day the return falls at, with its zone, present with the distance.
+   */
+  readonly neuralwattReturnsAt?: string;
+
+  /**
+   Why NeuralWatt read dry, present with the distance so the pass tells one spent day from the next.
+   */
+  readonly neuralwattDryness?: NeuralWattDryness;
+
+  /**
    Names the phase that could not write and each bench below the floor.
 
    @param phase - phase the reading was taken for
 
    @param clauses - one clause per bench below the floor
+
+   @param neuralwattReturnsInMs - milliseconds until NeuralWatt's day starts again, where that return lifts the bench to
+   its floor
+
+   @param neuralwattReturnsAt - the time of day the return falls at, with its zone
+
+   @param neuralwattDryness - why NeuralWatt read dry
    */
   public constructor(
     {
       phase,
       clauses,
+      neuralwattReturnsInMs,
+      neuralwattReturnsAt,
+      neuralwattDryness,
     }: {
       readonly phase: string;
       readonly clauses: readonly string[];
+      readonly neuralwattReturnsInMs?: number;
+      readonly neuralwattReturnsAt?: string;
+      readonly neuralwattDryness?: NeuralWattDryness;
     },
   ) {
-    super(
-      `writing bench unreachable at ${phase}: ${clauses.join('; ',)}; `
-        + 'no provider has named a return the pass can wait for, so the entry stops for a pass that has the bench',
-    );
+    /**
+     The sentence about the returns, one of two fixed sentences that name at most the UTC time of day NeuralWatt's day
+     starts at.
+     */
+    const returnSentence = (neuralwattReturnsInMs === undefined)
+      ? 'no provider has named a return the pass can wait for, so the entry stops for a pass that has the bench'
+      : `NeuralWatt's energy returns at ${neuralwattReturnsAt ?? 'its day start'}, which would reach the floor, `
+        + 'so the entry stops and the pass parks for it when it has the time';
+    super(`writing bench unreachable at ${phase}: ${clauses.join('; ',)}; ${returnSentence}`,);
     this.name = 'WritingBenchUnreachableError';
     this.clauses = clauses;
+    if (neuralwattReturnsInMs !== undefined)
+      this.neuralwattReturnsInMs = neuralwattReturnsInMs;
+    if (neuralwattReturnsAt !== undefined)
+      this.neuralwattReturnsAt = neuralwattReturnsAt;
+    if (neuralwattDryness !== undefined)
+      this.neuralwattDryness = neuralwattDryness;
   }
 }
 

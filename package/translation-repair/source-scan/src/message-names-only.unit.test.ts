@@ -441,6 +441,8 @@ const NAMED_PARTS: Record<string, string> = {
   'overlapping.join(\', \',)': 'model ids from the catalog',
   'path': 'file path',
   'phase': 'name of the stream phase this package defines',
+  'returnSentence': 'one of two fixed sentences about NeuralWatt\'s return, naming at most the UTC time of day its day '
+    + 'starts at (the run composes it from the day start, never from a provider\'s text)',
   'producerModelIds.join(\', \',)': 'model ids from the catalog',
   'provider': 'member of a closed provider union',
   'reason': 'authored phrase, or a member of a closed union, at every throw site; or a marked class\'s sentence '

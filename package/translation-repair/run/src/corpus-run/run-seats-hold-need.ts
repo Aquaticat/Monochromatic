@@ -11,6 +11,7 @@ import {
 import {
   belowFloorWritingBenches,
   benchesOf,
+  unreachableWritingBenches,
 } from './run-seats-floor.ts';
 import { judgeSeatsFor, } from './run-seats.ts';
 import {
@@ -143,6 +144,48 @@ function reachableCountOf(
     reach: (name === 'readers') ? 'vision' : 'text',
   },)
     .length;
+}
+
+/**
+ Whether some providers' return lifts every writing bench the phase leans on to its floor, derived from the roster.
+
+ @param dry - dryness per provider the reading stopped on
+
+ @param back - providers whose return is asked about
+
+ @param names - benches the phase leans on
+
+ @returns Whether no writing bench is below its floor once they are back
+
+ @example
+ ```ts
+ const lifts = returnLiftsWritingBenches({ dry, back: ['neuralwatt',], names: phaseBenches({ phase, },), },);
+ ```
+ */
+export function returnLiftsWritingBenches(
+  {
+    dry,
+    back,
+    names,
+  }: {
+    readonly dry: BudgetView;
+    readonly back: readonly ProviderName[];
+    readonly names: readonly BenchName[];
+  },
+): boolean {
+  /**
+   The view after their return.
+   */
+  const after = viewWithBack({
+    dry,
+    back,
+  },);
+  return unreachableWritingBenches({
+    benches: benchesOf({ seats: judgeSeatsFor({ dry: after, }), },),
+    names,
+    dry: after,
+  },)
+    .length === 0;
 }
 
 /**

@@ -7,6 +7,7 @@ import {
   type NeuralWattDryness,
   type NeuralWattReturn,
   pastPassWordsOf,
+  returnTimeOf,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { markFailureWritten, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
@@ -17,7 +18,11 @@ import type { RunClient, } from './run-client-contract.ts';
 import { RUN_WRITING_PROVIDERS, } from './run-config.ts';
 import { WritingBenchUnreachableError, } from './run-seats-floor.ts';
 import { holdsWithinPass, } from './run-seats-pass-bound.ts';
-import type { JudgeSeatPhase, } from './run-seats-wait.ts';
+import { returnLiftsWritingBenches, } from './run-seats-hold-need.ts';
+import {
+  type JudgeSeatPhase,
+  phaseBenches,
+} from './run-seats-wait.ts';
 
 //region Seat reading refusal
 // THE REFUSAL A SEAT READING STOPS THE ENTRY WITH, split out of `run-seats-read.ts` at its line budget: the writing-bench
@@ -201,6 +206,51 @@ function everyProviderDryRefusal(
 }
 
 /**
+ What a bench error carries of NeuralWatt's return: the distance, the time of day and the spent day.
+
+ @param returnsInMs - milliseconds until the spent day starts again
+
+ @param dryness - why NeuralWatt reads dry, where the client reports it
+
+ @param day - what the run knows of NeuralWatt's day
+
+ @returns The fields, the time of day left out where neither the reading nor the run names one
+
+ @example
+ ```ts
+ const carried = returnCarriedBy({ returnsInMs: 301_000, day: { kind: 'at', msOfDay: 69_308_000, }, },);
+ ```
+ */
+function returnCarriedBy(
+  {
+    returnsInMs,
+    dryness,
+    day,
+  }: {
+    readonly returnsInMs: number;
+    readonly dryness?: NeuralWattDryness;
+    readonly day: NeuralWattReturn;
+  },
+): {
+  readonly neuralwattReturnsInMs: number;
+  readonly neuralwattReturnsAt?: string;
+  readonly neuralwattDryness?: NeuralWattDryness;
+} {
+  /**
+   The time of day the return falls at.
+   */
+  const { text, } = returnTimeOf({
+    day,
+    ...((dryness === undefined) ? {} : { dryness, }),
+  },);
+  return {
+    neuralwattReturnsInMs: returnsInMs,
+    ...((text === undefined) ? {} : { neuralwattReturnsAt: text, }),
+    ...((dryness === undefined) ? {} : { neuralwattDryness: dryness, }),
+  };
+}
+
+/**
  Refusal for a writing bench that stops the entry, marked as already written,
  since the reading writes its own `JUDGE SEATS` line before throwing it.
 
@@ -210,7 +260,8 @@ function everyProviderDryRefusal(
  entry as a resumable failure that the pass visited and charged an attempt for, entry after entry, with no stop line.
  The owner ruled that the router's every-provider-dry refusal ends the run, so the reading raises that refusal, which
  the entry scheduler files as stopped work and hands to the pass (`endsTheRun`). A bench below its floor with a
- provider still wet stays the bench error.
+ provider still wet stays the bench error, which carries NeuralWatt's return when that return lifts the bench to its
+ floor, so the pass can park for it as it does on the refusal (`pass-dry-stop.ts`).
 
  MARKED SO NO OUTER LAYER WRITES IT AGAIN (ledger B413). The reading runs in
  the per-slice hook of every slice-by-slice phase, so two slices side by side
@@ -288,6 +339,19 @@ export function writtenRefusal(
     : new WritingBenchUnreachableError({
       phase,
       clauses,
+      // THE RETURN IS CARRIED ONLY WHEN IT REACHES THE FLOOR: a wet provider that cannot lift the bench would leave the
+      // pass parked for a return that changes nothing. The roster answers it (`returnLiftsWritingBenches`).
+      ...(((returnsInMs !== undefined) && dry.neuralwatt && returnLiftsWritingBenches({
+        dry,
+        back: ['neuralwatt',],
+        names: phaseBenches({ phase, },),
+      },))
+        ? returnCarriedBy({
+          returnsInMs,
+          ...((dryness === undefined) ? {} : { dryness, }),
+          day: neuralwattOf({ client, },),
+        },)
+        : {}),
     },);
   markFailureWritten({ error: refusal, },);
   return refusal;

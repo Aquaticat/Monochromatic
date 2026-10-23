@@ -201,15 +201,11 @@ await describe({
     },),
 
     it({
-      name: 'CARRIES NO DISTANCE ON THE BENCH ERROR WHEN THE ACCOUNT NAMES NO RETURN (the control): the day start has '
-        + 'passed and the account still shows the day spent, so there is no return to park for',
+      name: 'CARRIES NO DISTANCE ON THE BENCH ERROR WHEN THE ACCOUNT NAMES NO RETURN (the control): the reader waited '
+        + '60 ms for the return, the account still shows the day spent, and no further return is named',
       fn: async () => {
-        const { client, } = clientBefore({
-          msBeforeReturn: -60,
-          passLeftMs: 600,
-          lagging: true,
-          now: FROZEN,
-        },);
+        // The case sleeps for real: the reader waits out the 60 ms and reads the account again.
+        const { client, } = clientBefore({ msBeforeReturn: 60, lagging: true, },);
         const refusal = await rejectionOf({
           promise: readPhaseSeats({
             client,

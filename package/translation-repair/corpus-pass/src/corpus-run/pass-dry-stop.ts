@@ -12,6 +12,7 @@ import {
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { refusalText, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import { WritingBenchUnreachableError, } from '@monochromatic-dev/translation-repair-run/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Pass dry stop
@@ -47,6 +48,14 @@ import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/t
 // no return, or one past what the pass has left, trips as before and states the time. A refusal for the day start of a
 // park that has ended trips, since the account has then not rolled to the new day it should have: parking again would
 // wait a day in a loop.
+//
+// A WRITING BENCH ERROR THAT CARRIES THE RETURN PARKS THE SAME WAY (round 5, open to the owner's veto). With a provider
+// still wet, a writing bench below its floor is the bench error and not the router's refusal; when NeuralWatt's return
+// would lift that bench to its floor, the seat reader puts the return on the error (`run-seats-refusal.ts`) and the
+// entry scheduler hands the error to this gate (`entry-error-outcome.ts`). The same checks apply (the return fits what
+// the pass has left, its spent day was not already waited out), and the same requeue follows. A bench error that
+// carries no return, or one the pass cannot wait for, is left alone: the entry ends as it did, and only the router's
+// refusal ever stops the run.
 
 /**
  Logger root for the gate, naming the entry whose call tripped it.
@@ -260,7 +269,30 @@ function returnNoteOf(
 }
 
 /**
- Parks the pass for the return a refusal names, or trips the gate on it.
+ The failure as a refusal the gate acts on.
+
+ @param error - what a guarded call raised, or what ended an entry
+
+ @returns The router's every-provider-dry refusal, or a writing bench error that carries a NeuralWatt return; none for
+ any other failure
+
+ @example
+ ```ts
+ const refusal = refusalOf({ error, },);
+ ```
+ */
+function refusalOf(
+  { error, }: { readonly error: unknown; },
+): EveryProviderDryError | WritingBenchUnreachableError | undefined {
+  if (error instanceof EveryProviderDryError)
+    return error;
+  return ((error instanceof WritingBenchUnreachableError) && (error.neuralwattReturnsInMs !== undefined))
+    ? error
+    : undefined;
+}
+
+/**
+ Parks the pass for the return a refusal or a bench error names, or trips the gate on the refusal.
 
  @param error - what a guarded call raised, or what ended an entry
 
@@ -294,8 +326,13 @@ function refuseOn(
     readonly now: () => number;
   },
 ): void {
+  /**
+   The failure as a refusal the gate acts on: the router's every-provider-dry refusal, or a writing bench error that
+   carries the NeuralWatt return which would lift the bench.
+   */
+  const refusal = refusalOf({ error, },);
   // A PARK OR A TRIP IS MADE ONCE: calls of the same entry that meet the dry router after the first are the same event.
-  if ((!(error instanceof EveryProviderDryError)) || (state.cause !== undefined)
+  if ((refusal === undefined) || (state.cause !== undefined)
     || (state.parks
       .length
       > 0))
@@ -308,16 +345,16 @@ function refuseOn(
   /**
    The day start of the spent day the refusal was made on, none where it names no dryness.
    */
-  const dayStart = (error.neuralwattDryness
+  const dayStart = (refusal.neuralwattDryness
     ?.kind
-    === 'spent-day') ? error.neuralwattDryness
+    === 'spent-day') ? refusal.neuralwattDryness
       .dayStart : undefined;
   /**
    Whether the refusal names a return the pass can wait for, and not for a spent day a park has already waited out.
    */
-  const parkable = (error.neuralwattReturnsInMs !== undefined) && (error.neuralwattReturnsAt !== undefined)
+  const parkable = (refusal.neuralwattReturnsInMs !== undefined) && (refusal.neuralwattReturnsAt !== undefined)
     && returnFitsWithin({
-      returnsInMs: error.neuralwattReturnsInMs,
+      returnsInMs: refusal.neuralwattReturnsInMs,
       boundMs: left,
     },)
     && ((dayStart === undefined) || (!state.endedParks
@@ -332,30 +369,39 @@ function refuseOn(
   if (parkable) {
     state.parks
       .push({
-        returnsInMs: nonNullishOrThrow(error.neuralwattReturnsInMs,),
-        atMs: now() + nonNullishOrThrow(error.neuralwattReturnsInMs,),
-        returnsAt: nonNullishOrThrow(error.neuralwattReturnsAt,),
+        returnsInMs: nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
+        atMs: now() + nonNullishOrThrow(refusal.neuralwattReturnsInMs,),
+        returnsAt: nonNullishOrThrow(refusal.neuralwattReturnsAt,),
         ...((dayStart === undefined) ? {} : { dayStart, }),
       },);
     rl.warn(
-      'every provider is out of budget, so the pass is parked until NeuralWatt\'s energy returns at '
-        + `${nonNullishOrThrow(error.neuralwattReturnsAt,)} `
-        + `(in ${durationWordsOf({ ms: nonNullishOrThrow(error.neuralwattReturnsInMs,), },)}); `
-        + `the entry in flight is left resumable and the pass resumes then (cause: ${refusalText({ error, },)})`,
+      `${
+        (refusal instanceof EveryProviderDryError)
+          ? 'every provider is out of budget'
+          : 'a writing bench is below its floor and NeuralWatt\'s energy would lift it'
+      }, so the pass is parked until NeuralWatt's energy returns at `
+        + `${nonNullishOrThrow(refusal.neuralwattReturnsAt,)} `
+        + `(in ${durationWordsOf({ ms: nonNullishOrThrow(refusal.neuralwattReturnsInMs,), },)}); `
+        + `the entry in flight is left resumable and the pass resumes then (cause: ${refusalText({ error: refusal, },)})`,
     );
     state.controller
-      .abort(error,);
+      .abort(refusal,);
     return;
   }
-  state.cause = error;
+  // A BENCH ERROR THE PASS CANNOT WAIT FOR ENDS ITS ENTRY AS IT DID BEFORE: only the router's refusal ends the run.
+  if (!(refusal instanceof EveryProviderDryError))
+    return;
+  state.cause = refusal;
   state.stopNote = returnNoteOf({
-    ...((error.neuralwattReturnsInMs === undefined) ? {} : { returnsInMs: error.neuralwattReturnsInMs, }),
-    ...((error.neuralwattReturnsAt === undefined) ? {} : { returnsAt: error.neuralwattReturnsAt, }),
+    ...((refusal.neuralwattReturnsInMs === undefined) ? {} : { returnsInMs: refusal.neuralwattReturnsInMs, }),
+    ...((refusal.neuralwattReturnsAt === undefined) ? {} : { returnsAt: refusal.neuralwattReturnsAt, }),
     passLeftMs: left,
   },);
-  rl.error(`every provider is out of budget, so the pass stops starting entries (cause: ${refusalText({ error, },)})`,);
+  rl.error(
+    `every provider is out of budget, so the pass stops starting entries (cause: ${refusalText({ error: refusal, },)})`,
+  );
   state.controller
-    .abort(error,);
+    .abort(refusal,);
 }
 
 /**
