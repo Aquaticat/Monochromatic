@@ -10,7 +10,8 @@
  when its test of `EveryProviderDryError` printed no return fields until the check went through stage's `isDryRefusal`.
 
  WHAT THE SCAN READS, in the family's source (tests and their fixtures are left out): every `instanceof` against a
- name imported from a workspace package, and every `.constructor` comparison against such a name, by `===` or `!==`.
+ name imported from a workspace package, and every `.constructor` comparison against such a name, by `===`, `!==`,
+ `==` or `!=`, with or without an optional chain on the read.
  A site passes only when the class's package is a family sibling (`@monochromatic-dev/translation-repair-*`) listed
  under the importing package's `dependencies`. A `module-*` package is bundled whatever the listing says, so it never
  passes. A structural guard function that the owning package exports (`isDryRefusal`) is a call and not a site.
@@ -154,7 +155,41 @@ function workspaceValueImports({ program, }: { readonly program: TreeNode; },): 
 }
 
 /**
+ The operators that compare a `.constructor` read with a class, strict and loose.
+ */
+const CONSTRUCTOR_COMPARISONS: ReadonlySet<unknown> = new Set(['===', '!==', '==', '!=',],);
+
+/**
+ A node without the optional chain that wraps it, so `caught?.constructor` reads as the member read it holds.
+
+ @param value - node, or whatever a field held
+
+ @returns Member read inside a chain, or the value unchanged
+
+ @example
+ ```ts
+ const read = withoutChain({ value: node.left, },); // the MemberExpression of `caught?.constructor`
+ ```
+ */
+function withoutChain({ value, }: { readonly value: unknown; },): unknown {
+  return (isTreeNode(value,) && (value.type === 'ChainExpression')) ? value.expression : value;
+}
+
+/**
  The class a comparison tests, when it is one of the two forms the scan reads.
+
+ The forms read: `x instanceof Class`, and a `.constructor` read (plain, through `?.`, or by a string key) compared
+ with `Class` on either side by `===`, `!==`, `==` or `!=`.
+
+ Outside the scan, each shown by a planted file to give no site (round 8 re-check), and the reason for each:
+ a namespace import (`p.BError`), because the class is a member read and not a name the file imports; a re-export hop
+ (the file imports the name from a local file that re-exports it from the workspace package), because the scan
+ follows no import past the file; a class held in a variable or passed as a parameter (`const A = BError`,
+ `instanceof cls`), because its origin is a value flow and the scan reads names; a prototype comparison
+ (`Object.getPrototypeOf(e) === B.prototype`), because it compares a prototype and not a class; a dynamic
+ `await import()`, because the binding is a destructuring of a call result and not an import declaration; and the
+ thrower side (`extends B` or `new B` in a package that bundles `b`), because it derives from or builds the copy and
+ compares nothing, so no test is made there.
 
  @param node - node read
 
@@ -170,14 +205,14 @@ function testedClassOf({ node, }: { readonly node: TreeNode; },): string {
     return '';
   if (node.operator === 'instanceof')
     return identifierName({ node: node.right, },);
-  if ((node.operator !== '===') && (node.operator !== '!=='))
+  if (!CONSTRUCTOR_COMPARISONS.has(node.operator,))
     return '';
   /**
    The class named on either side of a `.constructor` read.
    */
   const sides = [
-    [node.left, node.right,],
-    [node.right, node.left,],
+    [withoutChain({ value: node.left, },), node.right,],
+    [withoutChain({ value: node.right, },), node.left,],
   ] as const;
   for (const [read, named,] of sides) {
     if (isTreeNode(read,) && (read.type === 'MemberExpression') && (memberName({ node: read, },) === 'constructor'))
