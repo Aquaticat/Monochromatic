@@ -38,6 +38,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
+import { TEST_MAX_HOLD_MS, } from '@monochromatic-dev/translation-repair-provider/ts/budget-hold.test-fixture.ts';
 
 /**
  Name of the NeuralWatt key variable, named only.
@@ -165,6 +166,7 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'run-client-neuralwatt-', },);
         const exchanges: TransportExchange[] = [];
         const client = runClientFrom({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           env: {
             [NEURALWATT_KEY_VAR]: 'tabby-not-a-real-key',
             [NEURALWATT_LEDGER_PATH_VAR]: join(scratch.path, 'neuralwatt-energy.jsonl',),
@@ -209,6 +211,7 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'run-client-neuralwatt-', },);
         const exchanges: TransportExchange[] = [];
         const client = runClientFrom({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           env: {
             [NEURALWATT_KEY_VAR]: 'tabby-not-a-real-key',
             [NEURALWATT_LEDGER_PATH_VAR]: join(scratch.path, 'neuralwatt-energy.jsonl',),
@@ -243,6 +246,7 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'run-client-neuralwatt-', },);
         const exchanges: TransportExchange[] = [];
         const client = runClientFrom({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           env: {
             [NEURALWATT_KEY_VAR]: 'tabby-not-a-real-key',
             [NEURALWATT_LEDGER_PATH_VAR]: join(scratch.path, 'neuralwatt-energy.jsonl',),
@@ -268,6 +272,7 @@ await describe({
         await using scratch = await scratchDir({ prefix: 'run-client-neuralwatt-', },);
         const exchanges: TransportExchange[] = [];
         runClientFrom({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           env: {
             [NEURALWATT_KEY_VAR]: 'tabby-not-a-real-key',
             [NEURALWATT_LEDGER_PATH_VAR]: join(scratch.path, 'neuralwatt-energy.jsonl',),
@@ -303,6 +308,7 @@ await describe({
          */
         const reads = { count: 0, };
         const client = runClientFrom({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           env: {
             [NEURALWATT_KEY_VAR]: 'tabby-not-a-real-key',
             [NEURALWATT_LEDGER_PATH_VAR]: join(scratch.path, 'neuralwatt-energy.jsonl',),
@@ -344,6 +350,7 @@ await describe({
          */
         const refusal = await rejectionOf(async function build(): Promise<void> {
           runClientFrom({
+            maxHoldMs: TEST_MAX_HOLD_MS,
             env: {},
             transport: async function unasked() {
               throw new Error('a case that only builds a client asked a provider',);

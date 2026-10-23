@@ -63,7 +63,11 @@ const PLAN_ENERGY_TIMEOUT_MS = 15_000;
 
  @example
  ```ts
- const { budgets, } = configureProviders({ env: process.env, transport: fetchTransport, },);
+ const { budgets, } = configureProviders({
+   env: process.env,
+   transport: fetchTransport,
+   maxHoldMs: 25_200_000,
+ },);
  ```
  */
 export type ConfiguredProviders = {
@@ -142,8 +146,8 @@ export type ConfiguredProviders = {
  dry, and no call. The owner's rulings by default (`PROVIDERS_LEFT_OFF`); a test that exercises
  an off provider's client hands an empty list
 
- @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out (default: no cut); the pass
- hands its hard cap, the longest a hold can matter
+ @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out (REQUIRED); the pass hands its
+ hard cap, the longest a hold can matter, and a probe hands the probe bound of `run-probe-client.ts`
 
  @returns Clients present per key, plus the budgets
 
@@ -151,7 +155,11 @@ export type ConfiguredProviders = {
 
  @example
  ```ts
- const providers = configureProviders({ env: process.env, transport: fetchTransport, },);
+ const providers = configureProviders({
+   env: process.env,
+   transport: fetchTransport,
+   maxHoldMs: 25_200_000,
+ },);
  ```
  */
 export function configureProviders(
@@ -164,7 +172,7 @@ export function configureProviders(
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly transport: ModelTransport;
     readonly off?: readonly ProviderOff[];
-    readonly maxHoldMs?: number;
+    readonly maxHoldMs: number;
   },
 ): ConfiguredProviders {
   /**
@@ -424,8 +432,7 @@ export function configureProviders(
     ...((xiaomi === undefined) ? {} : { xiaomi, }),
     ...((anthropic === undefined) ? {} : { anthropic, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
-    // Conditional spread keeps the cap absent instead of undefined.
-    ...((maxHoldMs === undefined) ? {} : { maxHoldMs, }),
+    maxHoldMs,
     heldOut: function credentialRefused(provider,): boolean {
       return credentialHolds.isHeld({ provider, },);
     },

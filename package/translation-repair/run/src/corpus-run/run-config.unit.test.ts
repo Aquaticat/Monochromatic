@@ -59,6 +59,7 @@ import {
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { withFreshRunSeats, } from '@monochromatic-dev/translation-repair-stage/ts/corpus-run/fresh-run-seats.test-fixture.ts';
+import { TEST_MAX_HOLD_MS, } from '@monochromatic-dev/translation-repair-provider/ts/budget-hold.test-fixture.ts';
 
 /**
  Environment variable that overrides the runs directory.
@@ -509,7 +510,7 @@ await describe({
             /**
              Client built from the stand-in keys.
              */
-            const client = runClientFrom({ env: TWO_KEYS, transport: unaskedTransport, },);
+            const client = runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport: unaskedTransport, },);
 
             // `quotas` is the first provider's meter and nothing else; the routing
             // client does not offer one, and this wiring layer supplies it.
@@ -523,6 +524,7 @@ await describe({
           name: 'BUILDS with only Synthetic configured because one wet provider is normal mode',
           fn: async () => {
             const client = runClientFrom({
+              maxHoldMs: TEST_MAX_HOLD_MS,
               env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', },
               transport: unaskedTransport,
             },);
@@ -535,6 +537,7 @@ await describe({
             + 'first provider\'s meter as exhausted rather than asking anyone (ledger T8)',
           fn: async () => {
             const client = runClientFrom({
+              maxHoldMs: TEST_MAX_HOLD_MS,
               env: { [HYPER_KEY_VAR]: 'mittens-not-a-real-key', },
               transport: unaskedTransport,
             },);
@@ -571,6 +574,7 @@ await describe({
              */
             async function drynessAt(creditUsd: string,): Promise<unknown> {
               return await runClientFrom({
+                maxHoldMs: TEST_MAX_HOLD_MS,
                 env: {
                   ...TWO_KEYS,
                   [OPENROUTER_KEY_VAR]: 'tabby-not-a-real-key',
@@ -617,7 +621,7 @@ await describe({
              What building with no key raised, read for its marker, class and wording.
              */
             const refusal = caught(function buildWithoutKey() {
-              runClientFrom({ env: {}, transport: unaskedTransport, },);
+              runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: {}, transport: unaskedTransport, },);
             },);
 
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
@@ -636,6 +640,7 @@ await describe({
              */
             const refusal = caught(function buildWithEmptyKeys() {
               runClientFrom({
+                maxHoldMs: TEST_MAX_HOLD_MS,
                 env: Object.fromEntries(PROVIDER_KEY_VARS.map(function empty(name,) {
                   return [name, '',];
                 },),),
@@ -663,7 +668,7 @@ await describe({
              What building on a process holding no key raised.
              */
             const refusal = caught(function buildOnProcess() {
-              createRunClient();
+              createRunClient({ maxHoldMs: TEST_MAX_HOLD_MS, },);
             },);
 
             expect(refusal,).toBeInstanceOf(RunConfigError,);
@@ -689,7 +694,7 @@ await describe({
             const { transport, urls, } = recordingTransport();
 
             await askSeat({
-              client: runClientFrom({ env: TWO_KEYS, transport, },),
+              client: runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, },),
               modelId: SECOND_ONLY_SEAT,
             },);
 
@@ -719,7 +724,7 @@ await describe({
             /**
              Client under test, whose first provider rejects its credential.
              */
-            const client = runClientFrom({ env: TWO_KEYS, transport: refuseFirstProviderCredential, },);
+            const client = runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport: refuseFirstProviderCredential, },);
             const { signal, } = new AbortController();
 
             /**
@@ -755,7 +760,7 @@ await describe({
              What the shared seat answered.
              */
             const came = await askSeat({
-              client: runClientFrom({ env: TWO_KEYS, transport, },),
+              client: runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, },),
               modelId: SHARED_SEAT,
             },);
 
@@ -777,7 +782,7 @@ await describe({
             /**
              One configured client preserving prompt claims across calls.
              */
-            const client = runClientFrom({ env: TWO_KEYS, transport, },);
+            const client = runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, },);
             await askSeat({ client, modelId: SHARED_SEAT, },);
             const duplicate = await askSeat({ client, modelId: SHARED_SEAT, },);
 
@@ -800,7 +805,7 @@ await describe({
             /**
              Client under test, built once for both seats.
              */
-            const client = runClientFrom({ env: TWO_KEYS, transport, },);
+            const client = runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, },);
 
             await askSeat({ client, modelId: SHARED_SEAT, },);
             await askSeat({ client, modelId: SECOND_ONLY_SEAT, },);
@@ -840,7 +845,7 @@ await describe({
              Transport answering the first provider with text no schema reads.
              */
             const { transport, } = recordingTransport();
-            await runClientFrom({ env: TWO_KEYS, transport, },).chatJson({
+            await runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, },).chatJson({
               modelId: SHARED_SEAT,
               messages: MESSAGES,
               signal: new AbortController().signal,
@@ -896,7 +901,7 @@ await describe({
              What the culled seat's call came to.
              */
             const came = await askSeat({
-              client: runClientFrom({ env: TWO_KEYS, transport, },),
+              client: runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, },),
               modelId: CULLED_SEAT,
             },);
 
@@ -925,7 +930,7 @@ await describe({
              What the second provider's seat came to on a client keyed for the first alone.
              */
             const came = await askSeat({
-              client: runClientFrom({ env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', }, transport, },),
+              client: runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', }, transport, },),
               modelId: SECOND_ONLY_SEAT,
             },);
 
@@ -951,7 +956,7 @@ await describe({
              */
             const { transport, urls, } = recordingTransport();
             await askSeat({
-              client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
+              client: runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, promptPayloadDir: dir, },),
               modelId: SHARED_SEAT,
             },);
 
@@ -959,7 +964,7 @@ await describe({
              What a fresh client over the same payloads answered.
              */
             const replayed = await askSeat({
-              client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
+              client: runClientFrom({ maxHoldMs: TEST_MAX_HOLD_MS, env: TWO_KEYS, transport, promptPayloadDir: dir, },),
               modelId: SHARED_SEAT,
             },);
 

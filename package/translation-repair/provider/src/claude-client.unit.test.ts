@@ -54,6 +54,7 @@ import {
   headedReply,
   PLAIN_USAGE,
 } from './claude-client.test-fixture.ts';
+import { TEST_MAX_HOLD_MS, } from './budget-hold.test-fixture.ts';
 
 await describe({
   name: 'the Claude client',
@@ -424,7 +425,7 @@ await describe({
          Clock the budgets read.
          */
         const clock = { now: 10_000, };
-        const budgets = createProviderBudgets({ anthropic: client, freshForMs: 1_000, now: () => clock.now, },);
+        const budgets = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, anthropic: client, freshForMs: 1_000, now: () => clock.now, },);
         await budgets.markRefused({
           provider: 'anthropic',
           signal: new AbortController().signal,
@@ -461,7 +462,13 @@ await describe({
          Clock the budgets read.
          */
         const clock = { now: 10_000, };
-        const budgets = createProviderBudgets({ anthropic: client, freshForMs: 1_000, now: () => clock.now, },);
+        // A BOUND PAST THE STATED WAIT, so the budgets keep the whole of it and the case reads it by timestamp.
+        const budgets = createProviderBudgets({
+          maxHoldMs: Number.MAX_SAFE_INTEGER,
+          anthropic: client,
+          freshForMs: 1_000,
+          now: () => clock.now,
+        },);
         await budgets.markRefused({
           provider: 'anthropic',
           signal: new AbortController().signal,

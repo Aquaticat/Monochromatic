@@ -222,6 +222,7 @@ async function runPass(
       return runClientFrom({
         env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: INVENTED_KEY, },
         transport: unreachedTransport,
+        maxHoldMs,
       },);
     },
     settle: async function settle({

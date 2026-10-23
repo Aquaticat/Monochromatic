@@ -1069,7 +1069,8 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  @param off - providers left off, whose keys are read as unset; the owner's rulings by
  default (`PROVIDERS_LEFT_OFF`), an empty list in a case that exercises an off provider's client
 
- @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out (default: no cut)
+ @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out (REQUIRED, so no client runs with an
+ unbounded hold)
 
  @returns Ready client, routed across configured providers and counted per seat
 
@@ -1077,7 +1078,11 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
 
  @example
  ```ts
- const client = runClientFrom({ env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: 'test', }, transport, },);
+ const client = runClientFrom({
+   env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: 'test', },
+   transport,
+   maxHoldMs: 1_800_000,
+ },);
  ```
  */
 export function runClientFrom(
@@ -1092,7 +1097,7 @@ export function runClientFrom(
     readonly transport: ModelTransport;
     readonly promptPayloadDir?: string;
     readonly off?: readonly ProviderOff[];
-    readonly maxHoldMs?: number;
+    readonly maxHoldMs: number;
   },
 ): RunClient {
   /**
@@ -1115,8 +1120,7 @@ export function runClientFrom(
     env,
     transport,
     ...((off === undefined) ? {} : { off, }),
-    // Conditional spread keeps the cap absent instead of undefined.
-    ...((maxHoldMs === undefined) ? {} : { maxHoldMs, }),
+    maxHoldMs,
   },);
   /**
    Each configured provider's client, absent where its key is unset.
@@ -1221,8 +1225,8 @@ export function runClientFrom(
  transport, handed to `runClientFrom`. The one place those two are named for
  every runner, so no library function or test reaches them by default.
 
- @param options - payload checkpoint, when the runner keeps one, and the longest hold a stated wait may set, when the runner
- knows its hard cap
+ @param options - the longest hold a stated wait may set, which is required: the runner's hard cap, or the probe bound
+ where its command has none; and the payload checkpoint, when the runner keeps one
 
  @returns Ready client, routed across configured providers and counted per seat
 
@@ -1230,14 +1234,14 @@ export function runClientFrom(
 
  @example
  ```ts
- const client = createRunClient();
+ const client = createRunClient({ maxHoldMs: 25_200_000, },);
  ```
  */
 export function createRunClient(
   options: {
     readonly promptPayloadDir?: string;
-    readonly maxHoldMs?: number;
-  } = {},
+    readonly maxHoldMs: number;
+  },
 ): RunClient {
   return runClientFrom({
     ...options,

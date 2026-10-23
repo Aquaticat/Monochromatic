@@ -326,9 +326,11 @@ function notHeldOut(): boolean {
  @param rateLimitBackoffMs - how long a refusal on a wet meter holds a
  provider out while another provider can take the traffic
 
- @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out, which the run sets to its hard
- cap: a hold past it can never be waited out, so a longer stated wait is cut to it and logged once for each provider
- with the value the provider stated (default: no cut)
+ @param maxHoldMs - longest a wait a refusal states for itself may hold a provider out, which a run sets to its hard
+ cap or, where its command has none, to a named bound with a reason (REQUIRED, with no unbounded default: a provider
+ whose `Retry-After` states 99,999,999,999 seconds held that provider out for about 3,170 years): a hold past it can
+ never be waited out, so a longer stated wait is cut to it and logged once for each provider with the value the
+ provider stated
 
  @param heldOut - whether the run holds a provider out for a reason its meter cannot show, such as a refused
  credential; the `METERS` line prints such a provider as dry. It changes only the printed word, never the routed view
@@ -342,7 +344,7 @@ function notHeldOut(): boolean {
 
  @example
  ```ts
- const budgets = createProviderBudgets({ neuralwatt, synthetic, hyper, bedrock, openrouter, },);
+ const budgets = createProviderBudgets({ neuralwatt, synthetic, hyper, bedrock, openrouter, maxHoldMs: 25_200_000, },);
  ```
  */
 export function createProviderBudgets(
@@ -358,7 +360,7 @@ export function createProviderBudgets(
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
-    maxHoldMs = Number.POSITIVE_INFINITY,
+    maxHoldMs,
     heldOut = notHeldOut,
     now = monotonicMs,
   }: {
@@ -373,7 +375,7 @@ export function createProviderBudgets(
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
     readonly rateLimitBackoffMs?: number;
-    readonly maxHoldMs?: number;
+    readonly maxHoldMs: number;
     readonly heldOut?: (provider: ProviderName,) => boolean;
     readonly now?: () => number;
   },

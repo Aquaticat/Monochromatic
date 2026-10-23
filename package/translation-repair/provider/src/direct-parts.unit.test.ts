@@ -33,6 +33,7 @@ import {
   SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import { TEST_MAX_HOLD_MS, } from './budget-hold.test-fixture.ts';
 
 /**
  Every provider false, for a record the cases then set.
@@ -134,6 +135,7 @@ await describe({
             + 'its balance is empty',
           fn: async () => {
             const budgets = createProviderBudgets({
+              maxHoldMs: TEST_MAX_HOLD_MS,
               deepseek: { credits: async () => ({ isAvailable: true, totalUsd: 0, }), },
               xiaomi: { spend: async () => ({ spentUsd: 0.0042, }), },
             },);

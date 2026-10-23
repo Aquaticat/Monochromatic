@@ -31,6 +31,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import { TEST_MAX_HOLD_MS, } from './budget-hold.test-fixture.ts';
 
 /**
  Plain text conversation reused across routed calls.
@@ -693,6 +694,7 @@ await describe({
          Bedrock has no meter, so it reads dry.
          */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic: {
             quotas: async function quotas() {
               return {

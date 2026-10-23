@@ -43,6 +43,11 @@ export {
   RequiredProviderError,
 } from './corpus-run/required-providers.ts';
 export { type RunClient, } from './corpus-run/run-client-contract.ts';
+export {
+  createProbeRunClient,
+  PROBE_MAX_HOLD_MS,
+  probeRunClientFrom,
+} from './corpus-run/run-probe-client.ts';
 export { RunConfigError, } from './corpus-run/run-config-error.ts';
 export {
   createRunClient,

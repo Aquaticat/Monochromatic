@@ -18,6 +18,7 @@ import {
   stubWallClock,
   WALL_START_MS,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/wall-clock-stub.test-fixture.ts';
+import { TEST_MAX_HOLD_MS, } from './budget-hold.test-fixture.ts';
 
 /**
  Quota snapshot of a provider with budget left.
@@ -161,6 +162,7 @@ await describe({
         const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -178,9 +180,9 @@ await describe({
       fn: async () => {
         /** Stub providers with budget everywhere. */
         const { synthetic, hyper, openrouter, } = stubProviders({},);
-        const syntheticOnly = createProviderBudgets({ synthetic, },);
-        const hyperOnly = createProviderBudgets({ hyper, },);
-        const openRouterOnly = createProviderBudgets({ openrouter, },);
+        const syntheticOnly = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, synthetic, },);
+        const hyperOnly = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, hyper, },);
+        const openRouterOnly = createProviderBudgets({ maxHoldMs: TEST_MAX_HOLD_MS, openrouter, },);
 
         expect(await syntheticOnly.read({ signal: SIGNAL, },),).toEqual({
           neuralwatt: true,
@@ -222,6 +224,7 @@ await describe({
         const { synthetic, hyper, openrouter, } = stubProviders({ quota: DRY_QUOTA, },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -250,11 +253,13 @@ await describe({
         },);
 
         expect(await createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic: wet.synthetic,
           hyper: wet.hyper,
           openrouter: wet.openrouter,
         },).read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
         expect(await createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic: dry.synthetic,
           hyper: dry.hyper,
           openrouter: dry.openrouter,
@@ -275,6 +280,7 @@ await describe({
         },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -300,6 +306,7 @@ await describe({
         const { synthetic, hyper, openrouter, } = stubProviders({ quotaThrows: true, },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -321,6 +328,7 @@ await describe({
         const { synthetic, hyper, openrouter, } = stubProviders({ quotaThrows: true, balance: 0, },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -356,6 +364,7 @@ await describe({
         const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -376,6 +385,7 @@ await describe({
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -407,6 +417,7 @@ await describe({
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -467,6 +478,7 @@ await describe({
         let clock = 1_000;
         /** Budget view under test, on an injected clock and a movable balance. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter: {
@@ -514,6 +526,7 @@ await describe({
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -555,6 +568,7 @@ await describe({
         const clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -588,6 +602,7 @@ await describe({
         const clock = 1_000;
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -634,6 +649,7 @@ await describe({
         const { synthetic, hyper, openrouter, } = stubProviders({ balance: 0, },);
         /** Budget view under test. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -669,6 +685,7 @@ await describe({
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -702,6 +719,7 @@ await describe({
         let clock = 1_000;
         /** Budget view under test, on an injected clock. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -765,7 +783,7 @@ await describe({
         };
 
         /** Budget layer over the slow meters. */
-        const budgets = createProviderBudgets(slow,);
+        const budgets = createProviderBudgets({ ...slow, maxHoldMs: TEST_MAX_HOLD_MS, },);
 
         /** Five calls launched before any of them can finish. */
         const views = await Promise.all([
@@ -827,6 +845,7 @@ await describe({
 
         /** Budget layer over the slow meters, on a clock that does not move. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           ...slow,
           rateLimitBackoffMs: 50,
           now: () => 1_000,
@@ -877,6 +896,7 @@ await describe({
         const { synthetic, hyper, openrouter, } = stubProviders({},);
         /** Budget view under test, on its default clock. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
@@ -903,6 +923,7 @@ await describe({
         const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
         /** Budget view under test, on a clock still at its origin. */
         const budgets = createProviderBudgets({
+          maxHoldMs: TEST_MAX_HOLD_MS,
           synthetic,
           hyper,
           openrouter,
