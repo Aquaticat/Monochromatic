@@ -90,7 +90,7 @@ const DAY_TWO = '2026-10-23T19:15:08.000Z';
 /**
  A refusal naming a spent NeuralWatt day 301 s from its return.
 
- @param dayStart - the day start the reading named
+ @param dayStart - day start the reading named
 
  @returns The refusal, carrying the distance, the time of day and the dryness that tells one spent day from the next
 
@@ -113,9 +113,9 @@ function spentDayRefusal({ dayStart, }: { readonly dayStart: string; },): EveryP
 
  @param returnsInMs - milliseconds to the return, absent for an error that carries none
 
- @param dayStart - the day start of the spent day the return is for
+ @param dayStart - day start of the spent day the return is for
 
- @param readAtMs - the instant on the gate's clock of the read that named the return, absent for an error without one
+ @param readAtMs - instant on the gate's clock of the read that named the return, absent for an error without one
 
  @returns The error
 

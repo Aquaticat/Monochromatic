@@ -85,8 +85,8 @@ import type {
 
  @param endRun - told of the failure that ended this entry when it ends the run, so the pass stops starting entries
 
- @param parked - asked after `endRun`: whether the pass is now parked for the failure, which the TALLY line prints as
- `PARKED`
+ @param parked - asked after `endRun`: whether the pass is now parked for the failure and the entry goes back to the
+ front of its queue, which the TALLY line prints as `PARKED`
 
  @returns Settlement, resumable operational failure, or stopped incomplete work
 

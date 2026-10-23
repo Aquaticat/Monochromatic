@@ -104,8 +104,8 @@ import {
  @param endRun - told of the failure that ended the entry when it ends the run (`tallyCaughtEntry` says when), so the
  pass stops however the failure reached the entry
 
- @param parked - asked after `endRun`: whether the pass is now parked for the failure, which the TALLY line prints as
- `PARKED`
+ @param parked - asked after `endRun`: whether the pass is now parked for the failure and the entry goes back to the
+ front of its queue, which the TALLY line prints as `PARKED`
 
  @returns Whether an artifact was written
 

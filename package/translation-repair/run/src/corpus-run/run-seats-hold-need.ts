@@ -278,11 +278,11 @@ export function holdsThatCureShortBenches(
 
  @param running - how long each provider's refusal still holds it out, as the reader read it
 
- @param counted - the holds the reader waits for, a subset of the running ones
+ @param counted - holds the reader waits for, a subset of the running ones
 
  @param dry - dryness per provider, holds folded in
 
- @param nothingHeld - the words for a reading where no hold is skipped (none runs, or every one is waited for)
+ @param nothingHeld - words for a reading where no hold is skipped (none runs, or every one is waited for)
 
  @returns The words
 

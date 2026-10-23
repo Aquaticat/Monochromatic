@@ -104,11 +104,11 @@ export class WritingBenchUnreachableError extends Error {
    @param neuralwattReturnsInMs - milliseconds until NeuralWatt's day starts again, where that return
    lifts the bench to its floor
 
-   @param neuralwattReturnsAt - the time of day the return falls at, with its zone
+   @param neuralwattReturnsAt - time of day the return falls at, with its zone
 
    @param neuralwattDryness - why NeuralWatt read dry
 
-   @param neuralwattReadAtMs - the instant of the reading that named the return, on `monotonicMs`
+   @param neuralwattReadAtMs - instant of the reading that named the return, on `monotonicMs`
    */
   public constructor(
     {
