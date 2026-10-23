@@ -1828,6 +1828,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     --field dry-run=true`), bounded watch log `~/temp/agent/arm-dry-watch.log`. On green: download both archives and
     `SHA256SUMS`, compare, then bump `package/desktop-app/ide/Cargo.toml` to 0.1.1 (the standing authorization
     covers it) and verify the real release including `gh attestation verify` of all assets.
+    ARM64 dry run `39903652488`: all five jobs green. I downloaded the artifacts: `sha256sum --check` OK for the three
+    assets, the arm64 binary is `ELF 64-bit ... ARM aarch64 ... interpreter /lib/ld-linux-aarch64.so.1` (90,611,544
+    bytes, as the agent's emulated build), NEEDED `libfontconfig libgcc_s libm libc`, INSTALL.txt names aarch64, the
+    released notices equal the arm64 leg's and the archive's byte for byte, rustc 1.99.1 on both. x64 binary prints
+    `monochromatic-ide 0.1.0`. The arm64 binary has not been run (this host is x86_64); nobody has opened its window.
+    REAL RELEASE 0.1.1: bump `ec2dec4e0d` pushed to `origin/main` (Cargo.toml and exactly one Cargo.lock line, via
+    `//package/desktop-app/ide:fetch`), under the standing owner authorization. Run `39905451031` (push event),
+    watch log `~/temp/agent/rel-watch.log`. On green: release page `ide-v0.1.1` has four assets and is a pre-release,
+    `gh attestation verify` of each, sha256 compare; then verify `ide-v0.1.0` the same way.
     Committed `clip-rounding` test strengthening (`1b57f960de`, merge `3f220bd444`).
     Sweep re-run of the three environment failures: `frame-fit` and `tile-stamp-names-its-clip` accepted in all three
     phases; `refused-tile-keeps-image` is a fourth real stale guard (its `after` injects
