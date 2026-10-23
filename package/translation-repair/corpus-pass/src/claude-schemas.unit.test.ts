@@ -44,6 +44,7 @@ import {
   callersOf,
   declaringFilesOf,
   familySources,
+  type SchemaBuilder,
   type SourceFile,
 } from './claude-schema-sources.test-fixture.ts';
 
@@ -92,10 +93,9 @@ type SharedBuilder = {
 };
 
 /**
- A builder as the case that reads the source finds it: the callers are paths.
+ A builder as the case that reads the source finds it, keyed by the builder's name: the callers are paths.
  */
 type BuilderCallerFiles = {
-  readonly builder: string;
   readonly declaredIn: string;
   readonly callers: readonly string[];
 };
@@ -103,9 +103,9 @@ type BuilderCallerFiles = {
 /**
  Every builder of an answer schema that more than one file can call, and every file that calls it. A stage that adds a
  call, or a builder of its own, fails the case that reads these until it is listed here, and a caller that names its
- schema fails the case after it until the producer list holds a schema of that name. The consistency builders make
- their schemas per ask from the labels shown, so the producer list holds one sample of each, and their callers carry
- no schema name here.
+ schema fails the case on named callers until the producer list holds a schema of that name. The consistency
+ builders make their schemas per ask from the labels shown, so the producer list holds one sample of each, and their
+ callers carry no schema name here.
  */
 const SHARED_BUILDERS: readonly SharedBuilder[] = [
   {
@@ -556,28 +556,33 @@ await describe({
          */
         const sources = await familySources();
         /**
-         Builders found, and the callers of each, in the shape of the list.
+         Builders found, and the callers of each, by the builder's name.
          */
-        const found = buildersOf({ sources, notStageSchemas: NOT_STAGE_SCHEMAS, },)
-          .map(function listed(builder,): BuilderCallerFiles {
-            return {
-              builder: builder.name,
-              declaredIn: builder.file,
-              callers: callersOf({ sources, builder, },).toSorted(),
-            };
-          },)
-          .toSorted(function byName(left, right,): number {
-            return left.builder.localeCompare(right.builder,);
-          },);
-        expect(found,).toEqual(SHARED_BUILDERS.map(function listed(shared,): BuilderCallerFiles {
-          return {
-            builder: shared.builder,
-            declaredIn: shared.declaredIn,
-            callers: shared.callers.map(function fileOfCaller({ file, },): string {
-              return file;
-            },).toSorted(),
-          };
+        const found = Object.fromEntries(buildersOf({ sources, notStageSchemas: NOT_STAGE_SCHEMAS, },)
+          .map(function listed(builder: SchemaBuilder,): readonly [string, BuilderCallerFiles,] {
+            return [
+              builder.name,
+              {
+                declaredIn: builder.file,
+                callers: callersOf({ sources, builder, },).toSorted(),
+              },
+            ];
+          },),);
+        /**
+         The builders the list names, in the same shape.
+         */
+        const listed = Object.fromEntries(SHARED_BUILDERS.map(function entryOf(shared,) {
+          return [
+            shared.builder,
+            {
+              declaredIn: shared.declaredIn,
+              callers: shared.callers.map(function fileOfCaller({ file, },): string {
+                return file;
+              },).toSorted(),
+            },
+          ];
         },),);
+        expect(found,).toEqual(listed,);
       },
     },),
 
