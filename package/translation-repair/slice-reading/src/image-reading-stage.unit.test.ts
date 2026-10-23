@@ -33,7 +33,10 @@ import type {
   ChatTextRequest,
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { readImageAsset, } from '../dist/final/node/index.mjs';
+import {
+  isTransientReadingReason,
+  readImageAsset,
+} from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -260,6 +263,35 @@ await describe({
         if (reading.kind !== 'unavailable')
           throw new Error('unavailable by construction',);
         expect(reading.reason,).toBe('unknown-media-type',);
+        expect(requests.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'NAMES A PICTURE WITH NO BYTES AS UNAVAILABLE WITHOUT A CALL (R7): the encoder refuses a zero-byte file by '
+        + 'throwing, and the stage turns that into the reason a later reader can tell from a model that failed, so the '
+        + 'picture is not retried tomorrow and no seat spends a request on it',
+      fn: async () => {
+        const { client, requests, } = replyingClient({ text: A_READING, },);
+
+        /**
+         Attempt with a zero-byte file.
+         */
+        const reading = await readImageAsset({
+          client,
+          modelId: READER,
+          bytes: new Uint8Array(0,),
+          assetName: 'mittens.webp',
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
+          l,
+        },);
+
+        expect(reading.kind,).toBe('unavailable',);
+        if (reading.kind !== 'unavailable')
+          throw new Error('unavailable by construction',);
+        expect(reading.reason,).toBe('empty-asset',);
+        expect(isTransientReadingReason({ reason: reading.reason, },),).toBe(false,);
         expect(requests.length,).toBe(0,);
       },
     },),
