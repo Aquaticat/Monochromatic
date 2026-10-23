@@ -348,10 +348,17 @@ an optional call,
 a function assigned to a second name,
 taken out of an object
 or re-exported under another name,
-an anonymous default export,
-a dynamic import,
+an anonymous default export
+or one written `export default build;`,
+a dynamic import
+or `require`,
+a default import through a module of another file name (a barrel),
 an object member nested deeper than one level,
-and a getter.
+an accessor (a getter or a setter),
+a member with a computed name,
+and a member on the line that opens the object
+(B862 added the barrel and the member limits to the list,
+which first lacked them).
 Wrappers stay limited to calls returned at once.
 Reading every function that calls a builder would make the three functions that ask the page consistency questions
 wrappers,
@@ -383,11 +390,87 @@ and the rule that a wrapper returns the call.
 A run with the fixtures copied unchanged passes.
 The mutation of `=> await ` first passed every case,
 which added the two arrow cases of `claude-schema-wrapper-forms.test-fixture.ts`.
+The claim that every mutation of the search's reading was shown to fail a case did not hold for nine readings (B862).
 
 Prevention rule:
 a search that stands in for a parser has one case per shape it reads,
 a header that lists the shapes it does not read,
 and every mutation of its reading is shown to fail a case.
+
+Cache versions:
+none moved.
+The change is to test fixtures.
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Guards that cannot fail".
+
+## B862: nine mutations of the producer-list search passed every case, and a header sentence on strings had none
+
+Status:
+fixed on 2026-10-23 (UTC),
+found by the re-check of fix round 11 of the Claude route
+(its findings on the survivors of the search and on its header).
+The design that landed is open to the owner's veto.
+
+The defect:
+B861 said every mutation of the search's reading is shown to fail a case.
+Eight did not fail one,
+and a ninth showed the header's sentence on strings had no case behind it.
+Dropping the opening `=> ` of a wrapper,
+the follower `<` of a call,
+the opening `export default async function` of a builder,
+or the reading of a value that starts with type parameters,
+each passed every case of the search,
+though the header and the TSDoc of `returnsCallOf` claimed all four.
+No case wrapped a builder written as a method of an object or as a default export,
+and a search that follows no wrapper of either also passed,
+though the header of `claude-schemas.unit.test.ts` claimed a wrapper of any builder form.
+The header said a name inside a string is no use.
+The rule is a quote directly against the name,
+a name inside a longer string (`'call build() here'`) is read as a use,
+and so is a name in a comment that follows code on its line.
+Dropping either quote rule passed every case,
+and so did a search that cut the contents of strings out of the code.
+The list of shapes the search does not read lacked a default import through a barrel
+and the limits on object members,
+and B861's copy of the list lacked four more of the header's.
+A search of the family's non-test source for the names of the three shared builders
+found no use of any of these shapes,
+so no producer was missing from the list.
+
+The fix:
+six cases for the readings that had none
+(`claude-schema-wrapped-builder-forms.test-fixture.ts`,
+`claude-schema-builder-forms.test-fixture.ts`):
+a wrapper written as an arrow function with the call as its body,
+a wrapper that returns a call naming a type argument,
+a wrapper of a method builder,
+a wrapper of a default-export builder,
+a generic arrow builder
+and an `export default async function` builder,
+and two cases in `claude-schema-wrapper-forms.test-fixture.ts`:
+a name that holds a whole string or starts or ends it is no use,
+and a name inside a longer string or in a comment after code is read as a use.
+The scan did not change.
+The longer string is pinned as the over-read the header states,
+rather than fixed by cutting string contents out of the code,
+which would be a change in behaviour that has to handle template literals that span lines and escaped quotes.
+The headers say what the cases hold,
+and the list of shapes not read matches B861's.
+Each of the nine mutations,
+applied to a scratch copy of the tree,
+passed every case before the cases and fails the case named for its shape after them,
+and the unmutated copy passes.
+Wrappers of the other builder forms (an arrow function,
+a function expression)
+have no case of their own,
+and the header says so.
+
+Prevention rule:
+a sentence of a header that names a shape the search reads is a claim,
+and each such sentence has a case that a mutation dropping the shape fails,
+or it is narrowed to what the cases hold.
 
 Cache versions:
 none moved.

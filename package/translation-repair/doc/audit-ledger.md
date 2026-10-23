@@ -241,7 +241,8 @@ named for that subject and listed here.
   the test round that pinned the reachable ones,
   the equivalent mutants,
   the two survivors that stay unpinned (B684),
-  and a producer-list search that read a builder in few shapes (B861).
+  a producer-list search that read a builder in few shapes (B861),
+  and the readings of that search that no case held (B862).
 - [Audit ledger: files a later run reads back](audit-ledger-files-a-later-run-reads-back.md):
   Caches,
   ledgers,
