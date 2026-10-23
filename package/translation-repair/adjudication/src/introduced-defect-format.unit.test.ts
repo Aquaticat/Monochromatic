@@ -23,7 +23,7 @@ import {
 
  @param what - name of the node, for the refusal
 
- @returns The node
+ @returns Node
 
  @throws {@link TypeError} where the node is not an object
  */
@@ -44,7 +44,7 @@ function recordOf(
 /**
  Reads the schema of one check's fields.
 
- @returns The check's properties
+ @returns Check's properties
 
  @throws {@link TypeError} where the schema has another shape
 

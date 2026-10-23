@@ -77,7 +77,7 @@ function replacingSetTimeout(
 
  @param run - work to run
 
- @returns The work's result and the delays armed at or above the fixture's floor
+ @returns Work's result and the delays armed at or above the fixture's floor
 
  @example
  ```ts

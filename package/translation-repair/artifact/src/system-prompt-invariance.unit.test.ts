@@ -75,7 +75,7 @@ function notSystem(
 
  @param stage - stage and variant to render
 
- @returns The system text for each subject
+ @returns System text for each subject
 
  @example
  ```ts
@@ -103,7 +103,7 @@ function systemTextsOf(
 
  @param stage - stage and variant to render
 
- @returns The other turns for each subject, as JSON
+ @returns Other turns for each subject, as JSON
 
  @example
  ```ts
@@ -149,7 +149,7 @@ const FENCE_CLOSING = ' equals signs.';
 
  @param subject - subject to render it for
 
- @returns The stated length (zero where the sentence is missing) and the longest fence line
+ @returns Stated length (zero where the sentence is missing) and the longest fence line
 
  @example
  ```ts
@@ -216,7 +216,7 @@ const MARKS_OPENING = ' the repeated wording is enclosed between ';
 
  @param subject - subject to render it for
 
- @returns The opening and the closing mark named (empty where the user turn has no such sentence)
+ @returns Opening and the closing mark named (empty where the user turn has no such sentence)
 
  @example
  ```ts

@@ -62,7 +62,7 @@ export class ClaudeSchemaKeywordError extends Error {
   /**
    Builds the failure.
 
-   @param refusedKeyword - the keyword the schema carries
+   @param refusedKeyword - keyword the schema carries
 
    @param schemaPath - dotted path of the schema node that carries it, member names included, `root` for the top
 
@@ -183,7 +183,7 @@ const SUPPORTED_FORMATS: ReadonlySet<unknown> = new Set([
 
  @param keyword - keyword of the node
 
- @param value - the value the node gives it
+ @param value - value the node gives it
 
  @returns True for a bound the feature lists as unsupported, a `minItems` other than 0 or 1, and a `format` off the page's list
 
@@ -245,7 +245,7 @@ function isBackreferenceDigit({ character, }: { readonly character: string; },):
 /**
  Whether one of the openers stands at a position of a pattern.
 
- @param pattern - the regular expression source
+ @param pattern - regular expression source
 
  @param index - position read
 
@@ -284,9 +284,9 @@ function opensAny(
  ONE LINEAR PASS over the text with the escape and the character class tracked, so an escaped backslash followed by a
  digit and a `\b` inside a class (a backspace there) are data and not constructs.
 
- @param pattern - the regular expression source a schema carries
+ @param pattern - regular expression source a schema carries
 
- @returns The first construct's name alone in a list, or no name where the pattern spells none of the four
+ @returns First construct's name alone in a list, or no name where the pattern spells none of the four
 
  @example
  ```ts
@@ -366,7 +366,7 @@ function describesObject({ schema, }: { readonly schema: Readonly<Record<string,
 
  @param path - where the value sits
 
- @returns The narrowed copy
+ @returns Narrowed copy
 
  @throws {@link ClaudeSchemaKeywordError} when a schema under the value carries a keyword the feature refuses
 
@@ -406,13 +406,13 @@ function narrowedValue(
 /**
  Narrows each schema of a name-to-schema map, keeping the names.
 
- @param map - the map, as the schema wrote it
+ @param map - map, as the schema wrote it
 
  @param path - where the map's node sits
 
- @param keyword - the keyword the map is the value of, which names the path of its members when it is not `properties`
+ @param keyword - keyword the map is the value of, which names the path of its members when it is not `properties`
 
- @returns A copy whose values are narrowed
+ @returns Copy whose values are narrowed
 
  @throws {@link ClaudeSchemaKeywordError} when a schema under the map carries a keyword the feature refuses
 
@@ -455,9 +455,9 @@ function narrowedMap(
  Text that tells the model which constraints were dropped from a schema node, in the form the live Structured outputs
  page gives (`{minimum: 100}`).
 
- @param dropped - the dropped keywords and their values, in the order the schema wrote them
+ @param dropped - dropped keywords and their values, in the order the schema wrote them
 
- @returns The text, braces included
+ @returns Text, braces included
 
  @example
  ```ts
@@ -487,11 +487,11 @@ function droppedConstraintsText(
 /**
  Narrows one schema node and everything under it.
 
- @param schema - the node, as the stage wrote it, never edited
+ @param schema - node, as the stage wrote it, never edited
 
  @param path - where the node sits, `root` for the top
 
- @returns A new node that shares no object with the one given
+ @returns New node that shares no object with the one given
 
  @throws {@link ClaudeSchemaKeywordError} when the node carries a keyword the feature refuses
 
@@ -618,7 +618,7 @@ function narrowedSchema(
 
  @param schema - schema as the stage wrote it, never edited
 
- @returns A new schema that shares no object with the one given
+ @returns New schema that shares no object with the one given
 
  @throws {@link ClaudeSchemaKeywordError} when a node of the schema carries a keyword outside the allowlist that is not
  one of the stripped bounds

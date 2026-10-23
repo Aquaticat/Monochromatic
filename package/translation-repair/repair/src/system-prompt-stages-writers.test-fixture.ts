@@ -251,7 +251,7 @@ export const WRITER_STAGES: readonly PromptStage[] = [
 
  @param subject - invented subject
 
- @returns The contest's subject, with no death recorded
+ @returns Contest's subject, with no death recorded
 
  @example
  ```ts
@@ -277,7 +277,7 @@ function laneContestSubject(
 
  @param subject - invented subject
 
- @returns The review's subject
+ @returns Review's subject
 
  @example
  ```ts

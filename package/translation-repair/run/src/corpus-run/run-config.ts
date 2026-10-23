@@ -1005,7 +1005,7 @@ export type RunCallConfig = {
 
  @param streamIdleMs - silence allowed between pieces of generated text
 
- @returns The three knobs, unchanged, and the deadline a Claude exchange runs
+ @returns Three knobs, unchanged, and the deadline a Claude exchange runs
  under beside them, to stamp on an artifact
 
  @throws {@link StreamBoundsOutsideCallTimeoutError} when a bound is not a

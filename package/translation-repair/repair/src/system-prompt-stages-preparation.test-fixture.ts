@@ -38,7 +38,7 @@ import type {
 
  @param subject - invented subject
 
- @returns The slate's messages
+ @returns Slate's messages
 
  @example
  ```ts

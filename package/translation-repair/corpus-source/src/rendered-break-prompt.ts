@@ -124,7 +124,7 @@ function sourceBreakCounts(
 
  @param syntax - metadata uses a different grammar and never gets this body rule
 
- @returns The shared instruction, or no extra prompt text
+ @returns Shared instruction, or no extra prompt text
 
  @example
  ```ts
@@ -168,7 +168,7 @@ export function renderedBreakContract(
 
  @param syntax - metadata uses a different grammar and never gets this body rule
 
- @returns The measured lines, or no text where the instruction is not due
+ @returns Measured lines, or no text where the instruction is not due
 
  @example
  ```ts

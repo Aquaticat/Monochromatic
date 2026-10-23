@@ -26,7 +26,7 @@ const SECOND_PLACE_LEAD = '傍晚的时候，';
 
  @param subject - invented subject
 
- @returns The repeat
+ @returns Repeat
 
  @example
  ```ts
@@ -47,7 +47,7 @@ export function sentenceOf(
 
  @param subject - invented subject
 
- @returns The repeat
+ @returns Repeat
 
  @example
  ```ts
@@ -71,7 +71,7 @@ export function refrainOf(
 
  @param repeat - sentence or refrain the places share
 
- @returns The first and the second place
+ @returns First and the second place
 
  @example
  ```ts
@@ -131,7 +131,7 @@ export function viewsOf(
 
  @param view - place that was chosen
 
- @returns The place with its words and its paragraph
+ @returns Place with its words and its paragraph
 
  @example
  ```ts
@@ -159,7 +159,7 @@ export function chosenOf(
 
  @param deaths - names the death is recorded for, none where no death is
 
- @returns The flag and the names, nothing where no death is recorded
+ @returns Flag and the names, nothing where no death is recorded
 
  @example
  ```ts

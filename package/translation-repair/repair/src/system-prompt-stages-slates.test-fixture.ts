@@ -85,7 +85,7 @@ const COMPARATIVE_MODE: RefineStageMode = { kind: 'comparative', };
 
  @param subject - invented subject
 
- @returns The mode
+ @returns Mode
 
  @example
  ```ts
@@ -146,7 +146,7 @@ function translatedEvidence(
 
  @param polish - whether the final polish asks it
 
- @returns The slate's messages
+ @returns Slate's messages
 
  @example
  ```ts

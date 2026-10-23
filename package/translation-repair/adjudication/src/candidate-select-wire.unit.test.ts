@@ -82,7 +82,7 @@ await describe({
 
              @param run - length of the run, zero for none
 
-             @returns The system text and the user turn
+             @returns System text and the user turn
 
              @example
              ```ts

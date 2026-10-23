@@ -260,7 +260,7 @@ export type PromptSubject = {
 
  @param words - what differs between the subjects
 
- @returns The subject
+ @returns Subject
 
  @example
  ```ts

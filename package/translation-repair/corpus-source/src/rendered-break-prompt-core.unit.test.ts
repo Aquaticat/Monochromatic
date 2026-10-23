@@ -14,9 +14,9 @@ import {
 /**
  The instruction and the facts as one text, the way a sheet that shows both in one place would read them.
 
- @param input - the passage, its archive wording and the shown renderings
+ @param input - passage, its archive wording and the shown renderings
 
- @returns The instruction and the facts, or nothing where the instruction is not due
+ @returns Instruction and the facts, or nothing where the instruction is not due
 
  @example
  ```ts

@@ -44,7 +44,7 @@ const SHEET_WORDS: readonly string[] = ['wire', 'sheet', 'prompt', 'candidate-se
 
  @param text - source file
 
- @returns The text between the quotes after each ` from `
+ @returns Text between the quotes after each ` from `
 
  @example
  ```ts
@@ -70,7 +70,7 @@ function specifiersOf({ text, }: { readonly text: string; },): readonly string[]
 
  @param text - source file
 
- @returns The specifiers holding one of the sheet words
+ @returns Specifiers holding one of the sheet words
 
  @example
  ```ts

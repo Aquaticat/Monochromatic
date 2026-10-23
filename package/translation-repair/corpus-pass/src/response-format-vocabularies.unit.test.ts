@@ -59,7 +59,7 @@ const ITEMS = '[]';
 
  @param path - member names from the root, `[]` for an array's items
 
- @returns The node
+ @returns Node
 
  @throws {@link TypeError} where the path leaves the schema
 

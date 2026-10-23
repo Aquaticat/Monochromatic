@@ -53,7 +53,7 @@ const CLAUDE_DEADLINE_MS = 460_000;
  @param exchangeTimeoutMs - deadline the caller hands the call
  @param maxTokens - ceiling the caller asks for, absent for the card's own cap
 
- @returns The delays armed at deadline length
+ @returns Delays armed at deadline length
 
  @example
  ```ts

@@ -149,7 +149,7 @@ const l = tagged({ tag: 'pass-reseat-test', },);
 
  @param holds - holds as the case set them
 
- @returns The same providers held, none for longer than {@link SHORT_HOLD_MS}
+ @returns Same providers held, none for longer than {@link SHORT_HOLD_MS}
 
  @example
  ```ts

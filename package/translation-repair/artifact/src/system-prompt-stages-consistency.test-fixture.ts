@@ -36,7 +36,7 @@ import {
 
  @param deaths - names a death is recorded for, none where no death is
 
- @returns The judge's messages
+ @returns Judge's messages
 
  @example
  ```ts
@@ -87,7 +87,7 @@ function judgeOf(
 
  @param deaths - names a death is recorded for, none where no death is
 
- @returns The run-off's messages
+ @returns Run-off's messages
 
  @example
  ```ts

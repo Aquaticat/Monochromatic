@@ -38,7 +38,7 @@ import {
 
  @param deaths - names a death is recorded for, none where no death is
 
- @returns The writer's messages
+ @returns Writer's messages
 
  @example
  ```ts
@@ -100,7 +100,7 @@ function writerOf(
 
  @param deaths - names a death is recorded for, none where no death is
 
- @returns The choice's messages
+ @returns Choice's messages
 
  @example
  ```ts
