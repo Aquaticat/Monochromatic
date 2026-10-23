@@ -7,7 +7,7 @@ sound plays, while the music player pauses, plays only the message sound, and re
 
 ## Cause found by reading the source
 
-Not reproduced on a device: the Pixel 6 was not connected when this was written.
+Not reproduced with sound on a device: the human asked for no loudspeaker playback (see Not verified).
 Two pieces of `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/RustEngine.kt`
 produce the pause, and both are needed for it:
 
@@ -29,14 +29,35 @@ From the Android audio focus guide (`developer.android.com/media/optimize/audio-
 - In that case the first app "does not usually receive an `onAudioFocusChange()` callback".
 - Without automatic ducking, the guide says the app "should duck ... or pause" on a transient can-duck loss.
 
-## Options for a fix
+## Why the framework cannot duck this app
 
-Not applied; the human asked for an investigation.
+Read from the Android 16 source (`android16-release` branch, fetched 2026-10-23), not measured on a device.
 
-- Drop `setWillPauseWhenDucked(true)` and keep the listener.
-  The system ducks by itself for notification sounds, as other apps behave.
-  The listener still handles a real transient loss (a call, a navigation voice) by pausing.
-- Also stop pausing on the can-duck loss in the listener, and lower the native engine volume there instead.
-  This is the fallback for a device that still sends the callback, and it needs a volume path in the native engine.
+- `services/core/java/com/android/server/audio/PlaybackActivityMonitor.java` lists
+  `UNDUCKABLE_PLAYER_TYPES` as `PLAYER_TYPE_AAUDIO` and `PLAYER_TYPE_JAM_SOUNDPOOL`, with the comment
+  "TODO support VolumeShaper on those players".
+  `duckPlayers` returns false for the whole app when any of its started players is of those types.
+- The engine plays through the NDK AAudio C API (`package/music-player/android-app/rust/Cargo.toml` links the sysroot
+  `libaaudio`), so automatic ducking would not lower it even without the flag.
+- `FocusRequester.java` reports the loss to the app's listener whenever the framework does not duck, and always when
+  the request carries `AUDIOFOCUS_FLAG_PAUSES_ON_DUCKABLE_LOSS`, which `setWillPauseWhenDucked(true)` sets, unless
+  the winner forces a duck.
 
-Verification needs the phone: play a track, send a notification sound, and listen for a duck without a pause.
+So the listener has to duck, and the flag is what guarantees it is told.
+The reason the commit that added audio focus (`6ec84c8419`, 2026-06-13) chose pausing is not recorded; it says only
+that it mirrors what ExoPlayer gave the Media3 flavor; no compatibility problem is recorded anywhere in the repository.
+The source reading above shows only that the framework would not have ducked this engine.
+
+## Fix
+
+Applied as D134 in `package/music-player/design/decisions.md`: the flag stays, the can-duck arm of `onFocusChange` in
+`RustEngine.kt` lowers the engine volume to a fifth (the level Android's own duck ramps to) and the gain arm restores
+it; a call or a permanent loss still pauses.
+The rule is `volumeWhileDucked` in `core/FocusDuck.kt` with `FocusDuckTest`.
+
+## Not verified
+
+The human asked for no loudspeaker playback (tenants in the building), and the microphone was too insensitive to
+hear the phone anyway, so nothing was played.
+The check left for the human is to play music and let a message sound arrive: the music should drop for the length of
+the sound and come back, and a phone call should still pause it.

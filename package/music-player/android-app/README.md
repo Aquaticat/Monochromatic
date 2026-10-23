@@ -78,6 +78,10 @@ mise run //package/music-player/android-app:run:release
 
 - `build:native` compiles only the release-mode Rust shared libraries for both supported ABIs.
 - `build` rebuilds the native libraries and assembles the debug APK.
+- `install` installs the debug APK under the release package name, which fails with a signature mismatch on a device
+  that holds the release-signed app.
+  Setting the environment variable `ORG_GRADLE_PROJECT_debugApplicationIdSuffix` to `.duck` installs it beside that app
+  as `dev.monochromatic.musicplayer.duck`, with its own data, so the installed app is never replaced or wiped.
 - `build:release` rebuilds the native libraries and assembles the optimized,
   non-debuggable release APK.
   The release variant uses the debug signing key so it can be installed without a separate keystore,

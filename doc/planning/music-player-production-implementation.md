@@ -1271,6 +1271,21 @@ Read these before repeating them. Each one cost the human a correction.
   an unreadable row behave as before. One pure rule per platform (`rowActivationFor`, `row_activation_for`), mutation
   checked; the desktop e2e suite gains the `auto-play` session (117 declared); the switch moves under the text in a
   narrow list pane.
+- [ ] Auto-play on select defaults to on (D133, 2026-10-22, commit `ad48e433e7`): the human asked for it on all
+  platforms. Desktop `session.rs` and Android `SessionStore.kt` read a missing value as on; a saved off stays off.
+  Desktop `nextest` 1592 passed, Android `test:unit` BUILD SUCCESSFUL (the new default tests ran: 22 wiring, 5 store).
+  The e2e harness now seeds `{"auto_play_on_select":false}` into every scratch configuration except launches that pass
+  `keepSettingsDefaults` (only the `auto-play` session), so the other sessions keep their select-only clicks; the
+  `auto-play` session now checks default on, switch off, select-only, and off surviving a restart. The whole e2e run
+  on the release build: 123 passed, 0 failed, 1 not injectable, 254 s. Not yet released (no version bump); the
+  human has not been asked to merge anything else since this is already on `main`.
+- [ ] Android notification sounds pause the player instead of ducking (2026-10-22, reported by the human):
+  cause read in `RustEngine.kt` (`setWillPauseWhenDucked(true)` plus the can-duck arm pausing), write-up in
+  `doc/troubleshooting/music-player-android-pauses-instead-of-ducking-for-notification-sounds.md`. The human chose
+  "duck, and pause only for real interruptions" and asked to find why pausing was chosen: the only record is commit
+  `6ec84c8419` (2026-06-13), which says it mirrors what ExoPlayer gave the Media3 flavor and gives no compatibility
+  reason. Next: reproduce on the Pixel 6 (connected 2026-10-22) with a debug build, play a tone, post a notification
+  sound, and record with the host microphone; then implement a duck on the user volume and verify the same way.
 - [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`):
 - `.github/workflows/music-player-release.yml`
   builds the desktop app for Windows, macOS (Apple silicon) and Linux and the Android app and creates one pre-release,

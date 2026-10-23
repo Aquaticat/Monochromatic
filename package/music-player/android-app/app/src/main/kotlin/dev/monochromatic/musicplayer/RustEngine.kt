@@ -155,6 +155,16 @@ import androidx.core.content.ContextCompat
 // ```
 import dev.monochromatic.musicplayer.core.QueuedLoadLedger
 
+// What:     `import dev.monochromatic.musicplayer.core.volumeWhileDucked` brings in the pure duck volume rule.
+// Why:      A can-duck focus loss lowers the playing volume instead of pausing (D134), and this rule combines the
+//           user volume with the duck flag.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { volumeWhileDucked } from "./core/FocusDuck";
+// ```
+import dev.monochromatic.musicplayer.core.volumeWhileDucked
+
 // What:     `import java.io.File` brings in the JDK `File` type (a path on the local filesystem).
 // Why:      `openDescriptor` wraps a bare absolute path in a `File` to open it directly.
 //
@@ -543,9 +553,10 @@ class RustEngine(context: Context) : AudioEngine {
             // .setOnAudioFocusChangeListener((change) => this.onFocusChange(change), this.poller)
             // ```
             .setOnAudioFocusChangeListener({ change -> onFocusChange(change) }, poller)
-            // What:     `.setWillPauseWhenDucked(true)` tells the framework this app would rather be
-            //           PAUSED than ducked (volume-lowered) on a transient-duck focus loss.
-            // Why:      A music player prefers a clean pause over playing quietly under, say, a nav prompt.
+            // What:     `.setWillPauseWhenDucked(true)` tells the framework not to duck this app by itself but to
+            //           report a transient-duck focus loss to the listener.
+            // Why:      Android never ducks AAudio output (`PlaybackActivityMonitor.UNDUCKABLE_PLAYER_TYPES`), which
+            //           is what this engine plays through, so the listener lowers the volume itself (D134).
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -575,6 +586,28 @@ class RustEngine(context: Context) : AudioEngine {
      * explain its source and use.
      */
     private var resumeOnFocusGain: Boolean = false
+
+    // What:     `private var userVolume: Float = 1.0f` declares the volume the user chose, initial full volume.
+    // Why:      A duck lowers the volume the engine plays at but must not forget the user's choice, so `setVolume`
+    //           keeps the chosen value here and `applyVolume` combines it with `ducked`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private userVolume = 1.0;
+    // ```
+    /** Volume the user chose through [setVolume], before any duck. */
+    private var userVolume: Float = 1.0f
+
+    // What:     `private var ducked: Boolean = false` declares whether a can-duck focus loss is lowering the volume.
+    // Why:      A notification sound or a navigation prompt asks other apps to play quieter, not to stop; the flag is
+    //           set while that interruption lasts and cleared when focus returns or is lost for good (D134).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private ducked = false;
+    // ```
+    /** Whether a short interruption that allows ducking currently lowers the volume. */
+    private var ducked: Boolean = false
 
     // What:     `private val noisyReceiver: BroadcastReceiver = object : BroadcastReceiver() { ... }`
     //           declares a private read-only `BroadcastReceiver` as an OBJECT EXPRESSION: an anonymous
@@ -1049,14 +1082,29 @@ class RustEngine(context: Context) : AudioEngine {
      * its call shape and effects.
      */
     override fun setVolume(volume: Float) {
-        // What:     `NativeBridge.nativeEngineSetVolume(handle, volume)` calls the native volume setter via JNI.
-        // Why:      Apply the user volume natively.
+        // What:     `userVolume = volume` remembers the volume the user chose.
+        // Why:      A duck in progress must not lose it, and the regained focus restores it.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // NativeBridge.nativeEngineSetVolume(this.handle, volume);
+        // this.userVolume = volume;
         // ```
-        NativeBridge.nativeEngineSetVolume(handle, volume)
+        userVolume = volume
+        applyVolume()
+    }
+
+    // What:     `private fun applyVolume()` sends the user volume, lowered while ducked, to the native engine.
+    // Why:      The one place the engine's volume is set, so a volume change and a duck change cannot disagree.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private applyVolume(): void {
+    //   NativeBridge.nativeEngineSetVolume(this.handle, volumeWhileDucked(this.userVolume, this.ducked));
+    // }
+    // ```
+    /** Applies [userVolume], lowered while [ducked], to the native engine. */
+    private fun applyVolume() {
+        NativeBridge.nativeEngineSetVolume(handle, volumeWhileDucked(userVolume = userVolume, ducked = ducked))
     }
 
     // What:     `override fun positionSec(): Double = NativeBridge.nativeEnginePositionSec(handle)` implements
@@ -1281,10 +1329,11 @@ class RustEngine(context: Context) : AudioEngine {
 
     // What:     `private fun onFocusChange(change: Int) { ... }` declares a private function taking the
     //           focus-change code (`Int`) and returning `Unit` (void).
-    // Why:      React to a system audio-focus change so a phone call, navigation prompt, or another media app
-    //           pauses (and a transient interruption resumes) this engine. A permanent loss pauses and abandons
-    //           focus; a transient loss pauses and arms resume-on-gain; a gain resumes only if a transient loss
-    //           had paused us.
+    // Why:      React to a system audio-focus change so a phone call or another media app pauses (and a transient
+    //           interruption resumes) this engine, and a notification sound or navigation prompt ducks it (D134).
+    //           A permanent loss pauses and abandons focus; a transient loss pauses and arms resume-on-gain; a
+    //           can-duck loss lowers the volume and keeps playing; a gain restores the volume and resumes only if a
+    //           transient loss had paused us.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -1339,6 +1388,15 @@ class RustEngine(context: Context) : AudioEngine {
                 // NativeBridge.nativeEnginePause(this.handle);
                 // ```
                 NativeBridge.nativeEnginePause(handle)
+                // What:     `ducked = false` and `applyVolume()` put the user volume back.
+                // Why:      Focus is given up for good, so no gain event will end a duck that was in progress.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // this.ducked = false; this.applyVolume();
+                // ```
+                ducked = false
+                applyVolume()
                 // What:     `audioManager.abandonAudioFocusRequest(focusRequest)` gives up focus.
                 // Why:      We are not resuming, so release focus to the system.
                 //
@@ -1348,20 +1406,41 @@ class RustEngine(context: Context) : AudioEngine {
                 // ```
                 audioManager.abandonAudioFocusRequest(focusRequest)
             }
-            // What:     `AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-            //           ... }`
-            //           is a MULTI-LABEL arm: it runs for EITHER a transient loss or a transient-can-duck loss
-            //           (the comma means "or").
-            // Why:      A brief interruption (a notification ping, a nav prompt): pause now and remember to
-            //           resume if we were playing.
+            // What:     `AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> { ... }` is the arm for a brief
+            //           interruption that allows the music to go on quietly: a notification ping or a navigation
+            //           prompt.
+            // Why:      Lower the volume for the interruption instead of stopping the music (D134).
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-            // case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: { this.resumeOnFocusGain =
+            // case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: { this.ducked = true; this.applyVolume(); break; }
+            // ```
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                // What:     `ducked = true` and `applyVolume()` lower the volume and keep playing.
+                // Why:      A notification sound or a navigation prompt asks to be heard over the music, not instead
+                //           of it. Android ducks other apps' output itself, but it never ducks this engine's AAudio
+                //           output, and `setWillPauseWhenDucked(true)` makes it tell this listener, so the engine
+                //           lowers its own volume (D134). A paused player stays paused and is lowered too, so a
+                //           Play pressed during the interruption does not blare over it.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // this.ducked = true; this.applyVolume();
+                // ```
+                ducked = true
+                applyVolume()
+            }
+            // What:     `AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> { ... }` is the arm for a transient loss that does
+            //           not allow ducking.
+            // Why:      A phone call or a voice recording needs the speaker: pause now and remember to resume if we
+            //           were playing.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: { this.resumeOnFocusGain =
             // NativeBridge.nativeEngineIsPlaying(this.handle); NativeBridge.nativeEnginePause(this.handle); break; }
             // ```
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 // What:     `resumeOnFocusGain = NativeBridge.nativeEngineIsPlaying(handle)` records whether we
                 //           are currently playing (so we know whether to resume on a later gain).
                 // Why:      Only resume after a transient loss if we were actually playing when it hit.
@@ -1389,6 +1468,15 @@ class RustEngine(context: Context) : AudioEngine {
             // NativeBridge.nativeEnginePlay(this.handle); } break; }
             // ```
             AudioManager.AUDIOFOCUS_GAIN -> {
+                // What:     `ducked = false` and `applyVolume()` put the user volume back.
+                // Why:      The interruption that lowered the volume has ended.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // this.ducked = false; this.applyVolume();
+                // ```
+                ducked = false
+                applyVolume()
                 // What:     `if (resumeOnFocusGain) { ... }` resumes only when the resume flag is set.
                 // Why:      Do not auto-start playback the user never had going.
                 //
