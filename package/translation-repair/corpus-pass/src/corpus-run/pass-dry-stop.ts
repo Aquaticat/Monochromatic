@@ -307,13 +307,14 @@ function isParkingRefusal(error: unknown,): error is EveryProviderDryError | Wri
 }
 
 /**
- Records a parking failure met while a park lasts, so the park answers for it.
+ Records a parking failure met while a park lasts, so the park answers for it; the park's own refusal is answered
+ from `refusal` and is not recorded.
 
  @param park - park in force
 
  @param error - parking failure a guarded call raised, or that ended an entry
 
- @mutates park - gains the failure at the end of `seen`, once
+ @mutates park - gains the failure at the end of `seen`, once, unless it is the park's own refusal
 
  @example
  ```ts
@@ -329,8 +330,8 @@ export function recordOnPark(
     readonly error: EveryProviderDryError | WritingBenchUnreachableError;
   },
 ): void {
-  if (!park.seen
-    .includes(error,))
+  if ((error !== park.refusal) && (!park.seen
+    .includes(error,)))
     park.seen
       .push(error,);
 }
