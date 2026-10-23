@@ -69,7 +69,8 @@ export type SeatReadingClient = Pick<
 /**
  What a caller that reads the seats again and again under the same holds remembers of the last no-wait line it let
  through: which providers were held and which benches stood unmet, as one signature, so the same state is said once and
- never by its text (a text carries distances that shrink between readings).
+ never by its text (a text carries distances that shrink between readings). The signature is forgotten when a reading
+ finds no unmet bench or has waited, so a bench that recovers and falls short again is said again.
 
  @example
  ```ts
@@ -78,7 +79,8 @@ export type SeatReadingClient = Pick<
  */
 export type WarnedState = {
   /**
-   The providers held and the benches unmet when the line was last written, none before one was.
+   The providers held and the benches unmet when the line was last written, none before one was written or once it
+   was forgotten.
    */
   signature: string;
 };
@@ -132,7 +134,8 @@ function wetWhenUnread(): boolean {
  @param pollMs - how often the wait checks for abort
 
  @param warned - memory of the no-wait line last written, which the reading reads and updates so the same held
- providers and the same unmet benches are said once; absent for a caller that reads once
+ providers and the same unmet benches are said once, and clears when it finds no unmet bench or has waited; absent for
+ a caller that reads once
 
  @mutates warned - holds the signature of the state this reading found, and forgets it when a reading finds no unmet
  bench or has waited

@@ -287,7 +287,7 @@ export class EveryProviderDryError extends Error {
    STILL LIES AHEAD, whether or not the call waited out another hold first: the pass reads it to park until the return
    instead of ending the run, and a return that has passed (the account lagging) names none
 
-   @param neuralwattReadAtMs - the instant of the reading that named the return, on the monotonic clock, given by a
+   @param neuralwattReadAtMs - instant of the reading that named the return, on the monotonic clock, given by a
    caller that makes the refusal some time before it reaches the pass (the seat reader), so a park counts its wait from
    the read; absent for the router's own refusal, which names the distance as it is raised
 

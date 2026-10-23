@@ -230,7 +230,7 @@ const WRITERS_BELOW_FLOOR: BudgetView = {
 
  @param phase - phase the hook re-seats for
 
- @returns The hook and the state the case moves: the view the readings find and the providers held
+ @returns Hook and the state the case moves: the view the readings find and the providers held
 
  @example
  ```ts

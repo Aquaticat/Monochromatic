@@ -36,7 +36,9 @@ import {
 // benches unmet (`WarnedState` in `run-seats-short-bench.ts`), and writes its no-wait line only when that changes. The
 // text carries the time each skipped hold has left and, with NeuralWatt dry, the distance to its return and the
 // figure past what the pass has left, all of which shrink between slices, so a memory of text writes a line per
-// slice. The hook forgets the signature when no hold runs, so a hold that comes back is said again.
+// slice. The signature is forgotten when no hold runs (the hook does it), when a reading finds no unmet bench, and when
+// a reading has waited (the reading does it), so a hold that comes back, or a bench that recovers and falls short
+// again, is said again.
 
 /**
  What a phase takes from one seat reading: the seating its slices run on, and

@@ -139,7 +139,7 @@ export function withNeuralWattReturn(
  @param neuralwattReturnsInMs - milliseconds until NeuralWatt's spent day starts again while the return lies ahead,
  which the pass reads to park for it when it has the time; left out where no return lies ahead
 
- @param neuralwattReadAtMs - the instant of the reading that named the return, which the pass counts its wait from
+ @param neuralwattReadAtMs - instant of the reading that named the return, which the pass counts its wait from
 
  @param pastPass - the words saying that return is past what the pass has left, none where it fits or none is named
 
@@ -215,13 +215,13 @@ function everyProviderDryRefusal(
 
  @param returnsInMs - milliseconds until the spent day starts again
 
- @param readAtMs - the instant of the reading that named it, on `monotonicMs`
+ @param readAtMs - instant of the reading that named it, on `monotonicMs`
 
  @param dryness - why NeuralWatt reads dry, where the client reports it
 
  @param day - what the run knows of NeuralWatt's day
 
- @returns The fields, with the instant of the read, the time of day left out where neither the reading nor the run
+ @returns Fields, with the instant of the read, the time of day left out where neither the reading nor the run
  names one
 
  @example
