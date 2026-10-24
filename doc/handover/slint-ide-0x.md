@@ -1873,8 +1873,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (the statement `const integrationChildren = ....map(...)` spans lines 96 to 269), and `Annotations::merge_labels`
     kept them although it had removed only the old hints of the asked lines: each such answer added four hints to line
     96 (counted 4, 8, 4, 8 in the application log before the fix; the owner's picture shows five copies). Every line
-    below moved by a block per copy, which is the jumping, and a later answer that asked for line 96 removed all copies,
-    which is the few milliseconds. Reproduced in the headless nested compositor at 1080x1880 scale 2 with the real
+    below moved by a block per copy, which is the jumping, and a later answer that asked for line 96 removed all copies
+    again. Editor frames recorded while clicking back to line 96 (22.5 frames per second kept): the installed build
+    showed a 130 px gap above line 96 for 5 frames (6 hint rows instead of 3), then 82 px; the fixed build 82 px in
+    all 34 frames. Reproduced in the headless nested compositor at 1080x1880 scale 2 with the real
     TypeScript 7 server on a disposable copy, same clicks on the minimap gave minimap crops that differed by 17,028 px
     (visit 2 against visit 3 of y=1700) and 1,925 px (y=1000); after the fix the same pairs differ by 0 px. Probe of the
     server alone: `~/temp/agent/mm/lsp-probe.ts`; record `doc/troubleshooting/typescript-7-inlay-hints-outside-the-requested-range.md`.
@@ -1884,7 +1886,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `hints-asked-lines` and `hints-asked-lines-window` accepted in baseline, removed and restored. Gates on the fixed
     tree: lint 0, `test:native` 291 passed 5 skipped, `test` (without the real-source wrap tests) 798 passed,
     `test:minimap` 30 passed, `test:annotations` 51 passed, `test:bin` 71 passed. The installed IDE still has the
-    defect until reinstalled.
+    defect until reinstalled. Residual, not this defect: with the fix, the minimap of a first visit to the bottom
+    differs by 994 px (device rows 2500 to 3238 of the track) from the one after a visit to another place, and is
+    stable afterwards (0 px); the server's first answer had 68 hints against 72 in-range hints it gives when warm
+    (a probe of the server alone shows range answers equal the full-file answer inside the range), so it is most
+    likely the server's first, incomplete answer; not verified further.
     Committed `clip-rounding` test strengthening (`1b57f960de`, merge `3f220bd444`).
     Sweep re-run of the three environment failures: `frame-fit` and `tile-stamp-names-its-clip` accepted in all three
     phases; `refused-tile-keeps-image` is a fourth real stale guard (its `after` injects

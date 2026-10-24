@@ -44,6 +44,21 @@ An answer that asks for line 96 replaces its hints (4);
 an answer that does not ask for it adds 4 more.
 Answers that follow one another without a covering answer between them add 4 each.
 
+Frames of the code view recorded in the nested compositor
+(1080 by 1880 logical px at scale 2)
+while the pointer clicked the minimap where line 96 is in view,
+then far away,
+then back,
+with a real TypeScript 7.1.0-beta server on a disposable copy of the file:
+
+- Installed build of 2026-10-22:
+  the distance from the line number 95 to the line number 96 was 130 px in 5 recorded frames
+  (about 0.2 s at the 22.5 frames per second the recorder kept),
+  then 82 px in the remaining 30 frames.
+  The block of line 96 held 6 hint rows for those frames instead of 3.
+- Build with the fix:
+  82 px in all 34 frames after the click.
+
 ## Probe
 
 The server was started on the project's own TypeScript
@@ -73,9 +88,10 @@ A request that starts after line 96 and before the end of the statement returns 
 
 A range request returns the hints of the nodes that intersect the range.
 It does not drop a hint whose own position is outside it.
-That is allowed by the protocol (`InlayHintParams.range` is the visible document range,
-and the result is not required to be limited to it),
-so the client has to do the limiting.
+The protocol text was not read for this record,
+so whether it permits that is unverified here;
+the client has to do the limiting either way,
+because its store replaces whole lines.
 
 ## Fix
 
