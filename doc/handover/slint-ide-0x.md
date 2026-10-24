@@ -4219,17 +4219,39 @@ and `QVS` in the visual-design-review skill
 The `PXQ` checkpoint-continuation idea was not re-proposed;
 `PXQ` already forbids ending a turn on a status report the user must answer with "continue".
 
-Minimap report of 2026-10-24 (open, an agent is on it):
+Minimap report of 2026-10-24 (fixed, landed, installed):
 the owner opened `package/build-tool/css/src/build.unit.test.ts` in the installed IDE (built 2026-10-22 12:48)
 and saw the minimap "jump around as I scroll",
 a band of its picture drawn doubled and wider (screenshot `~/Pictures/Screenshots/Screenshot_20261024_070953.png`),
-and "the inlay hints at line 96 keep doubling or something as I click around in the minimap".
-The cause is not known yet.
-An agent in a worktree reproduces it in the nested compositor on a build of current `origin/main`,
-finds the cause by measurement,
-and fixes it behind a test shown to fail first.
-Next action: verify its report, land it, reinstall the IDE from the fixed build
-(the installed binary is also still the 0.1.0 build, not 0.1.1).
+and "the inlay hints at line 96 keep doubling or something as I click around in the minimap";
+later the owner saw the same hint double in the main editor for a few ms when clicking away from line 96 and back.
+The installed binary and `main` held the same minimap code (diff since `cd49e20a92` is comments and tests only),
+so the minimap was not the cause.
+The cause is `Annotations::merge_labels` in `package/desktop-app/ide/src/annotation/blocks.rs`:
+TypeScript 7 answers a range request with the hints of every syntax node that reaches into the range,
+line 96 is a statement whose body runs to line 269,
+so every answer asked for lines 100 to 269 added line 96's four hints again,
+and each copy pushed the lines below it down.
+The fix leaves out hints that stand on lines the answer did not ask about.
+Tests that failed first: `hints_outside_the_asked_lines_are_not_part_of_an_answer` (`tests/annotation.rs`) and
+`an_answer_for_other_lines_adds_no_hint_to_a_line_it_did_not_ask_about` (`src/native/annotation_range_tests.rs`);
+source guards `hints-asked-lines` and `hints-asked-lines-window` accepted in all three phases.
+The agent's measurements: minimap crops after the same click differed by 17,028 px before the fix and about 0 after;
+the gap above line 96 was 130 px for about 0.2 s in 5 of 35 frames before and 82 px in all 34 frames after.
+Landed as merge `acb620dd6a` (branch tip `7a5063dfc6`);
+my gates on the merged tree: `lint` 0, `test:native` 291 passed and 5 skipped, `test` 804 passed,
+`test:bin` 0, `inspect:no-software-renderer` 0.
+The IDE was rebuilt and installed from that tree (sha256 `9c8c51a8bd96ff49…`, prints 0.1.1;
+the previous binary is `~/.local/bin/monochromatic-ide.previous`).
+Agent worktree and branch removed locally and on the remote;
+the agent's captures stay in `~/temp/agent/mm` until the owner confirms the fix on the installed binary.
+Open from this report:
+the first visit to the bottom of the file still gives a minimap that differs by 994 px (device rows 2500 to 3238)
+from the one after a visit elsewhere, then stays stable;
+the agent's reading is the server's first answer being incomplete (68 hints against 72), not verified.
+The "few ms" duration was not traced to `HINT_SETTLE` in `sync.rs`.
+The agent also left a stale `tail --pid=0` wait loop in its worktree (stopped by me).
+Next action: ask the owner to confirm on the installed binary, then clear `~/temp/agent/mm`.
 
 [scope]: ../decision/slint-ide-0x-scope.md
 [plan]: ../planning/slint-ide-implementation.md
