@@ -4256,6 +4256,19 @@ so the extra copies stayed until the next request that covered line 96 was answe
 The agent also left a stale `tail --pid=0` wait loop in its worktree (stopped by me).
 Next action: ask the owner to confirm on the installed binary, then clear `~/temp/agent/mm`.
 
+Correction of the residual, measured later on 2026-10-24 (`~/temp/agent/mm2`;
+record in `doc/troubleshooting/typescript-7-inlay-hints-outside-the-requested-range.md`):
+the server's first answer is not incomplete
+(equal ranges gave identical answers hint by hint, and every range equals the full-file answer on its lines),
+and the 994 px are the minimap's viewport box, not the picture.
+The first click at the bottom is mapped through a layout of 8688 px that holds only the hints of the first answer,
+so the view lands on line 214;
+the answer for lines 137 to 287 then makes the layout 9522 px,
+and the same click after a visit elsewhere lands at the end (line 223 on top).
+In a window tall enough for the first request to cover the file the difference is 0 px.
+No IDE change was made;
+options (re-aim once, ask for the whole file, leave it) are ranked in the record and wait for the owner.
+
 [scope]: ../decision/slint-ide-0x-scope.md
 [plan]: ../planning/slint-ide-implementation.md
 [theme]: ../troubleshooting/slint-nested-color-scheme-portal.md
