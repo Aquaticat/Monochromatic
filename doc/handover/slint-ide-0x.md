@@ -4255,6 +4255,11 @@ the time the visible lines must stay the same before hints are asked for them,
 so the extra copies stayed until the next request that covered line 96 was answered.
 The agent also left a stale `tail --pid=0` wait loop in its worktree (stopped by me).
 Next action: ask the owner to confirm on the installed binary, then clear `~/temp/agent/mm`.
+Started 2026-10-24: an agent in a worktree measures the 994 px residual
+(the server's first and warm answers diffed hint by hint,
+whether the IDE re-asks or the minimap rebuilds when hints change)
+and fixes it behind a failing test if it is an IDE defect;
+its report is verified, landed and the IDE reinstalled like the first one.
 
 [scope]: ../decision/slint-ide-0x-scope.md
 [plan]: ../planning/slint-ide-implementation.md
