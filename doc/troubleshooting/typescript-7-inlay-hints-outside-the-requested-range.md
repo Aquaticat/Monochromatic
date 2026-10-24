@@ -110,3 +110,64 @@ remove the rule in a disposable copy and watch those tests fail.
 A hint of an unasked line is not lost:
 the next answer that asks for that line returns it,
 and the store takes it then.
+
+## Residual first-visit difference of the minimap: cause measured
+
+After the fix,
+the minimap crop of a first click at the bottom of the file (y=1700 of the 1080 by 1880 logical window at scale 2)
+differed by 994 px (device rows 2500 to 3238) from the crop after a visit to another place.
+The earlier guess was that the server's first answer is incomplete (68 hints against 72).
+Measured on 2026-10-24, that guess does not hold, and the picture is not what differs.
+
+- The server's first answer is complete.
+  On a disposable project with the project's own server and the IDE's settings,
+  five answers in a row for the ranges the IDE asks ([0, 154), [137, 287), [137, 287), [0, 154), [137, 287))
+  were identical hint by hint for equal ranges (68 and 68 and 68, 41 and 41),
+  after delays of 0, 100, 500, 2000 and 6000 ms between opening the file and the first request.
+  For eight ranges the hints standing on the asked lines equal the same lines of the full-file answer (90 hints),
+  with 0 missing and 0 extra.
+  The 72 of the earlier note was not reproduced;
+  68 is the whole answer for [137, 287) of which 61 stand on the asked lines.
+- The picture is the same.
+  The 994 px are the outline of the minimap's viewport box, drawn about 120 device rows lower in the warm crop (top edge at row 2501 against 2622),
+  and a few scattered pixels.
+  A first click lower (y=1870) and the click at y=1700 after a visit elsewhere give crops that differ by 0.43 px,
+  and the second click gives the same crop whether it follows the first visit or the visit elsewhere.
+- The code view shows why the box differs.
+  The first click showed lines 215 to 273 (the view's top line reported to the hint request is 214),
+  the same click after a visit elsewhere showed lines 224 to 287 (top line 223).
+  The minimap request posted after the first click was for a layout of 8688 logical px,
+  because only the hints of the first answer ([0, 154), 41 hints) were in the layout when the click was mapped to a scroll offset;
+  the answer for [137, 287) arrived 20 ms after the visible lines were reported and made the layout 9522 px.
+  After a visit elsewhere every line already holds its hints,
+  the layout is 9522 px from the click on, and the same click lands at the end of the file.
+- A window that is tall enough for the first request to cover the whole file is the control.
+  At 1080 by 3760 logical px the first request asked for [0, 287), the answer held all 90 hints,
+  the layout was 9522 px at once, and the first visit against the visit after another place differed by 0 px in all three pairs.
+
+So the IDE does what it is built to do:
+a click on the minimap is mapped through the layout the window has at that moment,
+and a line that was never asked about holds no hint rows yet.
+The first visit to a place that no earlier request covered therefore lands where the incomplete layout puts it,
+and the box moves to the place the final layout gives only on the next click.
+No picture is left stale, and no answer is lost.
+
+Options that were not built, best first:
+
+- Re-aim once: when an answer changes the layout height while the view still stands where the last minimap click put it,
+  scroll to the place the same click gives in the new layout.
+  Pro: the click means the same place on the first and on every later visit, with no extra requests.
+  Con: a second scroll step shortly after the first, and a rule for when the view counts as untouched.
+- Ask for the hints of the whole file once the visible lines have settled, for files up to a size bound.
+  Pro: the layout is complete after the first answer, so no click is ever mapped through an incomplete layout.
+  Con: the server does work for lines nobody looks at, and a bound has to be chosen; a file over the bound still shows the difference.
+- Leave it.
+  Pro: no new behavior.
+  Con: the first click at a far place lands about nine lines from where the next click lands.
+
+Ranking: re-aim once > ask for the whole file > leave it,
+because the first fixes the cause (the click is mapped through a layout that is about to change) for files of every size,
+the second removes the cause only for files under a bound and costs server work,
+and the third keeps a visible difference that has a known cause.
+
+Probes: `~/temp/agent/mm2/cold.ts`, `ranges.ts`, `exp6.ts` (scratch, not kept in the repository).
