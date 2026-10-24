@@ -66,7 +66,11 @@ fn an_answer_for_other_lines_adds_no_hint_to_a_line_it_did_not_ask_about() {
     answer(&reader, stamp, (0, 4), own.clone());
     let before = reader.source.borrow().row_map.height();
     let blocks_before = reader.source.borrow().blocks.len();
-    assert_eq!(hints_above(&reader, 0), 2, "the answer for line 0 was not shown");
+    assert_eq!(
+        hints_above(&reader, 0),
+        2,
+        "the answer for line 0 was not shown"
+    );
     for round in 1..=4 {
         let mut later = own.clone();
         // Line 2 is "fn main() {}": the answer for lines 2 and 3 adds a hint there and repeats those of line 0.

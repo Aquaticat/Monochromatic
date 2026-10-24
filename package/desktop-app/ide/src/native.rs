@@ -92,15 +92,15 @@ mod annotation_gutter_tests;
 ///  and display scale.
 #[cfg(test)]
 mod annotation_paint_tests;
+/// Hints a server places outside the lines it was asked about are not part of its answer.
+#[cfg(test)]
+mod annotation_range_tests;
 /// The pixels the GPU draws for annotations:
 /// one underline style per severity,
 /// virtual rows,
 /// and the scheme's inks.
 #[cfg(test)]
 mod annotation_scene_tests;
-/// Hints a server places outside the lines it was asked about are not part of its answer.
-#[cfg(test)]
-mod annotation_range_tests;
 /// Which rendered pixels may move when virtual rows arrive,
 ///  change,
 ///  or vanish,
