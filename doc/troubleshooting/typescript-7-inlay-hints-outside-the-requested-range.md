@@ -16,15 +16,22 @@ so each answer for lines past a long statement added that statement's hints to i
 
 Opening `package/build-tool/css/src/build.unit.test.ts` (286 lines) and clicking around the minimap:
 
-- The block of virtual rows above line 96 (`const integrationChildren = integrationFixtures.map(...)`) held the same four
-  hints twice, three times, and up to five times, so every line below it moved down by one more block each time.
-- The minimap's picture, which is drawn from the same blocks, showed the repeated rows as a band of overdrawn text,
+- The block of virtual rows above line 96 (`const integrationChildren = integrationFixtures.map(...)`)
+  held the same four hints twice,
+  three times,
+  and up to five times,
+  so every line below it moved down by one more block each time.
+- The minimap's picture,
+  which is drawn from the same blocks,
+  showed the repeated rows as a band of overdrawn text,
   and the box and the picture jumped as the repeated rows came and went.
 - The repeated rows went away for the lines an answer asked about,
   so after clicking back to line 96 the hints were doubled until the next answer covered it.
 
-With the window's own log (`RUST_LOG=ide_app=debug`) the count of hints on line 96 after each answer, measured
-before the fix with a probe line in `merge_labels`, was:
+With the window's own log (`RUST_LOG=ide_app=debug`),
+the count of hints on line 96 after each answer,
+measured before the fix with a probe line in `merge_labels`,
+was:
 
 ```text
 first=0   last=154  answered=41  line96=4
@@ -33,15 +40,18 @@ first=70  last=287  answered=86  line96=4
 first=146 last=287  answered=62  line96=8
 ```
 
-An answer that asks for line 96 replaces its hints (4); an answer that does not ask for it adds 4 more.
+An answer that asks for line 96 replaces its hints (4);
+an answer that does not ask for it adds 4 more.
 Answers that follow one another without a covering answer between them add 4 each.
 
 ## Probe
 
-The server was started on the project's own TypeScript (`node node_modules/typescript/bin/tsc --lsp --stdio` in
-`package/build-tool/css`),
+The server was started on the project's own TypeScript
+(`node node_modules/typescript/bin/tsc --lsp --stdio` in `package/build-tool/css`),
 initialized with the `typescript.inlayHints` settings of `src/language/config/typescript.rs`,
-and asked for hints over line ranges of the file (zero-based, end exclusive,
+and asked for hints over line ranges of the file
+(zero-based,
+end exclusive,
 as `Annotations` is told them).
 Hints on lines outside each range:
 
@@ -82,4 +92,5 @@ and the guards `hints-asked-lines` and `hints-asked-lines-window` in `bin/inspec
 remove the rule in a disposable copy and watch those tests fail.
 
 A hint of an unasked line is not lost:
-the next answer that asks for that line returns it, and the store takes it then.
+the next answer that asks for that line returns it,
+and the store takes it then.

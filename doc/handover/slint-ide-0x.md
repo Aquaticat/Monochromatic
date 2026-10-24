@@ -1866,6 +1866,25 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `worktree-agent-a0207c18495764475`, `feat/ide-release-linux-arm64` (local and remote, tips verified in `origin/main`),
     sweep scratch and `ide-source-guard-*` dirs removed. Other sessions' worktrees (`agent-a563e0c526d53df51`,
     `tr-*`) were left alone.
+    OWNER REPORT 2026-10-24 (minimap "jumps around", hints "doubling" at line 96 of `build.unit.test.ts`), FIXED on
+    branch `worktree-agent-a0ae031be26535225`: not a minimap defect. The minimap code did not change between the
+    installed build (2026-10-22 12:48) and `origin/main`. Cause: TypeScript 7.1.0-beta answers a range request with the
+    hints of every node that reaches into the range, so a request for lines 100 to 200 returns the four hints of line 96
+    (the statement `const integrationChildren = ....map(...)` spans lines 96 to 269), and `Annotations::merge_labels`
+    kept them although it had removed only the old hints of the asked lines: each such answer added four hints to line
+    96 (counted 4, 8, 4, 8 in the application log before the fix; the owner's picture shows five copies). Every line
+    below moved by a block per copy, which is the jumping, and a later answer that asked for line 96 removed all copies,
+    which is the few milliseconds. Reproduced in the headless nested compositor at 1080x1880 scale 2 with the real
+    TypeScript 7 server on a disposable copy, same clicks on the minimap gave minimap crops that differed by 17,028 px
+    (visit 2 against visit 3 of y=1700) and 1,925 px (y=1000); after the fix the same pairs differ by 0 px. Probe of the
+    server alone: `~/temp/agent/mm/lsp-probe.ts`; record `doc/troubleshooting/typescript-7-inlay-hints-outside-the-requested-range.md`.
+    Fix: hints standing on lines outside the answer's asked lines are left out (`src/annotation/blocks.rs`); tests
+    `hints_outside_the_asked_lines_are_not_part_of_an_answer` and
+    `an_answer_for_other_lines_adds_no_hint_to_a_line_it_did_not_ask_about` fail before, pass after; guards
+    `hints-asked-lines` and `hints-asked-lines-window` accepted in baseline, removed and restored. Gates on the fixed
+    tree: lint 0, `test:native` 291 passed 5 skipped, `test` (without the real-source wrap tests) 798 passed,
+    `test:minimap` 30 passed, `test:annotations` 51 passed, `test:bin` 71 passed. The installed IDE still has the
+    defect until reinstalled.
     Committed `clip-rounding` test strengthening (`1b57f960de`, merge `3f220bd444`).
     Sweep re-run of the three environment failures: `frame-fit` and `tile-stamp-names-its-clip` accepted in all three
     phases; `refused-tile-keeps-image` is a fourth real stale guard (its `after` injects
