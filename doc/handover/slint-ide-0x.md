@@ -4249,7 +4249,10 @@ Open from this report:
 the first visit to the bottom of the file still gives a minimap that differs by 994 px (device rows 2500 to 3238)
 from the one after a visit elsewhere, then stays stable;
 the agent's reading is the server's first answer being incomplete (68 hints against 72), not verified.
-The "few ms" duration was not traced to `HINT_SETTLE` in `sync.rs`.
+The doubling lasted about 0.2 s (5 of 35 frames), not a few ms:
+`HINT_SETTLE` in `src/native/language/sync.rs:58` is 200 ms,
+the time the visible lines must stay the same before hints are asked for them,
+so the extra copies stayed until the next request that covered line 96 was answered.
 The agent also left a stale `tail --pid=0` wait loop in its worktree (stopped by me).
 Next action: ask the owner to confirm on the installed binary, then clear `~/temp/agent/mm`.
 
